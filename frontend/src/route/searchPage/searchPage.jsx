@@ -24,6 +24,7 @@ function SearchPage() {
   useEffect(() => {
     axios.get('/api/chat/rooms') 
       .then((res) => {
+        console.log('방 목록 응답:', res.data, Array.isArray(res.data));
         setRooms(res.data);
       })
       .catch((err) => console.error('방 목록 가져오기 실패', err));

@@ -1,29 +1,31 @@
 package com.example.backend.Entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Getter
-@Setter
+@Getter @Setter
 public class ChatRoom {
     @Id
-    private String id;          // 채팅방 id
-    private String name;        // 채팅방 이름
-    private String gameName;    // 무슨 게임의 채팅방인지
+    private String id;
 
-    // 기본 생성자
-    protected ChatRoom() { }
+    private String name;
+    private String gameName;
 
-    // 생성자
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)   // 채팅방과 태그의 연결 관계, ChatRoom ↔ ChatRoomTag (1:N)
+    @JsonIgnore     // 순환 참조 방지
+    private List<ChatRoomTag> chatRoomTags = new ArrayList<>();
+
+    protected ChatRoom() {}
+
     public ChatRoom(String id, String name) {
         this.id = id;
         this.name = name;
     }
 }
+

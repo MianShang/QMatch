@@ -91,3 +91,18 @@
 .createBtn {
   padding: 10px 20px;
 }
+
+.tagBtn {
+  margin: 4px;
+  padding: 6px 12px;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #222;
+  color: #fff;
+}
+
+.tagBtn.selected {
+  background: #4CAF50;
+  border-color: #4CAF50;
+}

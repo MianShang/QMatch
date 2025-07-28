@@ -17,18 +17,17 @@ function SearchPage() {
   const [rooms, setRooms] = useState([]);
   const [gameName, setGameName] = useState('');
   const [openModal, setOpenModal] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
 
   const { isLogIn, setIsLogIn, userData } = useContext(LogContext);
   useLoginCheck(isLogIn); // 로그인 체크
 
+  // 처음 url에 입장할때 목록 가져오기 실행 및 채팅방 검색
   useEffect(() => {
-    axios.get('/api/chat/rooms') 
-      .then((res) => {
-        console.log('방 목록 응답:', res.data, Array.isArray(res.data));
-        setRooms(res.data);
-      })
-      .catch((err) => console.error('방 목록 가져오기 실패', err));
-  }, []);
+     axios.get('/api/chat/rooms', {
+      params: { keyword: searchKeyword }
+    }).then((res) => setRooms(res.data));
+  }, [searchKeyword]);
 
   function saveUserChatRoom(roomId) {
     axios.post('/api/add/user/chatroom', {
@@ -65,7 +64,13 @@ function SearchPage() {
         <div className='rightSize'>
           {/* 검색 바 */}
           <div className='contentStyle searchBarSize'>
-            검색창임
+            <input
+              type="text"
+              placeholder="방 이름 검색"
+              value={searchKeyword}
+              onChange={(e) => setSearchKeyword(e.target.value)}
+              className="searchInput"
+            />
           </div>
 
           {/* 채팅방 리스트 */}
@@ -78,7 +83,7 @@ function SearchPage() {
                     key={room.id}
                     onClick={() => { saveUserChatRoom(room.id); }}
                     style={{ color: "white", border: "1px solid", margin: "10px", height: "50px" }}>
-                    <div>{room.name} {room.id}</div>
+                    <div>{room.name}</div>
                   </div>
                 ))
               }

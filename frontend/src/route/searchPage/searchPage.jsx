@@ -18,6 +18,8 @@ function SearchPage() {
   const [gameName, setGameName] = useState('');
   const [openModal, setOpenModal] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
+ const [gametag, setGameTag] = useState('ALL');
+
 
   const { isLogIn, setIsLogIn, userData } = useContext(LogContext);
   useLoginCheck(isLogIn); // 로그인 체크
@@ -40,6 +42,75 @@ function SearchPage() {
     .catch((err) => console.error('저장 실패', err));
   }
 
+
+  //검색 카테고리 태그목록
+  function chatTagRoom() {
+  if (gametag === 'ALL') {
+    return <p className="category-title">추천 카테고리</p>;
+  }
+
+  if (gametag === 'LOL') {
+    return (
+      <form className="tag-form">
+        <div className="tag-section">
+          <p className="tag-title">라인</p>
+          <label><input type="checkbox" value="Top" /> 탑</label>
+          <label><input type="checkbox" value="Jungle" /> 정글</label>
+          <label><input type="checkbox" value="Mid" /> 미드</label>
+          <label><input type="checkbox" value="AdCarry" /> 원딜</label>
+          <label><input type="checkbox" value="Support" /> 서포터</label>
+        </div>
+
+        <div className="tag-section">
+          <p className="tag-title">티어</p>
+          <label><input type="checkbox" value="Bronze" /> 브론즈</label>
+          <label><input type="checkbox" value="Silver" /> 실버</label>
+          <label><input type="checkbox" value="Gold" /> 골드</label>
+          <label><input type="checkbox" value="Platinum" /> 플레티넘</label>
+          <label><input type="checkbox" value="Diamond" /> 다이아몬드</label>
+        </div>
+      </form>
+    );
+  }
+
+  if (gametag === 'Maple') {
+    return (
+      <form className="tag-form">
+        <div className="tag-section">
+        <p className="tag-title">메이플 직업</p>
+        <label><input type="checkbox" value="adel" /> 아델</label>
+        <label><input type="checkbox" value="키네시스" /> 키네시스</label>
+        </div>
+
+        <div className="tag-section">
+        <p className="tag-title">보스</p>
+        <label><input type="checkbox" value="가디언 슬라임" /> 가디언 슬라임</label>
+        <label><input type="checkbox" value="아무보스" /> 아무보스</label>
+        <label><input type="checkbox" value="대충그냥 넣어" /> 대충그냥 넣어</label>
+        </div>
+      </form>
+    );
+  }
+
+  if (gametag === 'Val') {
+    return (
+      <form className="tag-form">
+        <div className="tag-section">
+        <p className="tag-title">발로란트 태그</p>
+        <label><input type="checkbox" value="발" /> 발</label>
+        <label><input type="checkbox" value="로" /> 로</label>
+        <label><input type="checkbox" value="란" /> 란</label>
+        <label><input type="checkbox" value="트" /> 트</label>
+        <label><input type="checkbox" value="대충그냥 넣어" /> 대충그냥 넣어</label>
+        </div>
+      </form>
+    );
+  }
+
+  return null;
+}
+
+
   return (
     <>
       {openModal && (
@@ -54,10 +125,32 @@ function SearchPage() {
       <div className='fullscreen' style={{ display: "flex", padding: "10px" }}>
         {/* 좌측 사이드바 */}
         <div className='contentStyle leftSize'>
-          여긴 카테고리
+          {/* 여긴 카테고리
           <p>ID : {userData.userId}</p>
           <p>Name : {userData.userName}</p>
-          <p>Email : {userData.userEmail}</p>
+          <p>Email : {userData.userEmail}</p> */}
+
+          <div className='Category_tag'>
+                <button className='chat_tag' onClick={()=> setGameTag('LOL')}>
+                  <img src="./public/gameIcons/lol_Icon.png" alt="LOL" />
+                </button>
+
+                <button className='chat_tag' onClick={()=> setGameTag('Maple')}>
+                  <img src="./public/gameIcons/maplestory_Icon.png" alt="MapleStory" />
+                </button>
+
+                <button className='chat_tag' onClick={()=> setGameTag('Val')}>
+                  <img src="./public/gameIcons/valorant_Icon.png" alt="Valorant"/>
+                </button>
+
+                <hr/>
+
+                {/* 태그 목록 */}
+                {chatTagRoom()}
+
+            </div>
+
+
         </div>
 
         {/* 우측 사이드바 */}

@@ -22,6 +22,71 @@
 }
 
 
+.chat_tag
+{
+   width: 70px;
+    height: 70px;
+    background-color: black;
+    margin : 10px;
+    text-align: center;
+}
+
+.chat_tag img
+{
+    width: 50px;
+    height: 50px;
+    background-color: black;
+}
+
+.tag-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+/* 섹션 구분 */
+.tag-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+}
+
+/* 제목 스타일 */
+.tag-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #333;
+}
+
+/* 체크박스 + 라벨 */
+.tag-form label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+/* hover 효과 */
+.tag-form label:hover {
+  background-color: #e6f0ff;
+}
+
+/* 체크박스 크기 */
+.tag-form input[type="checkbox"] {
+  transform: scale(1.2);
+  accent-color: #4a90e2;
+}
+
+
+
 /* ================================우측 div============================= */
 
 /* 우측 사이드바 사이즈 */

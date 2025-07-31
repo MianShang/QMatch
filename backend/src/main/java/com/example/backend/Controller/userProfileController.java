@@ -1,0 +1,66 @@
+package com.example.backend.Controller;
+
+import com.example.backend.Dto.Response.UserResponseDto;
+import com.example.backend.Entity.User;
+import com.example.backend.Repository.UserRepository;
+import com.example.backend.Service.UserProfileService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
+
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/profile")
+public class userProfileController {
+
+    private final UserProfileService userprofileService;
+    private final UserRepository userRepository;
+
+    //프로필 사진
+    @PostMapping("/image")
+    public ResponseEntity<UserResponseDto> uploadProfileImage(@RequestParam String userId, @RequestParam MultipartFile file) {
+
+        UserResponseDto response = userprofileService.userProfileImage(userId, file);
+        return ResponseEntity.ok(response);
+    }
+
+    //유저 정보 가져오기
+    @GetMapping("/user/info")
+    public ResponseEntity<UserResponseDto> getUserInfo(@RequestParam String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("유저 없음"));
+
+        return ResponseEntity.ok(new UserResponseDto(
+                user.getUserId(),
+                user.getUserName(),
+                user.getUserEmail(),
+                user.getUserProfile(),
+                user.getUserStatusMessage(),
+                user.getUserIntro()
+        ));
+    }
+
+    //내 소개
+    @PostMapping("/intro")
+    public ResponseEntity<UserResponseDto> updateUserIntro(@RequestBody Map<String,String> data) {
+        String userId = data.get("userId");
+        String introText = data.get("introText");
+
+        UserResponseDto response = userprofileService.updateUserIntro(userId, introText);
+        return ResponseEntity.ok(response);
+    }
+
+    //내 소개 가져오기
+    @GetMapping("/intro")
+    public ResponseEntity<UserResponseDto> getUserIntro(@RequestParam String userId) {
+        UserResponseDto response = userprofileService.getUserIntro(userId);
+        return ResponseEntity.ok(response);
+    }
+
+
+
+}

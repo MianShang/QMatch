@@ -1,137 +1,189 @@
-  import { useRef,useState, useEffect, useContext, memo } from 'react'
-  import { Routes, Route, Link, useNavigate  } from 'react-router-dom'
-  import { Client } from '@stomp/stompjs';
-  import axios from 'axios';
-  import './lobbyPage.css'
+import { useRef,useState, useEffect, useContext, memo } from 'react'
+import { Routes, Route, Link, useNavigate  } from 'react-router-dom'
+import { Client } from '@stomp/stompjs';
+import axios from 'axios';
+import './lobbyPage.css'
 
+// 컴포넌트 import
+import ChatListPage   from './lobbyPageRoute/chatListPage.jsx';
+import FriendListPage from './lobbyPageRoute/friendListPage.jsx';
+import MyProfile from './myProfile.jsx';
 
-  // 컴포넌트 import
-  import ChatListPage   from './lobbyPageRoute/chatListPage.jsx';
-  import FriendListPage from './lobbyPageRoute/friendListPage.jsx';
-  import MyProfile from './myProfile.jsx';
+// 로그인 체크용 Context API import
+import { LogContext } from '../../App.jsx'
 
-  // 로그인 체크용 Context API import
-  import { LogContext } from '../../App.jsx'
+// Custom hook import
+import { useChatSubscriber }  from '../../hooks/chat/useChatSubscriber.js'
+import { useChatSender }      from '../../hooks/chat/useChatSender.js'
+import { useLoginCheck }      from '../../hooks/login/useLoginCheck.js';
+import { useLogout }          from '../../hooks/login/useLogout.js';
 
-  // Custom hook import
-  import { useChatSubscriber }  from '../../hooks/chat/useChatSubscriber.js'
-  import { useChatSender }      from '../../hooks/chat/useChatSender.js'
-  import { useLoginCheck }      from '../../hooks/login/useLoginCheck.js';
-  import { useLogout }          from '../../hooks/login/useLogout.js';
+// ✅ 상태 체크 훅 import 추가
+import useUserStatusReporter from '../../hooks/status/useUserStatusReporter.js';
 
-  function LobbyPage() {
+function LobbyPage() {
 
-    // 사이드바 프로필 이미지 클릭시 내 프로필 상세 정보를 보여주는 모달창을 띄어줌 
-    const [showProfileModal, setShowProfileModal] = useState(false);
+  // 사이드바 프로필 이미지 클릭시 내 프로필 상세 정보를 보여주는 모달창을 띄어줌 
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
-    // 사이드바 프로필 이미지 클릭시 중앙 div는 사라지게 - 기본값 true(중앙 div 표시)
-    const [showMidBar, setShowMidBar] = useState(true);
+  // ✅ 상태 패널 열림 여부
+  const [isStatusPanelOpen, setIsStatusPanelOpen] = useState(false);
 
-    // toggle State를 기준으로 채팅 / 친구 컴포넌트 교체 - 기본값 true (채팅)
-    const [toggle, setToggle] = useState(true);
+  // 사이드바 프로필 이미지 클릭시 중앙 div는 사라지게 - 기본값 true(중앙 div 표시)
+  const [showMidBar, setShowMidBar] = useState(true);
 
-    const [selectedRoom, setSelectedRoom] = useState();       // 실시간 참여한 채팅방 데이터를 담은 State
-    const [messages, setMessages]         = useState([]);     // 보낼 메세지
-    const [client, setClient]             = useState(null);   // client 연결 여부 State
-    const [input, setInput]               = useState('');     // input 입력 Sate         
+  // toggle State를 기준으로 채팅 / 친구 컴포넌트 교체 - 기본값 true (채팅)
+  const [toggle, setToggle] = useState(true);
 
+  const [selectedRoom, setSelectedRoom] = useState();       // 실시간 참여한 채팅방 데이터를 담은 State
+  const [messages, setMessages]         = useState([]);     // 보낼 메세지
+  const [client, setClient]             = useState(null);   // client 연결 여부 State
+  const [input, setInput]               = useState('');     // input 입력 Sate         
 
-    // State 보관함 해체
-    const {isLogIn, setIsLogIn, userData} = useContext(LogContext)
+  // State 보관함 해체
+  const {isLogIn, setIsLogIn, userData} = useContext(LogContext)
 
-    // 커스텀 훅 가져오기
-    // --UseEffect
-    useLoginCheck(isLogIn);                                     // 로그인 체크 훅
-    useChatSubscriber(selectedRoom, setMessages, setClient, userData);    // 채팅방 구독 훅
-  
-    // -- Function
-    const logoutFunc  = useLogout();                                                      // 로그아웃 훅
-    const sendMessage = useChatSender(client, selectedRoom, userData, input, setInput);   // 메세지 전송 훅 
+  // 커스텀 훅 가져오기
+  // --UseEffect
+  useLoginCheck(isLogIn);                                     // 로그인 체크 훅
+  useChatSubscriber(selectedRoom, setMessages, setClient, userData);    // 채팅방 구독 훅
 
-    
-    // 스크롤 하단 자동 이동 Effect
-    const messageContainerRef = useRef(null);
+  // -- Function
+  const logoutFunc  = useLogout();                                                      // 로그아웃 훅
+  const sendMessage = useChatSender(client, selectedRoom, userData, input, setInput);   // 메세지 전송 훅 
 
-    useEffect(() => {
-      const container = messageContainerRef.current;
+  // ✅ 현재 유저 상태 가져오기 (setStatus도 함께 반환)
+  const [userStatus, setUserStatus] = useUserStatusReporter(userData.userId);
 
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
-    }, [messages]);
+  // ✅ 상태 아이콘 매핑 함수 추가
+  function getStatusIcon(status) {
+    if (status === '온라인') return '🟢';
+    if (status === '자리비움') return '🟠';
+    return '🔴';
+  }
 
+  // ✅ 상태 변경 함수 (UI 즉시 반영 + 서버 전송)
+  const handleStatusChange = (newStatus) => {
+    setUserStatus(newStatus); // UI 즉시 변경
+    axios.post('/api/user/status', { 
+      userId: userData.userId, 
+      status: newStatus 
+    })
+      .then(() => console.log(`상태가 ${newStatus}로 변경됨`))
+      .catch(() => console.log('상태 변경 실패'));
+};
 
-      // 채팅방 속성 중 게임 이름에 따른 아이콘 세팅 함수
-    function setGameIcon(gameName){
-      switch(gameName)
-      {
-        case "overwatch" :
-          return "/gameIcons/overwatch_Icon.png";
+  // 스크롤 하단 자동 이동 Effect
+  const messageContainerRef = useRef(null);
 
-        case "lol" :
-          return "/gameIcons/lol_Icon.png";
+  useEffect(() => {
+    const container = messageContainerRef.current;
 
-        case "valorant" :
-          return "/gameIcons/valorant_Icon.png";
-
-        case "maplestory" :
-          return "/gameIcons/maplestory_Icon.png";
-
-        case "lostark" :
-          return "/gameIcons/lostark_Icon.png";
-
-        case "dnf" :
-          return "/gameIcons/dnf_Icon.png";
-          
-        default:
-          return "https://placehold.co/45";
-      }
+    if (container) {
+      container.scrollTop = container.scrollHeight;
     }
+  }, [messages]);
 
-    const [gameName, setGameName] = useState('');
-    const [gameCode, setGameCode] = useState('');
-    const [gameData, setGameData] = useState([]);
+  // 채팅방 속성 중 게임 이름에 따른 아이콘 세팅 함수
+  function setGameIcon(gameName){
+    switch(gameName)
+    {
+      case "overwatch" :
+        return "/gameIcons/overwatch_Icon.png";
 
-    useEffect(()=>{
-      if (!userData?.userId) return;
+      case "lol" :
+        return "/gameIcons/lol_Icon.png";
 
-      axios.get('/api/get/user/gamecode', { 
-        params: {
-          userId: userData.userId
-        }})
-        .then((res) => {
-          setGameData(res.data);
-          console.log(res.data)
-        })
-        .catch((err) => console.error('실패3', err));
-    },[userData])
+      case "valorant" :
+        return "/gameIcons/valorant_Icon.png";
 
+      case "maplestory" :
+        return "/gameIcons/maplestory_Icon.png";
 
+      case "lostark" :
+        return "/gameIcons/lostark_Icon.png";
 
-    function sendUserGameCode(gameName, gameCode){
-      
-      axios.post('/api/save/gamecode', {
-        userId: userData.userId,
-        gameName : gameName,
-        gameCode : gameCode
-      })
+      case "dnf" :
+        return "/gameIcons/dnf_Icon.png";
+        
+      default:
+        return "https://placehold.co/45";
+    }
+  }
+
+  const [gameName, setGameName] = useState('');
+  const [gameCode, setGameCode] = useState('');
+  const [gameData, setGameData] = useState([]);
+
+  useEffect(()=>{
+    if (!userData?.userId) return;
+
+    axios.get('/api/get/user/gamecode', { 
+      params: {
+        userId: userData.userId
+      }})
       .then((res) => {
-        console.log('성공');
+        setGameData(res.data);
+        console.log(res.data)
       })
-      .catch((err) => {
-        console.error('실패:', err);
-      });
+      .catch((err) => console.error('실패3', err));
+  },[userData])
 
-    }
-    
-    
+  function sendUserGameCode(gameName, gameCode){
+    axios.post('/api/save/gamecode', {
+      userId: userData.userId,
+      gameName : gameName,
+      gameCode : gameCode
+    })
+    .then((res) => {
+      console.log('성공');
+    })
+    .catch((err) => {
+      console.error('실패:', err);
+    });
 
-    return (
-      <>
+  }
+    
+  return (
+    <>
       <div className='fullscreen' style={{display:"flex", padding:"10px"}}>
       
         {/* 좌측 사이드바 - 좌측 사이드바는 showMidBar State를 기준으로 동적 조절*/}
         <div className={`contentStyle ${ showMidBar ? 'sideBarSize' : 'sideBarExpanded' }`}>
+
+                    {/* ✅ 현재 상태 표시 + Hover 패널 */}
+          <div 
+            className="status-wrapper"
+            onMouseEnter={() => setIsStatusPanelOpen(true)}
+            onMouseLeave={(e) => {
+              // 상태 영역과 패널 모두 벗어났을 때만 닫기
+              if (!e.currentTarget.contains(e.relatedTarget)) {
+                setIsStatusPanelOpen(false);
+              }
+            }}
+          >
+            <div className="status-container">
+              <span>{getStatusIcon(userStatus)}</span>
+              <span> {userStatus}</span>
+            </div>
+
+            {isStatusPanelOpen && (
+              <div 
+                className="status-side-panel"
+                onMouseEnter={() => setIsStatusPanelOpen(true)}    // ✅ 패널 위에서는 안 닫힘
+                onMouseLeave={(e) => {
+                  if (!e.currentTarget.contains(e.relatedTarget)) {
+                    setIsStatusPanelOpen(false);
+                  }
+                }}
+              >
+                <div className="status-item" onClick={() => handleStatusChange('온라인')}>🟢 온라인</div>
+                <div className="status-item" onClick={() => handleStatusChange('자리비움')}>🟠 자리 비움</div>
+                <div className="status-item" onClick={() => handleStatusChange('오프라인')}>🔴 오프라인</div>
+              </div>
+            )}
+          </div>
+
           
           {/* 이미지(프로필) 클릭시 사이드바 확장으로 정보 수정 setShowMidBar(false) */}
           {/* 한번 더 클릭시 내 프로필 상세정보가 열림 setShowProfileModal(true) */}
@@ -144,7 +196,6 @@
         }}
           className={`${ showMidBar ? 'sideBarImgSize' : 'sideBarImgSizeExpanded' }`} />
 
-          
           {/* showMidBar false일시 정보 수정창 표시 */}
           { showMidBar ? 
             <div>
@@ -194,21 +245,18 @@
                 </div>
               </div> 
             </> }
-        </div>
-    
+        </div>  {/* contentStyle div 닫기 */}
+
         {/* 중간 친구/채팅 바 */}
         { showMidBar ? 
           <div className='midBarSize'>
 
-            {/* 토글 버튼 */}
             <div style={{ display: "flex" }}>
-              {/* 채팅 토글 */}
               <div onClick={() => {setToggle(true); }}
                 className={`toggleSwitchText contentStyle toggleSwitch ${toggle ? 'activeBorder' : ''}`} >
                 채팅
               </div>
 
-              {/* 친구 토글 */}
               <div onClick={() => setToggle(false)}
                 className={`toggleSwitchText contentStyle toggleSwitch ${!toggle ? 'activeBorder' : ''}`}
                 style={{ marginLeft: "10px" }} >
@@ -216,7 +264,6 @@
               </div>
             </div>
 
-            {/* 토글 버튼 하단의 각 리스트 div*/}
             <div className='listSize'>
               { toggle ? 
                   <ChatListPage 
@@ -231,41 +278,32 @@
         {/* 우측 채팅방 */}
         <div className='rightBarSize'>
 
-          {/* 상단 채팅창 */}
           <div className='contentStyle chatSize' style={{textAlign:"left"}}>
-    
-            {/* 메시지 목록 출력 */}
             <div ref={messageContainerRef} className='scroll-container chatDivStyle'>
-              {/* 하단에 컴포넌트 선언 */}
               <MessageList 
                 messages = { messages } 
                 userData = { userData }/>
             </div>
             
-            {/* 메세지 입력창 */}
             <div className="inputSize">
               <input
               className='chatInputStyle'
                 type="text"
                 value={ input }
-                onChange  = { (e) => { setInput(e.target.value); }}  // 입력값 업데이트
+                onChange  = { (e) => { setInput(e.target.value); }}
                 onKeyDown = { (e) => { if(e.key === 'Enter') { sendMessage(); } }}/>
 
-              {/* 메시지 전송 버튼 */}
               <button className='chatButtonStyle'
               onClick={ () =>{ sendMessage(); }}> 전송 </button> 
           </div>
 
         </div>
 
-          {/* 하단 돋보기 검색바 */}
           <div style={{display:"flex"}}>
-            {/* 광고 라인 */}
             <div  className='contentStyle adSize'>
               광고든 뭐든 암튼 뭐든 채울거
             </div>
 
-            {/* 검색 페이지 */}
             <Link to="/search">
               <div className='contentStyle searchSize'>
                 <img src="/SearchIcon.png" className='imgPos'></img>
@@ -273,33 +311,32 @@
             </Link>
             
           </div>
-        </div>
+        </div> {/* rightBarSize 닫기 */}
 
-      </div>
+      </div> {/* fullscreen 닫기 */}
       {showProfileModal && <MyProfile onClose={() => setShowProfileModal(false)} />}
-      </>
-    )
-  }
+    </>
+  )
+}
 
-  export default LobbyPage
+export default LobbyPage
 
+const MessageList = memo(({ messages, userData }) => {
+  return (
+    <div className='chatContentStyle'>
+      {
+        messages.map((msg, i) => (
+          
+          <div key={i} style={{ marginTop:"5px" }}
+            className={`${ msg.name == userData.userId ? 'myChatStyle' : null} `}>
 
-  const MessageList = memo(({ messages, userData }) => {
-    return (
-      <div className='chatContentStyle'>
-        {
-          messages.map((msg, i) => (
-            
-            <div key={i} style={{ marginTop:"5px" }}
-              className={`${ msg.name == userData.userId ? 'myChatStyle' : null} `}>
+            <div>{ msg.name }</div>
 
-              <div>{ msg.name }</div>
+            <div className='chatStyle'>{ msg.message }</div>
 
-              <div className='chatStyle'>{ msg.message }</div>
-
-            </div>
-          ))
-        }
-      </div>
-    );
-  });
+          </div>
+        ))
+      }
+    </div>
+  );
+});

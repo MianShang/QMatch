@@ -21,22 +21,34 @@
     height: 97.5vh;
 }
 
-
-.chat_tag
-{
-   width: 70px;
-    height: 70px;
-    background-color: black;
-    margin : 10px;
-    text-align: center;
+.Category_tag {
+  margin-top: 10px;
+  margin-left: 5px;
+  display: flex;
+  flex-wrap: wrap;      /* 줄바꿈 허용 */
+  gap: 10px;            /* 버튼 간격 */
+  justify-content: flex-start;  /* 왼쪽 정렬 */
 }
 
-.chat_tag img
-{
-    width: 50px;
-    height: 50px;
-    background-color: black;
+
+.chat_tag {
+  width: 90px;          /* 약간 키움 */
+  height: 90px;
+  background-color: black;
+  margin: 0;            /* gap으로만 간격 조절 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
 }
+
+
+.chat_tag img {
+  width: 50px;
+  height: 50px;
+
+}
+
 
 .tag-form {
   display: flex;
@@ -48,31 +60,42 @@
 /* 섹션 구분 */
 .tag-section {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  flex-wrap: wrap;          /* 줄바꿈 허용 */
+  gap: 9px;                /* 체크박스 간격 */
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 8px;
   background-color: #f9f9f9;
+  margin-right: 7px;
+  width: 265px;
 }
+
 
 /* 제목 스타일 */
 .tag-title {
   font-weight: bold;
+  width: 100%;             /* ✅ 한 줄 차지 */
   margin-bottom: 5px;
   color: #333;
 }
 
+
 /* 체크박스 + 라벨 */
 .tag-form label {
+    margin-left: 5px;
   display: flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
-  padding: 4px;
+  padding: 4px 10px;
   border-radius: 4px;
+  background-color: white;
+  border: 1px solid #ccc;
   transition: background 0.2s;
+  min-width: 100px;          /* ✅ 가로 정렬 균형 위해 최소 너비 지정 */
+  justify-content: flex-start;
 }
+
 
 /* hover 효과 */
 .tag-form label:hover {

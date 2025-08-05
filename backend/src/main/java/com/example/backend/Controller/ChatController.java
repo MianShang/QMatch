@@ -140,7 +140,48 @@ public class ChatController {
 
     // 채팅방 전체 조회 API
     @GetMapping("/rooms")
-    public List<ChatRoom> getChatRooms(@RequestParam(required = false) String keyword) {
+    public List<ChatRoom> getChatRooms(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String gametag,
+            @RequestParam(required = false) List<String> tags
+    ) {
+        List<ChatRoom> result;
+
+        //  ALL → 전체 목록
+        if ((gametag == null || gametag.equalsIgnoreCase("ALL")) &&
+                (keyword == null || keyword.isBlank())) {
+            result = chatRoomRepository.findAll();
+        }
+        // keyword + gametag
+        else if (keyword != null && !keyword.isBlank() && gametag != null && !gametag.equalsIgnoreCase("ALL")) {
+            result = chatRoomRepository.findByNameContainingIgnoreCaseAndGameName(keyword, gametag);
+        }
+        // keyword만
+        else if (keyword != null && !keyword.isBlank()) {
+            result = chatRoomRepository.findByNameContainingIgnoreCase(keyword);
+        }
+        // gametag만
+        else if (gametag != null && !gametag.equalsIgnoreCase("ALL")) {
+            result = chatRoomRepository.findByGameName(gametag);
+        }
+        else {
+            result = chatRoomRepository.findAll(); // fallback
+        }
+
+        // 태그 필터 (프론트 체크박스용)
+        if (tags != null && !tags.isEmpty()) {
+            result = result.stream()
+                    .filter(room -> tags.stream().allMatch(tag ->
+                            room.getName().contains(tag) || room.getGameName().contains(tag)
+                    ))
+                    .toList();
+        }
+
+        return result;
+    }
+
+    //기존 채팅방 조회 API 에러 날 경우 아래 기존코드 사용할 것
+    /*public List<ChatRoom> getChatRooms(@RequestParam(required = false) String keyword) {
 
         if (keyword == null || keyword.isBlank()) {
             // 채팅방 전체 조회
@@ -148,7 +189,7 @@ public class ChatController {
         } else {
             return chatRoomRepository.findByNameContainingIgnoreCase(keyword);
         }
-    }
+    }*/
 
     // 채팅방 생성
     @PostMapping("/rooms")

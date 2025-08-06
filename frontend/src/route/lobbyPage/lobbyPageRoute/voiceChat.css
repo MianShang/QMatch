@@ -1,0 +1,28 @@
+.voice-control-panel {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.voice-control-panel button {
+  font-size: 12px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 6px;
+  background-color: #444;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  white-space: nowrap;
+  min-width: 48px;
+}
+
+.voice-control-panel button:hover {
+  background-color: #666;
+}
+
+.voice-in {
+  display: flex;
+  margin-right: auto;
+}

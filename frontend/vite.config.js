@@ -22,6 +22,10 @@ export default defineConfig({
       '/riot': {
         target: 'http://localhost:8080',
         changeOrigin: true,
+      },
+      '/agora':{
+        target: 'http://localhost:8080',
+        changeOrigin: true,
       }
     }
   }

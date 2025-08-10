@@ -7,7 +7,7 @@ import './lobbyPage.css'
 // 컴포넌트 import
 import ChatListPage from './lobbyPageRoute/chatListPage.jsx';
 import FriendListPage from './lobbyPageRoute/friendListPage.jsx';
-import MyProfile from './myProfile.jsx';
+import MyProfile from '../../feature/profile/myProfileModal.jsx';
 
 // 로그인 체크용 Context API import
 import { LogContext } from '../../App.jsx'
@@ -38,6 +38,11 @@ function LobbyPage() {
   //Context
   const { isLogIn, setIsLogIn, userData, setUserData } = useContext(LogContext);
 
+  //프로필 유저 구분
+  const [profileUserId, setProfileUserId] = useState(null);
+  
+
+
   //로그인 체크 & 채팅방 구독
   useLoginCheck(isLogIn);
   useChatSubscriber(selectedRoom, setMessages, setClient, userData);
@@ -55,57 +60,12 @@ function LobbyPage() {
 
   //프로필 정보 DB에서 불러오기
   useEffect(() => {
-    if (userData?.userId) {
-      axios.get("/api/profile/user/info", {
-        params: { userId: userData.userId }
-      })
-        .then((res) => {
-          setUserData(res.data);
-        })
-        .catch((err) => console.error("유저 정보 불러오기 실패:", err));
-    }
-  }, []);
-
-  //자주하는 게임 관련 state
-  const [gameName, setGameName] = useState('');
-  const [gameCode, setGameCode] = useState('');
-  const [gameData, setGameData] = useState([]);
-
-  //게임 코드 DB에서 불러오기
-  useEffect(() => {
     if (!userData?.userId) return;
-    axios.get('/api/get/user/gamecode', {
-      params: {
-        userId: userData.userId
-      }
-    })
-      .then((res) => setGameData(res.data))
-      .catch((err) => console.error('게임 코드 불러오기 실패:', err));
-  }, [userData]);
+    axios.get("/api/profile/user/info", { params: { userId: userData.userId } })
+      .then(res => setUserData(res.data))
+      .catch(err => console.error("유저 정보 불러오기 실패:", err));
+  }, [userData?.userId, setUserData]);
 
-  //게임 코드 저장
-  function sendUserGameCode(gameName, gameCode) {
-    axios.post('/api/save/gamecode', {
-      userId: userData.userId,
-      gameName: gameName,
-      gameCode: gameCode
-    })
-      .then(() => console.log('게임 코드 저장 성공'))
-      .catch((err) => console.error('게임 코드 저장 실패:', err));
-  }
-
-  //게임 아이콘 매칭
-  function setGameIcon(gameName) {
-    switch (gameName) {
-      case "overwatch": return "/gameIcons/overwatch_Icon.png";
-      case "lol": return "/gameIcons/lol_Icon.png";
-      case "valorant": return "/gameIcons/valorant_Icon.png";
-      case "maplestory": return "/gameIcons/maplestory_Icon.png";
-      case "lostark": return "/gameIcons/lostark_Icon.png";
-      case "dnf": return "/gameIcons/dnf_Icon.png";
-      default: return "https://placehold.co/45";
-    }
-  }
 
   return (
     <>
@@ -114,8 +74,9 @@ function LobbyPage() {
         <div className={`contentStyle ${showMidBar ? 'sideBarSize' : 'sideBarExpanded'}`}>
           {/*프로필 이미지 클릭 → 바로 모달 열림 */}
           <img
-            src={userData?.userProfile ? `http://localhost:8080${userData.userProfile}` : "https://placehold.co/250x250"}
-            onClick={() => setShowProfileModal(true)}
+            src={userData?.userProfile ? `${userData.userProfile}` : "https://placehold.co/250x250"} style={{width: '80px', height : '80px', objectFit: 'cover'}}
+            onClick={() => {setProfileUserId(userData?.userId)
+                            setShowProfileModal(true)}}
             className={`${showMidBar ? 'sideBarImgSize' : 'sideBarImgSizeExpanded'}`}
           />
           <p onClick={() => logoutFunc(setIsLogIn)} style={{ cursor: 'pointer', marginTop: '10px' }}>로그아웃</p>
@@ -143,7 +104,9 @@ function LobbyPage() {
                 <ChatListPage
                   setMessages={setMessages}
                   selectedRoom={selectedRoom}
-                  setSelectedRoom={setSelectedRoom} />
+                  setSelectedRoom={setSelectedRoom}
+                  onOpenProfile={(targetUserId) => { setProfileUserId(targetUserId);
+                                                     setShowProfileModal(true);}}/>
                 : <FriendListPage />}
             </div>
           </div>
@@ -179,7 +142,12 @@ function LobbyPage() {
 
       {/*프로필 모달 */}
       {showProfileModal &&
-        <MyProfile userData={userData} setUserData={setUserData} onClose={() => setShowProfileModal(false)} />}
+        <MyProfile viewUserId={profileUserId} // 클릭한 유저 아이디
+                               isMyProfile={profileUserId === userData.userId} //내 프로필 여부 확인
+                               userData={userData} //내 프로필일 때만 사용
+                               setUserData={setUserData}
+                               onClose={() => setShowProfileModal(false)}
+        />}
     </>
   )
 }

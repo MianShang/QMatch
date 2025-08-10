@@ -94,4 +94,38 @@ public class UserProfileService {
                 user.getUserIntro()
         );
     }
+
+    //상태 메시지
+    public UserResponseDto UserStatusMessage(String userId , String statusMessage) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("그런 유저는 없어"));
+
+        user.setUserStatusMessage(statusMessage);
+        userRepository.save(user);
+
+        return new UserResponseDto(
+                user.getUserId(),
+                user.getUserName(),
+                user.getUserEmail(),
+                user.getUserProfile(),
+                user.getUserStatusMessage(),
+                user.getUserIntro()
+        );
+    }
+
+    //상태메시지 조회
+    public UserResponseDto getUserStatusMessage(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(()-> new RuntimeException("그런 유저는 없어"));
+
+        return new UserResponseDto(
+                user.getUserId(),
+                user.getUserName(),
+                user.getUserEmail(),
+                user.getUserProfile(),
+                user.getUserStatusMessage(),
+                user.getUserIntro()
+        );
+    }
+
 }

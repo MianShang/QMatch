@@ -63,4 +63,23 @@ public class userProfileController {
 
 
 
+    //작은 상태메시지 가져오기
+    @PostMapping("/status")
+    public ResponseEntity<UserResponseDto> UserStatusMessage(@RequestBody Map<String,String> data) {
+        String userId = data.get("userId");
+        String statusMessage = data.get("statusMessage");
+
+        UserResponseDto response = userprofileService.UserStatusMessage(userId, statusMessage);
+        return ResponseEntity.ok(response);
+    }
+
+    //작은 상태메시지
+    @GetMapping("/status")
+    public ResponseEntity<UserResponseDto> getUserStatusMessage(@RequestParam String userId) {
+        UserResponseDto response = userprofileService.getUserStatusMessage(userId);
+        return ResponseEntity.ok(response);
+    }
+
+
+
 }

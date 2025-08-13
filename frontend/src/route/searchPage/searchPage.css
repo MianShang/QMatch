@@ -74,7 +74,7 @@
 /* 제목 스타일 */
 .tag-title {
   font-weight: bold;
-  width: 100%;             /* ✅ 한 줄 차지 */
+  width: 100%;             /* 한 줄 차지 */
   margin-bottom: 5px;
   color: #333;
 }
@@ -92,7 +92,7 @@
   background-color: white;
   border: 1px solid #ccc;
   transition: background 0.2s;
-  min-width: 100px;          /* ✅ 가로 정렬 균형 위해 최소 너비 지정 */
+  min-width: 100px;          /*  가로 정렬 균형 위해 최소 너비 지정 */
   justify-content: flex-start;
 }
 

@@ -4,6 +4,7 @@ package com.example.backend.Controller;
 import com.example.backend.Dto.Request.ChatRoomRequestDto;
 import com.example.backend.Entity.*;
 import com.example.backend.Repository.*;
+import com.example.backend.Service.ChatRoomService;
 import com.example.backend.Websocket.RealTimeUserManagement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +14,6 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.context.event.EventListener;
@@ -42,6 +42,8 @@ public class ChatController {
     private final Map<String, Set<String>> activeUsersByRoom = new ConcurrentHashMap<>();
     @Autowired
     private ChatRoomTagRepository chatRoomTagRepository;
+    @Autowired
+    private ChatRoomService chatRoomService;
 
 
     // 구독된 채팅방에 메세지 보내는 API
@@ -142,54 +144,30 @@ public class ChatController {
     @GetMapping("/rooms")
     public List<ChatRoom> getChatRooms(
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) String gametag,
-            @RequestParam(required = false) List<String> tags
+            @RequestParam(required = false, name = "tags") List<Long> tags, // 프론트가 문자열이면 유지
+            @RequestParam(required = false, name = "gametag") String gametag
     ) {
-        List<ChatRoom> result;
-
-        //  ALL → 전체 목록
-        if ((gametag == null || gametag.equalsIgnoreCase("ALL")) &&
-                (keyword == null || keyword.isBlank())) {
-            result = chatRoomRepository.findAll();
-        }
-        // keyword + gametag
-        else if (keyword != null && !keyword.isBlank() && gametag != null && !gametag.equalsIgnoreCase("ALL")) {
-            result = chatRoomRepository.findByNameContainingIgnoreCaseAndGameName(keyword, gametag);
-        }
-        // keyword만
-        else if (keyword != null && !keyword.isBlank()) {
-            result = chatRoomRepository.findByNameContainingIgnoreCase(keyword);
-        }
-        // gametag만
-        else if (gametag != null && !gametag.equalsIgnoreCase("ALL")) {
-            result = chatRoomRepository.findByGameName(gametag);
-        }
-        else {
-            result = chatRoomRepository.findAll(); // fallback
-        }
-
-        // 태그 필터 (프론트 체크박스용)
-        if (tags != null && !tags.isEmpty()) {
-            result = result.stream()
-                    .filter(room -> tags.stream().allMatch(tag ->
-                            room.getName().contains(tag) || room.getGameName().contains(tag)
-                    ))
-                    .toList();
-        }
-
-        return result;
-    }
-
-    //기존 채팅방 조회 API 에러 날 경우 아래 기존코드 사용할 것
-    /*public List<ChatRoom> getChatRooms(@RequestParam(required = false) String keyword) {
-
-        if (keyword == null || keyword.isBlank()) {
-            // 채팅방 전체 조회
-            return chatRoomRepository.findAll();
-        } else {
+        // 1) 키워드
+        if (keyword != null && !keyword.isBlank() && gametag.equals("ALL")) {
             return chatRoomRepository.findByNameContainingIgnoreCase(keyword);
         }
-    }*/
+        else if ((keyword != null && !keyword.isBlank()) && tags == null) {
+            return chatRoomService.findByGameAndKeyword(gametag, keyword);
+        }
+        else if ((keyword != null && !keyword.isBlank()) && (tags != null && !tags.isEmpty())) {
+            return chatRoomService.findByKeywordAndGameAndTag(tags, gametag, keyword);
+        }
+        // 2) 태그
+        else if (tags != null  && !tags.isEmpty()) {
+            return chatRoomService.findByGameAndTag(tags, gametag);
+        }
+        else if(tags == null && !gametag.equals("ALL")) {
+            return chatRoomService.findByGameName(gametag);
+        }
+        // 3) 전체
+        return chatRoomRepository.findAll();
+    }
+
 
     // 채팅방 생성
     @PostMapping("/rooms")

@@ -19,7 +19,9 @@ function SearchPage() {
   const [openModal, setOpenModal] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [gametag, setGameTag] = useState('ALL');
-  const [selectedTags,setSelectedTags] = useState('');
+  const [selectedTags, setSelectedTags] = useState([]); // number[]
+  const [groupedTags, setGroupedTags] = useState({});
+
 
 
   const { isLogIn, setIsLogIn, userData } = useContext(LogContext);
@@ -71,119 +73,66 @@ function SearchPage() {
     setSelectedTags([]);
   }, [gametag]);
 
-  function chatTagRoom() 
-  {
+///임시
+useEffect(() => {
+  if (!gametag) return;
+
+fetch(`/api/tags/${gametag}`)
+    .then(res => res.json())
+    .then(data => {
+      //console.log('태그 응답 데이터:', data);
+      const grouped = data.reduce((acc, tag) => {
+        const category = tag.category;
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(tag);
+        return acc;
+      }, {});
+      
+      setGroupedTags(grouped); // { line: [...], tier: [...] }
+    })
+    .catch(err => console.error(err));
+}, [gametag]);
+
+
   function handleTagChange(e) {
-    const value = e.target.value;
-    setSelectedTags((prev) =>
-      e.target.checked ? [...prev, value] : prev.filter((v) => v !== value)
-    );
-  }
+  const id = Number(e.target.value);   // ← 숫자로 강제
+  const checked = e.target.checked;
 
-  const renderTags = (title, values) => (
-    <div className="tag-section">
-      <p className="tag-title">{title}</p>
-      {values.map((tag) => (
-        <label key={tag.value}>
-          <input
-            type="checkbox"
-            value={tag.value}
-            onChange={handleTagChange}
-            checked={selectedTags.includes(tag.value)}
-          />{" "}
-          {tag.label}
-        </label>
-      ))}
-    </div>
+  setSelectedTags(prev =>
+    checked ? (prev.includes(id) ? prev : [...prev, id]) // 중복 방지
+            : prev.filter(x => x !== id)
   );
-
-  switch (gametag) {
-    case "ALL":
-      return (
-        <form className="tag-form">
-          {renderTags("추천 카테고리", [
-            { value: "5인큐", label: "5인큐" },
-            { value: "자유랭크", label: "자유랭크" },
-            { value: "듀오", label: "듀오" },
-            { value: "솔로랭크", label: "솔로랭크" },
-          ])}
-        </form>
-      );
-
-    case "lol":
-      return (
-        <form className="tag-form">
-          {renderTags("라인", [
-            { value: "탑", label: "탑" },
-            { value: "정글", label: "정글" },
-            { value: "미드", label: "미드" },
-            { value: "원딜", label: "원딜" },
-            { value: "서포터", label: "서포터" },
-          ])}
-          {renderTags("티어", [
-            { value: "브론즈", label: "브론즈" },
-            { value: "실버", label: "실버" },
-            { value: "골드", label: "골드" },
-            { value: "플레티넘", label: "플레티넘" },
-            { value: "다이아몬드", label: "다이아몬드" },
-            { value: "마스터", label: "마스터" },
-            { value: "그랜드마스터", label: "그랜드마스터" },
-            { value: "챌린저", label: "챌린저" },
-          ])}
-        </form>
-      );
-
-    case "maplestory":
-      return (
-        <form className="tag-form">
-          {renderTags("메이플", [{ value: "일일숙제", label: "일일숙제" }])}
-        </form>
-      );
-
-    case "val":
-      return (
-        <form className="tag-form">
-          {renderTags("발로란트 태그", [
-            { value: "발", label: "발" },
-            { value: "로", label: "로" },
-            { value: "란", label: "란" },
-            { value: "트", label: "트" },
-            { value: "대충그냥 넣어", label: "대충그냥 넣어" },
-          ])}
-        </form>
-      );
-
-    case "dnf":
-      return (
-        <form className="tag-form">
-          {renderTags("던파 태그", [
-            { value: "발", label: "발" },
-            { value: "로", label: "로" },
-            { value: "란", label: "란" },
-            { value: "트", label: "트" },
-            { value: "대충그냥 넣어", label: "대충그냥 넣어" },
-          ])}
-        </form>
-      );
-
-    case "lostark":
-      return (
-        <form className="tag-form">
-          {renderTags("로스트아크 태그", [
-            { value: "로", label: "로" },
-            { value: "스", label: "스" },
-            { value: "트", label: "트" },
-            { value: "아", label: "아" },
-            { value: "크", label: "크" },
-          ])}
-        </form>
-      );
-
-    default:
-      return null;
-  }
 }
 
+
+function chatTagRoom() {
+  if (!groupedTags || Object.keys(groupedTags).length === 0) {
+    return null; // 아무것도 렌더링하지 않음
+  }
+
+  return (
+    <form className="tag-form">
+      {Object.keys(groupedTags).map(category => (
+        <div key={category} className="tag-section">
+          <p className="tag-title">{category}</p>
+          {groupedTags[category].map(tag => (
+            <label key={tag.id}>
+              <input
+                type="checkbox"
+                value={tag.id}
+                checked={selectedTags.includes(Number(tag.id))}
+                onChange={handleTagChange}
+              />{" "}
+              {tag.tagName}
+            </label>
+          ))}
+        </div>
+      ))}
+    </form>
+  );
+}
 
 
   return (
@@ -227,7 +176,7 @@ function SearchPage() {
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('lostark')}>
-                  <img src="./public/gameIcons/lostark_Icon.png" alt="Valorant"/>
+                  <img src="./public/gameIcons/lostark_Icon.png" alt="lostark"/>
                 </button>
 
                 <hr style={{width:"280px", margin:"3px"}}></hr>

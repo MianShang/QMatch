@@ -22,4 +22,5 @@ public class GameTag {
 
     private String gameName;   // lol, maplestory, lostark 등
     private String tagName;    // "탑", "정글", "메르세데스" 등
+    private String category;   // "라인, 티어, 직업등 분류 하기위한 카테고리 태그"
 }

@@ -16,6 +16,8 @@ import { useChatListGet }       from '../../../hooks/chatList/useChatListGet.js'
 // Modal import
 import UserHistoryModal  from '../../../modal/userHistory/UserHistoryModal.jsx'
 
+import VoiceChat from './VoiceChat';
+
 
 function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
 
@@ -109,6 +111,14 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
 
                 <div key = { item.userId } className='UserListContentStyle'>
                   <p>{ item.userId }</p>
+                  
+                  {/* 음성채팅 버튼 */}
+                  {item.userId === userData.userId && selectedRoom && (
+                    <VoiceChat 
+                      channelName={selectedRoom.id}
+                      uid={userData.userId} 
+                    />
+                  )}
 
                   <div className="MoreButtonStyle" onClick={() => {
                     setHistoryUserId(item.userId);

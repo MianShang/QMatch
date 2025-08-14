@@ -54,7 +54,7 @@ function VoiceChat({ channelName, uid }) {
     console.log('channelName:', channelName);
     console.log('token:', token);
     console.log('uid:', uid);
-    console.log('token response:', res.data);s
+    console.log('token response:', res.data);
 
 
     // 채널 입장

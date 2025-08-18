@@ -14,13 +14,14 @@ import { useChatGetUserList }   from '../../../hooks/chat/useChatGetUserList.js'
 import { useChatDeleteRoom }    from '../../../hooks/chat/useChatDeleteRoom.js'
 import { useNewChatNotice }     from '../../../hooks/chatNotice/useNewChatNotice.js';
 import { useChatGetRooms }      from '../../../hooks/chat/useChatGetRooms.js'
-import { useChatListGet }       from '../../../hooks/chatList/useChatListGet.js'
+import { useChatListGet   }     from '../../../hooks/chatList/useChatListGet.js'
+// ❌ useUserStatusReporter 훅 import 제거
 
 // Modal import
 import UserHistoryModal  from '../../../modal/userHistory/UserHistoryModal.jsx'
 
 
-function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
+function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, currentUserStatus }) {
 
   // State 보관함 해체
   const { userData } = useContext(LogContext);
@@ -46,6 +47,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
   useChatGetRooms(userData, setChatList);                       // 로그인한 유저의 채팅방 가져오는 커스텀훅
   useUnReadChatCount(userData, chatList, setUnreadCounts);      // 초기에 저장된 채팅방의 안읽은 메세지 개수 카운트 커스텀훅
   useNewChatNotice(userData, selectedRoom, setUnreadCounts);    // 저장한 채팅방에 새로운 메세지 도착시 알림개수 처리하는 커스텀 훅훅 
+  // ❌ 훅으로 상태 재계산하지 않음. 로비에서 받은 currentUserStatus 사용.
 
   // -- Function
   const getChatUserList = useChatGetUserList(setChatUserList);  // 선택한 채팅방의 유저 목록을 불러오는 함수
@@ -87,9 +89,14 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
 
   /* 상태 그룹화(온라인/오프라인) */
   function splitMembersByStatus(list){
-    const online  = list.filter(u => u.status === '온라인');
-    const offline = list.filter(u => u.status !== '온라인'); // 자리비움 포함
-    return { online, offline };
+    // 현재 로그인된 유저의 상태를 useUserStatusReporter 훅이 반환하는 상태로 업데이트
+    const updatedList = list.map(u => 
+      u.userId === userData.userId ? { ...u, status: currentUserStatus } : u
+    );
+    const online  = updatedList.filter(u => u.status === '온라인');
+    const away    = updatedList.filter(u => u.status === '자리비움');
+    const offline = updatedList.filter(u => u.status === '오프라인' || !u.status);
+    return { online, away, offline };
   }
 
   /* 패널을 왼쪽 리스트 오른쪽 경계(=채팅 내부 시작점)에 붙이기 위한 위치 측정 */
@@ -168,7 +175,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
         {/* 상태별 그룹 오버레이 (기존 리스트 위에 덮어씀) */}
         <div className="membersOverlayGrouped">
           {(() => {
-            const { online, offline } = splitMembersByStatus(chatUserList);
+            const { online, away, offline } = splitMembersByStatus(chatUserList);
 
             return (
               <>
@@ -178,7 +185,25 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
                   <div className="membersRow" key={'on-' + u.userId}>
                     <span className="membersName">
                       {u.userId}
-                      <span className="membersDot">{getStatusIcon('온라인')}</span>
+                      <span className="membersDot">{getStatusIcon(u.status)}</span>
+                    </span>
+                    <button
+                      className="membersMoreBtn"
+                      onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
+                      title="상세보기"
+                    >…</button>
+                  </div>
+                ))}
+
+                {/* 자리비움 */}
+                <div className="membersSectionHeader" style={{ marginTop: 10 }}>
+                  자리비움 — {away.length}
+                </div>
+                {away.map(u => (
+                  <div className="membersRow" key={'away-' + u.userId}>
+                    <span className="membersName">
+                      {u.userId}
+                      <span className="membersDot">{getStatusIcon(u.status)}</span>
                     </span>
                     <button
                       className="membersMoreBtn"
@@ -196,7 +221,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
                   <div className="membersRow" key={'off-' + u.userId}>
                     <span className="membersName membersName--offline">
                       {u.userId}
-                      <span className="membersDot">{getStatusIcon('오프라인')}</span>
+                      <span className="membersDot">{getStatusIcon(u.status)}</span>
                     </span>
                     <button
                       className="membersMoreBtn"
@@ -242,7 +267,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
                   {/* 유저 아이디 + 상태 아이콘 추가 */}
                   <p>
                     { item.userId }
-                    { item.status && <span style={{ marginLeft: "5px" }}>{ getStatusIcon(item.status) }</span> }
+                    {/* 👉 여기서는 상태 표시 제거 (오른쪽 패널에서만 상태 표시) */}
                   </p>
 
                   <div className="MoreButtonStyle" onClick={() => {
@@ -314,7 +339,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
                 <span className="chatCardLastMessage">안읽은 메세지가 있습니다</span>
               </div>
               : null }
-          </div>)
+            </div>)
         })}
       </div>
     </div>

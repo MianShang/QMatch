@@ -45,15 +45,15 @@ function LobbyPage() {
 
   // 커스텀 훅 가져오기
   // --UseEffect
-  useLoginCheck(isLogIn);                                     // 로그인 체크 훅
+  useLoginCheck(isLogIn);                                   // 로그인 체크 훅
   useChatSubscriber(selectedRoom, setMessages, setClient, userData);    // 채팅방 구독 훅
 
   // -- Function
-  const logoutFunc  = useLogout();                                                      // 로그아웃 훅
+  const logoutFunc  = useLogout();                                                  // 로그아웃 훅
   const sendMessage = useChatSender(client, selectedRoom, userData, input, setInput);   // 메세지 전송 훅 
 
-  // ✅ 현재 유저 상태 가져오기 (setStatus도 함께 반환)
-  const [userStatus, setUserStatus] = useUserStatusReporter(userData.userId);
+  // ✅ useUserStatusReporter 훅에서 반환되는 새로운 함수를 받음
+  const [userStatus, manuallySetStatus] = useUserStatusReporter(userData.userId);
 
   // ✅ 상태 아이콘 매핑 함수 추가
   function getStatusIcon(status) {
@@ -61,17 +61,6 @@ function LobbyPage() {
     if (status === '자리비움') return '🟠';
     return '🔴';
   }
-
-  // ✅ 상태 변경 함수 (UI 즉시 반영 + 서버 전송)
-  const handleStatusChange = (newStatus) => {
-    setUserStatus(newStatus); // UI 즉시 변경
-    axios.post('/api/user/status', { 
-      userId: userData.userId, 
-      status: newStatus 
-    })
-      .then(() => console.log(`상태가 ${newStatus}로 변경됨`))
-      .catch(() => console.log('상태 변경 실패'));
-};
 
   // 스크롤 하단 자동 이동 Effect
   const messageContainerRef = useRef(null);
@@ -177,9 +166,9 @@ function LobbyPage() {
                   }
                 }}
               >
-                <div className="status-item" onClick={() => handleStatusChange('온라인')}>🟢 온라인</div>
-                <div className="status-item" onClick={() => handleStatusChange('자리비움')}>🟠 자리 비움</div>
-                <div className="status-item" onClick={() => handleStatusChange('오프라인')}>🔴 오프라인</div>
+                <div className="status-item" onClick={() => manuallySetStatus('온라인')}>🟢 온라인</div>
+                <div className="status-item" onClick={() => manuallySetStatus('자리비움')}>🟠 자리 비움</div>
+                <div className="status-item" onClick={() => manuallySetStatus('오프라인')}>🔴 오프라인</div>
               </div>
             )}
           </div>
@@ -269,7 +258,8 @@ function LobbyPage() {
                   <ChatListPage 
                     setMessages     = { setMessages }
                     selectedRoom    = { selectedRoom }
-                    setSelectedRoom = { setSelectedRoom } /> 
+                    setSelectedRoom = { setSelectedRoom } 
+                    currentUserStatus={userStatus} /> 
                 : <FriendListPage /> }
             </div>
           </div>

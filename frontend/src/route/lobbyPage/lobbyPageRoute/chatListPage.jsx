@@ -15,7 +15,7 @@ import { useChatDeleteRoom }    from '../../../hooks/chat/useChatDeleteRoom.js'
 import { useNewChatNotice }     from '../../../hooks/chatNotice/useNewChatNotice.js';
 import { useChatGetRooms }      from '../../../hooks/chat/useChatGetRooms.js'
 import { useChatListGet   }     from '../../../hooks/chatList/useChatListGet.js'
-// ❌ useUserStatusReporter 훅 import 제거
+// useUserStatusReporter 훅 import 제거
 
 // Modal import
 import UserHistoryModal  from '../../../modal/userHistory/UserHistoryModal.jsx'
@@ -47,7 +47,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, currentUserS
   useChatGetRooms(userData, setChatList);                       // 로그인한 유저의 채팅방 가져오는 커스텀훅
   useUnReadChatCount(userData, chatList, setUnreadCounts);      // 초기에 저장된 채팅방의 안읽은 메세지 개수 카운트 커스텀훅
   useNewChatNotice(userData, selectedRoom, setUnreadCounts);    // 저장한 채팅방에 새로운 메세지 도착시 알림개수 처리하는 커스텀 훅훅 
-  // ❌ 훅으로 상태 재계산하지 않음. 로비에서 받은 currentUserStatus 사용.
+  // 훅으로 상태 재계산하지 않음. 로비에서 받은 currentUserStatus 사용.
 
   // -- Function
   const getChatUserList = useChatGetUserList(setChatUserList);  // 선택한 채팅방의 유저 목록을 불러오는 함수

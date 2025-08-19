@@ -8,6 +8,7 @@ import com.example.backend.Service.ChatRoomService;
 import com.example.backend.Websocket.RealTimeUserManagement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -205,6 +206,25 @@ public class ChatController {
 
         // DB 저장
         return chatRoomRepository.save(room);
+    }
+
+    @GetMapping("/rooms/{id}")
+    public ResponseEntity<?> getRoom(@PathVariable String id) {
+        return chatRoomRepository.findDetailById(id).map(cr -> {
+            // 태그 문자열 배열 만들어서 같이 내려주고 싶으면 DTO로 변환 (간단 DTO)
+                    var tagNames = cr.getChatRoomTags().stream()
+                            .map(ct -> ct.getGameTag() != null ? ct.getGameTag().getTagName() : null)
+                            .filter(Objects::nonNull)
+                            .distinct()
+                            .toList();
+
+                    Map<String, Object> dto = new HashMap<>();
+                    dto.put("id", cr.getId());
+                    dto.put("name", cr.getName());
+                    dto.put("gameName", cr.getGameName());
+                    dto.put("tagNames", tagNames);
+                    return ResponseEntity.ok(dto);
+                }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
 

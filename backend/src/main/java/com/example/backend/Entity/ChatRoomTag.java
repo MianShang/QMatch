@@ -1,5 +1,6 @@
 package com.example.backend.Entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,6 +15,7 @@ public class ChatRoomTag {
 
     @ManyToOne
     @JoinColumn(name = "chatroom_id")
+    @JsonManagedReference
     private ChatRoom chatRoom;
 
     @ManyToOne

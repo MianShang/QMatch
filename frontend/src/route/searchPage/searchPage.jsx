@@ -2,9 +2,11 @@ import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './searchPage.css';
+import { useNavigate } from 'react-router-dom';
 
 // 로그인 체크용 Context API import
 import { LogContext } from '../../App.jsx';
+import JoinRoomModal from '../../modal/joinRoomModal/JoinRoomModal.jsx';
 
 // custom hook import
 import { useLoginCheck } from '../../hooks/login/useLoginCheck.js';
@@ -13,10 +15,13 @@ import { useLoginCheck } from '../../hooks/login/useLoginCheck.js';
 import CreateRoomModal from '../../modal/CreateRoomModal/CreateRoomModal.jsx';
 
 function SearchPage() {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [rooms, setRooms] = useState([]);
   const [gameName, setGameName] = useState('');
   const [openModal, setOpenModal] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState(null);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [gametag, setGameTag] = useState('ALL');
   const [selectedTags, setSelectedTags] = useState([]); // number[]
@@ -56,6 +61,25 @@ function SearchPage() {
     }).then(res => setRooms(res.data));
   }, [gametag, selectedTags, searchKeyword]); */
 
+  // 방 입장 모달에서 "입장하기" 버튼 클릭 시 실행
+  function handleJoinRoom(payload) {
+    const { roomId, chatName, gameName, tagNames } = payload || {};
+    if (!roomId) {
+      console.error('room id 없음:', payload);
+      setJoinOpen(false);
+      setSelectedRoom(null);
+      return;
+    }
+
+    // 서버에 유저-채팅방 매핑 저장
+    saveUserChatRoom(roomId);
+
+    // 2) (선택) 채팅 화면으로 라우팅
+    navigate('/', { state: { roomId, chatName, gameName, tagNames } });
+
+    setJoinOpen(false);
+    setSelectedRoom(null);
+  }
 
   function saveUserChatRoom(roomId) {
     axios.post('/api/add/user/chatroom', {
@@ -107,7 +131,7 @@ fetch(`/api/tags/${gametag}`)
 }
 
 
-function chatTagRoom() {
+function chatTagRoom() {  
   if (!groupedTags || Object.keys(groupedTags).length === 0) {
     return null; // 아무것도 렌더링하지 않음
   }
@@ -143,6 +167,16 @@ function chatTagRoom() {
           onRoomCreated={(newRoom) => {
             setRooms(prev => [...prev, newRoom]);
           }}
+        />
+      )}
+
+      {/* 방 입장 모달 */}
+      {joinOpen && (
+        <JoinRoomModal
+          open={joinOpen}
+          onClose={function () { setJoinOpen(false); setSelectedRoom(null); }}
+          room={selectedRoom}
+          onJoin={handleJoinRoom}
         />
       )}
 
@@ -209,9 +243,9 @@ function chatTagRoom() {
                 rooms.map((room) => (
                   <div
                     key={room.id}
-                    onClick={() => { saveUserChatRoom(room.id); }}
+                    onClick={() => { setSelectedRoom(room); setJoinOpen(true); }}
                     style={{ color: "white", border: "1px solid", margin: "10px", height: "50px" }}>
-                    <div>{room.name}</div>
+                    <div>{room.chatName || room.name}</div>
                   </div>
                 ))
               }

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, String> {
     List<ChatRoom> findByNameContainingIgnoreCase(String keyword);
@@ -38,4 +39,11 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, String> {
 """)
     List<ChatRoom> findByGameAndKeyword(String gametag, @Param("keyword") String keyword);
 
+    @Query("""
+      select cr from ChatRoom cr
+      left join fetch cr.chatRoomTags crt
+      left join fetch crt.gameTag gt
+      where cr.id = :id
+    """)
+    Optional<ChatRoom> findDetailById(@Param("id") String id);
 }

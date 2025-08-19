@@ -1,5 +1,6 @@
 package com.example.backend.Entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,6 +20,7 @@ public class ChatRoom {
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)   // 채팅방과 태그의 연결 관계, ChatRoom ↔ ChatRoomTag (1:N)
     @JsonIgnore     // 순환 참조 방지
+    @JsonManagedReference
     private List<ChatRoomTag> chatRoomTags = new ArrayList<>();
 
     protected ChatRoom() {}

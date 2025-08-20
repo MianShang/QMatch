@@ -43,8 +43,7 @@ public class UserProfileService {
             throw new RuntimeException("파일 저장 실패요", e);
         }
 
-        // 절대경로를 URL로 저장 (http://localhost:8080/uploads/profile/파일명)
-        // 이렇게 안하니까 자꾸 접근이 안되는데 왜 일까 대체
+
         String imagePath = "/uploads/profile/" + fileName;
         user.setUserProfile(imagePath);
         //

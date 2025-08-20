@@ -18,7 +18,7 @@ import { useChatSender }      from '../../hooks/chat/useChatSender.js'
 import { useLoginCheck }      from '../../hooks/login/useLoginCheck.js';
 import { useLogout }          from '../../hooks/login/useLogout.js';
 
-// ✅ 상태 체크 훅 import 추가
+// 상태 체크 훅 import 추가
 import useUserStatusReporter from '../../hooks/status/useUserStatusReporter.js';
 
 function LobbyPage() {
@@ -26,7 +26,7 @@ function LobbyPage() {
   // 사이드바 프로필 이미지 클릭시 내 프로필 상세 정보를 보여주는 모달창을 띄어줌 
   const [showProfileModal, setShowProfileModal] = useState(false);
 
-  // ✅ 상태 패널 열림 여부
+  // 상태 패널 열림 여부
   const [isStatusPanelOpen, setIsStatusPanelOpen] = useState(false);
 
   // 사이드바 프로필 이미지 클릭시 중앙 div는 사라지게 - 기본값 true(중앙 div 표시)
@@ -52,10 +52,10 @@ function LobbyPage() {
   const logoutFunc  = useLogout();                                                  // 로그아웃 훅
   const sendMessage = useChatSender(client, selectedRoom, userData, input, setInput);   // 메세지 전송 훅 
 
-  // ✅ useUserStatusReporter 훅에서 반환되는 새로운 함수를 받음
+  // useUserStatusReporter 훅에서 반환되는 새로운 함수를 받음
   const [userStatus, manuallySetStatus] = useUserStatusReporter(userData.userId);
 
-  // ✅ 상태 아이콘 매핑 함수 추가
+  // 상태 아이콘 매핑 함수 추가
   function getStatusIcon(status) {
     if (status === '온라인') return '🟢';
     if (status === '자리비움') return '🟠';
@@ -140,7 +140,7 @@ function LobbyPage() {
         {/* 좌측 사이드바 - 좌측 사이드바는 showMidBar State를 기준으로 동적 조절*/}
         <div className={`contentStyle ${ showMidBar ? 'sideBarSize' : 'sideBarExpanded' }`}>
 
-                    {/* ✅ 현재 상태 표시 + Hover 패널 */}
+                    {/* 현재 상태 표시 + Hover 패널 */}
           <div 
             className="status-wrapper"
             onMouseEnter={() => setIsStatusPanelOpen(true)}
@@ -159,7 +159,7 @@ function LobbyPage() {
             {isStatusPanelOpen && (
               <div 
                 className="status-side-panel"
-                onMouseEnter={() => setIsStatusPanelOpen(true)}    // ✅ 패널 위에서는 안 닫힘
+                onMouseEnter={() => setIsStatusPanelOpen(true)}    // 패널 위에서는 안 닫힘
                 onMouseLeave={(e) => {
                   if (!e.currentTarget.contains(e.relatedTarget)) {
                     setIsStatusPanelOpen(false);

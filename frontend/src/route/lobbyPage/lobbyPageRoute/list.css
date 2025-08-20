@@ -281,3 +281,152 @@
   color: white;
   background-color: #272727;
 }
+
+/* ====== 추가: 참여자 패널(UI) ====== */
+.membersDrawerInline {
+  position: fixed;            /* 좌표는 JS에서 주입 */
+  width: 0;                   /* 닫힐 때 0 */
+  overflow: hidden;
+  background: #25282C;
+  transition: width .25s ease;
+  z-index: 20;
+  box-shadow: none;           /* 열릴 때만 그림자 주기 */
+  pointer-events: none;       /* 닫힌 상태에서 클릭 방지 */
+}
+.membersDrawerInline.open {
+  width: 280px;               /* 원하는 폭으로 조절 */
+  box-shadow: 2px 0 8px rgba(0,0,0,.25);
+  pointer-events: auto;
+}
+
+.membersDrawerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  font-weight: 600;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  color: #eaeaea;
+}
+
+.membersCloseBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #cfcfcf;
+}
+
+.membersListScroll {
+  overflow-y: auto;
+  height: calc(100% - 44px);
+  padding: 8px 10px;
+}
+
+.membersRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 8px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.03);
+  margin-bottom: 8px;
+  color: #eaeaea;
+}
+
+.membersName { font-size: 14px; }
+.membersDot { margin-left: 6px; }
+.membersMoreBtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 16px;
+  color: #d0d0d0;
+}
+
+.membersEmpty {
+  opacity: .7;
+  padding: 12px 8px;
+  font-size: 13px;
+  color: #cfcfcf;
+}
+
+/* 상단/카드에 추가된 참여자 버튼 */
+.membersIconBtn,
+.chatCardMembersBtn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  margin-left: 8px;
+  color: #6b5cff;   /* 보라 포인트 */
+}
+.membersIconBtn:hover,
+.chatCardMembersBtn:hover {
+  filter: brightness(1.2);
+}
+
+/* 패널이 열렸을 때 기존 리스트는 가려서 중복 노출 방지 */
+.membersDrawerInline.open .membersListScroll {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 그룹 오버레이가 패널 전체를 덮도록(헤더 포함) */
+.membersOverlayGrouped{
+  position: absolute;
+  inset: 0;                 /* top/right/bottom/left 모두 0 */
+  padding: 56px 10px 8px;   /* 헤더 높이만큼 top 패딩 줘서 내용은 헤더 아래로 */
+  z-index: 2;
+  background: #25282C;      /* 뒤 컨텐츠 완전히 가리기 */
+  overflow-y: auto;
+}
+
+/* 섹션 헤더(온라인/오프라인) 스타일 */
+.membersSectionHeader{
+  padding: 8px 6px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #e5e5e5;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  margin: 6px 4px 8px;
+}
+
+/* 오프라인 텍스트 톤다운 */
+.membersName--offline{
+  color: #9aa0a6;
+}
+
+/* 아이템 줄바꿈/겹침 방지 */
+.membersRow{
+  min-height: 40px;
+}
+.membersName{
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.membersDot{
+  flex: 0 0 auto;
+}
+
+/* 헤더를 오버레이 위로 올림 */
+.membersDrawerHeader{
+  position: relative;
+  z-index: 3;
+}
+
+/* 오버레이는 헤더 아래에서 시작 (헤더 높이에 맞춰 값 조절) */
+.membersOverlayGrouped{
+  z-index: 2;
+  top: 44px;      /* 헤더 높이가 44~56px이면 여기 값만 맞추면 됨 */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 8px 10px; /* 헤더 패딩 대신 내용 패딩만 */
+}

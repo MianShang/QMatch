@@ -242,3 +242,43 @@
     .chatButtonStyle:hover {
         background-color: #4752c4;
     }
+
+    /* ================================Status Popup============================= */
+
+/* 상태 전체 래퍼 */
+.status-wrapper {
+    position: relative;
+    display: inline-block;
+    margin: 10px;
+    padding: 0;
+}
+
+/* 상태 선택 패널 */
+.status-side-panel {
+    position: absolute;
+    left: 75px; /* 사이드바 오른쪽 */
+    top: 0;
+    background: #2f3136;
+    border-radius: 8px;
+    padding: 10px;
+    width: 180px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    color: white;
+    z-index: 300;
+}
+
+/* 상태 아이템 */
+.status-side-panel .status-item {
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    font-size: 14px;
+}
+
+.status-side-panel .status-item:hover {
+    background: #3a3c43;
+    border-radius: 4px;
+}

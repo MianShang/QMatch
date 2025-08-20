@@ -1,6 +1,9 @@
 import { useState, useContext } from 'react'
 import './list.css'
 
+// 위치 측정을 위해 별도 import (기존 줄 수정 없이 추가)
+import { useEffect, useRef } from 'react'
+
 // 전역 유저 State 데이터 가져오기용 Comtext API import
 import { LogContext } from '../../../App.jsx'
 
@@ -11,7 +14,8 @@ import { useChatGetUserList }   from '../../../hooks/chat/useChatGetUserList.js'
 import { useChatDeleteRoom }    from '../../../hooks/chat/useChatDeleteRoom.js'
 import { useNewChatNotice }     from '../../../hooks/chatNotice/useNewChatNotice.js';
 import { useChatGetRooms }      from '../../../hooks/chat/useChatGetRooms.js'
-import { useChatListGet }       from '../../../hooks/chatList/useChatListGet.js'
+import { useChatListGet   }     from '../../../hooks/chatList/useChatListGet.js'
+// useUserStatusReporter 훅 import 제거
 
 // Modal import
 import UserHistoryModal  from '../../../modal/userHistory/UserHistoryModal.jsx'
@@ -19,7 +23,7 @@ import UserHistoryModal  from '../../../modal/userHistory/UserHistoryModal.jsx'
 import VoiceChat from './VoiceChat';
 
 
-function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
+function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, currentUserStatus }) {
 
   // State 보관함 해체
   const { userData } = useContext(LogContext);
@@ -35,12 +39,17 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
   const [chatUserList, setChatUserList]     = useState([]);     // 채팅리스트 확장시 유저를 담을 State
   const [chatList, setChatList]             = useState([]);     // 저장한 채팅방 리스트 State 
 
+  /* 참여자 패널 열림/좌표 상태 및 참조 */
+  const [isMembersOpen, setIsMembersOpen] = useState(false);
+  const [panelRect, setPanelRect] = useState({ left: 0, top: 0, height: 0 });
+  const leftColRef = useRef(null);
 
   // 커스텀훅 가져오기
   // -- UseEffect
   useChatGetRooms(userData, setChatList);                       // 로그인한 유저의 채팅방 가져오는 커스텀훅
   useUnReadChatCount(userData, chatList, setUnreadCounts);      // 초기에 저장된 채팅방의 안읽은 메세지 개수 카운트 커스텀훅
   useNewChatNotice(userData, selectedRoom, setUnreadCounts);    // 저장한 채팅방에 새로운 메세지 도착시 알림개수 처리하는 커스텀 훅훅 
+  // 훅으로 상태 재계산하지 않음. 로비에서 받은 currentUserStatus 사용.
 
   // -- Function
   const getChatUserList = useChatGetUserList(setChatUserList);  // 선택한 채팅방의 유저 목록을 불러오는 함수
@@ -73,11 +82,55 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
     }
   }
 
+  // 상태 아이콘 매핑 함수 추가
+  function getStatusIcon(status) {
+    if (status === '온라인') return '🟢';
+    if (status === '자리비움') return '🟠';
+    return '🔴';
+  }
 
-  
+  /* 상태 그룹화(온라인/오프라인) */
+  function splitMembersByStatus(list){
+    // 현재 로그인된 유저의 상태를 useUserStatusReporter 훅이 반환하는 상태로 업데이트
+    const updatedList = list.map(u => 
+      u.userId === userData.userId ? { ...u, status: currentUserStatus } : u
+    );
+    const online  = updatedList.filter(u => u.status === '온라인');
+    const away    = updatedList.filter(u => u.status === '자리비움');
+    const offline = updatedList.filter(u => u.status === '오프라인' || !u.status);
+    return { online, away, offline };
+  }
+
+  /* 패널을 왼쪽 리스트 오른쪽 경계(=채팅 내부 시작점)에 붙이기 위한 위치 측정 */
+  function measurePanel() {
+    if (!leftColRef.current) return;
+    const r = leftColRef.current.getBoundingClientRect();
+    setPanelRect({ left: r.right, top: r.top, height: r.height });
+  }
+
+  /* 패널 열릴 때/리사이즈 시 위치 재측정 */
+  useEffect(() => {
+    if (!isMembersOpen) return;
+    measurePanel();
+    const onResize = () => measurePanel();
+    window.addEventListener('resize', onResize);
+    const id = setInterval(measurePanel, 300);
+    return () => { window.removeEventListener('resize', onResize); clearInterval(id); };
+  }, [isMembersOpen]);
+
+  /* 열기/닫기 헬퍼 */
+  function openMembers(roomId){
+    setIsMembersOpen(true);
+    getChatUserList(roomId);
+    setTimeout(measurePanel, 0);
+  }
+  function closeMembers(){
+    setIsMembersOpen(false);
+  }
+
 
   return (
-    <div className='listRouteSize contentStyle'>
+    <div className='listRouteSize contentStyle' ref={leftColRef}>
       {
         isUserHistoryOpen ?  
         <UserHistoryModal 
@@ -88,6 +141,102 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
         /> 
         : null
       }
+
+      {/* 참여자 패널(채팅창 내부 시작점에 맞춰 뜸) */}
+      <div
+        className={`membersDrawerInline ${isMembersOpen ? 'open' : ''}`}
+        style={{
+          left: panelRect.left + 'px',
+          top: panelRect.top + 'px',
+          height: panelRect.height + 'px'
+        }}
+      >
+        <div className="membersDrawerHeader">
+          <span>참여자</span>
+          <button className="membersCloseBtn" onClick={closeMembers} title="닫기">✕</button>
+        </div>
+        <div className="membersListScroll">
+          {chatUserList.map(u => (
+            <div className="membersRow" key={u.userId}>
+              <span className="membersName">
+                {u.userId}
+                {u.status && <span className="membersDot">{getStatusIcon(u.status)}</span>}
+              </span>
+              <button
+                className="membersMoreBtn"
+                onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
+                title="상세보기"
+              >…</button>
+            </div>
+          ))}
+          {chatUserList.length === 0 && (
+            <div className="membersEmpty">참여자가 없습니다.</div>
+          )}
+        </div>
+
+        {/* 상태별 그룹 오버레이 (기존 리스트 위에 덮어씀) */}
+        <div className="membersOverlayGrouped">
+          {(() => {
+            const { online, away, offline } = splitMembersByStatus(chatUserList);
+
+            return (
+              <>
+                {/* 온라인 */}
+                <div className="membersSectionHeader">온라인 — {online.length}</div>
+                {online.map(u => (
+                  <div className="membersRow" key={'on-' + u.userId}>
+                    <span className="membersName">
+                      {u.userId}
+                      <span className="membersDot">{getStatusIcon(u.status)}</span>
+                    </span>
+                    <button
+                      className="membersMoreBtn"
+                      onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
+                      title="상세보기"
+                    >…</button>
+                  </div>
+                ))}
+
+                {/* 자리비움 */}
+                <div className="membersSectionHeader" style={{ marginTop: 10 }}>
+                  자리비움 — {away.length}
+                </div>
+                {away.map(u => (
+                  <div className="membersRow" key={'away-' + u.userId}>
+                    <span className="membersName">
+                      {u.userId}
+                      <span className="membersDot">{getStatusIcon(u.status)}</span>
+                    </span>
+                    <button
+                      className="membersMoreBtn"
+                      onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
+                      title="상세보기"
+                    >…</button>
+                  </div>
+                ))}
+
+                {/* 오프라인 */}
+                <div className="membersSectionHeader" style={{ marginTop: 10 }}>
+                  오프라인 — {offline.length}
+                </div>
+                {offline.map(u => (
+                  <div className="membersRow" key={'off-' + u.userId}>
+                    <span className="membersName membersName--offline">
+                      {u.userId}
+                      <span className="membersDot">{getStatusIcon(u.status)}</span>
+                    </span>
+                    <button
+                      className="membersMoreBtn"
+                      onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
+                      title="상세보기"
+                    >…</button>
+                  </div>
+                ))}
+              </>
+            );
+          })()}
+        </div>
+      </div>
 
       {/* 실시간 참여중인 채팅방 상단 표시 */}
       { selectedRoom ?
@@ -100,6 +249,13 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
             {/* 실시간 참여중인 채팅방 이름 표시 */}
             <p>{ selectedRoom ? selectedRoom.name : null }</p>
             <p></p>
+
+            {/* 선택된 방 참여자 패널 열기 버튼 */}
+            <button
+              className="membersIconBtn"
+              title="참여자 보기"
+              onClick={() => selectedRoom && openMembers(selectedRoom.id)}
+            >👥</button>
           </div>  
          
           {/* 더보기 클릭시 채팅방 구독한 유저 리스트 표시 */}
@@ -120,6 +276,12 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
                     />
                   )}
 
+                  {/* 유저 아이디 + 상태 아이콘 추가 */}
+                  <p>
+                    { item.userId }
+                    {/* 👉 여기서는 상태 표시 제거 (오른쪽 패널에서만 상태 표시) */}
+                  </p>
+                  
                   <div className="MoreButtonStyle" onClick={() => {
                     setHistoryUserId(item.userId);
                     setUserHistoryOpen(true);
@@ -167,6 +329,14 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
 
                 {/* 채팅방 이름 */}
                 <span className="chatCardTitle">{ item.chatRoom.name } </span>
+
+                {/* 카드에서 바로 참여자 패널 열기 */}
+                <button
+                  className="chatCardMembersBtn"
+                  title="참여자 보기"
+                  onClick={(e) => { e.stopPropagation(); openMembers(item.chatRoom.id); }}
+                >👥</button>
+
                 {/* 채팅방 삭제 */}
                 <span  className="chatCardDelete"
                   onClick={(e) => { e.stopPropagation(); deleteUserRoom(item.id); }}>
@@ -181,7 +351,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages }) {
                 <span className="chatCardLastMessage">안읽은 메세지가 있습니다</span>
               </div>
               : null }
-          </div>)
+            </div>)
         })}
       </div>
     </div>

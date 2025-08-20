@@ -22,5 +22,26 @@ public class ChatRoomService {
     public List<ChatRoom> findByKeyword(String keyword) {
         return chatRoomRepository.findByNameContainingIgnoreCase(keyword);
     }
+
+
+    // 채팅방 Tag 조회
+    public List<ChatRoom> findByGameAndTag(List<Long> tagIds, String gametag)
+    {
+        return chatRoomRepository.findByGameAndTagIdsIn(tagIds, gametag);
+    }
+
+    public List<ChatRoom> findByGameName(String gameName) {
+        return chatRoomRepository.findByGameName(gameName);
+    }
+
+    public List<ChatRoom> findByKeywordAndGameAndTag(List<Long> tagIds, String gametag, String keyword)
+    {
+        return chatRoomRepository.findByGameAndKeywordAndTagIdsIn(tagIds, gametag, keyword);
+    }
+
+    public List<ChatRoom> findByGameAndKeyword(String gametag, String keyword)
+    {
+        return chatRoomRepository.findByGameAndKeyword(gametag, keyword);
+    }
 }
 

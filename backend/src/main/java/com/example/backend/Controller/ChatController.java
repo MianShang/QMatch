@@ -4,16 +4,17 @@ package com.example.backend.Controller;
 import com.example.backend.Dto.Request.ChatRoomRequestDto;
 import com.example.backend.Entity.*;
 import com.example.backend.Repository.*;
+import com.example.backend.Service.ChatRoomService;
 import com.example.backend.Websocket.RealTimeUserManagement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.context.event.EventListener;
@@ -42,6 +43,8 @@ public class ChatController {
     private final Map<String, Set<String>> activeUsersByRoom = new ConcurrentHashMap<>();
     @Autowired
     private ChatRoomTagRepository chatRoomTagRepository;
+    @Autowired
+    private ChatRoomService chatRoomService;
 
 
     // 구독된 채팅방에 메세지 보내는 API
@@ -140,15 +143,32 @@ public class ChatController {
 
     // 채팅방 전체 조회 API
     @GetMapping("/rooms")
-    public List<ChatRoom> getChatRooms(@RequestParam(required = false) String keyword) {
-
-        if (keyword == null || keyword.isBlank()) {
-            // 채팅방 전체 조회
-            return chatRoomRepository.findAll();
-        } else {
+    public List<ChatRoom> getChatRooms(
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false, name = "tags") List<Long> tags, // 프론트가 문자열이면 유지
+            @RequestParam(required = false, name = "gametag") String gametag
+    ) {
+        // 1) 키워드
+        if (keyword != null && !keyword.isBlank() && gametag.equals("ALL")) {
             return chatRoomRepository.findByNameContainingIgnoreCase(keyword);
         }
+        else if ((keyword != null && !keyword.isBlank()) && tags == null) {
+            return chatRoomService.findByGameAndKeyword(gametag, keyword);
+        }
+        else if ((keyword != null && !keyword.isBlank()) && (tags != null && !tags.isEmpty())) {
+            return chatRoomService.findByKeywordAndGameAndTag(tags, gametag, keyword);
+        }
+        // 2) 태그
+        else if (tags != null  && !tags.isEmpty()) {
+            return chatRoomService.findByGameAndTag(tags, gametag);
+        }
+        else if(tags == null && !gametag.equals("ALL")) {
+            return chatRoomService.findByGameName(gametag);
+        }
+        // 3) 전체
+        return chatRoomRepository.findAll();
     }
+
 
     // 채팅방 생성
     @PostMapping("/rooms")
@@ -186,6 +206,25 @@ public class ChatController {
 
         // DB 저장
         return chatRoomRepository.save(room);
+    }
+
+    @GetMapping("/rooms/{id}")
+    public ResponseEntity<?> getRoom(@PathVariable String id) {
+        return chatRoomRepository.findDetailById(id).map(cr -> {
+            // 태그 문자열 배열 만들어서 같이 내려주고 싶으면 DTO로 변환 (간단 DTO)
+                    var tagNames = cr.getChatRoomTags().stream()
+                            .map(ct -> ct.getGameTag() != null ? ct.getGameTag().getTagName() : null)
+                            .filter(Objects::nonNull)
+                            .distinct()
+                            .toList();
+
+                    Map<String, Object> dto = new HashMap<>();
+                    dto.put("id", cr.getId());
+                    dto.put("name", cr.getName());
+                    dto.put("gameName", cr.getGameName());
+                    dto.put("tagNames", tagNames);
+                    return ResponseEntity.ok(dto);
+                }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 }
 

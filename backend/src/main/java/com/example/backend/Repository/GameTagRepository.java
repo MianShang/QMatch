@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface GameTagRepository extends JpaRepository<GameTag, Long> {
     List<GameTag> findByGameName(String gameName);
-    boolean existsByGameNameAndTagName(String gameName, String tagName);
+    boolean existsByGameNameAndTagNameAndCategory(String gameName, String tagName, String category);
+
 }

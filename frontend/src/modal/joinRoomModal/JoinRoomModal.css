@@ -1,0 +1,116 @@
+/* 모달 전체 배경 스타일 */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+/* 모달 내부 컨테이너 */
+.modalContent {
+  background: rgb(43,47,53);
+  border-radius: 12px;
+  width: 420px;              /* 사진 크기 유지 */
+  padding: 20px 25px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow-y: auto;
+  color: #fff;
+}
+
+/* 모달 상단 헤더 */
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #bbb;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+.closeBtn:hover {
+  color: #fff;
+}
+
+/* 입력 영역 */
+.modalInContent {
+  flex-grow: 1;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 15px;
+}
+
+.formGroup label {
+  font-weight: bold;
+  margin-bottom: 6px;
+  color: #ddd;
+}
+
+/* 정보 텍스트 */
+.infoText {
+  background: #1e1f23;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #eee;
+  font-size: 1rem;
+}
+
+/* 태그 영역 */
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tagBadge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #2c2f36;
+  color: #fff;
+  font-size: 0.85rem;
+}
+
+/* 하단 버튼 */
+.footerArea {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.joinBtn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  background-color: #4CAF50;
+  color: white;
+  transition: background-color 0.2s ease;
+}
+
+.joinBtn:hover {
+  background-color: #45a049;
+}

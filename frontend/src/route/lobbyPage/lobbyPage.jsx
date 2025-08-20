@@ -18,6 +18,7 @@
   import { useChatSender }      from '../../hooks/chat/useChatSender.js'
   import { useLoginCheck }      from '../../hooks/login/useLoginCheck.js';
   import { useLogout }          from '../../hooks/login/useLogout.js';
+  import { useLocation }        from 'react-router-dom';
 
   function LobbyPage() {
 
@@ -124,7 +125,42 @@
 
     }
     
-    
+    const location = useLocation();                                 // 방 입장 시 전달된 state 확인
+    const [listRefreshTick, setListRefreshTick] = useState(0);      // 방 목록 강제 리렌더링 트리거
+
+    useEffect(() => {
+      const s = location.state;
+      if (!s?.roomId) return;
+
+      setSelectedRoom(undefined);
+      setMessages([]);
+      setShowMidBar(true);
+
+      (async () => {
+        try {
+          const id = encodeURIComponent(s.roomId);
+          const { data } = await axios.get(`/api/chat/rooms/${id}`);
+          // 서버에서 상세 방 정보를 가져와 state 업데이트
+          setSelectedRoom({
+            id: data.id,
+            name: data.name ?? s.chatName,
+            gameName: data.gameName ?? s.gameName,
+            tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
+          });
+        } catch (e) {
+          console.warn('방 상세 조회 실패. state로 대체:', e);
+          // 서버 조회 실패 시, props(state) 값으로 대체
+          setSelectedRoom({
+            id: s.roomId,
+            name: s.chatName,
+            gameName: s.gameName,
+            tagNames: s.tagNames ?? [],
+          });
+        } finally {
+          setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
+        }
+      })();
+    }, [location.key]);
 
     return (
       <>
@@ -142,7 +178,7 @@
             setShowProfileModal(true);
           }
         }}
-          className={`${ showMidBar ? 'sideBarImgSize' : 'sideBarImgSizeExpanded' }`} />
+        className={`${ showMidBar ? 'sideBarImgSize' : 'sideBarImgSizeExpanded' }`} />
 
           
           {/* showMidBar false일시 정보 수정창 표시 */}
@@ -222,7 +258,8 @@
                   <ChatListPage 
                     setMessages     = { setMessages }
                     selectedRoom    = { selectedRoom }
-                    setSelectedRoom = { setSelectedRoom } /> 
+                    setSelectedRoom = { setSelectedRoom } 
+                    refreshTick     = { listRefreshTick } />
                 : <FriendListPage /> }
             </div>
           </div>

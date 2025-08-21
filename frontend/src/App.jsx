@@ -22,7 +22,7 @@ function App() {
   let [userData, setUserData] = useState({userId : null,
                                           userName : null,
                                           userEmail : null });
-                              
+                                                                     
   // 새로고침 or 첫 로딩시 자동 실행
   useEffect(() => {
     // 세션 유효성 검사 API

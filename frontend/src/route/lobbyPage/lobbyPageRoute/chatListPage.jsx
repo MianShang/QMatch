@@ -1,84 +1,73 @@
-import { useState, useContext } from 'react'
-import './list.css'
+import { useState, useContext, useEffect, useRef } from 'react';
+import './list.css';
 
-// 위치 측정을 위해 별도 import (기존 줄 수정 없이 추가)
-import { useEffect, useRef } from 'react'
-
-// 전역 유저 State 데이터 가져오기용 Comtext API import
-import { LogContext } from '../../../App.jsx'
+// 전역 유저 State 데이터 가져오기용 Context API import
+import { LogContext } from '../../../App.jsx';
 
 // Custom Hook import
 import { useSetReadUnReadChat } from '../../../hooks/chatNotice/useSetReadUnReadChat.js';
-import { useUnReadChatCount }   from '../../../hooks/chatNotice/useUnReadChatCount.js';
-import { useChatGetUserList }   from '../../../hooks/chat/useChatGetUserList.js'
-import { useChatDeleteRoom }    from '../../../hooks/chat/useChatDeleteRoom.js'
-import { useNewChatNotice }     from '../../../hooks/chatNotice/useNewChatNotice.js';
-import { useChatGetRooms }      from '../../../hooks/chat/useChatGetRooms.js'
-import { useChatListGet   }     from '../../../hooks/chatList/useChatListGet.js'
-// useUserStatusReporter 훅 import 제거
+import { useUnReadChatCount } from '../../../hooks/chatNotice/useUnReadChatCount.js';
+import { useChatGetUserList } from '../../../hooks/chat/useChatGetUserList.js'
+import { useChatDeleteRoom } from '../../../hooks/chat/useChatDeleteRoom.js'
+import { useNewChatNotice } from '../../../hooks/chatNotice/useNewChatNotice.js';
+import { useChatGetRooms } from '../../../hooks/chat/useChatGetRooms.js' // 이 훅을 다시 사용합니다.
+import { useChatListGet } from '../../../hooks/chatList/useChatListGet.js'
 
-// Modal import
-import UserHistoryModal  from '../../../modal/userHistory/UserHistoryModal.jsx'
+// Modal
+import UserHistoryModal from '../../../modal/userHistory/UserHistoryModal.jsx'
 
+// VoiceChat 컴포넌트 추가
 import VoiceChat from './VoiceChat';
 
+//포털
+import DropdownPortal from './dropDownPotal.jsx'
 
-function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, currentUserStatus }) {
-
+function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfile, currentUserStatus }) {
   // State 보관함 해체
   const { userData } = useContext(LogContext);
 
-  // State 선언
-  const [sendToModalGameName , setSendToModalGameName] = useState();        // 모달창에 전송할 게임명
-  const [isUserHistoryOpen, setUserHistoryOpen]        = useState(false);    // 모달창 열림 여부
-  const [historyUserId, setHistoryUserId]              = useState();       // 모달창에 전송할 해당 유저 ID
+  // State
+  const [sendToModalGameName, setSendToModalGameName] = useState(null);
+  const [isUserHistoryOpen, setUserHistoryOpen] = useState(false);
+  const [historyUserId, setHistoryUserId] = useState(null);
 
+  const [chatListExtend, setChatListExtend] = useState(false);
+  const [unreadCounts, setUnreadCounts] = useState({});
+  const [chatUserList, setChatUserList] = useState([]);
+  
+  // chatList를 다시 로컬 state로 관리합니다.
+  const [chatList, setChatList] = useState([]);
 
-  const [chatListExtend, setChatListExtend] = useState(false);  // 채팅 리스트 확장 css 여부 State
-  const [unreadCounts, setUnreadCounts]     = useState({});     // 채팅방별 안읽은 메세지 개수 담을 State
-  const [chatUserList, setChatUserList]     = useState([]);     // 채팅리스트 확장시 유저를 담을 State
-  const [chatList, setChatList]             = useState([]);     // 저장한 채팅방 리스트 State 
+  // 포털용 전역 드롭다운 
+  const [menu, setMenu] = useState(null);
+
 
   /* 참여자 패널 열림/좌표 상태 및 참조 */
   const [isMembersOpen, setIsMembersOpen] = useState(false);
   const [panelRect, setPanelRect] = useState({ left: 0, top: 0, height: 0 });
   const leftColRef = useRef(null);
 
-  // 커스텀훅 가져오기
-  // -- UseEffect
-  useChatGetRooms(userData, setChatList);                       // 로그인한 유저의 채팅방 가져오는 커스텀훅
-  useUnReadChatCount(userData, chatList, setUnreadCounts);      // 초기에 저장된 채팅방의 안읽은 메세지 개수 카운트 커스텀훅
-  useNewChatNotice(userData, selectedRoom, setUnreadCounts);    // 저장한 채팅방에 새로운 메세지 도착시 알림개수 처리하는 커스텀 훅훅 
-  // 훅으로 상태 재계산하지 않음. 로비에서 받은 currentUserStatus 사용.
+  // 커스텀훅
+  // useChatGetRooms 훅을 다시 호출하여 chatList를 채웁니다.
+  useChatGetRooms(userData, setChatList);                      // 로그인한 유저의 채팅방 가져오는 커스텀훅
+  useUnReadChatCount(userData, chatList, setUnreadCounts);     // 초기에 저장된 채팅방의 안읽은 메세지 개수 카운트 커스텀훅
+  useNewChatNotice(userData, selectedRoom, setUnreadCounts);   // 저장한 채팅방에 새로운 메세지 도착시 알림개수 처리하는 커스텀 훅 
 
-  // -- Function
-  const getChatUserList = useChatGetUserList(setChatUserList);  // 선택한 채팅방의 유저 목록을 불러오는 함수
-  const deleteUserRoom  = useChatDeleteRoom();                  // 저장한 채팅방 지우는 함수
-  const getChatList     = useChatListGet();                     // 실시간으로 구독한 채팅방의 채팅 목록 가져오는 함수
-  const setRead         = useSetReadUnReadChat(userData);       // 채팅방 입장시 해당 채팅방의 메세지를 읽음 처리
+  const getChatUserList = useChatGetUserList(setChatUserList);
+  const deleteUserRoom = useChatDeleteRoom();
+  const getChatList = useChatListGet();
+  const setRead = useSetReadUnReadChat(userData);
 
 
-  // 채팅방 속성 중 게임 이름에 따른 아이콘 세팅 함수
-  function setGameIcon(gameName){
-    switch(gameName)
-    {
-      case "overwatch" :
-        return "/gameIcons/overwatch_Icon.png";
-
-      case "lol" :
-        return "/gameIcons/lol_Icon.png";
-
-      case "dnf" :
-        return "/gameIcons/dnf_Icon.png";
-
-      case "maplestory" :
-        return "/gameIcons/maplestory_Icon.png";
-
-       case "lostark" :
-        return "/gameIcons/lostark_Icon.png";
-
-      default:
-        return "https://placehold.co/45";
+  // 아이콘
+  function setGameIcon(gameName) {
+    switch (gameName) {
+      case "overwatch": return "/gameIcons/overwatch_Icon.png";
+      case "lol": return "/gameIcons/lol_Icon.png";
+      case "dnf": return "/gameIcons/dnf_Icon.png";
+      case "maplestory": return "/gameIcons/maplestory_Icon.png";
+      case "lostark": return "/gameIcons/lostark_Icon.png";
+      default: return "https://placehold.co/45";
     }
   }
 
@@ -90,13 +79,13 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, currentUserS
   }
 
   /* 상태 그룹화(온라인/오프라인) */
-  function splitMembersByStatus(list){
+  function splitMembersByStatus(list) {
     // 현재 로그인된 유저의 상태를 useUserStatusReporter 훅이 반환하는 상태로 업데이트
-    const updatedList = list.map(u => 
+    const updatedList = list.map(u =>
       u.userId === userData.userId ? { ...u, status: currentUserStatus } : u
     );
-    const online  = updatedList.filter(u => u.status === '온라인');
-    const away    = updatedList.filter(u => u.status === '자리비움');
+    const online = updatedList.filter(u => u.status === '온라인');
+    const away = updatedList.filter(u => u.status === '자리비움');
     const offline = updatedList.filter(u => u.status === '오프라인' || !u.status);
     return { online, away, offline };
   }
@@ -119,28 +108,27 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, currentUserS
   }, [isMembersOpen]);
 
   /* 열기/닫기 헬퍼 */
-  function openMembers(roomId){
+  function openMembers(roomId) {
     setIsMembersOpen(true);
     getChatUserList(roomId);
     setTimeout(measurePanel, 0);
   }
-  function closeMembers(){
+  function closeMembers() {
     setIsMembersOpen(false);
   }
 
 
   return (
     <div className='listRouteSize contentStyle' ref={leftColRef}>
-      {
-        isUserHistoryOpen ?  
-        <UserHistoryModal 
-          sendToModalGameName = { sendToModalGameName }
-          setUserHistoryOpen  = { setUserHistoryOpen } 
-          historyUserId       = { historyUserId }
-          
-        /> 
-        : null
-      }
+
+      {/* 전적 모달 */}
+      {isUserHistoryOpen && (
+        <UserHistoryModal
+          sendToModalGameName={sendToModalGameName}
+          setUserHistoryOpen={setUserHistoryOpen}
+          historyUserId={historyUserId}
+        />
+      )}
 
       {/* 참여자 패널(채팅창 내부 시작점에 맞춰 뜸) */}
       <div
@@ -238,97 +226,92 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, currentUserS
         </div>
       </div>
 
-      {/* 실시간 참여중인 채팅방 상단 표시 */}
-      { selectedRoom ?
-
+      {/* 상단: 선택한 채팅방 카드 */}
+      {selectedRoom && (
         <div className='selectCardStyle'>
-
           <div className='selectCardHeaderStyle'>
-
-            <img src={`${setGameIcon(selectedRoom.gameName)}`} alt="방 아이콘" className="chatCardImage" />
-            {/* 실시간 참여중인 채팅방 이름 표시 */}
-            <p>{ selectedRoom ? selectedRoom.name : null }</p>
+            <img src={setGameIcon(selectedRoom.gameName)} alt="방 아이콘" className="chatCardImage" />
+            <p>{selectedRoom.name}</p>
             <p></p>
-
             {/* 선택된 방 참여자 패널 열기 버튼 */}
             <button
               className="membersIconBtn"
               title="참여자 보기"
               onClick={() => selectedRoom && openMembers(selectedRoom.id)}
             >👥</button>
-          </div>  
-         
-          {/* 더보기 클릭시 채팅방 구독한 유저 리스트 표시 */}
-          { chatListExtend  ?
-            <div className='selectCardUserListStyle'>
-          
-              {/* 유저가 구독한 채팅방 리스트 출력 */}  
-              { chatUserList.map((item, i) => (
+          </div>
 
-                <div key = { item.userId } className='UserListContentStyle'>
-                  <p>{ item.userId }</p>
-                  
+          {/* 더보기 클릭시 채팅방 구독한 유저 리스트 표시 */}
+          {chatListExtend &&
+            <div className='selectCardUserListStyle'>
+              {chatUserList.map((item) => (
+                <div key={item.userId} className='UserListContentStyle'>
+                  <p>{item.userId}</p>
+
                   {/* 음성채팅 버튼 */}
                   {item.userId === userData.userId && selectedRoom && (
-                    <VoiceChat 
+                    <VoiceChat
                       channelName={selectedRoom.id}
-                      uid={userData.userId} 
+                      uid={userData.userId}
                     />
                   )}
 
-                  {/* 유저 아이디 + 상태 아이콘 추가 */}
-                  <p>
-                    { item.userId }
-                    {/* 👉 여기서는 상태 표시 제거 (오른쪽 패널에서만 상태 표시) */}
-                  </p>
-                  
-                  <div className="MoreButtonStyle" onClick={() => {
-                    setHistoryUserId(item.userId);
-                    setUserHistoryOpen(true);
-                  }}>…</div>
-                  
+                  {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                  <div
+                    className="MoreButtonStyle"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const menuWidth = 170;
+                      const gap = 8;
+                      setMenu({
+                        userId: item.userId,
+                        gameName: selectedRoom?.gameName,
+                        x: Math.max(8, rect.right - menuWidth),
+                        y: rect.bottom + gap,
+                      });
+                    }}
+                  >
+                    …
+                  </div>
                 </div>
-              )) }
-            </div> 
-          : null }
+              ))}
+            </div>
+          }
 
-            {/* 하단 버튼 */}
-            <div onClick={()=>{ 
-              setChatListExtend(!chatListExtend);   // 확장 여부 State 반전
-              getChatUserList(selectedRoom.id);     // 해당 채팅방의 유저 목록을 가져오는 커스텀 훅훅
-            }}>
-            { !chatListExtend ? <p>▼</p> : <p>▲</p> }
+          {/* 확장 토글 */}
+          <div onClick={() => {
+            setChatListExtend(!chatListExtend);
+            getChatUserList(selectedRoom.id);
+          }}>
+            {!chatListExtend ? <p>▼</p> : <p>▲</p>}
           </div>
         </div>
-      : null}
+      )}
 
-      
-     <div className="chatListScrollWrapper chatListScroll">
-
-        {/* 유저가 저장한 채팅방 리스트 출력 */}
-        { chatList.map((item, i) => {
-          
-          // 채팅방별 안읽은 메세지 개수 
+      {/* 하단: 저장된 채팅방 리스트 */}
+      <div className="chatListScrollWrapper chatListScroll">
+        {chatList.map((item) => {
           const unread = unreadCounts[item.chatRoom.id] || 0;
-          
           return (
-            <div key={item.id} className="chatCard"
-
-            onClick={() => { 
-              setSendToModalGameName(item.chatRoom.gameName);
-              setChatListExtend(false);
-              setSelectedRoom(item.chatRoom);
-              getChatList(item.chatRoom.id, setMessages);
-              setRead(item.chatRoom);
-              unreadCounts[item.chatRoom.id] = 0;
-            }}>
-
+            <div
+              key={item.id}
+              className="chatCard"
+              onClick={() => {
+                setSendToModalGameName(item.chatRoom.gameName);
+                setChatListExtend(false);
+                setSelectedRoom(item.chatRoom);
+                getChatList(item.chatRoom.id, setMessages);
+                setRead(item.chatRoom);
+                setUnreadCounts(prev => ({ ...prev, [item.chatRoom.id]: 0 }));
+              }}
+            >
               <div className="chatCardHeader">
                 {/* 게임 아이콘 */}
                 <img src={`${setGameIcon(item.chatRoom.gameName)}`} alt="방 아이콘" className="chatCardImage" />
 
                 {/* 채팅방 이름 */}
-                <span className="chatCardTitle">{ item.chatRoom.name } </span>
+                <span className="chatCardTitle">{item.chatRoom.name} </span>
 
                 {/* 카드에서 바로 참여자 패널 열기 */}
                 <button
@@ -338,22 +321,52 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, currentUserS
                 >👥</button>
 
                 {/* 채팅방 삭제 */}
-                <span  className="chatCardDelete"
+                <span className="chatCardDelete"
                   onClick={(e) => { e.stopPropagation(); deleteUserRoom(item.id); }}>
                   🗑
                 </span>
               </div>
 
-            {/* 안읽은 메세지 개수를 출력한다.*/}
-            { unread > 0 ?
-              <div className="chatCardFooter">
-                <span className="chatCardBadge">{ unread }</span>
-                <span className="chatCardLastMessage">안읽은 메세지가 있습니다</span>
-              </div>
-              : null }
+              {/* 안읽은 메세지 개수를 출력한다.*/}
+              {unread > 0 &&
+                <div className="chatCardFooter">
+                  <span className="chatCardBadge">{unread}</span>
+                  <span className="chatCardLastMessage">안읽은 메세지가 있습니다</span>
+                </div>
+              }
             </div>)
         })}
       </div>
+
+      {/* 드롭 다운을 최상단에 위치 */}
+      {menu && (
+        <DropdownPortal x={menu.x} y={menu.y} onClose={() => setMenu(null)}>
+          <div className="dropdownMenu">
+            <p onClick={() => {
+              onOpenProfile?.(menu.userId);
+              setMenu(null);
+            }}> 프로필 보기</p>
+
+            <p onClick={() => {
+              console.log('간단 스펙 보기', menu.userId);
+              setSendToModalGameName(menu.gameName);
+              setHistoryUserId(menu.userId);
+              setUserHistoryOpen(true)
+              setMenu(null);
+            }}>
+              간단 스펙 보기
+            </p>
+
+            <p onClick={() => { console.log('강퇴', menu.userId); setMenu(null); }}>
+              (방장) 강퇴하기
+            </p>
+
+            <p onClick={() => { console.log('차단', menu.userId); setMenu(null); }}>
+              차단하기
+            </p>
+          </div>
+        </DropdownPortal>
+      )}
     </div>
   )
 }

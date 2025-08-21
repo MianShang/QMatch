@@ -12,6 +12,8 @@ function createWindow() {
     }
   });
 
+  win.webContents.openDevTools();
+
   win.setMenu(null); // 기본 메뉴바 제거
 
   win.loadURL(

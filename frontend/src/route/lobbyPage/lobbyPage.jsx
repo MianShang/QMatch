@@ -1,31 +1,32 @@
-import { useRef,useState, useEffect, useContext, memo } from 'react'
-import { Routes, Route, Link, useNavigate  } from 'react-router-dom'
+import { useRef, useState, useEffect, useContext, memo } from 'react'
+import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom'
 import { Client } from '@stomp/stompjs';
 import axios from 'axios';
 import './lobbyPage.css'
 
 // 컴포넌트 import
-import ChatListPage   from './lobbyPageRoute/chatListPage.jsx';
+import ChatListPage from './lobbyPageRoute/chatListPage.jsx';
 import FriendListPage from './lobbyPageRoute/friendListPage.jsx';
-import MyProfile from './myProfile.jsx';
+import MyProfile from '../../feature/profile/myProfileModal.jsx';
 
 // 로그인 체크용 Context API import
 import { LogContext } from '../../App.jsx'
 
 // Custom hook import
-import { useChatSubscriber }  from '../../hooks/chat/useChatSubscriber.js'
-import { useChatSender }      from '../../hooks/chat/useChatSender.js'
-import { useLoginCheck }      from '../../hooks/login/useLoginCheck.js';
-import { useLogout }          from '../../hooks/login/useLogout.js';
-import { useLocation }        from 'react-router-dom';
+import { useChatSubscriber } from '../../hooks/chat/useChatSubscriber.js'
+import { useChatSender } from '../../hooks/chat/useChatSender.js'
+import { useLoginCheck } from '../../hooks/login/useLoginCheck.js';
+import { useLogout } from '../../hooks/login/useLogout.js';
 
 // 상태 체크 훅 import 추가
 import useUserStatusReporter from '../../hooks/status/useUserStatusReporter.js';
 
 function LobbyPage() {
 
-  // 사이드바 프로필 이미지 클릭시 내 프로필 상세 정보를 보여주는 모달창을 띄어줌 
+  // 사이드바 프로필 이미지 클릭시 내 프로필 상세 정보를 보여주는 모달창을 띄어줌
   const [showProfileModal, setShowProfileModal] = useState(false);
+  // 프로필 유저 구분
+  const [profileUserId, setProfileUserId] = useState(null);
 
   // 상태 패널 열림 여부
   const [isStatusPanelOpen, setIsStatusPanelOpen] = useState(false);
@@ -36,25 +37,25 @@ function LobbyPage() {
   // toggle State를 기준으로 채팅 / 친구 컴포넌트 교체 - 기본값 true (채팅)
   const [toggle, setToggle] = useState(true);
 
-  const [selectedRoom, setSelectedRoom] = useState();       // 실시간 참여한 채팅방 데이터를 담은 State
-  const [messages, setMessages]         = useState([]);     // 보낼 메세지
-  const [client, setClient]             = useState(null);   // client 연결 여부 State
-  const [input, setInput]               = useState('');     // input 입력 Sate         
+  const [selectedRoom, setSelectedRoom] = useState();      // 실시간 참여한 채팅방 데이터를 담은 State
+  const [messages, setMessages] = useState([]);      // 보낼 메세지
+  const [client, setClient] = useState(null);      // client 연결 여부 State
+  const [input, setInput] = useState('');      // input 입력 Sate      
 
   // State 보관함 해체
-  const {isLogIn, setIsLogIn, userData} = useContext(LogContext)
+  const { isLogIn, setIsLogIn, userData, setUserData } = useContext(LogContext)
 
   // 커스텀 훅 가져오기
   // --UseEffect
-  useLoginCheck(isLogIn);                                   // 로그인 체크 훅
+  useLoginCheck(isLogIn);                                          // 로그인 체크 훅
   useChatSubscriber(selectedRoom, setMessages, setClient, userData);    // 채팅방 구독 훅
 
   // -- Function
-  const logoutFunc  = useLogout();                                                  // 로그아웃 훅
+  const logoutFunc = useLogout();                                          // 로그아웃 훅
   const sendMessage = useChatSender(client, selectedRoom, userData, input, setInput);   // 메세지 전송 훅 
 
   // useUserStatusReporter 훅에서 반환되는 새로운 함수를 받음
-  const [userStatus, manuallySetStatus] = useUserStatusReporter(userData.userId);
+  const [userStatus, manuallySetStatus] = useUserStatusReporter(userData?.userId);
 
   // 상태 아이콘 매핑 함수 추가
   function getStatusIcon(status) {
@@ -68,118 +69,28 @@ function LobbyPage() {
 
   useEffect(() => {
     const container = messageContainerRef.current;
-
     if (container) {
       container.scrollTop = container.scrollHeight;
     }
   }, [messages]);
-
-  // 채팅방 속성 중 게임 이름에 따른 아이콘 세팅 함수
-  function setGameIcon(gameName){
-    switch(gameName)
-    {
-      case "overwatch" :
-        return "/gameIcons/overwatch_Icon.png";
-
-      case "lol" :
-        return "/gameIcons/lol_Icon.png";
-
-      case "valorant" :
-        return "/gameIcons/valorant_Icon.png";
-
-      case "maplestory" :
-        return "/gameIcons/maplestory_Icon.png";
-
-      case "lostark" :
-        return "/gameIcons/lostark_Icon.png";
-
-      case "dnf" :
-        return "/gameIcons/dnf_Icon.png";
-        
-      default:
-        return "https://placehold.co/45";
-    }
-  }
-
-  const [gameName, setGameName] = useState('');
-  const [gameCode, setGameCode] = useState('');
-  const [gameData, setGameData] = useState([]);
-
-  useEffect(()=>{
+  
+  //프로필 정보 DB에서 불러오기
+  useEffect(() => {
     if (!userData?.userId) return;
+    axios.get("/api/profile/user/info", { params: { userId: userData.userId } })
+      .then(res => setUserData(res.data))
+      .catch(err => console.error("유저 정보 불러오기 실패:", err));
+  }, [userData?.userId, setUserData]);
 
-    axios.get('/api/get/user/gamecode', { 
-      params: {
-        userId: userData.userId
-      }})
-      .then((res) => {
-        setGameData(res.data);
-        console.log(res.data)
-      })
-      .catch((err) => console.error('실패3', err));
-  },[userData])
-    
-    const location = useLocation();                                 // 방 입장 시 전달된 state 확인
-    const [listRefreshTick, setListRefreshTick] = useState(0);      // 방 목록 강제 리렌더링 트리거
-
-    useEffect(() => {
-      const s = location.state;
-      if (!s?.roomId) return;
-
-      setSelectedRoom(undefined);
-      setMessages([]);
-      setShowMidBar(true);
-
-      (async () => {
-        try {
-          const id = encodeURIComponent(s.roomId);
-          const { data } = await axios.get(`/api/chat/rooms/${id}`);
-          // 서버에서 상세 방 정보를 가져와 state 업데이트
-          setSelectedRoom({
-            id: data.id,
-            name: data.name ?? s.chatName,
-            gameName: data.gameName ?? s.gameName,
-            tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
-          });
-        } catch (e) {
-          console.warn('방 상세 조회 실패. state로 대체:', e);
-          // 서버 조회 실패 시, props(state) 값으로 대체
-          setSelectedRoom({
-            id: s.roomId,
-            name: s.chatName,
-            gameName: s.gameName,
-            tagNames: s.tagNames ?? [],
-          });
-        } finally {
-          setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
-        }
-      })();
-    }, [location.key]);
-
-  function sendUserGameCode(gameName, gameCode){
-    axios.post('/api/save/gamecode', {
-      userId: userData.userId,
-      gameName : gameName,
-      gameCode : gameCode
-    })
-    .then((res) => {
-      console.log('성공');
-    })
-    .catch((err) => {
-      console.error('실패:', err);
-    });
-
-  }
-    
   return (
     <>
-      <div className='fullscreen' style={{display:"flex", padding:"10px"}}>
-      
-        {/* 좌측 사이드바 - 좌측 사이드바는 showMidBar State를 기준으로 동적 조절*/}
-        <div className={`contentStyle ${ showMidBar ? 'sideBarSize' : 'sideBarExpanded' }`}>
+      <div className='fullscreen' style={{ display: "flex", padding: "10px" }}>
 
-                    {/* 현재 상태 표시 + Hover 패널 */}
-          <div 
+        {/* 좌측 사이드바 - 좌측 사이드바는 showMidBar State를 기준으로 동적 조절*/}
+        <div className={`contentStyle ${showMidBar ? 'sideBarSize' : 'sideBarExpanded'}`}>
+
+          {/* 현재 상태 표시 + Hover 패널 */}
+          <div
             className="status-wrapper"
             onMouseEnter={() => setIsStatusPanelOpen(true)}
             onMouseLeave={(e) => {
@@ -195,9 +106,9 @@ function LobbyPage() {
             </div>
 
             {isStatusPanelOpen && (
-              <div 
+              <div
                 className="status-side-panel"
-                onMouseEnter={() => setIsStatusPanelOpen(true)}    // 패널 위에서는 안 닫힘
+                onMouseEnter={() => setIsStatusPanelOpen(true)}   // 패널 위에서는 안 닫힘
                 onMouseLeave={(e) => {
                   if (!e.currentTarget.contains(e.relatedTarget)) {
                     setIsStatusPanelOpen(false);
@@ -211,140 +122,88 @@ function LobbyPage() {
             )}
           </div>
 
-          
-          {/* 이미지(프로필) 클릭시 사이드바 확장으로 정보 수정 setShowMidBar(false) */}
-          {/* 한번 더 클릭시 내 프로필 상세정보가 열림 setShowProfileModal(true) */}
-          <img src="https://placehold.co/375x375" onClick={() =>{if(showMidBar){
-            setShowMidBar(false);
-          }
-          else{
-            setShowProfileModal(true);
-          }
-        }}
-        className={`${ showMidBar ? 'sideBarImgSize' : 'sideBarImgSizeExpanded' }`} />
 
-          {/* showMidBar false일시 정보 수정창 표시 */}
-          { showMidBar ? 
-            <div>
-              <p onClick={()=>{ logoutFunc(setIsLogIn) }}> 로그아웃 </p>
-            </div> 
-            : <>
-              {/* 정보 수정 */}
-                <div className='sideBarDetailSize'>
+          {/*프로필 이미지 클릭 → 바로 모달 열림 */}
+          <img
+            src={userData?.userProfile ? `${userData.userProfile}` : "https://placehold.co/250x250"} style={{ width: '80px', height: '80px', objectFit: 'cover' }}
+            onClick={() => { setProfileUserId(userData?.userId); setShowProfileModal(true); }}
+            className={`${showMidBar ? 'sideBarImgSize' : 'sideBarImgSizeExpanded'}`}
+          />
+          <p onClick={() => logoutFunc(setIsLogIn)} style={{ cursor: 'pointer', marginTop: '10px' }}>로그아웃</p>
+        </div>
 
-                  {
-                    gameData.map((item, i) =>(
-                      <div key={item.id} style={{display:"flex"}}>
-                        <img src={`${setGameIcon(item.gameName)}`} alt="방 아이콘" className="chatCardImage"/>
-                        <p>{ item.gameName }</p>
-                        <p>{ item.gameCode }</p>
-                      </div>
-                    ))
-                  }
-                  <p>게임 코드 입력</p>
-
-                  {/* 게임 선택 드롭다운 */}
-                  <select value={gameName} onChange={(e) => setGameName(e.target.value)}>
-                    <option value="" disabled>--선택해주세요--</option>
-                    <option value="overwatch">오버워치</option>
-                    <option value="lol">롤</option>
-                    <option value="maplestory">메이플스토리</option>
-                    <option value="lostark">로스트아크</option>
-                    <option value="dnf">던전앤파이터</option>
-                  </select>
-
-                  {/* 게임 코드 입력 */}
-                  <input
-                    type="text"
-                    placeholder="게임 코드를 입력하세요"
-                    value={gameCode}
-                    onChange={(e) => setGameCode(e.target.value)}
-                  />
-
-                  <button onClick={()=>{sendUserGameCode(gameName, gameCode); }}>저장</button>
-                </div>
-
-              {/* 완료 버튼 클릭시 setShowMidBar true */}
-              <div className='sideBarButtonBox'>
-
-                <div className='sideBarButton' onClick={() =>{ setShowMidBar(true); }}>
-                  완료
-                </div>
-              </div> 
-            </> }
-        </div>  {/* contentStyle div 닫기 */}
-
-        {/* 중간 친구/채팅 바 */}
-        { showMidBar ? 
+        {/* 중앙 친구/채팅 바 */}
+        {showMidBar &&
           <div className='midBarSize'>
-
             <div style={{ display: "flex" }}>
-              <div onClick={() => {setToggle(true); }}
+              <div onClick={() => { setToggle(true); }}
                 className={`toggleSwitchText contentStyle toggleSwitch ${toggle ? 'activeBorder' : ''}`} >
                 채팅
               </div>
 
               <div onClick={() => setToggle(false)}
                 className={`toggleSwitchText contentStyle toggleSwitch ${!toggle ? 'activeBorder' : ''}`}
-                style={{ marginLeft: "10px" }} >
+                style={{ marginLeft: "10px" }}>
                 친구
               </div>
             </div>
 
             <div className='listSize'>
-              { toggle ? 
-                  <ChatListPage 
-                    setMessages     = { setMessages }
-                    selectedRoom    = { selectedRoom }
-                    setSelectedRoom = { setSelectedRoom } 
-                    refreshTick     = { listRefreshTick }
-                    currentUserStatus={userStatus} /> 
-
-                : <FriendListPage /> }
+              {toggle ?
+                <ChatListPage
+                  setMessages={setMessages}
+                  selectedRoom={selectedRoom}
+                  setSelectedRoom={setSelectedRoom}
+                  onOpenProfile={(targetUserId) => { setProfileUserId(targetUserId); setShowProfileModal(true); }}
+                  currentUserStatus={userStatus} />
+                : <FriendListPage />}
             </div>
           </div>
-        : null }
-        
-        {/* 우측 채팅방 */}
-        <div className='rightBarSize'>
+        }
 
-          <div className='contentStyle chatSize' style={{textAlign:"left"}}>
+        {/*우측 채팅방 */}
+        <div className='rightBarSize'>
+          <div className='contentStyle chatSize' style={{ textAlign: "left" }}>
             <div ref={messageContainerRef} className='scroll-container chatDivStyle'>
-              <MessageList 
-                messages = { messages } 
-                userData = { userData }/>
+              <MessageList
+                messages={messages}
+                userData={userData} />
             </div>
-            
+
             <div className="inputSize">
               <input
-              className='chatInputStyle'
+                className='chatInputStyle'
                 type="text"
-                value={ input }
-                onChange  = { (e) => { setInput(e.target.value); }}
-                onKeyDown = { (e) => { if(e.key === 'Enter') { sendMessage(); } }}/>
+                value={input}
+                onChange={(e) => { setInput(e.target.value); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') { sendMessage(); } }} />
 
               <button className='chatButtonStyle'
-              onClick={ () =>{ sendMessage(); }}> 전송 </button> 
+                onClick={() => { sendMessage(); }}> 전송 </button>
+            </div>
           </div>
 
-        </div>
-
-          <div style={{display:"flex"}}>
-            <div  className='contentStyle adSize'>
+          <div style={{ display: "flex" }}>
+            <div className='contentStyle adSize'>
               광고든 뭐든 암튼 뭐든 채울거
             </div>
-
             <Link to="/search">
               <div className='contentStyle searchSize'>
                 <img src="/SearchIcon.png" className='imgPos'></img>
               </div>
             </Link>
-            
           </div>
-        </div> {/* rightBarSize 닫기 */}
+        </div>
+      </div>
 
-      </div> {/* fullscreen 닫기 */}
-      {showProfileModal && <MyProfile onClose={() => setShowProfileModal(false)} />}
+      {/*프로필 모달 */}
+      {showProfileModal &&
+        <MyProfile viewUserId={profileUserId} // 클릭한 유저 아이디
+          isMyProfile={profileUserId === userData.userId} //내 프로필 여부 확인
+          userData={userData} //내 프로필일 때만 사용
+          setUserData={setUserData}
+          onClose={() => setShowProfileModal(false)}
+        />}
     </>
   )
 }
@@ -356,13 +215,13 @@ const MessageList = memo(({ messages, userData }) => {
     <div className='chatContentStyle'>
       {
         messages.map((msg, i) => (
-          
-          <div key={i} style={{ marginTop:"5px" }}
-            className={`${ msg.name == userData.userId ? 'myChatStyle' : null} `}>
 
-            <div>{ msg.name }</div>
+          <div key={i} style={{ marginTop: "5px" }}
+            className={`${msg.name == userData?.userId ? 'myChatStyle' : null} `}>
 
-            <div className='chatStyle'>{ msg.message }</div>
+            <div>{msg.name}</div>
+
+            <div className='chatStyle'>{msg.message}</div>
 
           </div>
         ))

@@ -44,8 +44,8 @@ public class MyUserDetailsService implements UserDetailsService {
 
         // 유저 ID를 포함한 커스텀 유저 정보 객체
         var customUserDetail = new CustomUserDetails(user.getUserName(),
-                                                        user.getUserPw(),
-                                                        authorities);
+                user.getUserPw(),
+                authorities);
 
         // 커스텀 객체에 유저 Id Get()
         customUserDetail.userId = user.getUserId();
@@ -68,9 +68,11 @@ public class MyUserDetailsService implements UserDetailsService {
     // 기본값으로 유저 이름, 비밀번호, 권한 3가지 외
     // 유저Id, 유저 이메일, 유저 프로필을 추가하여 반환한다. 
     public class CustomUserDetails extends User {
-        public String userId;       
+        public String userId;
         public String userEmail;
         public String userProfile;
+        public String userIntro;
+        public String userStatusMessage;
 
         public CustomUserDetails(String username,
                                  String password,

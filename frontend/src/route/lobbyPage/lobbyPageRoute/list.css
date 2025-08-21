@@ -1,79 +1,65 @@
-
 .color{
   background-color: aliceblue;
 }
 
 .listRouteSize{
-   display: flex;
-    flex-direction: column;
-    height: calc(100% - 20px);
-    padding: 10px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 20px);
+  padding: 10px;
 }
 
 .contentListStyle{
-    background-color: rgb(38, 38, 38);
-    border-radius: 12px;
-    text-align: center;   
+  background-color: rgb(38, 38, 38);
+  border-radius: 12px;
+  text-align: center;   
 }
 
 .chatListStyle {
- 
-    border-radius: 12px;
+  border-radius: 12px;
+  width: 100%;
+  height: 90px;
+  margin-bottom: 16px;
+  background: #f5f5f5; /* 연한 회색 배경 */
+  color: #111;         /* 진한 글자색 */
+  position: relative;
 
-    width: 100%;
-    height: 90px;
-    margin-bottom: 16px;
-
-    background: #f5f5f5; /* 연한 회색 배경 */
-    color: #111;         /* 진한 글자색 */
-    
-    position: relative;
-
-    /* 다단계 그림자 효과로 입체감 강화 */
-    box-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.1),
-        0 4px 8px rgba(0, 0, 0, 0.12),
-        0 8px 16px rgba(0, 0, 0, 0.08);
-    
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-    /* 호버 시 더욱 입체감 있는 효과 */
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.12),
+    0 8px 16px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .chatListStyle:hover {
-    transform: translateY(-4px);
-    box-shadow:
-        0 6px 12px rgba(0, 0, 0, 0.15),
-        0 12px 24px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+  box-shadow:
+    0 6px 12px rgba(0, 0, 0, 0.15),
+    0 12px 24px rgba(0, 0, 0, 0.1);
 }
 
 .chatListStyle:active {
-    transform: translateY(0);
-    box-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.1),
-        0 4px 8px rgba(0, 0, 0, 0.12),
-        0 8px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(0);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    0 4px 8px rgba(0, 0, 0, 0.12),
+    0 8px 16px rgba(0, 0, 0, 0.08);
 }
 
 .chatListStyleExtend{
-    border: 1px solid;
-    border-radius: 7px;
-
-    width: 100%;
-    height: 300px;
-    margin-bottom: 10px;
+  border: 1px solid;
+  border-radius: 7px;
+  width: 100%;
+  height: 300px;
+  margin-bottom: 10px;
 }
 
 /* 스크롤바 커스텀 (Webkit 기반 브라우저용) */
 .chatListScroll {
   scrollbar-width: thin;           /* Firefox */
   scrollbar-color: #888 #2a2a2a;   /* Firefox */
-
-  /* Webkit (Chrome, Edge, Safari) */
 }
-.chatListScroll::-webkit-scrollbar {
-  width: 8px;
-}
+.chatListScroll::-webkit-scrollbar { width: 8px; }
 .chatListScroll::-webkit-scrollbar-track {
   background: #2a2a2a;
   border-radius: 8px;
@@ -83,11 +69,7 @@
   border-radius: 8px;
   border: 2px solid #2a2a2a;
 }
-.chatListScroll::-webkit-scrollbar-thumb:hover {
-  background: #aaa;
-}
-
-
+.chatListScroll::-webkit-scrollbar-thumb:hover { background: #aaa; }
 
 .chatListScrollWrapper {
   flex-grow: 1;
@@ -98,19 +80,9 @@
   scrollbar-width: thin;
   scrollbar-color: #666 transparent;
 }
-
-.chatListScrollWrapper::-webkit-scrollbar {
-  width: 8px;
-}
-.chatListScrollWrapper::-webkit-scrollbar-thumb {
-  background-color: #666;
-  border-radius: 10px;
-}
-.chatListScrollWrapper::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-
+.chatListScrollWrapper::-webkit-scrollbar { width: 8px; }
+.chatListScrollWrapper::-webkit-scrollbar-thumb { background-color: #666; border-radius: 10px; }
+.chatListScrollWrapper::-webkit-scrollbar-track { background: transparent; }
 
 .chatCard {
   position: relative;
@@ -118,74 +90,41 @@
   color: #212121;
   border-radius: 12px;
   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.08);
-
   padding: 7px;
   margin-bottom: 16px;
   transition: all 0.2s ease;
   cursor: pointer;
 }
+.chatCard:hover { box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.12); transform: translateY(-2px); }
+.chatCard:active { transform: translateY(0); box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); }
 
-.chatCard:hover {
-  box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
-}
-
-.chatCard:active {
-  transform: translateY(0);
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.chatCardHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.chatCardImage{
-
-    width: 45px;
-    height: 45px;
-}
-
-.chatCardTitle {
-  font-size: 1rem;
-  font-weight: 600;
-}
+.chatCardHeader { display: flex; justify-content: space-between; align-items: center; }
+.chatCardImage{ width: 45px; height: 45px; }
+.chatCardTitle { font-size: 1rem; font-weight: 600; }
 
 .chatCardDelete {
-  font-size: 1rem;
-  color: #9e9e9e;
-  cursor: pointer;
-  transition: color 0.2s;
+  font-size: 1rem; color: #9e9e9e; cursor: pointer; transition: color 0.2s;
 }
-
-.chatCardDelete:hover {
-  color: #e53935;
-}
+.chatCardDelete:hover { color: #e53935; }
 
 /* 안읽은 메시지 배지 */
 .chatCardFooter {
- 
-    margin-left: 5px;
-    margin-top: 10px;
-
-    display: flex;
-    align-items: center;
-
+  margin-left: 5px;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
 }
-
 /* 마지막 메시지 텍스트 */
 .chatCardLastMessage {
-    margin-left: 10px;
-    font-size: 0.8rem;
-    color: #555;
-    max-width: 180px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  margin-left: 10px;
+  font-size: 0.8rem;
+  color: #555;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
-/* 안읽은 메시지 뱃지 - 좌측 하단으로 이동 */
+/* 안읽은 메시지 뱃지 */
 .chatCardBadge {
   margin-left: 5px;
   background-color: #d32f2f;
@@ -197,82 +136,52 @@
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-
 .selectCardStyle{
-   background: #ffffff;
-    color: #212121;
-    border-radius: 12px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.08);
-
-    padding: 7px;
-    margin-bottom: 16px;
-    transition: all 0.2s ease;
-    cursor: pointer;
+  background: #ffffff;
+  color: #212121;
+  border-radius: 12px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.08);
+  padding: 7px;
+  margin-bottom: 16px;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
-
 .selectCardHeaderStyle{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 1.25rem;
-  font-weight: 600;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 1.25rem; font-weight: 600;
 }
 
 .selectCardUserListStyle{
   height: 200px;
-  overflow-y: auto;
-
+  overflow-y: auto; /* 수직 스크롤만 — 드롭다운은 포털/전역으로 떠서 영향 없음 */
   color: white;
   border-radius: 7px;
   background-color: #111;
-
-  
 }
-.UserListContentStyle{
+.UserListContentStyle {
+  position: relative; /* 버튼 배치 안정성용(포털 사용이라 필수는 아님) */
   padding-left: 15px;
   padding-right: 15px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-   /* 디스코드 스타일 스크롤바 */
-  scrollbar-width: thin;             /* Firefox */
-  scrollbar-color: #444 #111;        /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #444 #111;
 }
 
-
-.selectCardUserListStyle::-webkit-scrollbar {
-  width: 10px;
-}
-
-.selectCardUserListStyle::-webkit-scrollbar-track {
-  background: #111;
-  border-radius: 10px;
-}
-
+.selectCardUserListStyle::-webkit-scrollbar { width: 10px; }
+.selectCardUserListStyle::-webkit-scrollbar-track { background: #111; border-radius: 10px; }
 .selectCardUserListStyle::-webkit-scrollbar-thumb {
-  background-color: #444;
-  border-radius: 10px;
-  border: 1px solid #111;
+  background-color: #444; border-radius: 10px; border: 1px solid #111;
 }
-
-
 
 .MoreButtonStyle {
-  width: 27px;
-  height: 27px;
-  background-color: #e0e0e0;
-  border-radius: 50%;
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
-  
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 27px; height: 27px;
+  background-color: #e0e0e0; border-radius: 50%;
+  font-size: 24px; font-weight: bold; color: #333;
+  display: flex; align-items: center; justify-content: center;
   cursor: pointer;
   margin-left: 6px;
-
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
   transition: background-color 0.2s;
 }
@@ -284,8 +193,8 @@
 
 /* ====== 추가: 참여자 패널(UI) ====== */
 .membersDrawerInline {
-  position: fixed;            /* 좌표는 JS에서 주입 */
-  width: 0;                   /* 닫힐 때 0 */
+  position: fixed;           /* 좌표는 JS에서 주입 */
+  width: 0;                  /* 닫힐 때 0 */
   overflow: hidden;
   background: #25282C;
   transition: width .25s ease;
@@ -300,6 +209,8 @@
 }
 
 .membersDrawerHeader {
+  position: relative;
+  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -317,10 +228,31 @@
   color: #cfcfcf;
 }
 
-.membersListScroll {
+/* 패널이 열렸을 때 기존 리스트는 가려서 중복 노출 방지 */
+.membersDrawerInline.open .membersListScroll {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 그룹 오버레이가 패널 전체를 덮도록(헤더 포함) */
+.membersOverlayGrouped{
+  position: absolute;
+  inset: 0;                 /* top/right/bottom/left 모두 0 */
+  z-index: 2;
+  background: #25282C;      /* 뒤 컨텐츠 완전히 가리기 */
   overflow-y: auto;
-  height: calc(100% - 44px);
-  padding: 8px 10px;
+  top: 44px;                /* 헤더 높이가 44px이므로 그 아래부터 시작 */
+  padding: 8px 10px;        /* 헤더 패딩 대신 내용 패딩만 */
+}
+
+/* 섹션 헤더(온라인/오프라인) 스타일 */
+.membersSectionHeader{
+  padding: 8px 6px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #e5e5e5;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  margin: 6px 4px 8px;
 }
 
 .membersRow {
@@ -333,10 +265,24 @@
   background: rgba(255,255,255,.03);
   margin-bottom: 8px;
   color: #eaeaea;
+  min-height: 40px;
 }
 
-.membersName { font-size: 14px; }
-.membersDot { margin-left: 6px; }
+.membersName {
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.membersDot {
+  margin-left: 6px;
+  flex: 0 0 auto;
+}
+
 .membersMoreBtn {
   border: none;
   background: transparent;
@@ -350,6 +296,11 @@
   padding: 12px 8px;
   font-size: 13px;
   color: #cfcfcf;
+}
+
+/* 오프라인 텍스트 톤다운 */
+.membersName--offline{
+  color: #9aa0a6;
 }
 
 /* 상단/카드에 추가된 참여자 버튼 */
@@ -368,65 +319,33 @@
   filter: brightness(1.2);
 }
 
-/* 패널이 열렸을 때 기존 리스트는 가려서 중복 노출 방지 */
-.membersDrawerInline.open .membersListScroll {
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* 그룹 오버레이가 패널 전체를 덮도록(헤더 포함) */
-.membersOverlayGrouped{
-  position: absolute;
-  inset: 0;                 /* top/right/bottom/left 모두 0 */
-  padding: 56px 10px 8px;   /* 헤더 높이만큼 top 패딩 줘서 내용은 헤더 아래로 */
-  z-index: 2;
-  background: #25282C;      /* 뒤 컨텐츠 완전히 가리기 */
-  overflow-y: auto;
-}
-
-/* 섹션 헤더(온라인/오프라인) 스타일 */
-.membersSectionHeader{
-  padding: 8px 6px;
-  font-weight: 700;
-  font-size: 14px;
-  color: #e5e5e5;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  margin: 6px 4px 8px;
-}
-
-/* 오프라인 텍스트 톤다운 */
-.membersName--offline{
-  color: #9aa0a6;
-}
-
-/* 아이템 줄바꿈/겹침 방지 */
-.membersRow{
-  min-height: 40px;
-}
-.membersName{
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
+/* 드롭다운 메뉴(포털)*/
+.dropdownMenu {
+  background-color: #1e1e1e;
+  border: 1px solid #444;
+  border-radius: 8px;
+  width: 170px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.4);
   overflow: hidden;
-  text-overflow: ellipsis;
-}
-.membersDot{
-  flex: 0 0 auto;
+
+  /* 부드러운 등장 */
+  opacity: 0;
+  transform: translateY(-6px);
+  animation: dropdownIn .12s ease forwards;
 }
 
-/* 헤더를 오버레이 위로 올림 */
-.membersDrawerHeader{
-  position: relative;
-  z-index: 3;
+.dropdownMenu p {
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #e0e0e0;
+  cursor: pointer;
+  user-select: none;
+  border-bottom: 1px solid #333;
 }
+.dropdownMenu p:last-child { border-bottom: none; }
+.dropdownMenu p:hover { background: #333; color: #fff; }
 
-/* 오버레이는 헤더 아래에서 시작 (헤더 높이에 맞춰 값 조절) */
-.membersOverlayGrouped{
-  z-index: 2;
-  top: 44px;      /* 헤더 높이가 44~56px이면 여기 값만 맞추면 됨 */
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 8px 10px; /* 헤더 패딩 대신 내용 패딩만 */
+@keyframes dropdownIn {
+  to { opacity: 1; transform: translateY(0); }
 }

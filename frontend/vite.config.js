@@ -24,9 +24,14 @@ export default defineConfig({
         changeOrigin: true,
       },
       '/agora':{
+      },
+      
+      '/upload':{
         target: 'http://localhost:8080',
         changeOrigin: true,
       }
+
+
     }
   }
 })

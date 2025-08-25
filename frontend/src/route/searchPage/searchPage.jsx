@@ -241,10 +241,9 @@ function chatTagRoom() {
               채팅 리스트
               {
                 rooms.map((room) => (
-                  <div
+                  <div className='chatRoomList'
                     key={room.id}
-                    onClick={() => { setSelectedRoom(room); setJoinOpen(true); }}
-                    style={{ color: "white", border: "1px solid", margin: "10px", height: "50px" }}>
+                    onClick={() => { setSelectedRoom(room); setJoinOpen(true); }}>
                     <div>{room.chatName || room.name}</div>
                   </div>
                 ))

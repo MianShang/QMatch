@@ -3,6 +3,7 @@ import axios from 'axios';
 import './UserHistoryModal.css';
 import LOLPage from './LOLPage';
 import DNFPage from './DNFPage'; 
+//import LostArkPage from './LostArkPage';
 
 // Riot 전적 캐시: 동일한 gameCode에 대해 중복 요청을 막기 위함
 const riotCache = {};
@@ -161,6 +162,11 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
 
           {sendToModalGameName === 'dnf' && (
             <DNFPage dnfStats={userGameCode?.dnfStats} />
+          )}
+
+           LostArk페이지 불러오기
+          {sendToModalGameName === 'lostark' && (
+            <LostArkPage lostarkstate={userGameCode?.lostarkStats}/>
           )}
 
           {/* 에러 메시지 표시 */}

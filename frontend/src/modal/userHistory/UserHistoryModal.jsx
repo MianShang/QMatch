@@ -121,6 +121,24 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
       
         return;
       }
+
+      if (sendToModalGameName === 'lostark') {
+          try {
+            console.log("로스트아크 페이지 테스트")
+            // const res2 = await axios.get('/lostark', {
+            //   params: { gameCode }
+            // });
+      
+            // gameData.dnfStats = res2.data;
+            // setUserGameCode(gameData);
+            // setErrorMessage(null);
+
+          } catch (err2) {
+            console.error('로스트아크 전적 불러오기 실패', err2);
+            setErrorMessage("로스트아크 정보를 불러오지 못했습니다.");
+          }
+      }
+
       setUserGameCode(gameData);
       setErrorMessage(null);
     })
@@ -164,9 +182,9 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
             <DNFPage dnfStats={userGameCode?.dnfStats} />
           )}
 
-           LostArk페이지 불러오기
           {sendToModalGameName === 'lostark' && (
-            <LostArkPage lostarkstate={userGameCode?.lostarkStats}/>
+            console.log("페이지 불러오기 테스트2")
+            //<LostArkPage lostarkstate={userGameCode?.lostarkStats}/>
           )}
 
           {/* 에러 메시지 표시 */}

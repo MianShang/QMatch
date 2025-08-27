@@ -1,18 +1,19 @@
 package com.example.backend.Service;
 
-import com.example.backend.Config.LoaWebClientConfig;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
 public class LostarkService {
 
-    private final LoaWebClientConfig loaWebClient;
+    private final WebClient lostarkWebClient;
 
     public Mono<Object> getProfile(String name) {
-        return loaWebClient.get()
+        return lostarkWebClient.get()
                 .uri("/armories/characters/{name}/profiles", name)
                 .retrieve()
                 .bodyToMono(Object.class);

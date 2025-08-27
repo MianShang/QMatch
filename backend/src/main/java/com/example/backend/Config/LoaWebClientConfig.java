@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
+
 @Configuration
 public class LoaWebClientConfig {
     @Value("${lostark.base-url}")

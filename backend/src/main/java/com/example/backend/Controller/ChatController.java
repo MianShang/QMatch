@@ -6,6 +6,7 @@ import com.example.backend.Entity.*;
 import com.example.backend.Repository.*;
 import com.example.backend.Service.ChatRoomService;
 import com.example.backend.Websocket.RealTimeUserManagement;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -38,14 +39,14 @@ public class ChatController {
     private final ChatListRepository chatListRepository;
     private final UserChatRoomRepository userChatRoomRepository;
     private final GameTagRepository gameTagRepository;
+    private final UserRepository userRepository;
 
     // 실시간 채팅방 접속 유저 목록 (roomId -> Set of userIds)
-    private final Map<String, Set<String>> activeUsersByRoom = new ConcurrentHashMap<>();
+//    private final Map<String, Set<String>> activeUsersByRoom = new ConcurrentHashMap<>();
     @Autowired
     private ChatRoomTagRepository chatRoomTagRepository;
     @Autowired
     private ChatRoomService chatRoomService;
-
 
     // 구독된 채팅방에 메세지 보내는 API
     @MessageMapping("/chat/{roomId}")
@@ -126,8 +127,8 @@ public class ChatController {
         String userId = accessor.getFirstNativeHeader("userId");
         String roomId = accessor.getFirstNativeHeader("roomId");
 
-        if (userId != null && roomId != null && activeUsersByRoom.containsKey(roomId)) {
-            activeUsersByRoom.get(roomId).remove(userId);
+        if (userId != null && roomId != null && RealTimeUserManagement.activeUsersByRoom.containsKey(roomId)) {
+            RealTimeUserManagement.activeUsersByRoom.get(roomId).remove(userId);
             System.out.println("🔴 유저 퇴장: " + userId + " <- 방: " + roomId);
         }
     }
@@ -135,11 +136,8 @@ public class ChatController {
     // 채팅방별 실시간 접속 유저 조회 API
     @GetMapping("/active-users/{roomId}")
     public Set<String> getActiveUsers(@PathVariable String roomId) {
-        return activeUsersByRoom.getOrDefault(roomId, Collections.emptySet());
+        return RealTimeUserManagement.activeUsersByRoom.getOrDefault(roomId, Collections.emptySet());
     }
-
-
-
 
     // 채팅방 전체 조회 API
     @GetMapping("/rooms")
@@ -173,40 +171,50 @@ public class ChatController {
     // 채팅방 생성
     @PostMapping("/rooms")
     public ChatRoom createRoom(@RequestBody ChatRoomRequestDto chatRoomData) {
-        // 프론트에서 넘어온 채팅방 이름, 게임 이름, 태그 ID 리스트 추출
         String roomName = chatRoomData.getChatName();
         String gameName = chatRoomData.getGameName();
         List<Long> tagIds = chatRoomData.getTags();
+        String creatorUserId = chatRoomData.getCreatorUserId();
 
-        // 생성자를 통해 방 id, 이름 객체 생성
+        // (1) 생성자 유효성 검사 (400 반환)
+        User creator = userRepository.findByUserId(creatorUserId)
+                .orElseThrow(() ->
+                        new org.springframework.web.server.ResponseStatusException(
+                                org.springframework.http.HttpStatus.BAD_REQUEST,
+                                "Unknown creatorUserId: " + creatorUserId
+                        )
+                );
+
+        // (2) 방 생성 + owner 설정
         ChatRoom room = new ChatRoom(UUID.randomUUID().toString(), roomName);
         room.setGameName(gameName);
+        room.setOwner(creator);
 
-        // 먼저 방 저장
+        // (3) 저장
         ChatRoom savedRoom = chatRoomRepository.save(room);
 
-        // 선택된 태그가 있으면 중간 테이블(ChatRoomTag)에 연결
+        // (4) 참여자 관리용 엔티티도 저장 (방장 HOST)
+        UserChatRoom ucr = new UserChatRoom(creator, savedRoom, Role.HOST);
+        userChatRoomRepository.save(ucr);
+
+        // (5) 태그 연결
         if (tagIds != null && !tagIds.isEmpty()) {
-
-            // 태그 ID 목록을 통해 GameTag 엔티티 조회 + 중복 제거
             List<GameTag> tags = gameTagRepository.findAllById(tagIds).stream().distinct().toList();
-
-            // 각 태그에 대해 중복 검사 후 ChatRoomTag 생성
             for (GameTag tag : tags) {
-                // 이미 같은 (chatroom_id + tag_id) 조합이 있으면 저장하지 않음 → 중복 방지
                 boolean exists = chatRoomTagRepository.existsByChatRoomIdAndGameTagId(savedRoom.getId(), tag.getId());
                 if (!exists) {
                     ChatRoomTag crt = new ChatRoomTag();
-                    crt.setChatRoom(savedRoom);         // 채팅방 연결
-                    crt.setGameTag(tag);                // 태그 연결
-                    chatRoomTagRepository.save(crt);    // 중간 테이블에 저장
+                    crt.setChatRoom(savedRoom);
+                    crt.setGameTag(tag);
+                    chatRoomTagRepository.save(crt);
                 }
             }
         }
 
-        // DB 저장
-        return chatRoomRepository.save(room);
+        // (6) 중복 save 제거: 이미 저장한 savedRoom 반환
+        return savedRoom;
     }
+
 
     @GetMapping("/rooms/{id}")
     public ResponseEntity<?> getRoom(@PathVariable String id) {
@@ -218,13 +226,59 @@ public class ChatController {
                             .distinct()
                             .toList();
 
+            String hostName = (cr.getOwner() != null)
+                    ? cr.getOwner().getUserName()
+                    : "알 수 없음";
+
                     Map<String, Object> dto = new HashMap<>();
                     dto.put("id", cr.getId());
                     dto.put("name", cr.getName());
                     dto.put("gameName", cr.getGameName());
                     dto.put("tagNames", tagNames);
+                    dto.put("hostName", hostName);
+                    dto.put("hostUserId", cr.getOwner() != null ? cr.getOwner().getUserId() : null);
+
                     return ResponseEntity.ok(dto);
                 }).orElseGet(() -> ResponseEntity.notFound().build());
     }
+
+    // 방에서 특정 유저 강퇴
+    @PostMapping("/rooms/{roomId}/kick")
+    @Transactional
+    public ResponseEntity<?> kickUser(@PathVariable String roomId,
+                                      @RequestBody Map<String, String> body) {
+        String targetUserId = body.get("targetUserId");
+        String requesterUserId = body.get("requesterUserId");
+
+        if (targetUserId == null || targetUserId.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "targetUserId is required"));
+        }
+
+        var roomOpt = chatRoomRepository.findById(roomId);
+        if (roomOpt.isEmpty()) {
+            return ResponseEntity.status(404).body(Map.of("error", "room not found"));
+        }
+        ChatRoom room = roomOpt.get();
+        String ownerId = room.getOwner() != null ? room.getOwner().getUserId() : null;
+        if (ownerId == null || requesterUserId == null || !ownerId.equals(requesterUserId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "no permission"));
+        }
+
+        // 실시간 맵에서 제거
+        RealTimeUserManagement.activeUsersByRoom
+                .putIfAbsent(roomId, java.util.concurrent.ConcurrentHashMap.newKeySet());
+        boolean removed = RealTimeUserManagement.activeUsersByRoom.get(roomId).remove(targetUserId);
+
+        long deletedRows = userChatRoomRepository.deleteByUser_UserIdAndChatRoom_Id(targetUserId, roomId);
+
+        userChatRoomRepository.flush();
+
+        simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId + "/kick",
+                Map.of("targetUserId", targetUserId, "roomId", roomId, "removed", removed));
+
+        return ResponseEntity.ok(Map.of("kicked", removed, "deletedRows", deletedRows));
+    }
+
+
 }
 

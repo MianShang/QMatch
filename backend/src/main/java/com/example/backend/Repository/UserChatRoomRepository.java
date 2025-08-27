@@ -20,4 +20,6 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
     // 채팅방 아이디로 채팅방 컬럼 가져오기
     List<UserChatRoom> findByChatRoom_Id(String roomId);
 
+    // 추방
+    long deleteByUser_UserIdAndChatRoom_Id(String userId, String roomId);
 }

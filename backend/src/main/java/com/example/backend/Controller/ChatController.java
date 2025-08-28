@@ -9,6 +9,7 @@ import com.example.backend.Websocket.RealTimeUserManagement;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -279,6 +280,92 @@ public class ChatController {
         return ResponseEntity.ok(Map.of("kicked", removed, "deletedRows", deletedRows));
     }
 
+    // 이미 참여되어 있는지 확인
+    @PostMapping("/rooms/{roomId}/join")
+    @Transactional
+    public ResponseEntity<?> joinRoom(
+            @PathVariable String roomId,
+            @RequestBody Map<String, String> body
+    ) {
+        String userId = body.get("userId");
+        if (userId == null || userId.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "userId is required"));
+        }
 
+        // 유저, 방 조회
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "user not found"));
+
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "room not found"));
+
+        // 이미 참여 중인지 확인
+        boolean exists = userChatRoomRepository.existsByUser_UserIdAndChatRoom_Id(userId, roomId);
+        if (exists) {
+            return ResponseEntity.status(409).body(Map.of("error", "already joined"));
+        }
+
+        // 새로 참여 엔티티 저장
+        UserChatRoom ucr = new UserChatRoom(user, room, Role.MEMBER);
+        userChatRoomRepository.save(ucr);
+
+        return ResponseEntity.ok(Map.of(
+                "message", "joined successfully",
+                "roomId", roomId,
+                "userId", userId
+        ));
+    }
+
+    @PostMapping("/rooms/{roomId}/transfer")
+    @Transactional
+    public ResponseEntity<?> transferHost(
+            @PathVariable String roomId,
+            @RequestBody Map<String, String> body
+    ) {
+        String fromUserId = body.get("fromUserId");
+        String toUserId = body.get("toUserId");
+
+        if (fromUserId == null || toUserId == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "fromUserId, toUserId are required"));
+        }
+
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "room not found"));
+
+        // 현재 방장 확인
+        if (room.getOwner() == null || !room.getOwner().getUserId().equals(fromUserId)) {
+            return ResponseEntity.status(403).body(Map.of("error", "not current host"));
+        }
+
+        // 두 유저의 참여 엔티티 찾기
+        UserChatRoom fromUcr = userChatRoomRepository.findByUser_UserIdAndChatRoom_Id(fromUserId, roomId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "fromUser not in room"));
+
+        UserChatRoom toUcr = userChatRoomRepository.findByUser_UserIdAndChatRoom_Id(toUserId, roomId)
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "toUser not in room"));
+
+        // Role 교체
+        fromUcr.setRole(Role.MEMBER);
+        toUcr.setRole(Role.HOST);
+
+        // ChatRoom.owner 갱신
+        room.setOwner(toUcr.getUser());
+
+        // 방 전체에 "host 변경됨" 브로드캐스트
+        simpMessagingTemplate.convertAndSend(
+                "/topic/chat/" + roomId + "/host-transfer",
+                Map.of("newHost", toUserId, "oldHost", fromUserId, "roomId", roomId)
+        );
+
+        return ResponseEntity.ok(Map.of(
+                "message", "host transferred",
+                "newHost", toUserId
+        ));
+    }
 }
 

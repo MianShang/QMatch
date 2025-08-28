@@ -22,4 +22,10 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
 
     // 추방
     long deleteByUser_UserIdAndChatRoom_Id(String userId, String roomId);
+
+    // 참여되어 있는지 확인
+    boolean existsByUser_UserIdAndChatRoom_Id(String userId, String roomId);
+
+    // 방장 넘기기에 필요 → 특정 유저 / 방 매핑 가져오기
+    Optional<UserChatRoom> findByUser_UserIdAndChatRoom_Id(String userId, String roomId);
 }

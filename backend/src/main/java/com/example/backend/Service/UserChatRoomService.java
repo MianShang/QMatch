@@ -3,6 +3,7 @@ package com.example.backend.Service;
 import com.example.backend.Dto.Request.UserChatRoomRequestDto;
 import com.example.backend.Dto.Response.UserResponseDto;
 import com.example.backend.Entity.ChatRoom;
+import com.example.backend.Entity.Role;
 import com.example.backend.Entity.User;
 import com.example.backend.Entity.UserChatRoom;
 import com.example.backend.Repository.ChatRoomRepository;
@@ -36,10 +37,11 @@ public class UserChatRoomService {
         boolean exists = userChatRoomRepository.findByUserAndChatRoom(user, room).isPresent();
         if (exists) return;
 
-        UserChatRoom userChatRoom = new UserChatRoom();
+        UserChatRoom userChatRoom = new UserChatRoom(user, room, Role.MEMBER);
         userChatRoom.setUser(user);
         userChatRoom.setChatRoom(room);
 
+        userChatRoomRepository.save(new UserChatRoom(user, room, Role.MEMBER));
         userChatRoomRepository.save(userChatRoom);
     }
 

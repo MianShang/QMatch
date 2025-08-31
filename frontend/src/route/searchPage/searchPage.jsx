@@ -34,9 +34,9 @@ function SearchPage() {
 
   // 처음 url에 입장할때 목록 가져오기 실행 및 채팅방 검색
   useEffect(() => {
-     const params = new URLSearchParams();
+    const params = new URLSearchParams();
 
-     ///params: {} 는 배열상태로 springboot에 전송 불가 직접 개체를 만들고 전송
+    ///params: {} 는 배열상태로 springboot에 전송 불가 직접 개체를 만들고 전송
     if (searchKeyword) params.append('keyword', searchKeyword);
     if (gametag) params.append('gametag', gametag);
     if (selectedTags.length > 0) {
@@ -45,24 +45,13 @@ function SearchPage() {
       });
     }
 
-  axios.get('/api/chat/rooms', { params })
-    .then((res) => setRooms(res.data))
-    .catch((err) => console.error("검색 실패:", err));
-}, [searchKeyword, gametag, selectedTags]);
-
-  // 기존 url에 입장할때 목록 가져오기 실행 및 채팅방 검색 코드 
-  // 에러날시 아래 기존코드 사용할 것
-    /* axios.get('/api/chat/rooms', {
-      params: {
-        keyword: searchKeyword,
-        gametag: gametag,
-        tags: selectedTags
-      }
-    }).then(res => setRooms(res.data));
-  }, [gametag, selectedTags, searchKeyword]); */
+    axios.get('/api/chat/rooms', { params })
+      .then((res) => setRooms(res.data))
+      .catch((err) => console.error("검색 실패:", err));
+  }, [searchKeyword, gametag, selectedTags]);
 
   // 방 입장 모달에서 "입장하기" 버튼 클릭 시 실행
-  function handleJoinRoom(payload) {
+  async function handleJoinRoom(payload) {
     const { roomId, chatName, gameName, tagNames } = payload || {};
     if (!roomId) {
       console.error('room id 없음:', payload);
@@ -71,53 +60,68 @@ function SearchPage() {
       return;
     }
 
-    // 서버에 유저-채팅방 매핑 저장
-    saveUserChatRoom(roomId);
+    try {
+      // 서버에 유저-채팅방 매핑 저장 (한 번만)
+      await saveUserChatRoom(roomId);
 
-    // 2) (선택) 채팅 화면으로 라우팅
-    navigate('/', { state: { roomId, chatName, gameName, tagNames } });
+      // 성공하면 채팅 화면으로 라우팅
+      navigate('/', { state: { roomId, chatName, gameName, tagNames } });
+    } catch (err) {
+      const status = err?.response?.status;
+      if (status === 409) {
+        alert('이미 참여 중인 방입니다.');
+        // 이미 참여 중이면 그냥 라우팅
+        navigate('/', { state: { roomId, chatName, gameName, tagNames } });
+      } else {
+        alert('입장에 실패했습니다. 다시 시도해주세요.');
+        return; // 실패 시 모달 안 닫음
+      }
+    }
 
     setJoinOpen(false);
     setSelectedRoom(null);
   }
 
   function saveUserChatRoom(roomId) {
-    axios.post('/api/add/user/chatroom', {
-      userId: userData.userId,
-      roomId: roomId
+    return axios.post(`/api/chat/rooms/${roomId}/join`, {
+      userId: userData.userId
     })
-    .then(() => {
-      console.log("성공");
+    .then((res) => {
+      console.log("입장 성공", res.data);
+      return res.data;
     })
-    .catch((err) => console.error('저장 실패', err));
+    .catch((err) => {
+      // 에러를 throw 해서 handleJoinRoom에서 잡을 수 있게 함
+      throw err;
+    });
   }
 
-   // 게임태그 바뀔 때마다 태그 초기화
+  // 게임태그 바뀔 때마다 태그 초기화
   useEffect(() => {
     setSelectedTags([]);
   }, [gametag]);
 
-///임시
-useEffect(() => {
-  if (!gametag) return;
+  ///임시
+  useEffect(() => {
+    if (!gametag) return;
 
-fetch(`/api/tags/${gametag}`)
-    .then(res => res.json())
-    .then(data => {
-      //console.log('태그 응답 데이터:', data);
-      const grouped = data.reduce((acc, tag) => {
-        const category = tag.category;
-        if (!acc[category]) {
-          acc[category] = [];
-        }
-        acc[category].push(tag);
-        return acc;
-      }, {});
-      
-      setGroupedTags(grouped); // { line: [...], tier: [...] }
-    })
-    .catch(err => console.error(err));
-}, [gametag]);
+  fetch(`/api/tags/${gametag}`)
+      .then(res => res.json())
+      .then(data => {
+        //console.log('태그 응답 데이터:', data);
+        const grouped = data.reduce((acc, tag) => {
+          const category = tag.category;
+          if (!acc[category]) {
+            acc[category] = [];
+          }
+          acc[category].push(tag);
+          return acc;
+        }, {});
+        
+        setGroupedTags(grouped); // { line: [...], tier: [...] }
+      })
+      .catch(err => console.error(err));
+  }, [gametag]);
 
 
   function handleTagChange(e) {
@@ -140,20 +144,18 @@ function chatTagRoom() {
     <form className="tag-form">
       {Object.keys(groupedTags).map(category => (
         <div key={category} className="tag-section">
-          <p className="tag-title">{category}</p>
-          {groupedTags[category].map(tag => (
-            <label key={tag.id}>
-              <input
-                type="checkbox"
-                value={tag.id}
-                checked={selectedTags.includes(Number(tag.id))}
-                onChange={handleTagChange}
-              />{" "}
+        <p className="tag-title">{category}</p>
+        {groupedTags[category].map(tag => (
+          <label key={tag.id}>
+            <input
+              type="checkbox"
+              value={tag.id}
+              checked={selectedTags.includes(Number(tag.id))}
+              onChange={handleTagChange} />
+              {" "}
               {tag.tagName}
-            </label>
-          ))}
-        </div>
-      ))}
+          </label> ))}
+        </div> ))}
     </form>
   );
 }
@@ -183,10 +185,7 @@ function chatTagRoom() {
       <div className='fullscreen' style={{ display: "flex", padding: "10px" }}>
         {/* 좌측 사이드바 */}
         <div className='contentStyle leftSize'>
-          {/* 여긴 카테고리
-          <p>ID : {userData.userId}</p>
-          <p>Name : {userData.userName}</p>
-          <p>Email : {userData.userEmail}</p> */}
+          {/* 여긴 카테고리 */}
           <p style={{color:"white", fontSize:"20px", margin:"3px"}}>검색 태그</p>
           <div className='Category_tag'>
                 <button className='chat_tag' onClick={()=> setGameTag('ALL')}>

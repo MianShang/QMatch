@@ -1,6 +1,5 @@
 import { useState, useContext, useEffect, useRef } from 'react';
 import './list.css';
-import { Client } from '@stomp/stompjs';
 
 // 전역 유저 State 데이터 가져오기용 Context API import
 import { LogContext } from '../../../App.jsx';
@@ -41,9 +40,6 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
 
   // 포털용 전역 드롭다운 
   const [menu, setMenu] = useState(null);
-
-  // 멤버인지 방장인지 구분
-  const [ownerUserId, setOwnerUserId] = useState(null);
 
   /* 참여자 패널 열림/좌표 상태 및 참조 */
   const [isMembersOpen, setIsMembersOpen] = useState(false);
@@ -115,138 +111,6 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
     return () => { window.removeEventListener('resize', onResize); clearInterval(id); };
   }, [isMembersOpen]);
 
-  /* 방장 ID 가져오기 */
-  useEffect(() => {
-    if (!selectedRoom?.id) return;
-    (async () => {
-      try {
-        const res = await fetch(`/api/chat/rooms/${selectedRoom.id}`);
-        if (!res.ok) throw new Error('room detail fetch failed');
-        const data = await res.json();
-        setOwnerUserId(data.hostUserId ?? data.ownerUserId ?? null);
-      } catch (e) {
-        console.warn('방 상세 조회 실패:', e);
-        setOwnerUserId(null);
-      }
-    })();
-  }, [selectedRoom?.id]);
-
-  /* 멤버 강퇴하기 */
-  useEffect(() => {
-    if (!selectedRoom?.id || !userData?.userId) return;
-
-    const stomp = new Client({
-      brokerURL: 'ws://localhost:8080/gs-guide-websocket',
-      reconnectDelay: 5000,
-      connectHeaders: {
-        userId: userData.userId,
-        roomId: selectedRoom.id,
-      },
-    });
-
-    stomp.onConnect = () => {
-      stomp.subscribe(`/topic/chat/${selectedRoom.id}/kick`, (frame) => {
-        try {
-          const payload = JSON.parse(frame.body);
-          // 킥 방송 구독 콜백 내부
-          if (payload?.targetUserId === userData.userId) {
-            // 1) 채팅창 닫기 + 메시지 초기화
-            setSelectedRoom(null);
-            setMessages?.([]);          // 채팅 메시지 비우기 (있으면)
-
-            // 2) 참여자 패널 닫기
-            setIsMembersOpen(false);
-
-            // 3) 음성채팅 방 떠나기 (Agora 등 쓰면)
-            // leaveVoiceChannel?.(payload.roomId); // 너가 쓰는 함수명으로 호출
-
-            // 4) 내 채팅방 목록에서 제거
-            setChatList(prev => prev.filter(it => it.chatRoom.id !== payload.roomId));
-
-            // 5) 안읽음 카운트 정리
-            setUnreadCounts(prev => {
-              const next = { ...prev };
-              delete next[payload.roomId];
-              return next;
-            });
-
-            alert('방장에게 의해 방에서 추방되었습니다.');
-          } else {
-            // 🟡 남이 추방 -> 참여자 패널/리스트 즉시 갱신
-            setChatUserList(prev => prev.filter(u => u.userId !== payload?.targetUserId));
-          }
-        } catch (e) {
-          console.error('kick payload parse error', e);
-        }
-      });
-    };
-
-  stomp.activate();
-  return () => stomp.deactivate();
-  }, [selectedRoom?.id, userData?.userId]);
-
-  useEffect(() => {
-  if (!selectedRoom?.id || !userData?.userId) return;
-
-  const stomp = new Client({
-    brokerURL: 'ws://localhost:8080/gs-guide-websocket',
-    reconnectDelay: 5000,
-    connectHeaders: {
-      userId: userData.userId,
-      roomId: selectedRoom.id,
-    },
-  });
-
-  stomp.onConnect = () => {
-    // 강퇴
-    stomp.subscribe(`/topic/chat/${selectedRoom.id}/kick`, (frame) => {
-      try {
-        const payload = JSON.parse(frame.body);
-        if (payload?.targetUserId === userData.userId) {
-          setSelectedRoom(null);
-          setMessages?.([]);
-          setIsMembersOpen(false);
-          setChatList(prev => prev.filter(it => it.chatRoom.id !== payload.roomId));
-          setUnreadCounts(prev => {
-            const next = { ...prev };
-            delete next[payload.roomId];
-            return next;
-          });
-          alert('방장에게 의해 방에서 추방되었습니다.');
-        } else {
-          setChatUserList(prev => prev.filter(u => u.userId !== payload?.targetUserId));
-        }
-      } catch (e) {
-        console.error('kick payload parse error', e);
-      }
-    });
-
-    // 방장 변경
-    stomp.subscribe(`/topic/chat/${selectedRoom.id}/host-transfer`, (frame) => {
-      try {
-        const payload = JSON.parse(frame.body);
-        console.log("방장 변경 이벤트:", payload);
-
-        setOwnerUserId(payload.newHost);
-
-        if (payload.newHost === userData.userId) {
-          alert("당신이 새로운 방장이 되었습니다!");
-        }
-        if (payload.oldHost === userData.userId) {
-          alert("방장을 넘겼습니다.");
-        }
-      } catch (e) {
-        console.error("host-transfer parse error", e);
-      }
-    });
-  };
-
-    stomp.activate();
-    return () => stomp.deactivate();
-  }, [selectedRoom?.id, userData?.userId]);
-
-
-
   /* 열기/닫기 헬퍼 */
   function openMembers(roomId) {
     setIsMembersOpen(true);
@@ -256,6 +120,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
   function closeMembers() {
     setIsMembersOpen(false);
   }
+
 
   return (
     <div className='listRouteSize contentStyle' ref={leftColRef}>
@@ -527,48 +392,9 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
               간단 스펙 보기
             </p>
 
-            {(ownerUserId === userData.userId) && (menu.userId !== userData.userId) && (
-              <p onClick={async () => {
-                try {
-                  await fetch(`/api/chat/rooms/${selectedRoom.id}/kick`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      targetUserId: menu.userId,
-                      requesterUserId: userData.userId   // 방장 신원 전달(서버 권한 체크용)
-                    })
-                  });
-                  console.log('강퇴 성공:', menu.userId);
-                } catch (err) {
-                  console.error('강퇴 실패:', err);
-                }
-                setMenu(null);
-              }}>
-                강퇴하기
-              </p> 
-            )}
-
-            {(ownerUserId === userData.userId) && (menu.userId !== userData.userId) && (
-              <p onClick={async () => {
-                try {
-                  await fetch(`/api/chat/rooms/${selectedRoom.id}/transfer`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      fromUserId: userData.userId,
-                      toUserId: menu.userId
-                    })
-                  });
-                  // 상태는 이벤트 브로드캐스트로 자동 반영됨
-                } catch (err) {
-                  console.error('방장 넘기기 실패:', err);
-                  alert('방장 넘기기에 실패했습니다.');
-                }
-                setMenu(null);
-              }}>
-                방장 넘기기
-              </p>
-            )}
+            <p onClick={() => { console.log('강퇴', menu.userId); setMenu(null); }}>
+              (방장) 강퇴하기
+            </p>
 
             <p onClick={() => { console.log('차단', menu.userId); setMenu(null); }}>
               차단하기

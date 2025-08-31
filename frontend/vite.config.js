@@ -13,7 +13,6 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:8080',
         changeOrigin: true,
-        secure: false,
       },
 
       '/dnf': {
@@ -25,7 +24,7 @@ export default defineConfig({
         changeOrigin: true,
       },
       '/agora':{
-        target: 'http://localhost:8080',
+      target: 'http://localhost:8080',
         changeOrigin: true,
       },
       

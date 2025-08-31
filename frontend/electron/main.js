@@ -12,7 +12,7 @@ function createWindow() {
     }
   });
 
-  //win.webContents.openDevTools();//콘솔
+  win.webContents.openDevTools();
 
   win.setMenu(null); // 기본 메뉴바 제거
 

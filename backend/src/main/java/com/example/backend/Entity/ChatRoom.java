@@ -18,11 +18,6 @@ public class ChatRoom {
     private String name;
     private String gameName;
 
-    // 방장 정보 (User와 연관관계)
-    @ManyToOne
-    @JoinColumn(name = "owner_id")
-    private User owner;
-
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)   // 채팅방과 태그의 연결 관계, ChatRoom ↔ ChatRoomTag (1:N)
     @JsonIgnore     // 순환 참조 방지
     @JsonManagedReference

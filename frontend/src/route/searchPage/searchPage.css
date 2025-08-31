@@ -134,16 +134,6 @@
   flex-direction: column;
 }
 
-.chatRoomList
-{
-  background-color: rgb(54, 54, 54);
-  color: white;
-  border: 1px solid;
-  border-radius: 15px;
-  margin: 10px;
-  height: 50px;
-}
-
 /* 실제 스크롤이 생길 내부 채팅 목록 컨테이너 */
 .chatListScroll {
   overflow-y: auto;

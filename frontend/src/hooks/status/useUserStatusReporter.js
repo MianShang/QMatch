@@ -37,7 +37,7 @@ export default function useUserStatusReporter(userId) {
       }
     }
 
-    checkInterval = setInterval(checkStatus, 1000);
+    checkInterval = setInterval(checkStatus, 100);
     checkStatus();
 
     return () => {

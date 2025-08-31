@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { LogContext } from '../../App.jsx';
+import React, { useState, useEffect } from 'react';
 import './CreateRoomModal.css';
 
 function CreateRoomModal({ setOpenModal, onRoomCreated }) {
@@ -7,7 +6,6 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
   const [gameName, setGameName] = useState('');
   const [tags, setTags] = useState([]);                 // 태그 목록
   const [selectedTags, setSelectedTags] = useState([]); // 사용자가 선택한 태그
-  const { userData } = useContext(LogContext);
 
   // 모달 닫기 핸들러
   const handleClose = () => {
@@ -36,55 +34,29 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
   };
 
   // 방 생성 API 호출
-  const createRoom = async () => {
+  const createRoom = () => {
     if (!name.trim() || !gameName.trim()) {
       alert("채팅방 이름과 게임을 입력해주세요!");
       return;
     }
 
-    if (!userData?.userId) {
-      alert("로그인 정보가 없습니다. 다시 로그인 해주세요.");
-      return;
-    }
-
-    // 숫자 배열로 변환
-    const tagIds = selectedTags.map(id => Number(id));
-
-    const payload = {
-      chatName: name,
-      gameName,
-      tags: tagIds,                    // 숫자 배열
-      creatorUserId: userData.userId   // 반드시 포함 (백엔드가 findByUserId로 조회)
-    };
-
-    console.log("📦 createRoom payload:", payload);
-
-    try {
-      const res = await fetch('/api/chat/rooms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+    fetch('/api/chat/rooms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chatName: name, gameName, tags: selectedTags }),
+    })
+      .then(async res => {
+        if (!res.ok) throw new Error('방 생성 실패');
+        return res.json();
+      })
+      .then(data => {
+        onRoomCreated(data);
+        handleClose();
+      })
+      .catch(err => {
+        alert('방 생성 중 오류가 발생했습니다.');
+        console.error(err);
       });
-
-      if (!res.ok) {
-        // 백엔드가 ResponseStatusException으로 보낸 바디 읽기
-        let msg = '방 생성 실패';
-        try {
-          const errBody = await res.json();
-          console.log("🔎 error body:", errBody);
-          msg = errBody?.error || errBody?.message || msg;
-        } catch (_) {}
-        throw new Error(msg);
-      }
-
-      const data = await res.json();
-      console.log("✅ 방 생성 완료:", data);
-      onRoomCreated?.(data);
-      handleClose();
-    } catch (err) {
-      console.error(err);
-      alert(err.message || '방 생성 중 오류가 발생했습니다.');
-    }
   };
 
   return (

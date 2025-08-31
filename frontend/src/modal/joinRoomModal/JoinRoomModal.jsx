@@ -1,11 +1,22 @@
-// JoinRoomModal.jsx
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import './JoinRoomModal.css';
 
 function JoinRoomModal({ open, onClose, room, onJoin }) {
   if (!open || !room) return null;
 
   const [detail, setDetail] = useState(null);      // 상세 데이터 (태그 포함)
+  const joiningRef = useRef(false);
+
+  const handleJoin = async () => { 
+    if (joiningRef.current) return;
+    joiningRef.current = true;
+    try {
+      await onJoin({ roomId: room.id ?? room.roomId, chatName, gameName, tagNames });
+      onClose?.();
+    } finally {
+      joiningRef.current = false;
+    }
+  };
 
   // 모달 열릴 때 방 상세 조회 (tagNames, gameName 등 받기)
   useEffect(() => {
@@ -56,6 +67,11 @@ function JoinRoomModal({ open, onClose, room, onJoin }) {
           </div>
 
           <div className="formGroup">
+            <label>방장</label>
+            <div className="infoText">{detail?.hostName || room.hostName || '-'}</div>
+          </div>
+
+          <div className="formGroup">
             <label>게임</label>
             <div className="infoText">{gameName}</div>
           </div>
@@ -74,15 +90,12 @@ function JoinRoomModal({ open, onClose, room, onJoin }) {
 
         <div className="footerArea">
           <button
+            type="button"               
             className="joinBtn"
-            onClick={() => onJoin({
-              roomId: room.id ?? room.roomId,
-              chatName,
-              gameName,
-              tagNames
-            })}
-          >
-            입장하기
+            onClick={handleJoin}        
+            disabled={joiningRef.current}
+            >
+          {joiningRef.current ? '입장 중…' : '입장하기'}
           </button>
         </div>
       </div>

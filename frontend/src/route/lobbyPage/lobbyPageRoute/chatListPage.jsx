@@ -41,11 +41,16 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
   // 포털용 전역 드롭다운 
   const [menu, setMenu] = useState(null);
 
-
   /* 참여자 패널 열림/좌표 상태 및 참조 */
   const [isMembersOpen, setIsMembersOpen] = useState(false);
   const [panelRect, setPanelRect] = useState({ left: 0, top: 0, height: 0 });
   const leftColRef = useRef(null);
+
+  // 음량 표시
+  const [voiceParticipants, setVoiceParticipants] = useState(false)
+  const [speakers, setSpeakers] = useState({});
+  const [localMuted, setLocalMuted] = useState(false);
+  const [joinedVoice, setJoinedVoice] = useState(false);
 
   // 커스텀훅
   // useChatGetRooms 훅을 다시 호출하여 chatList를 채웁니다.
@@ -57,7 +62,6 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
   const deleteUserRoom = useChatDeleteRoom();
   const getChatList = useChatListGet();
   const setRead = useSetReadUnReadChat(userData);
-
 
   // 아이콘
   function setGameIcon(gameName) {
@@ -244,38 +248,69 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
           {/* 더보기 클릭시 채팅방 구독한 유저 리스트 표시 */}
           {chatListExtend &&
             <div className='selectCardUserListStyle'>
-              {chatUserList.map((item) => (
-                <div key={item.userId} className='UserListContentStyle'>
-                  <p>{item.userId}</p>
+              {chatUserList.map((item) => {
+                const key = String(item.userId); // 문자열 키 권장
+                const info = speakers[key] || { level: 0, speaking: false };
+                const isMe = item.userId === userData.userId;
 
-                  {/* 음성채팅 버튼 */}
-                  {item.userId === userData.userId && selectedRoom && (
-                    <VoiceChat
-                      channelName={selectedRoom.id}
-                      uid={userData.userId}
-                    />
-                  )}
+                const isVoiceParticipant = Array.isArray(voiceParticipants)&&voiceParticipants.includes(String(item.userId));
+                const talkingOn = isVoiceParticipant && info.speaking && !(isMe && localMuted);
 
-                  {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
-                  <div
-                    className="MoreButtonStyle"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      const rect = e.currentTarget.getBoundingClientRect();
-                      const menuWidth = 170;
-                      const gap = 8;
-                      setMenu({
-                        userId: item.userId,
-                        gameName: selectedRoom?.gameName,
-                        x: Math.max(8, rect.right - menuWidth),
-                        y: rect.bottom + gap,
-                      });
-                    }}
-                  >
-                    …
+                return (                
+                  <div key={item.userId} className='UserListContentStyle'>
+                    <p>
+                      {item.userId}
+                      {/* 말하는 중 표시 */}
+                      {isVoiceParticipant && (
+                      <span
+                        className={`talkSpeakerArc ${talkingOn ? 'on' : ''}`}
+                        aria-label={talkingOn ? '말하는 중' : '말하지 않음'}
+                      >
+                        <svg className="icon" viewBox="0 0 64 32" aria-hidden="true">
+                          {/* 스피커 본체 */}
+                          <path className="spk" d="M6 12v8h8l10 8V4L14 12H6z" />
+                          {/* 반원 파동 3개 (오른쪽으로 퍼짐) */}
+                          <path className="wave w1" d="M30 8a8 8 0 0 1 0 16" />
+                          <path className="wave w2" d="M36 5a12 12 0 0 1 0 22" />
+                          <path className="wave w3" d="M42 2a16 16 0 0 1 0 28" />
+                        </svg>
+                      </span>
+                      )}
+                    </p>
+
+                    {/* 음성채팅 버튼 */}
+                    {isMe && selectedRoom && (
+                      <VoiceChat
+                        channelName={selectedRoom.id}
+                        uid={userData.userId}
+                        onSpeakers={setSpeakers}
+                        onLocalMuteChange={setLocalMuted}
+                        onJoinChange={setJoinedVoice}
+                        onVoiceParticipantsChange={setVoiceParticipants}
+                      />
+                    )}
+
+                    {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                    <div
+                      className="MoreButtonStyle"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const menuWidth = 170;
+                        const gap = 8;
+                        setMenu({
+                          userId: item.userId,
+                          gameName: selectedRoom?.gameName,
+                          x: Math.max(8, rect.right - menuWidth),
+                          y: rect.bottom + gap,
+                        });
+                      }}
+                    >
+                      …
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           }
 

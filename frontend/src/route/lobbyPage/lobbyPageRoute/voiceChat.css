@@ -26,3 +26,58 @@
   display: flex;
   margin-right: auto;
 }
+
+:root{
+  --talk-size: 35px;     /* 전체 아이콘 크기 */
+  --talk-color:#36d97d;  /* 말하는 중 색상 */
+  --talk-dim:#8aa38f;    /* 비활성 색상 */
+  --wave-width:2px;      /* 파동 선 두께 */
+  --pulse-dur:1100ms;    /* 파동 주기 */
+}
+
+.talkSpeakerArc{
+  display:inline-flex;
+  width:var(--talk-size);
+  height:var(--talk-size);
+  margin-left:6px;
+  vertical-align:middle;
+}
+.talkSpeakerArc .icon{ width:100%; height:100%; }
+
+/* 스피커 본체 */
+.talkSpeakerArc .spk{
+  fill:var(--talk-dim);
+  transition:fill .2s ease;
+}
+.talkSpeakerArc.on .spk{ fill:var(--talk-color); }
+
+/* 반원 파동 */
+.talkSpeakerArc .wave{
+  fill:none;
+  stroke:var(--talk-color);
+  stroke-width:var(--wave-width);
+  stroke-linecap:round;
+  opacity:0;
+  /* SVG에 transform 애니메이션 적용을 위해 필요 */
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* 말하는 중일 때만 웅웅거리기 */
+.talkSpeakerArc.on .wave{
+  opacity:.35;
+  animation:arcPulse var(--pulse-dur) infinite ease-out;
+}
+.talkSpeakerArc.on .w2{ animation-delay:.14s; opacity:.55; }
+.talkSpeakerArc.on .w3{ animation-delay:.28s; opacity:.75; }
+
+@keyframes arcPulse{
+  0%   { transform:scale(.92); opacity:.25; }
+  50%  { transform:scale(1.00); opacity:1;   }
+  100% { transform:scale(1.06); opacity:.25; }
+}
+
+/* 사용자 모션 감소 설정 배려 */
+@media (prefers-reduced-motion: reduce){
+  .talkSpeakerArc.on .wave{ animation:none; opacity:.6; }
+}

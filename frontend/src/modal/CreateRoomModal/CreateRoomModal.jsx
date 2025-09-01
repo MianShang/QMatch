@@ -8,6 +8,7 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
   const [tags, setTags] = useState([]);                 // 태그 목록
   const [selectedTags, setSelectedTags] = useState([]); // 사용자가 선택한 태그
   const { userData } = useContext(LogContext);
+  const [errorMsg, setErrorMsg] = useState('');         // 커스텀 에러 메시지
 
   // 모달 닫기 핸들러
   const handleClose = () => {
@@ -38,7 +39,8 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
   // 방 생성 API 호출
   const createRoom = async () => {
     if (!name.trim() || !gameName.trim()) {
-      alert("채팅방 이름과 게임을 입력해주세요!");
+      // alert("채팅방 이름과 게임을 입력해주세요!");
+      setErrorMsg("채팅방 이름과 게임을 입력해주세요!");
       return;
     }
 
@@ -78,7 +80,7 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
       }
 
       const data = await res.json();
-      console.log("✅ 방 생성 완료:", data);
+      console.log("방 생성 완료:", data);
       onRoomCreated?.(data);
       handleClose();
     } catch (err) {
@@ -98,7 +100,7 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
           <h3>채팅방 생성</h3>
           <button className="closeBtn" onClick={handleClose}>✖</button>
         </div>
-
+        {errorMsg && <div className="errorMsg">{errorMsg}</div>}
         {/* 입력 폼 영역 */}
         <div className="modalInContent">
           {/* 채팅방 이름 입력 */}

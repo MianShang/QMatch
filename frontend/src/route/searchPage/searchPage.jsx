@@ -69,11 +69,11 @@ function SearchPage() {
     } catch (err) {
       const status = err?.response?.status;
       if (status === 409) {
-        alert('이미 참여 중인 방입니다.');
+        // alert('이미 참여 중인 방입니다.');
         // 이미 참여 중이면 그냥 라우팅
         navigate('/', { state: { roomId, chatName, gameName, tagNames } });
       } else {
-        alert('입장에 실패했습니다. 다시 시도해주세요.');
+        // alert('입장에 실패했습니다. 다시 시도해주세요.');
         return; // 실패 시 모달 안 닫음
       }
     }

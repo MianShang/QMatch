@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './LOLPage.css';
 
 function LOLPage({ riotStats }) {
@@ -12,7 +12,7 @@ function LOLPage({ riotStats }) {
   }
 
 
-  const { tier, rank, lp, wins, losses, level, most } = riotStats;
+  const { name, tier, rank, lp, wins, losses, level, most } = riotStats;
   const winRate = wins + losses > 0
     ? `${((wins * 100) / (wins + losses)).toFixed(1)}% (${wins}승 ${losses}패)`
     : '-';
@@ -47,7 +47,7 @@ function LOLPage({ riotStats }) {
       <div className="tier-box">
         <img src={tierImageUrl} alt="티어 이미지" className="tier-img" />
         <div className="tier-info">
-
+          <p>이름: {name}</p>
           <p>티어: {tier} {rank} ({lp} LP)</p>
           <p>승률: {winRate}</p>
           <p>레벨: {level}</p>

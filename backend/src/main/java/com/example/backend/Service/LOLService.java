@@ -69,6 +69,7 @@ public class LOLService {
                 int losses = (int) tier.get("losses");
                 double winRate = wins + losses > 0 ? wins * 100.0 / (wins + losses) : 0;
 
+                dto.setName(name + tag);
                 dto.setTier((String) tier.get("tier"));
                 dto.setRank((String) tier.get("rank"));
                 dto.setLp((int) tier.get("leaguePoints"));
@@ -76,9 +77,10 @@ public class LOLService {
                 dto.setLosses(losses);
                 dto.setWinRate(String.format("%.1f", winRate));
 
-                System.out.println("티어: " + tier.get("tier") + " " + tier.get("rank") + " (" + tier.get("leaguePoints") + " LP)");
+                System.out.println("이름" +  dto.getName() + "티어: " + tier.get("tier") + " " + tier.get("rank") + " (" + tier.get("leaguePoints") + " LP)");
             } else {
                 // 랭크 전적이 없는 경우 기본값 세팅
+                dto.setName(name + "#" + tag);
                 dto.setTier("UNRANKED");
                 dto.setRank("-");
                 dto.setLp(0);

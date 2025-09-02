@@ -8,7 +8,7 @@ import LostArkPage from './LostArkPage';
 // Riot 전적 캐시: 동일한 gameCode에 대해 중복 요청을 막기 위함
 const riotCache = {};
 const CACHE_DURATION = 60 * 60 * 1000; // 캐시 유효시간: 1시간 (ms)
-const DISPLAY_DELAY = 10 * 1000;       // 롤 전적 표시 지연시간: 10초 (ms)
+const DISPLAY_DELAY = 0;       // 롤 전적 표시 지연시간: 10초 (ms)
 
 function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameName }) {
   const [isClosing, setIsClosing] = useState(false);          // 모달 닫힘 애니메이션 제어

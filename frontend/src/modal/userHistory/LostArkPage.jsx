@@ -7,12 +7,12 @@ function LostArkPage({lostarkStats})
 
     return (
     <div style={{ color: "white" }}>
-      <h2>Lost Ark 캐릭터 정보</h2>
+      <img src={lostarkStats.CharacterImage} alt="캐릭터 이미지"  style={{width:"350px"}}/>
       <p>캐릭터 닉네임 : {lostarkStats.CharacterName}</p>
       <p>클래스: {lostarkStats.CharacterClassName}</p>
       <p>원정대 레벨 : {lostarkStats.ExpeditionLevel}</p>
       <p>아이템 레벨 : {lostarkStats.ItemAvgLevel}</p>
-      <p>전투력 : {lostarkStats.CombatPower}</p>
+      <p>인게임 전투력 : {lostarkStats.CombatPower}</p>
       <p>레벨: {lostarkStats.CharacterLevel}</p>
       <p>서버: {lostarkStats.ServerName}</p>
     </div>

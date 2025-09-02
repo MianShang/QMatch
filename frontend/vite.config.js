@@ -32,6 +32,10 @@ export default defineConfig({
       '/upload':{
         target: 'http://localhost:8080',
         changeOrigin: true,
+      },
+      '/lostark' : {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
       }
 
 

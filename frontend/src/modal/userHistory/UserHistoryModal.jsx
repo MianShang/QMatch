@@ -3,6 +3,7 @@ import axios from 'axios';
 import './UserHistoryModal.css';
 import LOLPage from './LOLPage';
 import DNFPage from './DNFPage'; 
+import LostArkPage from './LostArkPage';
 
 // Riot 전적 캐시: 동일한 gameCode에 대해 중복 요청을 막기 위함
 const riotCache = {};
@@ -120,6 +121,26 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
       
         return;
       }
+
+      if (sendToModalGameName === 'lostark') {
+          (async () => {
+            try {
+            const res2 = await axios.get('/lostark/api/character/profile', {
+              params: { name: gameCode }
+            });
+            gameData.lostarkStats = res2.data;
+            setUserGameCode(gameData);
+            setErrorMessage(null);
+            
+
+          } catch (err2) {
+            console.error('로스트아크 전적 불러오기 실패', err2);
+            setErrorMessage("로스트아크 정보를 불러오지 못했습니다.");
+          }
+          })();
+          return;
+        }
+
       setUserGameCode(gameData);
       setErrorMessage(null);
     })
@@ -139,13 +160,13 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
         {/* 모달 헤더 */}
         <div className='modalHeader'>
           <img src={setGameIcon(sendToModalGameName)} alt="게임 아이콘" className="chatCardImage" />
-          <h3>{historyUserId ? `${historyUserId} 님의 전적` : "없어"}</h3>
+          <h3>{historyUserId ? `${historyUserId} 님의 정보` : "없어"}</h3>
           <div onClick={handleClose}><h3>🗙</h3></div>
         </div>
 
         {/* 모달 내용 */}
         <div className='modalInContent'>
-          <p>{userGameCode ? userGameCode.gameCode : ' '}</p>
+          {/* <p>{userGameCode ? userGameCode.gameCode : ' '}</p> */}
 
           {/* 롤 전적은 1분 후에만 표시 */}
           {sendToModalGameName === 'lol' && delayedShow && (
@@ -161,6 +182,10 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
 
           {sendToModalGameName === 'dnf' && (
             <DNFPage dnfStats={userGameCode?.dnfStats} />
+          )}
+
+          {sendToModalGameName === 'lostark' && (
+            <LostArkPage lostarkStats={userGameCode?.lostarkStats}/>
           )}
 
           {/* 에러 메시지 표시 */}

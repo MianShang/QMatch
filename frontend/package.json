@@ -7,6 +7,7 @@
     "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
     "build": "vite build",
     "electron:build": "npm run build && electron-builder"
+    
   },
   "build": {
     "appId": "com.example.myapp",

@@ -6,6 +6,10 @@ import java.util.Map;
 
 @Data
 public class LOLDto {
+
+    // 닉네임
+    private String name;
+
     // 티어 (예: GOLD, PLATINUM 등)
     private String tier;
 

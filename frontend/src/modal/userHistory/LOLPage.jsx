@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './LOLPage.css';
 
 function LOLPage({ riotStats }) {
@@ -12,22 +12,42 @@ function LOLPage({ riotStats }) {
   }
 
 
-  const { tier, rank, lp, wins, losses, level, most } = riotStats;
+  const { name, tier, rank, lp, wins, losses, level, most } = riotStats;
   const winRate = wins + losses > 0
     ? `${((wins * 100) / (wins + losses)).toFixed(1)}% (${wins}승 ${losses}패)`
     : '-';
 
   const [selectedMode, setSelectedMode] = useState('solo');
-
+  /* 컴포넌트 내부에서 상태로 관리 */
+  const [version, setVersion] = useState('14.10.1');  
   const tierImageUrl = `/tiers/${tier.toLowerCase()}.png`;
 
+  /* 최신 버전 가져오는 함수 */
+  const getLatestVersion = async () => {
+    try {
+      const response = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
+      const versions = await response.json();
+      return versions[0]; // 가장 최신 버전은 배열의 첫 번째에 있습니다.
+    } catch (error) {
+      console.error("버전 정보를 불러오지 못했습니다.", error);
+      return '14.10.1'; // 실패 시 기본 버전 사용
+    }
+  };
+
+  useEffect(() => {
+    const fetchVersion = async () => {
+      const latestVersion = await getLatestVersion();
+      setVersion(latestVersion);
+    };
+    fetchVersion();
+  }, []);
 
   return (
     <div className="lol-box">
       <div className="tier-box">
         <img src={tierImageUrl} alt="티어 이미지" className="tier-img" />
         <div className="tier-info">
-
+          <p>이름: {name}</p>
           <p>티어: {tier} {rank} ({lp} LP)</p>
           <p>승률: {winRate}</p>
           <p>레벨: {level}</p>
@@ -63,7 +83,7 @@ function LOLPage({ riotStats }) {
             most[selectedMode].map((champ, idx) => (
               <div className="champ-item" key={idx}>
                 <img
-                  src={`https://ddragon.leagueoflegends.com/cdn/14.10.1/img/champion/${champ.championName}.png`}
+                  src={`https://ddragon.leagueoflegends.com/cdn/${version}/img/champion/${champ.championName}.png`}
                   alt={champ.championName}
                   className="champ-img"
                 />

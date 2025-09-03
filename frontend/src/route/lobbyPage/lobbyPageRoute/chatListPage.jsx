@@ -75,6 +75,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
       case "dnf": return "/gameIcons/dnf_Icon.png";
       case "maplestory": return "/gameIcons/maplestory_Icon.png";
       case "lostark": return "/gameIcons/lostark_Icon.png";
+      case "tft": return "/gameIcons/tft_Icon.png";
       default: return "https://placehold.co/45";
     }
   }

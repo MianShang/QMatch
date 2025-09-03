@@ -200,8 +200,8 @@ function chatTagRoom() {
                   <img src="./public/gameIcons/maplestory_Icon.png" alt="MapleStory" />
                 </button>
 
-                <button className='chat_tag' onClick={()=> setGameTag('val')}>
-                  <img src="./public/gameIcons/valorant_Icon.png" alt="Valorant"/>
+                <button className='chat_tag' onClick={()=> setGameTag('tft')}>
+                  <img src="./public/gameIcons/tft_Icon.png" alt="TFT"/>
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('dnf')}>

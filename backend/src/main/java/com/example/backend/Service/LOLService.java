@@ -2,8 +2,8 @@ package com.example.backend.Service;
 
 import com.example.backend.Config.RiotApiConfig;
 import com.example.backend.Dto.LOLDto;
+import com.example.backend.Dto.ChampionMasteryDto;
 import com.example.backend.Service.LOLCacheService; // 캐시 서비스 import 추가
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.JsonPath;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,7 +46,7 @@ public class LOLService {
             }
 
             String puuid = JsonPath.read(accountResponse.getBody(), "$.puuid");
-            System.out.println("📦 puuid: " + puuid);
+            System.out.println("puuid: " + puuid);
 
             // Summoner API 호출 → summonerId, 레벨 획득
             String summonerUrl = "https://kr.api.riotgames.com/lol/summoner/v4/summoners/by-puuid/" + puuid;
@@ -55,7 +54,7 @@ public class LOLService {
             int level = JsonPath.read(summonerResponse.getBody(), "$.summonerLevel");
             dto.setLevel(level);
 
-            System.out.println("📦 level: " + level);
+            System.out.println("level: " + level);
 
             // League API 호출 → 티어/랭크/LP/승패/승률 획득
             String tierUrl = "https://kr.api.riotgames.com/lol/league/v4/entries/by-puuid/" + puuid;
@@ -89,7 +88,32 @@ public class LOLService {
                 dto.setWinRate("-");
             }
 
-            // Match ID 목록 가져오기
+            // 4. Champion Mastery API → 숙련도 상위 3 챔피언
+            String masteryUrl = "https://kr.api.riotgames.com/lol/champion-mastery/v4/champion-masteries/by-puuid/" + puuid;
+            ResponseEntity<String> masteryResponse = restTemplate.exchange(masteryUrl, HttpMethod.GET, entity, String.class);
+
+            List<Map<String, Object>> masteryList = JsonPath.parse(masteryResponse.getBody())
+                    .read("$[0:3]"); // 상위 3개만
+
+            // ChampionMasteryDto로 변환
+            List<ChampionMasteryDto> masteryDtos = masteryList.stream().map(m -> {
+                ChampionMasteryDto dtoObj = new ChampionMasteryDto();
+                dtoObj.setChampionId(((Number) m.get("championId")).intValue());
+                dtoObj.setChampionLevel(((Number) m.get("championLevel")).intValue());
+                dtoObj.setChampionPoints(((Number) m.get("championPoints")).intValue());
+                dtoObj.setLastPlayTime(((Number) m.get("lastPlayTime")).longValue());
+                dtoObj.setChestGranted(Boolean.TRUE.equals(m.get("chestGranted")));
+
+                Object tokenObj = m.get("tokensEarned");
+                dtoObj.setTokensEarned(tokenObj instanceof Number ? ((Number) tokenObj).intValue() : 0);
+
+                return dtoObj;
+            }).toList();
+
+            dto.setChampionMasteries(masteryDtos);
+
+            /*
+            // 🔴 Match ID 목록 가져오기
             List<String> matchIds = getMatchIds(puuid, 30);
 
             // 모드별 챔피언 기록 초기화
@@ -129,8 +153,7 @@ public class LOLService {
                 mostMap.put(mode, getTop3(modeMap.get(mode)));
             }
             dto.setMost(mostMap);
-
-            System.out.println("📦 mostMap: " + mostMap);
+            */
 
             // 캐시에 결과 저장
             cacheService.put(cacheKey, dto);
@@ -138,11 +161,11 @@ public class LOLService {
             return dto;
 
         } catch (Exception e) {
-            e.printStackTrace();
             throw new RuntimeException("Riot API 처리 중 오류 발생: " + e.getMessage());
         }
     }
 
+    /* 매치데이터 주석처리
     // 최근 matchId 30개 가져오기
     private List<String> getMatchIds(String puuid, int count) {
         try {
@@ -172,5 +195,5 @@ public class LOLService {
                     return m;
                 })
                 .collect(Collectors.toList());
-    }
+    } */
 }

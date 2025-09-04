@@ -252,6 +252,34 @@ public class ChatController {
                 }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // 채팅방 삭제
+    @DeleteMapping("/rooms/{roomId}")
+    @Transactional
+    public ResponseEntity<?> deleteRoom(@PathVariable String roomId,
+                                        @RequestParam String requesterUserId) {
+
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."));
+
+        // 방장이 맞는지 확인
+        if (room.getOwner() == null || !room.getOwner().getUserId().equals(requesterUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "방장만 방을 삭제할 수 있습니다."));
+        }
+
+        // 인원이 방장 혼자인지 확인
+        if (room.getCurrentUsers() > 1) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    Map.of("error", "아직 다른 인원이 있습니다. 방장은 혼자일 때만 삭제할 수 있습니다.")
+            );
+        }
+
+        // 채팅방과 연결된 UserChatRoom 관계 삭제
+        userChatRoomRepository.deleteByChatRoom_Id(roomId);
+        chatRoomRepository.delete(room);
+
+        return ResponseEntity.ok(Map.of("success", true, "message", "방이 삭제되었습니다."));
+    }
+
     // 방에서 특정 유저 강퇴
     @PostMapping("/rooms/{roomId}/kick")
     @Transactional
@@ -332,6 +360,7 @@ public class ChatController {
         ));
     }
 
+    // 방장 변경
     @PostMapping("/rooms/{roomId}/transfer")
     @Transactional
     public ResponseEntity<?> transferHost(

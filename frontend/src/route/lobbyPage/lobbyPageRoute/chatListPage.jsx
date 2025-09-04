@@ -1,6 +1,8 @@
 import { useState, useContext, useEffect, useRef } from 'react';
 import './list.css';
 import { Client } from '@stomp/stompjs';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // 전역 유저 State 데이터 가져오기용 Context API import
 import { LogContext } from '../../../App.jsx';
@@ -156,19 +158,23 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
             setSelectedRoom(null);
             setMessages?.([]);
             setIsMembersOpen(false);
-            setChatList(prev => prev.filter(it => it.chatRoom.id !== payload.roomId));
+            setChatList((prev) =>
+              prev.filter((it) =>
+                it.id !== selectedRoom.id && it.chatRoom?.id !== selectedRoom.id
+              )
+            );
             setUnreadCounts(prev => {
               const next = { ...prev };
               delete next[payload.roomId];
               return next;
             });
-            alert('방장에게 의해 방에서 추방되었습니다.');
+            toast.success('방장에게 의해 방에서 추방되었습니다.');
           } else {
             // 다른 사람 추방 시 참여자 목록 갱신
             setChatUserList(prev => prev.filter(u => u.userId !== payload?.targetUserId));
           }
         } catch (e) {
-          console.error('kick payload parse error', e);
+          toast.error('kick payload parse error', e);
         }
       });
 
@@ -181,10 +187,10 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
           setOwnerUserId(payload.newHost);
 
           if (payload.newHost === userData.userId) {
-            alert("당신이 새로운 방장이 되었습니다!");
+            toast.success("당신이 새로운 방장이 되었습니다!");
           }
           if (payload.oldHost === userData.userId) {
-            alert("방장을 넘겼습니다.");
+            toast.success("방장을 넘겼습니다.");
           }
         } catch (e) {
           console.error("host-transfer parse error", e);
@@ -487,9 +493,9 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                       requesterUserId: userData.userId   // 방장 신원 전달(서버 권한 체크용)
                     })
                   });
-                  console.log('강퇴 성공:', menu.userId);
+                  toast.success('강퇴 성공:', menu.userId);
                 } catch (err) {
-                  console.error('강퇴 실패:', err);
+                  toast.error('강퇴 실패:', err);
                 }
                 setMenu(null);
               }}>
@@ -510,15 +516,40 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                   });
                   // 상태는 이벤트 브로드캐스트로 자동 반영됨
                 } catch (err) {
-                  console.error('방장 넘기기 실패:', err);
-                  alert('방장 넘기기에 실패했습니다.');
+                  toast.error('방장 넘기기에 실패했습니다.');
                 }
                 setMenu(null);
               }}>
                 방장 넘기기
               </p>
             )}
-
+            {(ownerUserId === userData.userId) && (chatUserList.length === 1) && (
+              <p
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm("정말 이 방을 삭제하시겠습니까?")) {
+                    fetch(`/api/chat/rooms/${selectedRoom.id}?requesterUserId=${userData.userId}`, {
+                      method: 'DELETE',
+                    })
+                      .then((res) => {
+                        if (!res.ok) {
+                          toast.error("삭제실패");
+                          return;
+                        };
+                        toast.success("방이 삭제되었습니다.");
+                        setSelectedRoom(null);
+                        setChatList((prev) =>
+                          prev.filter((it) => it.chatRoom.id !== selectedRoom.id)
+                        );
+                      })
+                      .catch((err) => alert(err.message));
+                  }
+                  setMenu(null); 
+                }}
+              >
+                방 삭제
+              </p>
+            )}
             <p onClick={() => { console.log('차단', menu.userId); setMenu(null); }}>
               차단하기
             </p>

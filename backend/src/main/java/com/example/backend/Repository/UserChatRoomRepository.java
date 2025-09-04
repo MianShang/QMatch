@@ -4,7 +4,6 @@ import com.example.backend.Entity.ChatRoom;
 import com.example.backend.Entity.User;
 import com.example.backend.Entity.UserChatRoom;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,4 +27,7 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
 
     // 방장 넘기기에 필요 → 특정 유저 / 방 매핑 가져오기
     Optional<UserChatRoom> findByUser_UserIdAndChatRoom_Id(String userId, String roomId);
+
+    // 방 삭제에 필요 → 채팅방에 속한 모든 매핑 삭제
+    void deleteByChatRoom_Id(String roomId);
 }

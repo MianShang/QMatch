@@ -1,7 +1,9 @@
 import React, { useState, useEffect, createContext, useMemo } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
 import axios from 'axios';
 import './App.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 {/* 컴포넌트 import */}
 import LobbyPage from './route/lobbyPage/lobbyPage.jsx';
@@ -116,6 +118,18 @@ function App() {
           />
         </Routes>
       </LogContext.Provider>
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}   // 3초 뒤 자동 닫힘
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"      // 테마: "light", "dark", "colored"
+      />
     </div>
   );
 }

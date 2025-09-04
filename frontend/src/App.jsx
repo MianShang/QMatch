@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import LobbyPage from './route/lobbyPage/lobbyPage.jsx';
 import SearchPage from './route/searchPage/searchPage.jsx';
 import LoginPage from './route/loginPage/loginPage.jsx';
+import SignUpRoutePage from './route/loginPage/loginPageRoute/signupRoutePage.jsx';
 
 // 로그인 체크용 Context API 생성
 export const LogContext = createContext();
@@ -116,11 +117,12 @@ function App() {
             // 로그인 안되어 있으면 로그인 페이지로, 되어있으면 로비 페이지로 이동
             element={!isLogIn ? <LoginPage /> : <Navigate to="/" replace />} 
           />
+          <Route path="/signup" element={<SignUpRoutePage />} />
         </Routes>
       </LogContext.Provider>
       <ToastContainer
         position="top-right"
-        autoClose={3000}   // 3초 뒤 자동 닫힘
+        autoClose={1000}   // 3초 뒤 자동 닫힘
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick

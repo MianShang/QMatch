@@ -445,9 +445,39 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                   onClick={(e) => { e.stopPropagation(); openMembers(item.chatRoom.id); }}
                 >👥</button>
 
-                {/* 채팅방 삭제 */}
-                <span className="chatCardDelete"
-                  onClick={(e) => { e.stopPropagation(); deleteUserRoom(item.id); }}>
+                {/* 채팅방 나가기 */}
+                <span
+                  className="chatCardDelete"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+
+                    if (ownerUserId === userData.userId) {
+                      // 방장일 경우
+                      if (chatUserList.length > 1) {
+                        // 멤버가 남아 있음
+                        toast.error("방장은 멤버가 남아있으면 나갈 수 없습니다. 방장을 넘기거나 멤버가 모두 나가야 합니다.");
+                        return;
+                      } else {
+                        toast.error("방장은 혼자일 때는 나가기 대신 방 삭제 버튼을 사용해야 합니다.");
+                        return;
+                      }
+                    } else {
+                      // 일반 멤버일 경우 → 나가기 API
+                      if (window.confirm("정말 이 방에서 나가시겠습니까?")) {
+                        try {
+                          await fetch(
+                            `/api/chat/rooms/${item.chatRoom.id}/leave?userId=${userData.userId}`,
+                            { method: "DELETE" }
+                          );
+                          setChatList(prev => prev.filter(r => r.id !== item.id));
+                          toast.success("성공적으로 나가졌습니다!");
+                        } catch (err) {
+                          console.error("방 나가기 실패:", err);
+                        }
+                      }
+                    }
+                  }}
+                >
                   🗑
                 </span>
               </div>
@@ -482,6 +512,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
               간단 스펙 보기
             </p>
 
+            {/* 강퇴 */}
             {(ownerUserId === userData.userId) && (menu.userId !== userData.userId) && (
               <p onClick={async () => {
                 try {
@@ -503,6 +534,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
               </p> 
             )}
 
+            {/* 방장 권한 넘기기 */}
             {(ownerUserId === userData.userId) && (menu.userId !== userData.userId) && (
               <p onClick={async () => {
                 try {
@@ -523,6 +555,8 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                 방장 넘기기
               </p>
             )}
+
+            {/* 방 삭제 */}
             {(ownerUserId === userData.userId) && (chatUserList.length === 1) && (
               <p
                 onClick={(e) => {
@@ -550,6 +584,8 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                 방 삭제
               </p>
             )}
+
+            {/* 여기는 추후에 추가 */}
             <p onClick={() => { console.log('차단', menu.userId); setMenu(null); }}>
               차단하기
             </p>

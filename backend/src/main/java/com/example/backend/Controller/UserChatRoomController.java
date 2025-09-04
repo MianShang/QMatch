@@ -12,8 +12,10 @@ import com.example.backend.Repository.UserChatRoomRepository;
 import com.example.backend.Repository.UserRepository;
 import com.example.backend.Service.UserChatRoomService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +44,6 @@ public class UserChatRoomController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-    
 
     // 유저가 저장한 채팅방 불러오는 API
     @GetMapping("/api/get/user/chatrooms")
@@ -63,14 +64,49 @@ public class UserChatRoomController {
         return ResponseEntity.ok(userResponseDtos);
     }
 
-    // 유저가 저장한 채팅방 삭제하는 API
-    @PostMapping("/api/user/delete/userchatroom")
-    public void deleteUserChatRoom(@RequestBody Map<String, Long> body) {
+    // 유저가 채팅방 나가기
+    @DeleteMapping("/api/chat/rooms/{roomId}/leave")
+    public ResponseEntity<?> leaveChatRoom(
+            @PathVariable String roomId,
+            @RequestParam String userId) {
 
-        // Axios 요청의 body의 roomId 데이터 get
-        Long roomId = body.get("roomId");
+        // 1. 채팅방 조회
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."));
 
-        // 해당 유저가 저장한 채팅방 컬럼을 기본키로 지정하여 삭제한다
-        userChatRoomRepository.deleteById(roomId);
+        // 2. 방장인지 체크 → 방장은 나가기 불가
+        if (room.getOwner() != null && room.getOwner().getUserId().equals(userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "방장은 방을 나갈 수 없습니다. 방장을 위임하거나 방을 삭제해야 합니다."));
+        }
+
+        // 3. UserChatRoom 관계 삭제
+        userChatRoomRepository.findByUser_UserIdAndChatRoom_Id(userId, roomId)
+                .ifPresent(userChatRoomRepository::delete);
+
+        // 4. 채팅방 현재 인원 수 -1
+        if (room.getCurrentUsers() > 0) {
+            room.setCurrentUsers(room.getCurrentUsers() - 1);
+        }
+        chatRoomRepository.save(room);
+
+        // 5. 성공 응답 반환
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "채팅방에서 나갔습니다.",
+                "roomId", roomId,
+                "userId", userId
+        ));
     }
+
+//    // 유저가 저장한 채팅방 삭제하는 API
+//    @PostMapping("/api/user/delete/userchatroom")
+//    public void deleteUserChatRoom(@RequestBody Map<String, Long> body) {
+//
+//        // Axios 요청의 body의 roomId 데이터 get
+//        Long roomId = body.get("roomId");
+//
+//        // 해당 유저가 저장한 채팅방 컬럼을 기본키로 지정하여 삭제한다
+//        userChatRoomRepository.deleteById(roomId);
+//    }
 }

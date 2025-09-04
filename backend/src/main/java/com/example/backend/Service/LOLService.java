@@ -98,12 +98,15 @@ public class LOLService {
             // ChampionMasteryDto로 변환
             List<ChampionMasteryDto> masteryDtos = masteryList.stream().map(m -> {
                 ChampionMasteryDto dtoObj = new ChampionMasteryDto();
-                dtoObj.setChampionId((Integer) m.get("championId"));
-                dtoObj.setChampionLevel((Integer) m.get("championLevel"));
-                dtoObj.setChampionPoints((Integer) m.get("championPoints"));
+                dtoObj.setChampionId(((Number) m.get("championId")).intValue());
+                dtoObj.setChampionLevel(((Number) m.get("championLevel")).intValue());
+                dtoObj.setChampionPoints(((Number) m.get("championPoints")).intValue());
                 dtoObj.setLastPlayTime(((Number) m.get("lastPlayTime")).longValue());
-                dtoObj.setChestGranted((Boolean) m.get("chestGranted"));
-                dtoObj.setTokensEarned((Integer) m.get("tokensEarned"));
+                dtoObj.setChestGranted(Boolean.TRUE.equals(m.get("chestGranted")));
+
+                Object tokenObj = m.get("tokensEarned");
+                dtoObj.setTokensEarned(tokenObj instanceof Number ? ((Number) tokenObj).intValue() : 0);
+
                 return dtoObj;
             }).toList();
 

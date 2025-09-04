@@ -42,4 +42,10 @@ public class LOLController {
             return ResponseEntity.internalServerError().body("전적 조회 실패: " + e.getMessage());
         }
     }
+
+    // 닉네임+태그 기반 전체 전적 가져오기
+    @GetMapping("/stats/{name}/{tag}")
+    public LOLDto getStats(@PathVariable String name, @PathVariable String tag) {
+        return lolService.getFullRiotStats(name, tag);
+    }
 }

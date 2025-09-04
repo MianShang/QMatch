@@ -1,3 +1,11 @@
+.lol-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px; 
+  margin-top: 15px;     
+}
+
 .tier-box {
     display: flex;
     gap: 16px;
@@ -31,14 +39,14 @@
   align-items: center;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
+  gap: 14px;
+  margin-top: 6px;
 }
 
 .champ-item {
   display: flex;
   align-items: center;
-  justify-content: center; /* 🔥 요기 수정 */
+  justify-content: center; 
   gap: 12px;
   width: 240px;
 }
@@ -72,4 +80,11 @@
   text-align: center;
   padding: 20px;
 
+}
+
+.most-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }

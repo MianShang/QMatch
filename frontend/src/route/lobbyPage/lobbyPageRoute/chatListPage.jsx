@@ -22,7 +22,7 @@ import UserHistoryModal from '../../../modal/userHistory/UserHistoryModal.jsx'
 //포털
 import DropdownPortal from './dropDownPotal.jsx'
 
-function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfile, currentUserStatus, voiceSpeakers, onJoinVoice, onLeaveVoice, localMuted, joinedVoice, voiceChatRoomId}) {
+function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfile, currentUserStatus, voiceSpeakers, onJoinVoice, onLeaveVoice, onToggleMute, localMuted, joinedVoice, voiceChatRoomId}) {
   // State 보관함 해체
   const { userData } = useContext(LogContext);
 
@@ -370,14 +370,13 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                           voiceChatRoomId === selectedRoom.id ? (
                             <>
                               <button onClick={onLeaveVoice}>🎧 퇴장</button>
-                              <button onClick={() => { /* 음소거 로직 */ }}>
+                              <button onClick={onToggleMute}>
                                 {localMuted ? '🔊' : '🔇'}
                               </button>
                             </>
                           ) : (
                             /* 다른 방에 참여 중인 경우 */
                             <p>다른 방에 참여 중입니다.</p>
-
                           )
                         ) : (
                           /* 음성 채팅에 참여하고 있지 않은 경우 */

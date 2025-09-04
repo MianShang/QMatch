@@ -222,6 +222,11 @@ function LobbyPage() {
                       voiceChatRef.current.leaveChannel();
                     }
                   }}
+                  onToggleMute={() => { 
+                    if (voiceChatRef.current) {
+                      voiceChatRef.current.toggleMute();
+                    }
+                  }}
                   localMuted={localMuted}
                   joinedVoice={joinedVoice} 
                   voiceChatRoomId={voiceChatRoomId} 

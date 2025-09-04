@@ -18,9 +18,14 @@ public class ChatRoom {
     private String name;
     private String gameName;
 
+    @Column(nullable = false)
+    private int maxUsers; // 최대 인원 (0~20 사이)
+
+    @Column(nullable = false)
+    private int currentUsers; // 기본값 1 (방장)
+
     // 방장 정보 (User와 연관관계)
     @ManyToOne
-    @JoinColumn(name = "owner_id")
     private User owner;
 
     @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)   // 채팅방과 태그의 연결 관계, ChatRoom ↔ ChatRoomTag (1:N)
@@ -30,9 +35,11 @@ public class ChatRoom {
 
     protected ChatRoom() {}
 
-    public ChatRoom(String id, String name) {
+    public ChatRoom(String id, String name, int maxUsers, User owner) {
         this.id = id;
         this.name = name;
+        this.currentUsers = 1;
+        this.owner = owner;
     }
 }
 

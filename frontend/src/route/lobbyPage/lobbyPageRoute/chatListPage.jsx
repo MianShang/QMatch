@@ -132,7 +132,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
     })();
   }, [selectedRoom?.id]);
 
-  /* 멤버 강퇴하기 */
+  /* 강퇴 + 방장 변경 이벤트 */
   useEffect(() => {
     if (!selectedRoom?.id || !userData?.userId) return;
 
@@ -146,107 +146,55 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
     });
 
     stomp.onConnect = () => {
+      // 강퇴 이벤트
       stomp.subscribe(`/topic/chat/${selectedRoom.id}/kick`, (frame) => {
         try {
           const payload = JSON.parse(frame.body);
-          // 킥 방송 구독 콜백 내부
+
           if (payload?.targetUserId === userData.userId) {
-            // 1) 채팅창 닫기 + 메시지 초기화
+            // 내가 추방된 경우
             setSelectedRoom(null);
-            setMessages?.([]);          // 채팅 메시지 비우기 (있으면)
-
-            // 2) 참여자 패널 닫기
+            setMessages?.([]);
             setIsMembersOpen(false);
-
-            // 3) 음성채팅 방 떠나기 (Agora 등 쓰면)
-            // leaveVoiceChannel?.(payload.roomId); // 너가 쓰는 함수명으로 호출
-
-            // 4) 내 채팅방 목록에서 제거
             setChatList(prev => prev.filter(it => it.chatRoom.id !== payload.roomId));
-
-            // 5) 안읽음 카운트 정리
             setUnreadCounts(prev => {
               const next = { ...prev };
               delete next[payload.roomId];
               return next;
             });
-
             alert('방장에게 의해 방에서 추방되었습니다.');
           } else {
-            // 🟡 남이 추방 -> 참여자 패널/리스트 즉시 갱신
+            // 다른 사람 추방 시 참여자 목록 갱신
             setChatUserList(prev => prev.filter(u => u.userId !== payload?.targetUserId));
           }
         } catch (e) {
           console.error('kick payload parse error', e);
         }
       });
+
+      // 방장 변경 이벤트
+      stomp.subscribe(`/topic/chat/${selectedRoom.id}/host-transfer`, (frame) => {
+        try {
+          const payload = JSON.parse(frame.body);
+          console.log("방장 변경 이벤트:", payload);
+
+          setOwnerUserId(payload.newHost);
+
+          if (payload.newHost === userData.userId) {
+            alert("당신이 새로운 방장이 되었습니다!");
+          }
+          if (payload.oldHost === userData.userId) {
+            alert("방장을 넘겼습니다.");
+          }
+        } catch (e) {
+          console.error("host-transfer parse error", e);
+        }
+      });
     };
-
-  stomp.activate();
-  return () => stomp.deactivate();
-  }, [selectedRoom?.id, userData?.userId]);
-
-  useEffect(() => {
-  if (!selectedRoom?.id || !userData?.userId) return;
-
-  const stomp = new Client({
-    brokerURL: 'ws://localhost:8080/gs-guide-websocket',
-    reconnectDelay: 5000,
-    connectHeaders: {
-      userId: userData.userId,
-      roomId: selectedRoom.id,
-    },
-  });
-
-  stomp.onConnect = () => {
-    // 강퇴
-    stomp.subscribe(`/topic/chat/${selectedRoom.id}/kick`, (frame) => {
-      try {
-        const payload = JSON.parse(frame.body);
-        if (payload?.targetUserId === userData.userId) {
-          setSelectedRoom(null);
-          setMessages?.([]);
-          setIsMembersOpen(false);
-          setChatList(prev => prev.filter(it => it.chatRoom.id !== payload.roomId));
-          setUnreadCounts(prev => {
-            const next = { ...prev };
-            delete next[payload.roomId];
-            return next;
-          });
-          alert('방장에게 의해 방에서 추방되었습니다.');
-        } else {
-          setChatUserList(prev => prev.filter(u => u.userId !== payload?.targetUserId));
-        }
-      } catch (e) {
-        console.error('kick payload parse error', e);
-      }
-    });
-
-    // 방장 변경
-    stomp.subscribe(`/topic/chat/${selectedRoom.id}/host-transfer`, (frame) => {
-      try {
-        const payload = JSON.parse(frame.body);
-        console.log("방장 변경 이벤트:", payload);
-
-        setOwnerUserId(payload.newHost);
-
-        if (payload.newHost === userData.userId) {
-          alert("당신이 새로운 방장이 되었습니다!");
-        }
-        if (payload.oldHost === userData.userId) {
-          alert("방장을 넘겼습니다.");
-        }
-      } catch (e) {
-        console.error("host-transfer parse error", e);
-      }
-    });
-  };
 
     stomp.activate();
     return () => stomp.deactivate();
   }, [selectedRoom?.id, userData?.userId]);
-
-
 
   /* 열기/닫기 헬퍼 */
   function openMembers(roomId) {

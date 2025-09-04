@@ -18,6 +18,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -177,6 +178,12 @@ public class ChatController {
         List<Long> tagIds = chatRoomData.getTags();
         String creatorUserId = chatRoomData.getCreatorUserId();
 
+        int maxUsers = chatRoomData.getMaxUsers();
+
+        if (maxUsers < 2 || maxUsers > 20) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "방 인원은 2~20명 사이여야 합니다.");
+        }
+
         // (1) 생성자 유효성 검사 (400 반환)
         User creator = userRepository.findByUserId(creatorUserId)
                 .orElseThrow(() ->
@@ -187,9 +194,11 @@ public class ChatController {
                 );
 
         // (2) 방 생성 + owner 설정
-        ChatRoom room = new ChatRoom(UUID.randomUUID().toString(), roomName);
+        ChatRoom room = new ChatRoom(UUID.randomUUID().toString(), roomName, maxUsers, creator);
         room.setGameName(gameName);
         room.setOwner(creator);
+        room.setMaxUsers(chatRoomData.getMaxUsers());
+        room.setCurrentUsers(1);
 
         // (3) 저장
         ChatRoom savedRoom = chatRoomRepository.save(room);
@@ -277,6 +286,10 @@ public class ChatController {
         simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId + "/kick",
                 Map.of("targetUserId", targetUserId, "roomId", roomId, "removed", removed));
 
+        room.setCurrentUsers(room.getCurrentUsers() - 1);
+
+        chatRoomRepository.save(room);
+
         return ResponseEntity.ok(Map.of("kicked", removed, "deletedRows", deletedRows));
     }
 
@@ -309,6 +322,7 @@ public class ChatController {
 
         // 새로 참여 엔티티 저장
         UserChatRoom ucr = new UserChatRoom(user, room, Role.MEMBER);
+        room.setCurrentUsers(room.getCurrentUsers() + 1);
         userChatRoomRepository.save(ucr);
 
         return ResponseEntity.ok(Map.of(

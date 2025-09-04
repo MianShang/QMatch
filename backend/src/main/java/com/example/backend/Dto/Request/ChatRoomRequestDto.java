@@ -12,4 +12,5 @@ public class ChatRoomRequestDto {
     private List<Long> tags;  // 선택한 태그 ID들
     private String userId;
     private String creatorUserId;
+    private int maxUsers;
 }

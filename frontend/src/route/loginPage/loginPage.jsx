@@ -16,9 +16,9 @@ function LoginPage() {
     <div className='fullscreen position'>
 
       <div className='LogComponentStyle'>
-        {
-          isResister ? <SignUpRoutePage/> : <LogInRoutePage/>
-        }
+          {isResister 
+          ? <SignUpRoutePage onSuccess={() => setIsRegister(false)} /> 
+          : <LogInRoutePage />}
       </div>
 
 

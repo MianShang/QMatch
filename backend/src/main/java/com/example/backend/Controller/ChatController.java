@@ -18,6 +18,7 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -177,6 +178,12 @@ public class ChatController {
         List<Long> tagIds = chatRoomData.getTags();
         String creatorUserId = chatRoomData.getCreatorUserId();
 
+        int maxUsers = chatRoomData.getMaxUsers();
+
+        if (maxUsers < 2 || maxUsers > 20) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "방 인원은 2~20명 사이여야 합니다.");
+        }
+
         // (1) 생성자 유효성 검사 (400 반환)
         User creator = userRepository.findByUserId(creatorUserId)
                 .orElseThrow(() ->
@@ -187,9 +194,11 @@ public class ChatController {
                 );
 
         // (2) 방 생성 + owner 설정
-        ChatRoom room = new ChatRoom(UUID.randomUUID().toString(), roomName);
+        ChatRoom room = new ChatRoom(UUID.randomUUID().toString(), roomName, maxUsers, creator);
         room.setGameName(gameName);
         room.setOwner(creator);
+        room.setMaxUsers(chatRoomData.getMaxUsers());
+        room.setCurrentUsers(1);
 
         // (3) 저장
         ChatRoom savedRoom = chatRoomRepository.save(room);
@@ -243,6 +252,34 @@ public class ChatController {
                 }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
+    // 채팅방 삭제
+    @DeleteMapping("/rooms/{roomId}")
+    @Transactional
+    public ResponseEntity<?> deleteRoom(@PathVariable String roomId,
+                                        @RequestParam String requesterUserId) {
+
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."));
+
+        // 방장이 맞는지 확인
+        if (room.getOwner() == null || !room.getOwner().getUserId().equals(requesterUserId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "방장만 방을 삭제할 수 있습니다."));
+        }
+
+        // 인원이 방장 혼자인지 확인
+        if (room.getCurrentUsers() > 1) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                    Map.of("error", "아직 다른 인원이 있습니다. 방장은 혼자일 때만 삭제할 수 있습니다.")
+            );
+        }
+
+        // 채팅방과 연결된 UserChatRoom 관계 삭제
+        userChatRoomRepository.deleteByChatRoom_Id(roomId);
+        chatRoomRepository.delete(room);
+
+        return ResponseEntity.ok(Map.of("success", true, "message", "방이 삭제되었습니다."));
+    }
+
     // 방에서 특정 유저 강퇴
     @PostMapping("/rooms/{roomId}/kick")
     @Transactional
@@ -277,6 +314,10 @@ public class ChatController {
         simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId + "/kick",
                 Map.of("targetUserId", targetUserId, "roomId", roomId, "removed", removed));
 
+        room.setCurrentUsers(room.getCurrentUsers() - 1);
+
+        chatRoomRepository.save(room);
+
         return ResponseEntity.ok(Map.of("kicked", removed, "deletedRows", deletedRows));
     }
 
@@ -309,6 +350,7 @@ public class ChatController {
 
         // 새로 참여 엔티티 저장
         UserChatRoom ucr = new UserChatRoom(user, room, Role.MEMBER);
+        room.setCurrentUsers(room.getCurrentUsers() + 1);
         userChatRoomRepository.save(ucr);
 
         return ResponseEntity.ok(Map.of(
@@ -318,6 +360,7 @@ public class ChatController {
         ));
     }
 
+    // 방장 변경
     @PostMapping("/rooms/{roomId}/transfer")
     @Transactional
     public ResponseEntity<?> transferHost(

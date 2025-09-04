@@ -125,41 +125,40 @@ function SearchPage() {
 
 
   function handleTagChange(e) {
-  const id = Number(e.target.value);   // ← 숫자로 강제
-  const checked = e.target.checked;
+    const id = Number(e.target.value);   // ← 숫자로 강제
+    const checked = e.target.checked;
 
-  setSelectedTags(prev =>
-    checked ? (prev.includes(id) ? prev : [...prev, id]) // 중복 방지
-            : prev.filter(x => x !== id)
-  );
-}
-
-
-function chatTagRoom() {  
-  if (!groupedTags || Object.keys(groupedTags).length === 0) {
-    return null; // 아무것도 렌더링하지 않음
+    setSelectedTags(prev =>
+      checked ? (prev.includes(id) ? prev : [...prev, id]) // 중복 방지
+              : prev.filter(x => x !== id)
+    );
   }
 
-  return (
-    <form className="tag-form">
-      {Object.keys(groupedTags).map(category => (
-        <div key={category} className="tag-section">
-        <p className="tag-title">{category}</p>
-        {groupedTags[category].map(tag => (
-          <label key={tag.id}>
-            <input
-              type="checkbox"
-              value={tag.id}
-              checked={selectedTags.includes(Number(tag.id))}
-              onChange={handleTagChange} />
-              {" "}
-              {tag.tagName}
-          </label> ))}
-        </div> ))}
-    </form>
-  );
-}
 
+  function chatTagRoom() {  
+    if (!groupedTags || Object.keys(groupedTags).length === 0) {
+      return null; // 아무것도 렌더링하지 않음
+    }
+
+    return (
+      <form className="tag-form">
+        {Object.keys(groupedTags).map(category => (
+          <div key={category} className="tag-section">
+          <p className="tag-title">{category}</p>
+          {groupedTags[category].map(tag => (
+            <label key={tag.id}>
+              <input
+                type="checkbox"
+                value={tag.id}
+                checked={selectedTags.includes(Number(tag.id))}
+                onChange={handleTagChange} />
+                {" "}
+                {tag.tagName}
+            </label> ))}
+          </div> ))}
+      </form>
+    );
+  }
 
   return (
     <>

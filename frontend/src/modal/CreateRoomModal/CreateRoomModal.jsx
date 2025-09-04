@@ -9,6 +9,7 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
   const [selectedTags, setSelectedTags] = useState([]); // 사용자가 선택한 태그
   const { userData } = useContext(LogContext);
   const [errorMsg, setErrorMsg] = useState('');         // 커스텀 에러 메시지
+  const [maxUsers, setMaxUsers] = useState(5);         // 방 생성 시 기본값
 
   // 모달 닫기 핸들러
   const handleClose = () => {
@@ -49,6 +50,11 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
       return;
     }
 
+    if (maxUsers < 2 || maxUsers > 20) {
+      setErrorMsg("인원 수는 2명 이상 20명 이하만 가능합니다.");
+      return;
+    }
+
     // 숫자 배열로 변환
     const tagIds = selectedTags.map(id => Number(id));
 
@@ -56,7 +62,8 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
       chatName: name,
       gameName,
       tags: tagIds,                    // 숫자 배열
-      creatorUserId: userData.userId   // 반드시 포함 (백엔드가 findByUserId로 조회)
+      creatorUserId: userData.userId,   
+      maxUsers
     };
 
     console.log("📦 createRoom payload:", payload);
@@ -120,6 +127,23 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
               <option value="tft">TFT</option>
               <option value="dnf">던전앤파이터</option>
             </select>
+          </div>
+
+          <div className="formGroup">
+            <label>최대 인원 수</label>
+            <input
+              type="text"
+              className="modalInput"
+              value={maxUsers}
+              min={2}
+              max={20}
+              onChange={(e) => setMaxUsers(Number(e.target.value))}
+              required
+            />
+            <small>(2 ~ 20명)</small>
+            {(maxUsers < 2 || maxUsers > 20) && (
+              <p style={{ color: "red" }}>방 인원은 2~20명 사이여야 합니다.</p>
+            )}
           </div>
 
           {/* 태그 선택 */}

@@ -17,13 +17,10 @@ import { useChatListGet } from '../../../hooks/chatList/useChatListGet.js'
 // Modal
 import UserHistoryModal from '../../../modal/userHistory/UserHistoryModal.jsx'
 
-// VoiceChat 컴포넌트 추가
-import VoiceChat from './VoiceChat';
-
 //포털
 import DropdownPortal from './dropDownPotal.jsx'
 
-function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfile, currentUserStatus }) {
+function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfile, currentUserStatus, voiceSpeakers, onJoinVoice, onLeaveVoice, localMuted, joinedVoice, voiceChatRoomId}) {
   // State 보관함 해체
   const { userData } = useContext(LogContext);
 
@@ -49,12 +46,6 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
   const [isMembersOpen, setIsMembersOpen] = useState(false);
   const [panelRect, setPanelRect] = useState({ left: 0, top: 0, height: 0 });
   const leftColRef = useRef(null);
-
-  // 음량 표시
-  const [voiceParticipants, setVoiceParticipants] = useState(false)
-  const [speakers, setSpeakers] = useState({});
-  const [localMuted, setLocalMuted] = useState(false);
-  const [joinedVoice, setJoinedVoice] = useState(false);
 
   // 커스텀훅
   // useChatGetRooms 훅을 다시 호출하여 chatList를 채웁니다.
@@ -260,6 +251,9 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
 
   return (
     <div className='listRouteSize contentStyle' ref={leftColRef}>
+      {/* 음성채팅 디버깅 코드 */}
+      {/* <p>selectedRoom.id: {selectedRoom?.id}</p>
+      <p>voiceChatRoomId: {voiceChatRoomId}</p> */}
 
       {/* 전적 모달 */}
       {isUserHistoryOpen && (
@@ -385,11 +379,11 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
           {chatListExtend &&
             <div className='selectCardUserListStyle'>
               {chatUserList.map((item) => {
-                const key = String(item.userId); // 문자열 키 권장
-                const info = speakers[key] || { level: 0, speaking: false };
+                const key = String(item.userId);
+                const info = voiceSpeakers[key] || { level: 0, speaking: false };
                 const isMe = item.userId === userData.userId;
-
-                const isVoiceParticipant = Array.isArray(voiceParticipants)&&voiceParticipants.includes(String(item.userId));
+                
+                const isVoiceParticipant = joinedVoice && (voiceChatRoomId === selectedRoom.id);
                 const talkingOn = isVoiceParticipant && info.speaking && !(isMe && localMuted);
 
                 return (                
@@ -414,16 +408,28 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                       )}
                     </p>
 
-                    {/* 음성채팅 버튼 */}
-                    {isMe && selectedRoom && (
-                      <VoiceChat
-                        channelName={selectedRoom.id}
-                        uid={userData.userId}
-                        onSpeakers={setSpeakers}
-                        onLocalMuteChange={setLocalMuted}
-                        onJoinChange={setJoinedVoice}
-                        onVoiceParticipantsChange={setVoiceParticipants}
-                      />
+                    {/* VoiceChat 버튼 UI */}
+                    {isMe && (
+                      <div className="voice-control-panel">
+                        {joinedVoice ? (
+                          /* 현재 보고 있는 방과 참여 중인 방이 같은 경우 */
+                          voiceChatRoomId === selectedRoom.id ? (
+                            <>
+                              <button onClick={onLeaveVoice}>🎧 퇴장</button>
+                              <button onClick={() => { /* 음소거 로직 */ }}>
+                                {localMuted ? '🔊' : '🔇'}
+                              </button>
+                            </>
+                          ) : (
+                            /* 다른 방에 참여 중인 경우 */
+                            <p>다른 방에 참여 중입니다.</p>
+
+                          )
+                        ) : (
+                          /* 음성 채팅에 참여하고 있지 않은 경우 */
+                          <button onClick={() => onJoinVoice(selectedRoom.id)}>🎙️ 입장</button>
+                        )}
+                      </div>
                     )}
 
                     {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}

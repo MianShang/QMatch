@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useImperativeHandle } from 'react';
 import AgoraRTC from 'agora-rtc-sdk-ng'; 
 import axios from 'axios';
 import './VoiceChat.css'; 
@@ -6,7 +6,7 @@ import './VoiceChat.css';
 import { useSpeakingIndicator } from "../../../hooks/voiceChat/useSpeakingIndicator";
 
 // 음성 채팅 컴포넌트 : 채널 입장/퇴장 및 마이크 제어 기능 포함
-function VoiceChat({ channelName, uid, onSpeakers, onLocalMuteChange, onJoinChange, onVoiceParticipantsChange }) {  
+const VoiceChat=React.forwardRef(({ channelName, uid, onSpeakers, onLocalMuteChange, onJoinChange}, ref) => {  
   const [joined, setJoined] = useState(false);  // 입장 여부 상태
   const [muted, setMuted] = useState(false);    // 음소거 상태
   const clientRef = useRef(null);               // Agora 클라이언트 인스턴스 저장
@@ -24,33 +24,21 @@ function VoiceChat({ channelName, uid, onSpeakers, onLocalMuteChange, onJoinChan
     if (onSpeakers) onSpeakers(speakers);
   }, [speakers, onSpeakers]);
 
-  // joinedUserIds가 바뀌면 부모에 알려주기 (문자열 uid로 통일)
-  useEffect(() => {
-    const uniq = Array.from(new Set(joinedUserIds.map(x => String(x))));
-    onVoiceParticipantsChange?.(uniq);
-  }, [joinedUserIds, onVoiceParticipantsChange]);
 
-  // 헬퍼
-  function addParticipant(id) {
-    const k = String(id);
-    setJoinedUserIds(prev => {
-      const s = new Set(prev.map(String));
-      s.add(k);
-      return Array.from(s);
-    });
-  }
-  function removeParticipant(id) {
-    const k = String(id);
-    setJoinedUserIds(prev => prev.filter(x => String(x) !== k));
-  }
+  // useImperativeHandle 훅을 사용하여 함수들을 부모에 노출
+  useImperativeHandle(ref, () => ({
+    leaveChannel,
+    joinChannel,
+    toggleMute,
+  }));
 
   // 채널 입장 함수
-  const joinChannel = async () => {
+  const joinChannel = async (roomId) => {
     if (joiningRef.current || joined || clientRef.current) return; // 중복 방지
 
     try {
       // 백엔드에서 토큰 요청
-      const { data } = await axios.post('/agora/token', { channelName, uid });
+      const { data } = await axios.post('/agora/token', { channelName:roomId, uid });
       const token = data.token;
 
       // Agora 클라이언트 생성
@@ -76,7 +64,7 @@ function VoiceChat({ channelName, uid, onSpeakers, onLocalMuteChange, onJoinChan
       });
 
       // 채널 입장
-      await client.join(import.meta.env.VITE_AGORA_APP_ID, channelName, token, uid);
+      await client.join(import.meta.env.VITE_AGORA_APP_ID, roomId, token, uid);
 
       // 볼륨 이벤트 켜기 (스피킹 인디케이터용)
       client.enableAudioVolumeIndicator();
@@ -87,15 +75,13 @@ function VoiceChat({ channelName, uid, onSpeakers, onLocalMuteChange, onJoinChan
 
       // 오디오 트랙 퍼블리시 (상대방이 내 소리 들을 수 있게)
       await client.publish([localTrack]);
-
-      // 로컬 uid 목록에 추가
-      addParticipant(uid);
         
       // 상태 변경
       setJoined(true);
       setMuted(false);
       onLocalMuteChange?.(false);
       onJoinChange?.(true);
+      console.log("-@#$!#$!@#$!@#$!@$@$!$!#@$@!", channelName);
     }
     catch(e) { // UID 충돌 안내
       if (String(e).includes('UID_CONFLICT')) {
@@ -151,20 +137,7 @@ function VoiceChat({ channelName, uid, onSpeakers, onLocalMuteChange, onJoinChan
     onLocalMuteChange?.(next);
   };
 
-  return (
-    <div className="voice-control-panel">
-      {joined ? (
-        <>
-          <button onClick={leaveChannel}>🎧 퇴장</button>
-          <button onClick={toggleMute}>
-            {muted ? '🔊' : '🔇'}
-          </button>
-        </>
-      ) : (
-        <button onClick={joinChannel}>🎙️ 입장</button>
-      )}
-    </div>
-  );
-}
+  return null;
+});
 
 export default VoiceChat;

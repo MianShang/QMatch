@@ -8,6 +8,7 @@ import './lobbyPage.css'
 import ChatListPage from './lobbyPageRoute/chatListPage.jsx';
 import FriendListPage from './lobbyPageRoute/friendListPage.jsx';
 import MyProfile from '../../feature/profile/myProfileModal.jsx';
+import VoiceChat from './lobbyPageRoute/VoiceChat.jsx';
 
 // 로그인 체크용 Context API import
 import { LogContext } from '../../App.jsx'
@@ -46,6 +47,13 @@ function LobbyPage() {
   // State 보관함 해체
   const { isLogIn, setIsLogIn, userData, setUserData } = useContext(LogContext)
 
+  // voiceChat
+  const [voiceChatRoomId, setVoiceChatRoomId] = useState(null);
+  const [voiceSpeakers, setVoiceSpeakers] = useState({});
+  const [localMuted, setLocalMuted] = useState(false);
+  const [joinedVoice, setJoinedVoice] = useState(false);
+   const voiceChatRef = useRef(null);
+  
   // 커스텀 훅 가져오기
   // --UseEffect
   useLoginCheck(isLogIn);                                          // 로그인 체크 훅
@@ -172,6 +180,8 @@ function LobbyPage() {
             className={`${showMidBar ? 'sideBarImgSize' : 'sideBarImgSizeExpanded'}`}
           />
           <p onClick={() => logoutFunc(setIsLogIn)} style={{ cursor: 'pointer', marginTop: '10px' }}>로그아웃</p>
+
+          <img src={"./public/phoneIcon.png"} style={{ marginTop:'440px', width: '95px', height: '95px', objectFit: 'cover' }}/>
         </div>
 
         {/* 중앙 친구/채팅 바 */}
@@ -198,7 +208,24 @@ function LobbyPage() {
                   setSelectedRoom={setSelectedRoom}
                   onOpenProfile={(targetUserId) => { setProfileUserId(targetUserId); setShowProfileModal(true); }}
                   currentUserStatus={userStatus} 
-                  refreshTick     = { listRefreshTick }/>
+                  refreshTick     = { listRefreshTick }
+                  voiceSpeakers={voiceSpeakers} 
+                  onJoinVoice={(roomId) => {
+                    setVoiceChatRoomId(roomId)
+                    // ref를 통해 VoiceChat 컴포넌트의 joinChannel 함수를 호출
+                    if (voiceChatRef.current) {
+                      voiceChatRef.current.joinChannel(roomId);
+                    }
+                  }}
+                  onLeaveVoice={() => {
+                    if (voiceChatRef.current) {
+                      voiceChatRef.current.leaveChannel();
+                    }
+                  }}
+                  localMuted={localMuted}
+                  joinedVoice={joinedVoice} 
+                  voiceChatRoomId={voiceChatRoomId} 
+                />
                 : <FriendListPage />}
             </div>
           </div>
@@ -247,6 +274,16 @@ function LobbyPage() {
           setUserData={setUserData}
           onClose={() => setShowProfileModal(false)}
         />}
+
+      {/* VoiceChat 컴포넌트를 lobbyPage에 렌더링 */}
+          <VoiceChat
+              channelName={voiceChatRoomId}
+              uid={userData.userId}
+              onSpeakers={setVoiceSpeakers}
+              onLocalMuteChange={setLocalMuted}
+              onJoinChange={setJoinedVoice}
+              ref={voiceChatRef}
+          />
     </>
   )
 }

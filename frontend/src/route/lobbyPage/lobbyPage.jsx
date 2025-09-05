@@ -47,6 +47,11 @@ function LobbyPage() {
   // State 보관함 해체
   const { isLogIn, setIsLogIn, userData, setUserData } = useContext(LogContext)
 
+  // userData가 로드될 때까지 로딩
+  if (!userData) {
+    return <div>userData 로딩중</div>;
+  }
+
   // voiceChat
   const [voiceChatRoomId, setVoiceChatRoomId] = useState(null);
   const [voiceSpeakers, setVoiceSpeakers] = useState({});

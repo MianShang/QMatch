@@ -1,8 +1,10 @@
 import { useState, useContext, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom'
 import './list.css';
 import { Client } from '@stomp/stompjs';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 
 // 전역 유저 State 데이터 가져오기용 Context API import
 import { LogContext } from '../../../App.jsx';
@@ -168,6 +170,52 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
           toast.error('kick payload parse error', e);
         }
       });
+
+      // join 구독
+      stomp.subscribe(
+        `/topic/chat/${selectedRoom.id}/join`,
+        (frame) => {
+          const payload = JSON.parse(frame.body);
+          if (payload.userId !== userData.userId) {
+            toast.info(`${payload.userId} 님이 방에 입장했습니다.`);
+            setChatUserList(prev => {
+              if (prev.find(u => u.userId === payload.userId)) return prev;
+              return [...prev, { userId: payload.userId, status: '온라인' }];
+            });
+          }
+        },
+        { id: `join-${selectedRoom.id}` } // 고유 id
+      );
+
+      //  leave 구독
+      stomp.subscribe(
+        `/topic/chat/${selectedRoom.id}/leave`,
+        (frame) => {
+          const payload = JSON.parse(frame.body);
+          if (payload.userId !== userData.userId) {
+            // 다른 사람이 나간 경우 → 참여자 목록만 갱신
+            toast.info(`${payload.userId} 님이 방에서 나갔습니다.`);
+            setChatUserList(prev => prev.filter(u => u.userId !== payload.userId));
+          } else {
+            // 내가 나간 경우 → chatList에서도 제거
+            setChatList(prev => prev.filter(r => 
+              r.id !== payload.roomId && r.chatRoom?.id !== payload.roomId
+            ));
+            setSelectedRoom(null);
+            setMessages?.([]);
+          }
+        },
+        { id: `leave-${selectedRoom.id}` }
+      );
+
+      // // 구독 끝나자마자 내 입장 이벤트 브로드캐스트
+      // stomp.publish({
+      //   destination: `/topic/chat/${selectedRoom.id}/join`,
+      //   body: JSON.stringify({
+      //     userId: userData.userId,
+      //     roomId: selectedRoom.id,
+      //   }),
+      // });
 
       // 방장 변경 이벤트
       stomp.subscribe(`/topic/chat/${selectedRoom.id}/host-transfer`, (frame) => {
@@ -476,6 +524,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                           );
                           setChatList(prev => prev.filter(r => r.id !== item.id));
                           toast.success("성공적으로 나가졌습니다!");
+                          
                         } catch (err) {
                           console.error("방 나가기 실패:", err);
                         }

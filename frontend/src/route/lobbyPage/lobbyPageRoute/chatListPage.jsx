@@ -128,24 +128,28 @@ function ChatListPage({
   function confirmToast(message) {
     return new Promise((resolve) => {
       toast(
-        <div>
+        <div className="confirm-toast-box">
           <p>{message}</p>
-          <button
-            onClick={() => {
-              resolve(true); // 확인
-              toast.dismiss();
-            }}
-          >
-            확인
-          </button>
-          <button
-            onClick={() => {
-              resolve(false); // 취소
-              toast.dismiss();
-            }}
-          >
-            취소
-          </button>
+          <div className="confirm-toast-buttons">
+            <button
+              className="confirm-btn confirm"
+              onClick={() => {
+                resolve(true); // 확인
+                toast.dismiss();
+              }}
+            >
+              확인
+            </button>
+            <button
+              className="confirm-btn cancel"
+              onClick={() => {
+                resolve(false); // 취소
+                toast.dismiss();
+              }}
+            >
+              취소
+            </button>
+          </div>
         </div>,
         { autoClose: false }
       );
@@ -455,7 +459,7 @@ function ChatListPage({
             return (
               <>
                 {/* 온라인 */}
-                <div className="membersSectionHeader">온라인 — {online.length}</div>
+                <div className="onlineMembersSectionHeader">온라인 — {online.length}</div>
                 {online.map(u => {
                   const eff = getEffectiveStatus(u);
                   return (
@@ -475,7 +479,7 @@ function ChatListPage({
                   );
                 })}
                 {/* 자리비움 */}
-                <div className="membersSectionHeader" style={{ marginTop: 10 }}>
+                <div className="awayMembersSectionHeader" style={{ marginTop: 10 }}>
                   자리비움 — {away.length}
                 </div>
                 {away.map(u => {
@@ -498,7 +502,7 @@ function ChatListPage({
                 })}
 
                 {/* 오프라인 */}
-                <div className="membersSectionHeader" style={{ marginTop: 10 }}>
+                <div className="offlineMembersSectionHeader" style={{ marginTop: 10 }}>
                   오프라인 — {offline.length}
                 </div>
                 {offline.map(u => {

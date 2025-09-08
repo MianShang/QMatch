@@ -395,12 +395,12 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
             <img src={setGameIcon(selectedRoom.gameName)} alt="방 아이콘" className="chatCardImage" />
             <p>{selectedRoom.name}</p>
             <p></p>
-            {/* 선택된 방 참여자 패널 열기 버튼 */}
+            {/* 선택된 방 참여자 패널 열기 버튼
             <button
               className="membersIconBtn"
               title="참여자 보기"
               onClick={() => selectedRoom && openMembers(selectedRoom.id)}
-            >👥</button>
+            >👥</button> */}
           </div>
 
           {/* 더보기 클릭시 채팅방 구독한 유저 리스트 표시 */}

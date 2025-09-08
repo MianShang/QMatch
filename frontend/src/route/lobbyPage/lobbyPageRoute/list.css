@@ -316,11 +316,29 @@
 }
 
 /* 섹션 헤더(온라인/오프라인) 스타일 */
-.membersSectionHeader{
+.onlineMembersSectionHeader{
   padding: 8px 6px;
   font-weight: 700;
   font-size: 14px;
   color: #00e57a;
+  border-bottom: 1px solid rgba(0, 229, 122, 0.2);
+  margin: 6px 4px 8px;
+}
+
+.awayMembersSectionHeader{
+  padding: 8px 6px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #e56f00;
+  border-bottom: 1px solid rgba(0, 229, 122, 0.2);
+  margin: 6px 4px 8px;
+}
+
+.offlineMembersSectionHeader{
+  padding: 8px 6px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #ff0000;
   border-bottom: 1px solid rgba(0, 229, 122, 0.2);
   margin: 6px 4px 8px;
 }
@@ -422,3 +440,65 @@
 @keyframes dropdownIn {
   to { opacity: 1; transform: translateY(0); }
 } 
+
+/* ====== 커스텀 토스트 (방 삭제 확인창) ====== */
+
+/* 토스트 본문 컨테이너 */
+.confirm-toast-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 10px;
+}
+
+.confirm-toast-box p {
+  margin: 0;
+  font-size: 16px;
+  color: #e0e0e0;
+}
+
+/* 버튼 컨테이너 */
+.confirm-toast-buttons {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+/* 버튼 공통 스타일 */
+.confirm-btn {
+  flex: 1;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  color: white;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* 확인 버튼 스타일 */
+.confirm-btn.confirm {
+  background: #007bff;
+}
+.confirm-btn.confirm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 192, 255, 0.4);
+}
+.confirm-btn.confirm:active {
+  transform: translateY(0);
+}
+
+/* 취소 버튼 스타일 */
+.confirm-btn.cancel {
+  background-color: #555;
+}
+.confirm-btn.cancel:hover {
+  transform: translateY(-2px);
+  background-color: #666;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+.confirm-btn.cancel:active {
+  transform: translateY(0);
+}

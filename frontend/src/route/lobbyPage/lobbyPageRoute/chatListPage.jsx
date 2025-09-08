@@ -680,18 +680,19 @@ function ChatListPage({
                       }
                     } else {
                       // 일반 멤버일 경우 → 나가기 API
-                      if (window.confirm("정말 이 방에서 나가시겠습니까?")) {
-                        try {
-                          await fetch(
-                            `/api/chat/rooms/${item.chatRoom.id}/leave?userId=${userData.userId}`,
-                            { method: "DELETE" }
-                          );
-                          setChatList(prev => prev.filter(r => r.id !== item.id));
-                          toast.success("성공적으로 나가졌습니다!");
-                          
-                        } catch (err) {
-                          console.error("방 나가기 실패:", err);
-                        }
+                      const ok = await confirmToast("정말 이 방에서 나가시겠습니까?");
+                      if (!ok) return;
+
+                      try {
+                        await fetch(
+                          `/api/chat/rooms/${item.chatRoom.id}/leave?userId=${userData.userId}`,
+                          { method: "DELETE" }
+                        );
+                        setChatList(prev => prev.filter(r => r.id !== item.id));
+                        toast.success("성공적으로 나가졌습니다!");
+                      } catch (err) {
+                        console.error("방 나가기 실패:", err);
+                        toast.error("방 나가기 실패");
                       }
                     }
                   }}

@@ -62,9 +62,13 @@ function ChatListPage({
   /* 참여자 패널 열림/좌표 상태 및 참조 */
   const [isMembersOpen, setIsMembersOpen] = useState(false);
   const [panelRect, setPanelRect] = useState({ left: 0, top: 0, height: 0 });
+
+  // toggle State를 기준으로 유저 상태 / 음성 컴포넌트 교체 - 기본값 true (채팅)
+  const [toggle, setToggle] = useState(true);
+
   const leftColRef = useRef(null);
 
-  // ✅ 실시간 프레즌스 상태 맵 & 전역 STOMP 커넥션
+  // 실시간 프레즌스 상태 맵 & 전역 STOMP 커넥션
   const [statusByUser, setStatusByUser] = useState({});
   const presenceStompRef = useRef(null);
 
@@ -98,7 +102,57 @@ function ChatListPage({
     return '🔴';
   }
 
-  // ✅ 실사용 상태 계산: 내 상태는 currentUserStatus 우선, 그 외는 statusByUser 우선
+  // 방 삭제
+  async function handleDeleteRoom(roomId, userId) {
+    const ok = await confirmToast("정말 이 방을 삭제하시겠습니까?");
+    if (!ok) return; // 취소 시 그냥 return
+
+    try {
+      const res = await fetch(`/api/chat/rooms/${roomId}?requesterUserId=${userId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        toast.error("삭제 실패");
+        return;
+      }
+      toast.success("방이 삭제되었습니다.");
+      setSelectedRoom(null);
+      setChatList((prev) =>
+        prev.filter((it) => it.chatRoom.id !== roomId)
+      );
+    } catch (err) {
+      toast.error("삭제 중 오류 발생");
+    }
+  }
+
+  function confirmToast(message) {
+    return new Promise((resolve) => {
+      toast(
+        <div>
+          <p>{message}</p>
+          <button
+            onClick={() => {
+              resolve(true); // 확인
+              toast.dismiss();
+            }}
+          >
+            확인
+          </button>
+          <button
+            onClick={() => {
+              resolve(false); // 취소
+              toast.dismiss();
+            }}
+          >
+            취소
+          </button>
+        </div>,
+        { autoClose: false }
+      );
+    });
+  }
+
+  // 실사용 상태 계산: 내 상태는 currentUserStatus 우선, 그 외는 statusByUser 우선
   function getEffectiveStatus(u) {
     if (!u) return '오프라인';
     if (u.userId === userData?.userId && currentUserStatus) return currentUserStatus;
@@ -147,7 +201,7 @@ function ChatListPage({
     })();
   }, [selectedRoom?.id]);
 
-  /* ✅ 전역 프레즌스 구독자: 앱 생애주기에서 1회 연결 */
+  /* 전역 프레즌스 구독자: 앱 생애주기에서 1회 연결 */
   useEffect(() => {
     if (!userData?.userId) return;
     if (presenceStompRef.current?.active) return; // 이미 연결됨
@@ -179,7 +233,7 @@ function ChatListPage({
     };
   }, [userData?.userId]);
 
-  /* ✅ 초기 스냅샷 가져오기: 참여자 패널 오픈 + 목록 로드 시 */
+  /* 초기 스냅샷 가져오기: 참여자 패널 오픈 + 목록 로드 시 */
   useEffect(() => {
     if (!isMembersOpen) return;
     if (!chatUserList || chatUserList.length === 0) return;
@@ -724,23 +778,7 @@ function ChatListPage({
               <p
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (window.confirm("정말 이 방을 삭제하시겠습니까?")) {
-                    fetch(`/api/chat/rooms/${selectedRoom.id}?requesterUserId=${userData.userId}`, {
-                      method: 'DELETE',
-                    })
-                      .then((res) => {
-                        if (!res.ok) {
-                          toast.error("삭제실패");
-                          return;
-                        };
-                        toast.success("방이 삭제되었습니다.");
-                        setSelectedRoom(null);
-                        setChatList((prev) =>
-                          prev.filter((it) => it.chatRoom.id !== selectedRoom.id)
-                        );
-                      })
-                      .catch((err) => alert(err.message));
-                  }
+                  handleDeleteRoom(selectedRoom.id, userData.userId);
                   setMenu(null); 
                 }}
               >

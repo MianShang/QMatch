@@ -3,6 +3,7 @@ package com.example.backend.Controller;
 import com.example.backend.Dto.Request.UserStatusDto;
 import com.example.backend.Entity.UserStatus;
 import com.example.backend.Repository.UserStatusRepository;
+import com.example.backend.presence.PresenceEvent;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -77,22 +78,5 @@ public class UserStatusController {
             }
         }
         return ResponseEntity.ok(map);
-    }
-
-    // STOMP로 내보낼 페이로드
-    public static class PresenceEvent {
-        private String userId;
-        private String status;
-        private long ts;
-
-        public PresenceEvent() { }
-        public PresenceEvent(String userId, String status, long ts) {
-            this.userId = userId;
-            this.status = status;
-            this.ts = ts;
-        }
-        public String getUserId() { return userId; }
-        public String getStatus() { return status; }
-        public long getTs() { return ts; }
     }
 }

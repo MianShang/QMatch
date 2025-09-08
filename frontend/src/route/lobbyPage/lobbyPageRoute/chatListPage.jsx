@@ -13,7 +13,7 @@ import { useUnReadChatCount } from '../../../hooks/chatNotice/useUnReadChatCount
 import { useChatGetUserList } from '../../../hooks/chat/useChatGetUserList.js'
 import { useChatDeleteRoom } from '../../../hooks/chat/useChatDeleteRoom.js'
 import { useNewChatNotice } from '../../../hooks/chatNotice/useNewChatNotice.js';
-import { useChatGetRooms } from '../../../hooks/chat/useChatGetRooms.js' // 이 훅을 다시 사용합니다.
+import { useChatGetRooms } from '../../../hooks/chat/useChatGetRooms.js';
 import { useChatListGet } from '../../../hooks/chatList/useChatListGet.js'
 
 // Modal
@@ -22,7 +22,20 @@ import UserHistoryModal from '../../../modal/userHistory/UserHistoryModal.jsx'
 //포털
 import DropdownPortal from './dropDownPotal.jsx'
 
-function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfile, currentUserStatus, voiceSpeakers, onJoinVoice, onLeaveVoice, onToggleMute, localMuted, joinedVoice, voiceChatRoomId}) {
+function ChatListPage({
+  selectedRoom,
+  setSelectedRoom,
+  setMessages,
+  onOpenProfile,
+  currentUserStatus,
+  voiceSpeakers,
+  onJoinVoice,
+  onLeaveVoice,
+  onToggleMute,
+  localMuted,
+  joinedVoice,
+  voiceChatRoomId
+}) {
   // State 보관함 해체
   const { userData } = useContext(LogContext);
 
@@ -34,7 +47,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
   const [chatListExtend, setChatListExtend] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
   const [chatUserList, setChatUserList] = useState([]);
-  
+
   // chatList를 다시 로컬 state로 관리합니다.
   const [chatList, setChatList] = useState([]);
 
@@ -49,11 +62,14 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
   const [panelRect, setPanelRect] = useState({ left: 0, top: 0, height: 0 });
   const leftColRef = useRef(null);
 
+  // ✅ 실시간 프레즌스 상태 맵 & 전역 STOMP 커넥션
+  const [statusByUser, setStatusByUser] = useState({});
+  const presenceStompRef = useRef(null);
+
   // 커스텀훅
-  // useChatGetRooms 훅을 다시 호출하여 chatList를 채웁니다.
-  useChatGetRooms(userData, setChatList);                      // 로그인한 유저의 채팅방 가져오는 커스텀훅
-  useUnReadChatCount(userData, chatList, setUnreadCounts);     // 초기에 저장된 채팅방의 안읽은 메세지 개수 카운트 커스텀훅
-  useNewChatNotice(userData, selectedRoom, setUnreadCounts);   // 저장한 채팅방에 새로운 메세지 도착시 알림개수 처리하는 커스텀 훅 
+  useChatGetRooms(userData, setChatList);                      // 로그인한 유저의 채팅방
+  useUnReadChatCount(userData, chatList, setUnreadCounts);     // 안읽은 메세지 카운트
+  useNewChatNotice(userData, selectedRoom, setUnreadCounts);   // 새 메세지 알림
 
   const getChatUserList = useChatGetUserList(setChatUserList);
   const deleteUserRoom = useChatDeleteRoom();
@@ -73,22 +89,26 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
     }
   }
 
-  // 상태 아이콘 매핑 함수 추가
+  // 상태 아이콘 매핑 함수
   function getStatusIcon(status) {
     if (status === '온라인') return '🟢';
     if (status === '자리비움') return '🟠';
     return '🔴';
   }
 
-  /* 상태 그룹화(온라인/오프라인) */
+  // ✅ 실사용 상태 계산: 내 상태는 currentUserStatus 우선, 그 외는 statusByUser 우선
+  function getEffectiveStatus(u) {
+    if (!u) return '오프라인';
+    if (u.userId === userData?.userId && currentUserStatus) return currentUserStatus;
+    return statusByUser[u.userId] ?? u.status ?? '오프라인';
+  }
+
+  /* 상태 그룹화(온라인/오프라인) - presence 값 반영 */
   function splitMembersByStatus(list) {
-    // 현재 로그인된 유저의 상태를 useUserStatusReporter 훅이 반환하는 상태로 업데이트
-    const updatedList = list.map(u =>
-      u.userId === userData.userId ? { ...u, status: currentUserStatus } : u
-    );
+    const updatedList = list.map(u => ({ ...u, status: getEffectiveStatus(u) }));
     const online = updatedList.filter(u => u.status === '온라인');
-    const away = updatedList.filter(u => u.status === '자리비움');
-    const offline = updatedList.filter(u => u.status === '오프라인' || !u.status);
+    const away   = updatedList.filter(u => u.status === '자리비움');
+    const offline= updatedList.filter(u => u.status === '오프라인' || !u.status);
     return { online, away, offline };
   }
 
@@ -125,7 +145,61 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
     })();
   }, [selectedRoom?.id]);
 
-  /* 강퇴 + 방장 변경 이벤트 */
+  /* ✅ 전역 프레즌스 구독자: 앱 생애주기에서 1회 연결 */
+  useEffect(() => {
+    if (!userData?.userId) return;
+    if (presenceStompRef.current?.active) return; // 이미 연결됨
+
+    const stomp = new Client({
+      brokerURL: 'ws://localhost:8080/gs-guide-websocket',
+      reconnectDelay: 5000,
+      connectHeaders: { userId: userData.userId }
+    });
+
+    stomp.onConnect = () => {
+      stomp.subscribe('/topic/presence', (frame) => {
+        try {
+          const payload = JSON.parse(frame.body); // { userId, status, ts }
+        // 실시간 반영
+          setStatusByUser(prev => ({ ...prev, [payload.userId]: payload.status }));
+        } catch (e) {
+          console.warn('presence parse error', e);
+        }
+      });
+    };
+
+    stomp.activate();
+    presenceStompRef.current = stomp;
+
+    return () => {
+      presenceStompRef.current?.deactivate();
+      presenceStompRef.current = null;
+    };
+  }, [userData?.userId]);
+
+  /* ✅ 초기 스냅샷 가져오기: 참여자 패널 오픈 + 목록 로드 시 */
+  useEffect(() => {
+    if (!isMembersOpen) return;
+    if (!chatUserList || chatUserList.length === 0) return;
+
+    const fetchPresenceSnapshot = async (ids) => {
+      try {
+        const params = new URLSearchParams();
+        Array.from(new Set(ids)).forEach(id => params.append('ids', id)); // ids=a&ids=b…
+        const res = await fetch(`/api/user/status/batch?` + params.toString());
+        if (!res.ok) return;
+        const map = await res.json(); // { userId: status }
+        setStatusByUser(prev => ({ ...prev, ...map }));
+      } catch (e) {
+        // no-op
+      }
+    };
+
+    const ids = chatUserList.map(u => u.userId);
+    fetchPresenceSnapshot(ids);
+  }, [isMembersOpen, chatUserList]);
+
+  /* 강퇴 + 방장 변경 이벤트 (방 단위 구독) */
   useEffect(() => {
     if (!selectedRoom?.id || !userData?.userId) return;
 
@@ -205,10 +279,6 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
 
   return (
     <div className='listRouteSize contentStyle' ref={leftColRef}>
-      {/* 음성채팅 디버깅 코드 */}
-      {/* <p>selectedRoom.id: {selectedRoom?.id}</p>
-      <p>voiceChatRoomId: {voiceChatRoomId}</p> */}
-
       {/* 전적 모달 */}
       {isUserHistoryOpen && (
         <UserHistoryModal
@@ -231,20 +301,25 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
           <span>참여자</span>
           <button className="membersCloseBtn" onClick={closeMembers} title="닫기">✕</button>
         </div>
+
+        {/* 원본 리스트(간단 표시) - presence 반영 */}
         <div className="membersListScroll">
-          {chatUserList.map(u => (
-            <div className="membersRow" key={u.userId}>
-              <span className="membersName">
-                {u.userId}
-                {u.status && <span className="membersDot">{getStatusIcon(u.status)}</span>}
-              </span>
-              <button
-                className="membersMoreBtn"
-                onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
-                title="상세보기"
-              >…</button>
-            </div>
-          ))}
+          {chatUserList.map(u => {
+            const eff = getEffectiveStatus(u);
+            return (
+              <div className="membersRow" key={u.userId}>
+                <span className="membersName">
+                  {u.userId}
+                  <span className="membersDot">{getStatusIcon(eff)}</span>
+                </span>
+                <button
+                  className="membersMoreBtn"
+                  onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
+                  title="상세보기"
+                >…</button>
+              </div>
+            );
+          })}
           {chatUserList.length === 0 && (
             <div className="membersEmpty">참여자가 없습니다.</div>
           )}
@@ -259,55 +334,64 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
               <>
                 {/* 온라인 */}
                 <div className="membersSectionHeader">온라인 — {online.length}</div>
-                {online.map(u => (
-                  <div className="membersRow" key={'on-' + u.userId}>
-                    <span className="membersName">
-                      {u.userId}
-                      <span className="membersDot">{getStatusIcon(u.status)}</span>
-                    </span>
-                    <button
-                      className="membersMoreBtn"
-                      onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
-                      title="상세보기"
-                    >…</button>
-                  </div>
-                ))}
+                {online.map(u => {
+                  const eff = getEffectiveStatus(u);
+                  return (
+                    <div className="membersRow" key={'on-' + u.userId}>
+                      <span className="membersName">
+                        {u.userId}
+                        <span className="membersDot">{getStatusIcon(eff)}</span>
+                      </span>
+                      <button
+                        className="membersMoreBtn"
+                        onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
+                        title="상세보기"
+                      >…</button>
+                    </div>
+                  );
+                })}
 
                 {/* 자리비움 */}
                 <div className="membersSectionHeader" style={{ marginTop: 10 }}>
                   자리비움 — {away.length}
                 </div>
-                {away.map(u => (
-                  <div className="membersRow" key={'away-' + u.userId}>
-                    <span className="membersName">
-                      {u.userId}
-                      <span className="membersDot">{getStatusIcon(u.status)}</span>
-                    </span>
-                    <button
-                      className="membersMoreBtn"
-                      onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
-                      title="상세보기"
-                    >…</button>
-                  </div>
-                ))}
+                {away.map(u => {
+                  const eff = getEffectiveStatus(u);
+                  return (
+                    <div className="membersRow" key={'away-' + u.userId}>
+                      <span className="membersName">
+                        {u.userId}
+                        <span className="membersDot">{getStatusIcon(eff)}</span>
+                      </span>
+                      <button
+                        className="membersMoreBtn"
+                        onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
+                        title="상세보기"
+                      >…</button>
+                    </div>
+                  );
+                })}
 
                 {/* 오프라인 */}
                 <div className="membersSectionHeader" style={{ marginTop: 10 }}>
                   오프라인 — {offline.length}
                 </div>
-                {offline.map(u => (
-                  <div className="membersRow" key={'off-' + u.userId}>
-                    <span className="membersName membersName--offline">
-                      {u.userId}
-                      <span className="membersDot">{getStatusIcon(u.status)}</span>
-                    </span>
-                    <button
-                      className="membersMoreBtn"
-                      onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
-                      title="상세보기"
-                    >…</button>
-                  </div>
-                ))}
+                {offline.map(u => {
+                  const eff = getEffectiveStatus(u);
+                  return (
+                    <div className="membersRow" key={'off-' + u.userId}>
+                      <span className="membersName membersName--offline">
+                        {u.userId}
+                        <span className="membersDot">{getStatusIcon(eff)}</span>
+                      </span>
+                      <button
+                        className="membersMoreBtn"
+                        onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
+                        title="상세보기"
+                      >…</button>
+                    </div>
+                  );
+                })}
               </>
             );
           })()}
@@ -336,29 +420,31 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                 const key = String(item.userId);
                 const info = voiceSpeakers[key] || { level: 0, speaking: false };
                 const isMe = item.userId === userData.userId;
-                
+
                 const isVoiceParticipant = joinedVoice && (voiceChatRoomId === selectedRoom.id);
                 const talkingOn = isVoiceParticipant && info.speaking && !(isMe && localMuted);
 
-                return (                
+                const eff = getEffectiveStatus(item);
+
+                return (
                   <div key={item.userId} className='UserListContentStyle'>
                     <p>
-                      {item.userId}
+                      {item.userId} <span className="membersDot">{getStatusIcon(eff)}</span>
                       {/* 말하는 중 표시 */}
                       {isVoiceParticipant && (
-                      <span
-                        className={`talkSpeakerArc ${talkingOn ? 'on' : ''}`}
-                        aria-label={talkingOn ? '말하는 중' : '말하지 않음'}
-                      >
-                        <svg className="icon" viewBox="0 0 64 32" aria-hidden="true">
-                          {/* 스피커 본체 */}
-                          <path className="spk" d="M6 12v8h8l10 8V4L14 12H6z" />
-                          {/* 반원 파동 3개 (오른쪽으로 퍼짐) */}
-                          <path className="wave w1" d="M30 8a8 8 0 0 1 0 16" />
-                          <path className="wave w2" d="M36 5a12 12 0 0 1 0 22" />
-                          <path className="wave w3" d="M42 2a16 16 0 0 1 0 28" />
-                        </svg>
-                      </span>
+                        <span
+                          className={`talkSpeakerArc ${talkingOn ? 'on' : ''}`}
+                          aria-label={talkingOn ? '말하는 중' : '말하지 않음'}
+                        >
+                          <svg className="icon" viewBox="0 0 64 32" aria-hidden="true">
+                            {/* 스피커 본체 */}
+                            <path className="spk" d="M6 12v8h8l10 8V4L14 12H6z" />
+                            {/* 반원 파동 3개 (오른쪽으로 퍼짐) */}
+                            <path className="wave w1" d="M30 8a8 8 0 0 1 0 16" />
+                            <path className="wave w2" d="M36 5a12 12 0 0 1 0 22" />
+                            <path className="wave w3" d="M42 2a16 16 0 0 1 0 28" />
+                          </svg>
+                        </span>
                       )}
                     </p>
 
@@ -459,7 +545,6 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                     if (ownerUserId === userData.userId) {
                       // 방장일 경우
                       if (chatUserList.length > 1) {
-                        // 멤버가 남아 있음
                         toast.error("방장은 멤버가 남아있으면 나갈 수 없습니다. 방장을 넘기거나 멤버가 모두 나가야 합니다.");
                         return;
                       } else {
@@ -526,7 +611,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                       targetUserId: menu.userId,
-                      requesterUserId: userData.userId   // 방장 신원 전달(서버 권한 체크용)
+                      requesterUserId: userData.userId
                     })
                   });
                   toast.success('강퇴 성공:', menu.userId);
@@ -551,7 +636,6 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                       toUserId: menu.userId
                     })
                   });
-                  // 상태는 이벤트 브로드캐스트로 자동 반영됨
                 } catch (err) {
                   toast.error('방장 넘기기에 실패했습니다.');
                 }

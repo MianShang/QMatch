@@ -1,8 +1,10 @@
 import { useState, useContext, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom'
 import './list.css';
 import { Client } from '@stomp/stompjs';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
 
 // 전역 유저 State 데이터 가져오기용 Context API import
 import { LogContext } from '../../../App.jsx';
@@ -204,7 +206,7 @@ function ChatListPage({
     if (!selectedRoom?.id || !userData?.userId) return;
 
     const stomp = new Client({
-      brokerURL: 'ws://localhost:8080/gs-guide-websocket',
+      brokerURL: 'ws://localhost:8080/gs-guide-websocket',    
       reconnectDelay: 5000,
       connectHeaders: {
         userId: userData.userId,
@@ -243,6 +245,52 @@ function ChatListPage({
         }
       });
 
+      // join 구독
+      stomp.subscribe(
+        `/topic/chat/${selectedRoom.id}/join`,
+        (frame) => {
+          const payload = JSON.parse(frame.body);
+          if (payload.userId !== userData.userId) {
+            toast.info(`${payload.userId} 님이 방에 입장했습니다.`);
+            setChatUserList(prev => {
+              if (prev.find(u => u.userId === payload.userId)) return prev;
+              return [...prev, { userId: payload.userId, status: '온라인' }];
+            });
+          }
+        },
+        { id: `join-${selectedRoom.id}` } // 고유 id
+      );
+
+      // leave 구독
+      stomp.subscribe(
+        `/topic/chat/${selectedRoom.id}/leave`,
+        (frame) => {
+          const payload = JSON.parse(frame.body);
+          if (payload.userId !== userData.userId) {
+            // 다른 사람이 나간 경우 → 참여자 목록만 갱신
+            toast.info(`${payload.userId} 님이 방에서 나갔습니다.`);
+            setChatUserList(prev => prev.filter(u => u.userId !== payload.userId));
+          } else {
+            // 내가 나간 경우 → chatList에서도 제거
+            setChatList(prev => prev.filter(r => 
+              r.id !== payload.roomId && r.chatRoom?.id !== payload.roomId
+            ));
+            setSelectedRoom(null);
+            setMessages?.([]);
+          }
+        },
+        { id: `leave-${selectedRoom.id}` }
+      );
+
+      // // 구독 끝나자마자 내 입장 이벤트 브로드캐스트
+      // stomp.publish({
+      //   destination: `/topic/chat/${selectedRoom.id}/join`,
+      //   body: JSON.stringify({
+      //     userId: userData.userId,
+      //     roomId: selectedRoom.id,
+      //   }),
+      // });
+
       // 방장 변경 이벤트
       stomp.subscribe(`/topic/chat/${selectedRoom.id}/host-transfer`, (frame) => {
         try {
@@ -273,8 +321,29 @@ function ChatListPage({
     getChatUserList(roomId);
     setTimeout(measurePanel, 0);
   }
+
   function closeMembers() {
     setIsMembersOpen(false);
+  }
+
+  useEffect(() => {
+    if (selectedRoom?.id) {
+      openMembers(selectedRoom.id);
+    } 
+  }, [selectedRoom?.id]);
+
+  // 공통 메뉴 열기 함수
+  function openMenu(e, userId) {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const menuWidth = 170;
+    const gap = 8;
+    setMenu({
+      userId,
+      gameName: selectedRoom?.gameName,
+      x: Math.max(8, rect.right - menuWidth),
+      y: rect.bottom + gap,
+    });
   }
 
   return (
@@ -299,7 +368,6 @@ function ChatListPage({
       >
         <div className="membersDrawerHeader">
           <span>참여자</span>
-          <button className="membersCloseBtn" onClick={closeMembers} title="닫기">✕</button>
         </div>
 
         {/* 원본 리스트(간단 표시) - presence 반영 */}
@@ -342,15 +410,16 @@ function ChatListPage({
                         {u.userId}
                         <span className="membersDot">{getStatusIcon(eff)}</span>
                       </span>
-                      <button
-                        className="membersMoreBtn"
-                        onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
-                        title="상세보기"
-                      >…</button>
+                      {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                      <div
+                        className="MoreButtonStyle"
+                        onClick={(e) => openMenu(e, u.userId)}
+                      >
+                        …
+                      </div>
                     </div>
                   );
                 })}
-
                 {/* 자리비움 */}
                 <div className="membersSectionHeader" style={{ marginTop: 10 }}>
                   자리비움 — {away.length}
@@ -363,11 +432,13 @@ function ChatListPage({
                         {u.userId}
                         <span className="membersDot">{getStatusIcon(eff)}</span>
                       </span>
-                      <button
-                        className="membersMoreBtn"
-                        onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
-                        title="상세보기"
-                      >…</button>
+                      {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                      <div
+                        className="MoreButtonStyle"
+                        onClick={(e) => openMenu(e, u.userId)}
+                      >
+                        …
+                      </div>
                     </div>
                   );
                 })}
@@ -384,11 +455,13 @@ function ChatListPage({
                         {u.userId}
                         <span className="membersDot">{getStatusIcon(eff)}</span>
                       </span>
-                      <button
-                        className="membersMoreBtn"
-                        onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
-                        title="상세보기"
-                      >…</button>
+                      {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                      <div
+                        className="MoreButtonStyle"
+                        onClick={(e) => openMenu(e, u.userId)}
+                      >
+                        …
+                      </div>
                     </div>
                   );
                 })}
@@ -405,12 +478,12 @@ function ChatListPage({
             <img src={setGameIcon(selectedRoom.gameName)} alt="방 아이콘" className="chatCardImage" />
             <p>{selectedRoom.name}</p>
             <p></p>
-            {/* 선택된 방 참여자 패널 열기 버튼 */}
+            {/* 선택된 방 참여자 패널 열기 버튼
             <button
               className="membersIconBtn"
               title="참여자 보기"
               onClick={() => selectedRoom && openMembers(selectedRoom.id)}
-            >👥</button>
+            >👥</button> */}
           </div>
 
           {/* 더보기 클릭시 채팅방 구독한 유저 리스트 표시 */}
@@ -471,7 +544,7 @@ function ChatListPage({
                       </div>
                     )}
 
-                    {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                    {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 
                     <div
                       className="MoreButtonStyle"
                       onClick={(e) => {
@@ -488,20 +561,20 @@ function ChatListPage({
                       }}
                     >
                       …
-                    </div>
+                    </div>*/}
                   </div>
                 );
               })}
             </div>
           }
 
-          {/* 확장 토글 */}
+          {/* 확장 토글
           <div onClick={() => {
             setChatListExtend(!chatListExtend);
             getChatUserList(selectedRoom.id);
           }}>
             {!chatListExtend ? <p>▼</p> : <p>▲</p>}
-          </div>
+          </div> */}
         </div>
       )}
 
@@ -530,11 +603,11 @@ function ChatListPage({
                 <span className="chatCardTitle">{item.chatRoom.name} </span>
 
                 {/* 카드에서 바로 참여자 패널 열기 */}
-                <button
+                {/* <button
                   className="chatCardMembersBtn"
                   title="참여자 보기"
                   onClick={(e) => { e.stopPropagation(); openMembers(item.chatRoom.id); }}
-                >👥</button>
+                >👥</button> */}
 
                 {/* 채팅방 나가기 */}
                 <span
@@ -561,6 +634,7 @@ function ChatListPage({
                           );
                           setChatList(prev => prev.filter(r => r.id !== item.id));
                           toast.success("성공적으로 나가졌습니다!");
+                          
                         } catch (err) {
                           console.error("방 나가기 실패:", err);
                         }

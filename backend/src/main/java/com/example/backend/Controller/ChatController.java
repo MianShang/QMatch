@@ -169,7 +169,6 @@ public class ChatController {
         return chatRoomRepository.findAll();
     }
 
-
     // 채팅방 생성
     @PostMapping("/rooms")
     public ChatRoom createRoom(@RequestBody ChatRoomRequestDto chatRoomData) {
@@ -230,26 +229,26 @@ public class ChatController {
     public ResponseEntity<?> getRoom(@PathVariable String id) {
         return chatRoomRepository.findDetailById(id).map(cr -> {
             // 태그 문자열 배열 만들어서 같이 내려주고 싶으면 DTO로 변환 (간단 DTO)
-                    var tagNames = cr.getChatRoomTags().stream()
-                            .map(ct -> ct.getGameTag() != null ? ct.getGameTag().getTagName() : null)
-                            .filter(Objects::nonNull)
-                            .distinct()
-                            .toList();
+            var tagNames = cr.getChatRoomTags().stream()
+                    .map(ct -> ct.getGameTag() != null ? ct.getGameTag().getTagName() : null)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .toList();
 
             String hostName = (cr.getOwner() != null)
                     ? cr.getOwner().getUserName()
                     : "알 수 없음";
 
-                    Map<String, Object> dto = new HashMap<>();
-                    dto.put("id", cr.getId());
-                    dto.put("name", cr.getName());
-                    dto.put("gameName", cr.getGameName());
-                    dto.put("tagNames", tagNames);
-                    dto.put("hostName", hostName);
-                    dto.put("hostUserId", cr.getOwner() != null ? cr.getOwner().getUserId() : null);
+            Map<String, Object> dto = new HashMap<>();
+            dto.put("id", cr.getId());
+            dto.put("name", cr.getName());
+            dto.put("gameName", cr.getGameName());
+            dto.put("tagNames", tagNames);
+            dto.put("hostName", hostName);
+            dto.put("hostUserId", cr.getOwner() != null ? cr.getOwner().getUserId() : null);
 
-                    return ResponseEntity.ok(dto);
-                }).orElseGet(() -> ResponseEntity.notFound().build());
+            return ResponseEntity.ok(dto);
+        }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     // 채팅방 삭제
@@ -352,6 +351,11 @@ public class ChatController {
         UserChatRoom ucr = new UserChatRoom(user, room, Role.MEMBER);
         room.setCurrentUsers(room.getCurrentUsers() + 1);
         userChatRoomRepository.save(ucr);
+
+        simpMessagingTemplate.convertAndSend(
+                "/topic/chat/" + roomId + "/join",
+                Map.of("userId", userId, "roomId", roomId)
+        );
 
         return ResponseEntity.ok(Map.of(
                 "message", "joined successfully",

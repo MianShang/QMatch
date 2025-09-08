@@ -11,9 +11,11 @@ import com.example.backend.Repository.ChatRoomRepository;
 import com.example.backend.Repository.UserChatRoomRepository;
 import com.example.backend.Repository.UserRepository;
 import com.example.backend.Service.UserChatRoomService;
+import com.example.backend.Websocket.RealTimeUserManagement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -30,6 +32,7 @@ public class UserChatRoomController {
     private final UserChatRoomRepository userChatRoomRepository;
 
     private final UserChatRoomService userChatRoomService;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     // 유저가 접속한 채팅방 DB 저장 API
     @PostMapping("/api/add/user/chatroom")
@@ -80,17 +83,26 @@ public class UserChatRoomController {
                     .body(Map.of("error", "방장은 방을 나갈 수 없습니다. 방장을 위임하거나 방을 삭제해야 합니다."));
         }
 
-        // 3. UserChatRoom 관계 삭제
+        // 3. 실시간 접속 맵에서 제거
+        RealTimeUserManagement.activeUsersByRoom
+                .putIfAbsent(roomId, java.util.concurrent.ConcurrentHashMap.newKeySet());
+        boolean removed = RealTimeUserManagement.activeUsersByRoom.get(roomId).remove(userId);
+
+        // 4. UserChatRoom 관계 삭제
         userChatRoomRepository.findByUser_UserIdAndChatRoom_Id(userId, roomId)
                 .ifPresent(userChatRoomRepository::delete);
 
-        // 4. 채팅방 현재 인원 수 -1
+        // 5. 채팅방 현재 인원 수 -1
         if (room.getCurrentUsers() > 0) {
             room.setCurrentUsers(room.getCurrentUsers() - 1);
         }
         chatRoomRepository.save(room);
 
-        // 5. 성공 응답 반환
+        // 본인이 나갔을 경우에 상대방도 메시지가 뜨도록 수정
+        simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId + "/leave",
+                Map.of("roomId", roomId, "userId", userId));
+
+        // 6. 성공 응답 반환
         return ResponseEntity.ok(Map.of(
                 "success", true,
                 "message", "채팅방에서 나갔습니다.",

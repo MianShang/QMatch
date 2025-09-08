@@ -46,4 +46,10 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, String> {
       where cr.id = :id
     """)
     Optional<ChatRoom> findDetailById(@Param("id") String id);
+
+    // 본인이 구독한 채팅방 안나오게
+    @Query("SELECT c FROM ChatRoom c WHERE NOT EXISTS " +
+            "(SELECT u FROM UserChatRoom u WHERE u.chatRoom = c AND u.user.userId = :userId)")
+    List<ChatRoom> findAllExcludingUser(@Param("userId") String userId);
+
 }

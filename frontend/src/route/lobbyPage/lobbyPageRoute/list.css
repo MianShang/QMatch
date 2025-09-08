@@ -20,10 +20,9 @@
   width: 100%;
   height: 90px;
   margin-bottom: 16px;
-  background: #f5f5f5; /* 연한 회색 배경 */
-  color: #111;         /* 진한 글자색 */
+  background: #f5f5f5;
+  color: #c42525;
   position: relative;
-
   box-shadow:
     0 2px 4px rgba(0, 0, 0, 0.1),
     0 4px 8px rgba(0, 0, 0, 0.12),
@@ -56,8 +55,8 @@
 
 /* 스크롤바 커스텀 (Webkit 기반 브라우저용) */
 .chatListScroll {
-  scrollbar-width: thin;           /* Firefox */
-  scrollbar-color: #888 #2a2a2a;   /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #888 #2a2a2a;
 }
 .chatListScroll::-webkit-scrollbar { width: 8px; }
 .chatListScroll::-webkit-scrollbar-track {
@@ -79,33 +78,61 @@
     inset 0 -8px 8px -8px rgba(0, 0, 0, 0.3);
   scrollbar-width: thin;
   scrollbar-color: #666 transparent;
+  
+  /* 맨 위 카드가 움직일 공간을 확보하기 위해 상단 패딩 추가 */
+  padding-top: 5px;
 }
 .chatListScrollWrapper::-webkit-scrollbar { width: 8px; }
 .chatListScrollWrapper::-webkit-scrollbar-thumb { background-color: #666; border-radius: 10px; }
 .chatListScrollWrapper::-webkit-scrollbar-track { background: transparent; }
 
+/* ===== 채팅방 카드 디자인 개선 ===== */
 .chatCard {
   position: relative;
-  background: #ffffff;
-  color: #212121;
+  background: #2e2e2e;
+  color: #f0f0f0;
   border-radius: 12px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.08);
-  padding: 7px;
-  margin-bottom: 16px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.4);
+  padding: 12px;
+  margin-bottom: 14px;
   transition: all 0.2s ease;
   cursor: pointer;
+  border: 1px solid #54575c;
 }
-.chatCard:hover { box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.12); transform: translateY(-2px); }
-.chatCard:active { transform: translateY(0); box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); }
+.chatCard:hover {
+  /* z-index를 추가하여 마우스 오버 시 가장 위에 보이도록 수정 */
+  position: relative;
+  z-index: 2;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.5);
+  transform: translateY(-3px);
+  background: #23272d;
+  border-color: #4a6ee1;
+}
+.chatCard:active {
+  transform: translateY(0);
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.4);
+}
 
-.chatCardHeader { display: flex; justify-content: space-between; align-items: center; }
+.chatCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
 .chatCardImage{ width: 45px; height: 45px; }
-.chatCardTitle { font-size: 1rem; font-weight: 600; }
-
+.chatCardTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+}
 .chatCardDelete {
-  font-size: 1rem; color: #9e9e9e; cursor: pointer; transition: color 0.2s;
+  font-size: 1rem;
+  color: #9e9e9e;
+  cursor: pointer;
+  transition: color 0.2s;
 }
 .chatCardDelete:hover { color: #e53935; }
+
 
 /* 안읽은 메시지 배지 */
 .chatCardFooter {
@@ -118,7 +145,7 @@
 .chatCardLastMessage {
   margin-left: 10px;
   font-size: 0.8rem;
-  color: #555;
+  color: #aaa;
   max-width: 180px;
   white-space: nowrap;
   overflow: hidden;
@@ -126,47 +153,72 @@
 }
 /* 안읽은 메시지 뱃지 */
 .chatCardBadge {
-  margin-left: 5px;
-  background-color: #d32f2f;
+  background: linear-gradient(135deg, #6a059c, #4a6ee1);
   color: white;
-  font-size: 0.75rem;
-  padding: 4px 10px;
+  font-size: 0.7rem;
+  padding: 4px 8px;
   border-radius: 999px;
-  font-weight: 500;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .selectCardStyle{
-  background: #ffffff;
-  color: #212121;
+  background: #353538;
+  color: #f0f0f0;
   border-radius: 12px;
-  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.08);
-  padding: 7px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.4);
+  padding: 12px;
   margin-bottom: 16px;
   transition: all 0.2s ease;
   cursor: pointer;
+  border: 3px solid #6a059c;
+  
+  /* flexbox를 사용하여 내부 요소를 정렬 */
+  display: flex;
+  flex-direction: column;
 }
 .selectCardHeaderStyle{
   display: flex; justify-content: space-between; align-items: center;
   font-size: 1.25rem; font-weight: 600;
 }
 
+/* 유저 목록 컨테이너가 남은 공간을 모두 차지하도록 만듭니다 */
+.extendable-content-wrapper {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 유저 리스트에만 스크롤을 적용하고, '더보기' 버튼을 아래로 밀어냅니다. */
 .selectCardUserListStyle{
   height: 200px;
-  overflow-y: auto; /* 수직 스크롤만 — 드롭다운은 포털/전역으로 떠서 영향 없음 */
-  color: white;
+  overflow-y: auto;
+  color: #e0e0e0;
   border-radius: 7px;
-  background-color: #111;
+  background-color: #1a1a1c;
+  padding: 8px;
+  margin-top: 10px;
+  border: 1px solid #2a2a2e;
+  
+  /* flexbox를 추가하여 내부 요소를 정렬하고 스크롤 가능하게 만듭니다. */
+  flex-grow: 1;
 }
+
 .UserListContentStyle {
-  position: relative; /* 버튼 배치 안정성용(포털 사용이라 필수는 아님) */
+  position: relative;
   padding-left: 15px;
   padding-right: 15px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  scrollbar-width: thin;
-  scrollbar-color: #444 #111;
+  background: #20242a;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  padding: 10px;
+  border: 1px solid #2a2a2e;
+}
+.UserListContentStyle:hover {
+    background: #2b2f36;
 }
 
 .selectCardUserListStyle::-webkit-scrollbar { width: 10px; }
@@ -192,21 +244,37 @@
 }
 
 /* ====== 추가: 참여자 패널(UI) ====== */
+/* ====== 추가: 참여자 패널(UI) ====== */
 .membersDrawerInline {
-  position: fixed;           /* 좌표는 JS에서 주입 */
-  width: 0;                  /* 닫힐 때 0 */
+  position: fixed;
+  width: 0;
   overflow: hidden;
-  background: #25282C;
+  background: #535354;
   transition: width .25s ease;
   z-index: 20;
-  box-shadow: none;           /* 열릴 때만 그림자 주기 */
-  pointer-events: none;       /* 닫힌 상태에서 클릭 방지 */
+  box-shadow: none;
+  pointer-events: none;
+  border-radius: 12px;
 }
 .membersDrawerInline.open {
-  width: 280px;               /* 원하는 폭으로 조절 */
+  width: 280px;
   box-shadow: 2px 0 8px rgba(0,0,0,.25);
   pointer-events: auto;
 }
+
+/* 닫힐 때 내부 콘텐츠는 즉시 사라지게 합니다. */
+.membersDrawerInline .membersDrawerHeader,
+.membersDrawerInline .membersOverlayGrouped {
+  opacity: 0;
+  transition: none; /* 투명도 변화에 애니메이션을 적용하지 않음 */
+}
+/* 패널이 열릴 때만 콘텐츠가 부드럽게 나타나도록 수정 */
+.membersDrawerInline.open .membersDrawerHeader,
+.membersDrawerInline.open .membersOverlayGrouped {
+  opacity: 1;
+  transition: opacity 0.2s ease-in 0.1s; /* 살짝 늦게 나타나게 */
+}
+
 
 .membersDrawerHeader {
   position: relative;
@@ -216,8 +284,10 @@
   justify-content: space-between;
   padding: 12px 14px;
   font-weight: 600;
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  border-bottom: 1px solid rgba(74, 110, 225, 0.4);
   color: #eaeaea;
+  border-top-right-radius: 12px;
+  border-top-left-radius: 12px;
 }
 
 .membersCloseBtn {
@@ -237,12 +307,12 @@
 /* 그룹 오버레이가 패널 전체를 덮도록(헤더 포함) */
 .membersOverlayGrouped{
   position: absolute;
-  inset: 0;                 /* top/right/bottom/left 모두 0 */
+  inset: 0;
   z-index: 2;
-  background: #25282C;      /* 뒤 컨텐츠 완전히 가리기 */
+  background: #535354;
   overflow-y: auto;
-  top: 44px;                /* 헤더 높이가 44px이므로 그 아래부터 시작 */
-  padding: 8px 10px;        /* 헤더 패딩 대신 내용 패딩만 */
+  top: 44px;
+  padding: 8px 10px;
 }
 
 /* 섹션 헤더(온라인/오프라인) 스타일 */
@@ -250,8 +320,8 @@
   padding: 8px 6px;
   font-weight: 700;
   font-size: 14px;
-  color: #e5e5e5;
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  color: #00e57a;
+  border-bottom: 1px solid rgba(0, 229, 122, 0.2);
   margin: 6px 4px 8px;
 }
 
@@ -262,10 +332,15 @@
   gap: 8px;
   padding: 10px 8px;
   border-radius: 10px;
-  background: rgba(255,255,255,.03);
+  background: #2a2f36;
   margin-bottom: 8px;
-  color: #eaeaea;
+  color: #e0e0e0;
   min-height: 40px;
+  border: 1px solid transparent;
+}
+.membersRow:hover {
+  background: #333842;
+  border-color: #4a6ee1;
 }
 
 .membersName {
@@ -312,23 +387,21 @@
   font-size: 18px;
   line-height: 1;
   margin-left: 8px;
-  color: #6b5cff;   /* 보라 포인트 */
+  color: #6b5cff;
 }
 .membersIconBtn:hover,
 .chatCardMembersBtn:hover {
-  filter: brightness(1.2);
+  filter: brightness(1.4);
 }
 
 /* 드롭다운 메뉴(포털)*/
 .dropdownMenu {
-  background-color: #1e1e1e;
-  border: 1px solid #444;
+  background-color: #1a1e24;
+  border: 1px solid #3f4551;
   border-radius: 8px;
   width: 170px;
   box-shadow: 0 8px 16px rgba(0,0,0,0.4);
   overflow: hidden;
-
-  /* 부드러운 등장 */
   opacity: 0;
   transform: translateY(-6px);
   animation: dropdownIn .12s ease forwards;
@@ -341,11 +414,11 @@
   color: #e0e0e0;
   cursor: pointer;
   user-select: none;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid #2a2f36;
 }
 .dropdownMenu p:last-child { border-bottom: none; }
-.dropdownMenu p:hover { background: #333; color: #fff; }
+.dropdownMenu p:hover { background: #2a2f36; color: #fff; }
 
 @keyframes dropdownIn {
   to { opacity: 1; transform: translateY(0); }
-}
+} 

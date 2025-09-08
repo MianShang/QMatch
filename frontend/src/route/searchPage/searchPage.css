@@ -8,8 +8,10 @@
 }
 
 .contentStyle{
-    background-color: rgb(43,45, 49);
+    background-color: #151a21; /* 로비 컨테이너 배경색과 통일 */
     border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     text-align: center;
 }
 
@@ -25,28 +27,45 @@
   margin-top: 10px;
   margin-left: 5px;
   display: flex;
-  flex-wrap: wrap;      /* 줄바꿈 허용 */
-  gap: 10px;            /* 버튼 간격 */
-  justify-content: flex-start;  /* 왼쪽 정렬 */
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-start;
+  color: white;
 }
 
 
 .chat_tag {
-  width: 90px;          /* 약간 키움 */
+  width: 90px;
   height: 90px;
-  background-color: black;
-  margin: 0;            /* gap으로만 간격 조절 */
+  background-color: #1a202a; /* 어두운 배경 */
+  margin: 0;
   display: flex;
+  flex-direction: column; /* 아이콘과 텍스트를 세로로 정렬 */
   align-items: center;
   justify-content: center;
   border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
+.chat_tag:hover {
+  transform: translateY(-2px);
+  background: #22272e;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  border-color: #6a059c; /* 보라색 네온 효과 */
+}
 
 .chat_tag img {
   width: 50px;
   height: 50px;
+}
 
+.chat_tag p {
+  margin: 5px 0 0 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e0e0e0;
 }
 
 
@@ -60,12 +79,12 @@
 /* 섹션 구분 */
 .tag-section {
   display: flex;
-  flex-wrap: wrap;          /* 줄바꿈 허용 */
-  gap: 9px;                /* 체크박스 간격 */
+  flex-wrap: wrap;
+  gap: 9px;
   padding: 10px;
-  border: 1px solid #ddd;
+  border: 1px solid #444;
   border-radius: 8px;
-  background-color: #f9f9f9;
+  background-color: #1a202a;
   margin-right: 7px;
   width: 265px;
 }
@@ -74,40 +93,41 @@
 /* 제목 스타일 */
 .tag-title {
   font-weight: bold;
-  width: 100%;             /* 한 줄 차지 */
+  width: 100%;
   margin-bottom: 5px;
-  color: #333;
+  color: #00e57a; /* 네온 초록색 */
 }
 
 
 /* 체크박스 + 라벨 */
 .tag-form label {
-    margin-left: 5px;
+  margin-left: 5px;
   display: flex;
   align-items: center;
   gap: 6px;
   cursor: pointer;
   padding: 4px 10px;
-  border-radius: 4px;
-  background-color: white;
-  border: 1px solid #ccc;
+  border-radius: 20px; /* 더 둥글게 */
+  background-color: #2a2f36;
+  border: 1px solid #444;
   transition: background 0.2s;
-  min-width: 100px;          /*  가로 정렬 균형 위해 최소 너비 지정 */
+  min-width: 100px;
   justify-content: flex-start;
+  color: #ccc;
 }
 
 
 /* hover 효과 */
 .tag-form label:hover {
-  background-color: #e6f0ff;
+  background-color: #3f4551;
+  color: white;
 }
 
 /* 체크박스 크기 */
 .tag-form input[type="checkbox"] {
   transform: scale(1.2);
-  accent-color: #4a90e2;
+  accent-color: #4a6ee1; /* 체크박스 색상 변경 */
 }
-
 
 
 /* ================================우측 div============================= */
@@ -123,31 +143,45 @@
 .searchBarSize{
     border-radius: 25px;
     height: 50px;
+    overflow: hidden; /* 입력창이 튀어나오지 않게 */
 }
 
 /* 채팅방 리스트 사이즈 */
 .chatListSize {
   margin-top: 10px;
-  height: calc(100% - 145px); 
-  overflow: hidden; 
+  height: calc(100% - 145px);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 .chatRoomList
 {
-  background-color: rgb(54, 54, 54);
-  color: white;
-  border: 1px solid;
+  background-color: #1a202a; /* 로비 카드 배경색과 통일 */
+  color: #e0e0e0;
+  border: 1px solid transparent;
   border-radius: 15px;
   margin: 10px;
   height: 50px;
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.chatRoomList:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  border-color: #4a6ee1;
 }
 
 /* 실제 스크롤이 생길 내부 채팅 목록 컨테이너 */
 .chatListScroll {
   overflow-y: auto;
   flex-grow: 1;
+  padding-top: 5px;
 }
 
 /* 채팅방 생성 */
@@ -156,8 +190,27 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 10px; 
-  padding-bottom: 10px; 
+  gap: 10px;
+  padding-bottom: 10px;
+}
+.chatCreate button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  background-color: #007bff;
+  color: white;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+.chatCreate button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+}
+.chatCreate button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 /* 하단 div 사이즈 */
@@ -170,25 +223,35 @@
 .searchAdSize{
     height: 100%;
     width: calc(100% - 85px);
+    background: #111418;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+    border: 1px solid #1a1a1a;
 }
 
 /* 알림 및 토글(로비버튼) 사이즈 */
 .noticeSize{
     height: 75px;
     width: 75px;
-
     margin-left: 10px;
+    background: #151a21;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* 알림 및 토글(로비버튼) 호버시 그래픽 */
 .noticeSize:hover {
-    transition: box-shadow 0.3s ease;
-    box-shadow: inset 0 0 0 1px white;
+  transform: scale(1.05);
+  box-shadow: 0 0 15px #6a059c;
+  border-color: #6a059c;
 }
 
 /* 알림 및 토글(로비버튼) 이미지 포지션 */
 .imgPos{
-    margin-top: 5px;
+  width: 65px;
 }
 
 /* 검색 */
@@ -198,14 +261,20 @@
   padding: 12px 16px;
   border: none;
   border-radius: 25px;
-  background-color: #2c2c2c;
+  background-color: #1c2025; /* 어두운 배경 */
   color: white;
   font-size: 16px;
   outline: none;
   box-sizing: border-box;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
 /* 검색 */
 .searchInput::placeholder {
-  color: #aaa;
+  color: #888;
+}
+.searchInput:focus {
+  border-color: #4a6ee1;
+  box-shadow: 0 0 8px rgba(74, 110, 225, 0.5);
 }

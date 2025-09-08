@@ -9,6 +9,7 @@ import ChatListPage from './lobbyPageRoute/chatListPage.jsx';
 import FriendListPage from './lobbyPageRoute/friendListPage.jsx';
 import MyProfile from '../../feature/profile/myProfileModal.jsx';
 import VoiceChat from './lobbyPageRoute/VoiceChat.jsx';
+import VoiceChatModal from '../../modal/voiceChatSetting/VoiceChatModal.jsx';
 
 // 로그인 체크용 Context API import
 import { LogContext } from '../../App.jsx'
@@ -52,7 +53,10 @@ function LobbyPage() {
   const [voiceSpeakers, setVoiceSpeakers] = useState({});
   const [localMuted, setLocalMuted] = useState(false);
   const [joinedVoice, setJoinedVoice] = useState(false);
-   const voiceChatRef = useRef(null);
+  const voiceChatRef = useRef(null);
+
+  // 음성설정 모달
+  const [showVoiceChatModal, setShowVoiceChatModal] = useState(false);
   
   // 커스텀 훅 가져오기
   // --UseEffect
@@ -187,7 +191,13 @@ function LobbyPage() {
           />
           <p onClick={() => logoutFunc(setIsLogIn)} style={{ cursor: 'pointer', marginTop: '10px' }}>로그아웃</p>
 
-          <img src={"./public/phoneIcon.png"} style={{ marginTop:'440px', width: '95px', height: '95px', objectFit: 'cover' }}/>
+          <div class="voice-chat-button-wrapper">
+            <button class="voice-chat-button" aria-label="음성 채팅 설정" onClick={()=>{setShowVoiceChatModal(true);}}>
+                <svg class="phone-icon" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.32.57 3.55.57.55 0 1 .45 1 1v3.5c0 .55-.45 1-1 1C12.95 22 2 11.05 2 4c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.23.2 2.43.57 3.55.12.35.03.75-.24 1.02l-2.2 2.2z"/>
+                </svg>
+            </button>
+          </div>
         </div>
 
         {/* 중앙 친구/채팅 바 */}
@@ -285,6 +295,14 @@ function LobbyPage() {
           setUserData={setUserData}
           onClose={() => setShowProfileModal(false)}
         />}
+
+      {/*음성설정 모달*/}
+      {showVoiceChatModal &&
+        <VoiceChatModal viewUserId={profileUserId}
+        userData={userData}
+        setUserData={setUserData}
+        onClose={() => setShowVoiceChatModal(false)}
+      />}
 
       {/* VoiceChat 컴포넌트를 lobbyPage에 렌더링 */}
           <VoiceChat

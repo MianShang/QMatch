@@ -151,15 +151,14 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
             <label>태그 선택</label>
             <div className="tagContainer">
               {tags.map(tag => (
-                <label key={tag.id} className="tagCheckbox">
-                  <input
-                    type="checkbox"
-                    value={tag.id}
-                    checked={selectedTags.includes(tag.id)}
-                    onChange={(e) => toggleTag(tag.id)}
-                  />
+                <button
+                  key={tag.id}
+                  type="button" // 폼 제출을 방지하기 위해 type="button" 지정
+                  className={`tagButton ${selectedTags.includes(tag.id) ? 'selected' : ''}`}
+                  onClick={() => toggleTag(tag.id)}
+                >
                   {tag.tagName}
-                </label>
+                  </button>
               ))}
             </div>
           </div>

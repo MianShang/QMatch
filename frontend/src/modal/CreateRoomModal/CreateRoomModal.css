@@ -5,44 +5,77 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.6); /* 더 어두운 배경 */
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
+  backdrop-filter: blur(5px); /* 배경 블러 효과 */
 }
 
 /* 모달 내부 컨테이너 */
 .modalContent {
-  background: rgb(43,47,53);
-  border-radius: 10px;
-  width: 400px;
-  padding: 25px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  background: #1c2025; /* 사이버펑크 배경색 */
+  border-radius: 12px; /* 둥근 모서리 */
+  width: 450px; /* 고정 너비 */
+  padding: 30px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
-  max-height: 90vh;
-  overflow-y: auto;
+
+  /* 핵심 수정: 높이를 콘텐츠에 맞추고, 최대 높이 설정 */
+  height: max-content; /* 내부 콘텐츠 높이에 따라 자동으로 늘어나게 함 */
+  max-height: 90vh; /* 화면의 90%를 넘지 않도록 제한 */
+  
+  overflow-y: auto; /* 내용이 넘칠 경우 모달 자체에 스크롤 생성 */
+  border: 1px solid rgba(74, 110, 225, 0.2); /* 미세한 네온 테두리 */
 }
+
+/* 스크롤바 스타일링 */
+.modalContent::-webkit-scrollbar {
+  width: 8px;
+}
+.modalContent::-webkit-scrollbar-track {
+  background: #2a2f36;
+  border-radius: 4px;
+}
+.modalContent::-webkit-scrollbar-thumb {
+  background-color: #555c66;
+  border-radius: 4px;
+  border: 2px solid #2a2f36;
+}
+.modalContent::-webkit-scrollbar-thumb:hover {
+  background: #6a7482;
+}
+
 
 /* 모달 상단 헤더 */
 .modalHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  color: #e0e0e0;
 }
 
 .modalHeader h3 {
   margin: 0;
+  font-size: 1.5rem;
+  color: #00e57a; /* 네온 초록색 제목 */
 }
 
 /* 닫기 버튼 */
 .closeBtn {
   background: none;
   border: none;
-  font-size: 1.2rem;
+  font-size: 1.5rem;
+  color: #cfcfcf;
   cursor: pointer;
+  transition: color 0.2s;
+}
+
+.closeBtn:hover {
+  color: #ff0000; /* 붉은색으로 변경 */
 }
 
 /* 입력 영역 전체 */
@@ -54,8 +87,8 @@
 .formGroup {
   display: flex;
   flex-direction: column;
-  margin-bottom: 20px;
-  padding: 0 8px;
+  margin-bottom: 25px;
+  padding: 0 5px;
 }
 
 /* 첫 번째 입력 블록만 상단 여백 추가 */
@@ -65,44 +98,141 @@
 
 /* 라벨과 입력창 사이 여백 */
 .formGroup label {
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  color: #aaa;
+  font-weight: 500;
+  font-size: 0.9rem;
 }
 
 /* 입력창 및 드롭다운 공통 스타일 */
 .modalInput,
 .modalSelect {
   width: 100%;
-  padding: 8px;
+  padding: 12px;
   font-size: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 6px;
+  border: 1px solid #444;
+  border-radius: 8px;
   box-sizing: border-box;
+  background-color: #2a2f36;
+  color: #e0e0e0;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.modalInput:focus,
+.modalSelect:focus {
+  border-color: #4a6ee1;
+  box-shadow: 0 0 8px rgba(74, 110, 225, 0.4);
+}
+
+.modalSelect {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%23e0e0e0"><path d="M10 12l-6-6 1.41-1.41L10 9.17l4.59-4.58L16 6z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
 }
 
 /* 하단 버튼 영역 */
 .footerArea {
-  margin-top: 20px;
+  margin-top: 25px;
   display: flex;
   justify-content: flex-end;
-  padding: 0 8px;
+  padding: 0 5px;
 }
 
 /* 방 만들기 버튼 */
 .createBtn {
-  padding: 10px 20px;
-}
-
-.tagBtn {
-  margin: 4px;
-  padding: 6px 12px;
-  border: 1px solid #aaa;
-  border-radius: 6px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  background: #222;
-  color: #fff;
+  font-weight: bold;
+  background-color: #007bff; /* 단색으로 변경 */
+  color: white;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
-.tagBtn.selected {
-  background: #4CAF50;
-  border-color: #4CAF50;
+.createBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+}
+.createBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* 태그 버튼 컨테이너 */
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap; /* 태그가 많아지면 자동으로 다음 줄로 넘어가게 함 */
+  gap: 8px;
+  margin-top: 5px;
+  
+  /* 태그 컨테이너의 최대 높이를 유동적으로 만듦 */
+  max-height: 150px; /* 기존과 동일하게 유지 */
+  overflow-y: auto; /* 넘칠 경우 스크롤바 생성 */
+  padding-right: 10px; /* 스크롤바가 태그를 가리지 않도록 여백 추가 */
+  
+  /* 스크롤바 디자인 (태그 컨테이너 전용) */
+  scrollbar-width: thin;
+  scrollbar-color: #555c66 #2a2f36;
+}
+.tagContainer::-webkit-scrollbar {
+  width: 8px;
+}
+.tagContainer::-webkit-scrollbar-track {
+  background: #2a2f36;
+  border-radius: 4px;
+}
+.tagContainer::-webkit-scrollbar-thumb {
+  background-color: #555c66;
+  border-radius: 4px;
+  border: 2px solid #2a2f36;
+}
+.tagContainer::-webkit-scrollbar-thumb:hover {
+  background: #6a7482;
+}
+
+/* 개별 태그 버튼 스타일 */
+.tagButton {
+  padding: 8px 15px;
+  border: 1px solid #444;
+  border-radius: 20px; /* 더 둥근 알약 형태 */
+  background: #2a2f36;
+  color: #aaa;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none; /* 텍스트 선택 방지 */
+  white-space: nowrap; /* 태그 텍스트 줄바꿈 방지 */
+}
+
+.tagButton:hover {
+  border-color: #6a059c;
+  color: #e0e0e0;
+  box-shadow: 0 0 8px rgba(106, 5, 156, 0.3);
+}
+
+/* 선택된 태그 버튼 스타일 */
+.tagButton.selected {
+  background: linear-gradient(135deg, #6a059c, #4a6ee1);
+  border-color: #6a059c;
+  color: white;
+  box-shadow: 0 0 12px rgba(106, 5, 156, 0.6);
+}
+
+/* 에러 메시지 */
+.errorMsg {
+  color: #ff5252;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 10px;
+  background-color: #381a1a;
+  border-radius: 6px;
+  padding: 8px;
+  border: 1px solid #ff5252;
 }

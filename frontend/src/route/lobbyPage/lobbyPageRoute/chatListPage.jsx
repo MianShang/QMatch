@@ -132,7 +132,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
     if (!selectedRoom?.id || !userData?.userId) return;
 
     const stomp = new Client({
-      brokerURL: 'ws://localhost:8080/gs-guide-websocket',
+      brokerURL: 'ws://localhost:8080/gs-guide-websocket',    
       reconnectDelay: 5000,
       connectHeaders: {
         userId: userData.userId,
@@ -187,7 +187,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
         { id: `join-${selectedRoom.id}` } // 고유 id
       );
 
-      //  leave 구독
+      // leave 구독
       stomp.subscribe(
         `/topic/chat/${selectedRoom.id}/leave`,
         (frame) => {
@@ -247,8 +247,29 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
     getChatUserList(roomId);
     setTimeout(measurePanel, 0);
   }
+
   function closeMembers() {
     setIsMembersOpen(false);
+  }
+
+  useEffect(() => {
+    if (selectedRoom?.id) {
+      openMembers(selectedRoom.id);
+    } 
+  }, [selectedRoom?.id]);
+
+  // 공통 메뉴 열기 함수
+  function openMenu(e, userId) {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const menuWidth = 170;
+    const gap = 8;
+    setMenu({
+      userId,
+      gameName: selectedRoom?.gameName,
+      x: Math.max(8, rect.right - menuWidth),
+      y: rect.bottom + gap,
+    });
   }
 
   return (
@@ -277,7 +298,6 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
       >
         <div className="membersDrawerHeader">
           <span>참여자</span>
-          <button className="membersCloseBtn" onClick={closeMembers} title="닫기">✕</button>
         </div>
         <div className="membersListScroll">
           {chatUserList.map(u => (
@@ -313,11 +333,13 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                       {u.userId}
                       <span className="membersDot">{getStatusIcon(u.status)}</span>
                     </span>
-                    <button
-                      className="membersMoreBtn"
-                      onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
-                      title="상세보기"
-                    >…</button>
+                    {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                    <div
+                      className="MoreButtonStyle"
+                      onClick={(e) => openMenu(e, u.userId)}
+                    >
+                      …
+                    </div>
                   </div>
                 ))}
 
@@ -331,11 +353,13 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                       {u.userId}
                       <span className="membersDot">{getStatusIcon(u.status)}</span>
                     </span>
-                    <button
-                      className="membersMoreBtn"
-                      onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
-                      title="상세보기"
-                    >…</button>
+                    {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                    <div
+                      className="MoreButtonStyle"
+                      onClick={(e) => openMenu(e, u.userId)}
+                    >
+                      …
+                    </div>
                   </div>
                 ))}
 
@@ -349,11 +373,13 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                       {u.userId}
                       <span className="membersDot">{getStatusIcon(u.status)}</span>
                     </span>
-                    <button
-                      className="membersMoreBtn"
-                      onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
-                      title="상세보기"
-                    >…</button>
+                    {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                    <div
+                      className="MoreButtonStyle"
+                      onClick={(e) => openMenu(e, u.userId)}
+                    >
+                      …
+                    </div>
                   </div>
                 ))}
               </>
@@ -433,7 +459,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                       </div>
                     )}
 
-                    {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                    {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 
                     <div
                       className="MoreButtonStyle"
                       onClick={(e) => {
@@ -450,20 +476,20 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                       }}
                     >
                       …
-                    </div>
+                    </div>*/}
                   </div>
                 );
               })}
             </div>
           }
 
-          {/* 확장 토글 */}
+          {/* 확장 토글
           <div onClick={() => {
             setChatListExtend(!chatListExtend);
             getChatUserList(selectedRoom.id);
           }}>
             {!chatListExtend ? <p>▼</p> : <p>▲</p>}
-          </div>
+          </div> */}
         </div>
       )}
 
@@ -492,11 +518,11 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                 <span className="chatCardTitle">{item.chatRoom.name} </span>
 
                 {/* 카드에서 바로 참여자 패널 열기 */}
-                <button
+                {/* <button
                   className="chatCardMembersBtn"
                   title="참여자 보기"
                   onClick={(e) => { e.stopPropagation(); openMembers(item.chatRoom.id); }}
-                >👥</button>
+                >👥</button> */}
 
                 {/* 채팅방 나가기 */}
                 <span

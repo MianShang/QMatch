@@ -169,7 +169,6 @@ public class ChatController {
         return chatRoomRepository.findAll();
     }
 
-
     // 채팅방 생성
     @PostMapping("/rooms")
     public ChatRoom createRoom(@RequestBody ChatRoomRequestDto chatRoomData) {

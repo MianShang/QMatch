@@ -5,25 +5,27 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
+  backdrop-filter: blur(5px);
 }
 
 /* 모달 내부 컨테이너 */
 .modalContent {
-  background: rgb(43,47,53);
+  background: #1c2025;
   border-radius: 12px;
-  width: 420px;              /* 사진 크기 유지 */
-  padding: 20px 25px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  width: 420px;
+  padding: 25px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: column;
   max-height: 90vh;
   overflow-y: auto;
-  color: #fff;
+  color: #e0e0e0;
+  border: 1px solid rgba(74, 110, 225, 0.2);
 }
 
 /* 모달 상단 헤더 */
@@ -31,24 +33,25 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .modalHeader h3 {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
+  color: #00e57a;
 }
 
 .closeBtn {
   background: none;
   border: none;
-  font-size: 1.3rem;
-  color: #bbb;
+  font-size: 1.5rem;
+  color: #cfcfcf;
   cursor: pointer;
   transition: color 0.2s ease;
 }
 .closeBtn:hover {
-  color: #fff;
+  color: #ff0000;
 }
 
 /* 입력 영역 */
@@ -59,58 +62,68 @@
 .formGroup {
   display: flex;
   flex-direction: column;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .formGroup label {
-  font-weight: bold;
+  font-weight: 500;
   margin-bottom: 6px;
-  color: #ddd;
+  color: #aaa;
+  font-size: 0.9rem;
 }
 
 /* 정보 텍스트 */
 .infoText {
-  background: #1e1f23;
-  padding: 8px 12px;
-  border-radius: 6px;
-  color: #eee;
+  background: #2a2f36;
+  padding: 12px 16px;
+  border-radius: 8px;
+  color: #e0e0e0;
   font-size: 1rem;
+  border: 1px solid #444;
 }
 
 /* 태그 영역 */
 .tagContainer {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .tagBadge {
   display: inline-block;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: #2c2f36;
-  color: #fff;
-  font-size: 0.85rem;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: #2a2f36;
+  color: #e0e0e0;
+  font-size: 0.9rem;
+  border: 1px solid #4a6ee1;
+  box-shadow: 0 2px 8px rgba(74, 110, 225, 0.2);
 }
 
 /* 하단 버튼 */
 .footerArea {
-  margin-top: 20px;
+  margin-top: 25px;
   display: flex;
   justify-content: flex-end;
 }
 
 .joinBtn {
-  padding: 10px 20px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
-  background-color: #4CAF50;
+  background: #007bff;
   color: white;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .joinBtn:hover {
-  background-color: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 192, 255, 0.4);
+}
+.joinBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }

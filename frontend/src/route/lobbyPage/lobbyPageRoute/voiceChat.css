@@ -28,11 +28,11 @@
 }
 
 :root{
-  --talk-size: 35px;     /* 전체 아이콘 크기 */
-  --talk-color:#36d97d;  /* 말하는 중 색상 */
-  --talk-dim:#8aa38f;    /* 비활성 색상 */
-  --wave-width:2px;      /* 파동 선 두께 */
-  --pulse-dur:1100ms;    /* 파동 주기 */
+  --talk-size: 35px;
+  --talk-color:#00c0ff;  /* 네온 블루 색상 */
+  --talk-dim:#5a6578;    /* 비활성 색상 */
+  --wave-width:2px;
+  --pulse-dur:1100ms;
 }
 
 .talkSpeakerArc{

@@ -199,7 +199,7 @@ function LobbyPage() {
                   onOpenProfile={(targetUserId) => { setProfileUserId(targetUserId); setShowProfileModal(true); }}
                   currentUserStatus={userStatus} 
                   refreshTick     = { listRefreshTick }/>
-                : <FriendListPage />}
+                : <FriendListPage userId={userData.userId}/>}
             </div>
           </div>
         }

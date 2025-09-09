@@ -13,6 +13,7 @@ import { useChatDeleteRoom } from '../../../hooks/chat/useChatDeleteRoom.js'
 import { useNewChatNotice } from '../../../hooks/chatNotice/useNewChatNotice.js';
 import { useChatGetRooms } from '../../../hooks/chat/useChatGetRooms.js' // 이 훅을 다시 사용합니다.
 import { useChatListGet } from '../../../hooks/chatList/useChatListGet.js'
+import { useFriendRequest } from '../../../hooks/friends/useFriendRequest.js';
 
 // Modal
 import UserHistoryModal from '../../../modal/userHistory/UserHistoryModal.jsx'
@@ -62,6 +63,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
   useUnReadChatCount(userData, chatList, setUnreadCounts);     // 초기에 저장된 채팅방의 안읽은 메세지 개수 카운트 커스텀훅
   useNewChatNotice(userData, selectedRoom, setUnreadCounts);   // 저장한 채팅방에 새로운 메세지 도착시 알림개수 처리하는 커스텀 훅 
 
+  const { sendRequest } = useFriendRequest(); //친구 추가 훅  
   const getChatUserList = useChatGetUserList(setChatUserList);
   const deleteUserRoom = useChatDeleteRoom();
   const getChatList = useChatListGet();
@@ -569,6 +571,18 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                 방장 넘기기
               </p>
             )}
+
+          {/* 친구 추가 기능 */}
+          <p onClick={async () => {
+            // 훅에서 반환된 함수 호출
+            const requesterId = userData.userId;
+            const addresseeId = menu.userId;
+            const result = await sendRequest(requesterId, addresseeId);
+            alert(result.message);
+            setMenu(null);
+            }}>
+            친구 추가
+          </p>
 
             <p onClick={() => { console.log('차단', menu.userId); setMenu(null); }}>
               차단하기

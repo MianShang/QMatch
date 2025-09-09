@@ -1,6 +1,8 @@
 import { useState, useContext, useEffect, useRef } from 'react';
 import './list.css';
 import { Client } from '@stomp/stompjs';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 // 전역 유저 State 데이터 가져오기용 Context API import
 import { LogContext } from '../../../App.jsx';
@@ -18,13 +20,10 @@ import { useFriendRequest } from '../../../hooks/friends/useFriendRequest.js';
 // Modal
 import UserHistoryModal from '../../../modal/userHistory/UserHistoryModal.jsx'
 
-// VoiceChat 컴포넌트 추가
-import VoiceChat from './VoiceChat';
-
 //포털
 import DropdownPortal from './dropDownPotal.jsx'
 
-function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfile, currentUserStatus }) {
+function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfile, currentUserStatus, voiceSpeakers, onJoinVoice, onLeaveVoice, onToggleMute, localMuted, joinedVoice, voiceChatRoomId}) {
   // State 보관함 해체
   const { userData } = useContext(LogContext);
 
@@ -51,12 +50,6 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
   const [panelRect, setPanelRect] = useState({ left: 0, top: 0, height: 0 });
   const leftColRef = useRef(null);
 
-  // 음량 표시
-  const [voiceParticipants, setVoiceParticipants] = useState(false)
-  const [speakers, setSpeakers] = useState({});
-  const [localMuted, setLocalMuted] = useState(false);
-  const [joinedVoice, setJoinedVoice] = useState(false);
-
   // 커스텀훅
   // useChatGetRooms 훅을 다시 호출하여 chatList를 채웁니다.
   useChatGetRooms(userData, setChatList);                      // 로그인한 유저의 채팅방 가져오는 커스텀훅
@@ -77,6 +70,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
       case "dnf": return "/gameIcons/dnf_Icon.png";
       case "maplestory": return "/gameIcons/maplestory_Icon.png";
       case "lostark": return "/gameIcons/lostark_Icon.png";
+      case "tft": return "/gameIcons/tft_Icon.png";
       default: return "https://placehold.co/45";
     }
   }
@@ -133,7 +127,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
     })();
   }, [selectedRoom?.id]);
 
-  /* 멤버 강퇴하기 */
+  /* 강퇴 + 방장 변경 이벤트 */
   useEffect(() => {
     if (!selectedRoom?.id || !userData?.userId) return;
 
@@ -147,107 +141,59 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
     });
 
     stomp.onConnect = () => {
+      // 강퇴 이벤트
       stomp.subscribe(`/topic/chat/${selectedRoom.id}/kick`, (frame) => {
         try {
           const payload = JSON.parse(frame.body);
-          // 킥 방송 구독 콜백 내부
+
           if (payload?.targetUserId === userData.userId) {
-            // 1) 채팅창 닫기 + 메시지 초기화
+            // 내가 추방된 경우
             setSelectedRoom(null);
-            setMessages?.([]);          // 채팅 메시지 비우기 (있으면)
-
-            // 2) 참여자 패널 닫기
+            setMessages?.([]);
             setIsMembersOpen(false);
-
-            // 3) 음성채팅 방 떠나기 (Agora 등 쓰면)
-            // leaveVoiceChannel?.(payload.roomId); // 너가 쓰는 함수명으로 호출
-
-            // 4) 내 채팅방 목록에서 제거
-            setChatList(prev => prev.filter(it => it.chatRoom.id !== payload.roomId));
-
-            // 5) 안읽음 카운트 정리
+            setChatList((prev) =>
+              prev.filter((it) =>
+                it.id !== selectedRoom.id && it.chatRoom?.id !== selectedRoom.id
+              )
+            );
             setUnreadCounts(prev => {
               const next = { ...prev };
               delete next[payload.roomId];
               return next;
             });
-
-            alert('방장에게 의해 방에서 추방되었습니다.');
+            toast.success('방장에게 의해 방에서 추방되었습니다.');
           } else {
-            // 🟡 남이 추방 -> 참여자 패널/리스트 즉시 갱신
+            // 다른 사람 추방 시 참여자 목록 갱신
             setChatUserList(prev => prev.filter(u => u.userId !== payload?.targetUserId));
           }
         } catch (e) {
-          console.error('kick payload parse error', e);
+          toast.error('kick payload parse error', e);
+        }
+      });
+
+      // 방장 변경 이벤트
+      stomp.subscribe(`/topic/chat/${selectedRoom.id}/host-transfer`, (frame) => {
+        try {
+          const payload = JSON.parse(frame.body);
+          console.log("방장 변경 이벤트:", payload);
+
+          setOwnerUserId(payload.newHost);
+
+          if (payload.newHost === userData.userId) {
+            toast.success("당신이 새로운 방장이 되었습니다!");
+          }
+          if (payload.oldHost === userData.userId) {
+            toast.success("방장을 넘겼습니다.");
+          }
+        } catch (e) {
+          console.error("host-transfer parse error", e);
         }
       });
     };
 
-  stomp.activate();
-  return () => stomp.deactivate();
-  }, [selectedRoom?.id, userData?.userId]);
-
-  useEffect(() => {
-  if (!selectedRoom?.id || !userData?.userId) return;
-
-  const stomp = new Client({
-    brokerURL: 'ws://localhost:8080/gs-guide-websocket',
-    reconnectDelay: 5000,
-    connectHeaders: {
-      userId: userData.userId,
-      roomId: selectedRoom.id,
-    },
-  });
-
-  stomp.onConnect = () => {
-    // 강퇴
-    stomp.subscribe(`/topic/chat/${selectedRoom.id}/kick`, (frame) => {
-      try {
-        const payload = JSON.parse(frame.body);
-        if (payload?.targetUserId === userData.userId) {
-          setSelectedRoom(null);
-          setMessages?.([]);
-          setIsMembersOpen(false);
-          setChatList(prev => prev.filter(it => it.chatRoom.id !== payload.roomId));
-          setUnreadCounts(prev => {
-            const next = { ...prev };
-            delete next[payload.roomId];
-            return next;
-          });
-          alert('방장에게 의해 방에서 추방되었습니다.');
-        } else {
-          setChatUserList(prev => prev.filter(u => u.userId !== payload?.targetUserId));
-        }
-      } catch (e) {
-        console.error('kick payload parse error', e);
-      }
-    });
-
-    // 방장 변경
-    stomp.subscribe(`/topic/chat/${selectedRoom.id}/host-transfer`, (frame) => {
-      try {
-        const payload = JSON.parse(frame.body);
-        console.log("방장 변경 이벤트:", payload);
-
-        setOwnerUserId(payload.newHost);
-
-        if (payload.newHost === userData.userId) {
-          alert("당신이 새로운 방장이 되었습니다!");
-        }
-        if (payload.oldHost === userData.userId) {
-          alert("방장을 넘겼습니다.");
-        }
-      } catch (e) {
-        console.error("host-transfer parse error", e);
-      }
-    });
-  };
-
     stomp.activate();
     return () => stomp.deactivate();
   }, [selectedRoom?.id, userData?.userId]);
-
-
 
   /* 열기/닫기 헬퍼 */
   function openMembers(roomId) {
@@ -261,6 +207,9 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
 
   return (
     <div className='listRouteSize contentStyle' ref={leftColRef}>
+      {/* 음성채팅 디버깅 코드 */}
+      {/* <p>selectedRoom.id: {selectedRoom?.id}</p>
+      <p>voiceChatRoomId: {voiceChatRoomId}</p> */}
 
       {/* 전적 모달 */}
       {isUserHistoryOpen && (
@@ -386,11 +335,11 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
           {chatListExtend &&
             <div className='selectCardUserListStyle'>
               {chatUserList.map((item) => {
-                const key = String(item.userId); // 문자열 키 권장
-                const info = speakers[key] || { level: 0, speaking: false };
+                const key = String(item.userId);
+                const info = voiceSpeakers[key] || { level: 0, speaking: false };
                 const isMe = item.userId === userData.userId;
-
-                const isVoiceParticipant = Array.isArray(voiceParticipants)&&voiceParticipants.includes(String(item.userId));
+                
+                const isVoiceParticipant = joinedVoice && (voiceChatRoomId === selectedRoom.id);
                 const talkingOn = isVoiceParticipant && info.speaking && !(isMe && localMuted);
 
                 return (                
@@ -415,16 +364,27 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                       )}
                     </p>
 
-                    {/* 음성채팅 버튼 */}
-                    {isMe && selectedRoom && (
-                      <VoiceChat
-                        channelName={selectedRoom.id}
-                        uid={userData.userId}
-                        onSpeakers={setSpeakers}
-                        onLocalMuteChange={setLocalMuted}
-                        onJoinChange={setJoinedVoice}
-                        onVoiceParticipantsChange={setVoiceParticipants}
-                      />
+                    {/* VoiceChat 버튼 UI */}
+                    {isMe && (
+                      <div className="voice-control-panel">
+                        {joinedVoice ? (
+                          /* 현재 보고 있는 방과 참여 중인 방이 같은 경우 */
+                          voiceChatRoomId === selectedRoom.id ? (
+                            <>
+                              <button onClick={onLeaveVoice}>🎧 퇴장</button>
+                              <button onClick={onToggleMute}>
+                                {localMuted ? '🔊' : '🔇'}
+                              </button>
+                            </>
+                          ) : (
+                            /* 다른 방에 참여 중인 경우 */
+                            <p>다른 방에 참여 중입니다.</p>
+                          )
+                        ) : (
+                          /* 음성 채팅에 참여하고 있지 않은 경우 */
+                          <button onClick={() => onJoinVoice(selectedRoom.id)}>🎙️ 입장</button>
+                        )}
+                      </div>
                     )}
 
                     {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
@@ -492,9 +452,39 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                   onClick={(e) => { e.stopPropagation(); openMembers(item.chatRoom.id); }}
                 >👥</button>
 
-                {/* 채팅방 삭제 */}
-                <span className="chatCardDelete"
-                  onClick={(e) => { e.stopPropagation(); deleteUserRoom(item.id); }}>
+                {/* 채팅방 나가기 */}
+                <span
+                  className="chatCardDelete"
+                  onClick={async (e) => {
+                    e.stopPropagation();
+
+                    if (ownerUserId === userData.userId) {
+                      // 방장일 경우
+                      if (chatUserList.length > 1) {
+                        // 멤버가 남아 있음
+                        toast.error("방장은 멤버가 남아있으면 나갈 수 없습니다. 방장을 넘기거나 멤버가 모두 나가야 합니다.");
+                        return;
+                      } else {
+                        toast.error("방장은 혼자일 때는 나가기 대신 방 삭제 버튼을 사용해야 합니다.");
+                        return;
+                      }
+                    } else {
+                      // 일반 멤버일 경우 → 나가기 API
+                      if (window.confirm("정말 이 방에서 나가시겠습니까?")) {
+                        try {
+                          await fetch(
+                            `/api/chat/rooms/${item.chatRoom.id}/leave?userId=${userData.userId}`,
+                            { method: "DELETE" }
+                          );
+                          setChatList(prev => prev.filter(r => r.id !== item.id));
+                          toast.success("성공적으로 나가졌습니다!");
+                        } catch (err) {
+                          console.error("방 나가기 실패:", err);
+                        }
+                      }
+                    }
+                  }}
+                >
                   🗑
                 </span>
               </div>
@@ -529,6 +519,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
               간단 스펙 보기
             </p>
 
+            {/* 강퇴 */}
             {(ownerUserId === userData.userId) && (menu.userId !== userData.userId) && (
               <p onClick={async () => {
                 try {
@@ -540,9 +531,9 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                       requesterUserId: userData.userId   // 방장 신원 전달(서버 권한 체크용)
                     })
                   });
-                  console.log('강퇴 성공:', menu.userId);
+                  toast.success('강퇴 성공:', menu.userId);
                 } catch (err) {
-                  console.error('강퇴 실패:', err);
+                  toast.error('강퇴 실패:', err);
                 }
                 setMenu(null);
               }}>
@@ -550,6 +541,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
               </p> 
             )}
 
+            {/* 방장 권한 넘기기 */}
             {(ownerUserId === userData.userId) && (menu.userId !== userData.userId) && (
               <p onClick={async () => {
                 try {
@@ -563,8 +555,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
                   });
                   // 상태는 이벤트 브로드캐스트로 자동 반영됨
                 } catch (err) {
-                  console.error('방장 넘기기 실패:', err);
-                  alert('방장 넘기기에 실패했습니다.');
+                  toast.error('방장 넘기기에 실패했습니다.');
                 }
                 setMenu(null);
               }}>
@@ -572,7 +563,36 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
               </p>
             )}
 
-          {/* 친구 추가 기능 */}
+            {/* 방 삭제 */}
+            {(ownerUserId === userData.userId) && (chatUserList.length === 1) && (
+              <p
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (window.confirm("정말 이 방을 삭제하시겠습니까?")) {
+                    fetch(`/api/chat/rooms/${selectedRoom.id}?requesterUserId=${userData.userId}`, {
+                      method: 'DELETE',
+                    })
+                      .then((res) => {
+                        if (!res.ok) {
+                          toast.error("삭제실패");
+                          return;
+                        };
+                        toast.success("방이 삭제되었습니다.");
+                        setSelectedRoom(null);
+                        setChatList((prev) =>
+                          prev.filter((it) => it.chatRoom.id !== selectedRoom.id)
+                        );
+                      })
+                      .catch((err) => alert(err.message));
+                  }
+                  setMenu(null); 
+                }}
+              >
+                방 삭제
+              </p>
+            )}
+
+            {/* 친구 추가 기능 */}
           <p onClick={async () => {
             // 훅에서 반환된 함수 호출
             const requesterId = userData.userId;
@@ -584,6 +604,7 @@ function ChatListPage({ selectedRoom, setSelectedRoom, setMessages, onOpenProfil
             친구 추가
           </p>
 
+            {/* 여기는 추후에 추가 */}
             <p onClick={() => { console.log('차단', menu.userId); setMenu(null); }}>
               차단하기
             </p>

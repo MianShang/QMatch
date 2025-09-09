@@ -247,7 +247,7 @@ function LobbyPage() {
                   joinedVoice={joinedVoice} 
                   voiceChatRoomId={voiceChatRoomId} 
                 />
-                : <FriendListPage />}
+                : <FriendListPage userId={userData.userId}/>}
             </div>
           </div>
         }

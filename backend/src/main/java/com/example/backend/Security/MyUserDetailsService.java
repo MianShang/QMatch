@@ -51,6 +51,9 @@ public class MyUserDetailsService implements UserDetailsService {
         customUserDetail.userId = user.getUserId();
         customUserDetail.userEmail = user.getUserEmail();
         customUserDetail.userProfile = user.getUserProfile();
+        customUserDetail.userTag = user.getUserTags();  
+        customUserDetail.userIntro = user.getUserIntro();
+        customUserDetail.userStatusMessage = user.getUserStatusMessage();
 
         // 커스텀 유저 정보 객체 반환
         return customUserDetail;
@@ -71,6 +74,7 @@ public class MyUserDetailsService implements UserDetailsService {
         public String userId;
         public String userEmail;
         public String userProfile;
+        public List<String>userTag;
         public String userIntro;
         public String userStatusMessage;
 

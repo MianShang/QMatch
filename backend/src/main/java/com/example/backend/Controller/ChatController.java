@@ -272,6 +272,9 @@ public class ChatController {
             );
         }
 
+        // 채팅방과 연결된 ChatList 먼저 삭제
+        chatListRepository.deleteByChatRoom_Id(roomId);
+        
         // 채팅방과 연결된 UserChatRoom 관계 삭제
         userChatRoomRepository.deleteByChatRoom_Id(roomId);
         chatRoomRepository.delete(room);

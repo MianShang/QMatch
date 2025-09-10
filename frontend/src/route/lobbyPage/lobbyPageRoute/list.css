@@ -244,12 +244,11 @@
 }
 
 /* ====== 추가: 참여자 패널(UI) ====== */
-/* ====== 추가: 참여자 패널(UI) ====== */
 .membersDrawerInline {
   position: fixed;
   width: 0;
   overflow: hidden;
-  background: #535354;
+  background: #1a1a1c;
   transition: width .25s ease;
   z-index: 20;
   box-shadow: none;
@@ -309,10 +308,11 @@
   position: absolute;
   inset: 0;
   z-index: 2;
-  background: #535354;
+  background: #1a1a1c;
   overflow-y: auto;
   top: 44px;
   padding: 8px 10px;
+  gap: 10px;
 }
 
 /* 섹션 헤더(온라인/오프라인) 스타일 */

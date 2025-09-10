@@ -10,6 +10,7 @@ import JoinRoomModal from '../../modal/joinRoomModal/JoinRoomModal.jsx';
 
 // custom hook import
 import { useLoginCheck } from '../../hooks/login/useLoginCheck.js';
+import { useChatGetRooms } from '../../hooks/chat/useChatGetRooms.js';
 
 // Modal import
 import CreateRoomModal from '../../modal/CreateRoomModal/CreateRoomModal.jsx';
@@ -26,11 +27,15 @@ function SearchPage() {
   const [gametag, setGameTag] = useState('ALL');
   const [selectedTags, setSelectedTags] = useState([]); // number[]
   const [groupedTags, setGroupedTags] = useState({});
+  const [subscribedRooms, setSubscribedRooms] = useState([]); // 본인이 구독한 채팅방 목록
 
 
 
   const { isLogIn, setIsLogIn, userData } = useContext(LogContext);
   useLoginCheck(isLogIn); // 로그인 체크
+
+  // 본인이 구독한 채팅방 목록 가져오기
+  useChatGetRooms(userData, setSubscribedRooms);
 
   // 처음 url에 입장할때 목록 가져오기 실행 및 채팅방 검색
   useEffect(() => {
@@ -134,6 +139,16 @@ function SearchPage() {
     );
   }
 
+  // 구독한 채팅방을 제외하고 필터링하는 함수
+  function getFilteredRooms() {
+    if (!subscribedRooms || subscribedRooms.length === 0) {
+      return rooms; // 구독한 방이 없으면 모든 방 반환
+    }
+    
+    const subscribedRoomIds = subscribedRooms.map(room => room.chatRoom.id);
+    return rooms.filter(room => !subscribedRoomIds.includes(room.id));
+  }
+
 
   function chatTagRoom() {  
     if (!groupedTags || Object.keys(groupedTags).length === 0) {
@@ -167,6 +182,14 @@ function SearchPage() {
           setOpenModal={setOpenModal}
           onRoomCreated={(newRoom) => {
             setRooms(prev => [...prev, newRoom]);
+            // 방 생성 후 lobbyPage로 이동
+            navigate('/', { 
+              state: { 
+                roomId: newRoom.id, 
+                chatName: newRoom.name, 
+                gameName: newRoom.gameName 
+              } 
+            });
           }}
         />
       )}
@@ -238,7 +261,7 @@ function SearchPage() {
             <div className='chatListScroll'>
               채팅 리스트
               {
-                rooms.map((room) => (
+                getFilteredRooms().map((room) => (
                   <div className='chatRoomList'
                     key={room.id}
                     onClick={() => { setSelectedRoom(room); setJoinOpen(true); }}>

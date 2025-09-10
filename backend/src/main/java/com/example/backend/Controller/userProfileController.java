@@ -39,6 +39,7 @@ public class userProfileController {
                 user.getUserName(),
                 user.getUserEmail(),
                 user.getUserProfile(),
+                user.getUserTags(),
                 user.getUserStatusMessage(),
                 user.getUserIntro()
         ));
@@ -80,6 +81,20 @@ public class userProfileController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/usertag")
+    public ResponseEntity<UserResponseDto> updateUserTag(@RequestBody Map<String,String> data) {
+        String userId = data.get("userId");
+        String userTag = data.get("userTag");
+
+        UserResponseDto response = userprofileService.updateUserTag(userId, userTag);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/usertag")
+    public ResponseEntity<UserResponseDto> getUserTag(@RequestParam String userId) {
+        UserResponseDto response = userprofileService.getUserTag(userId);
+        return ResponseEntity.ok(response);
+    }
 
 
 }

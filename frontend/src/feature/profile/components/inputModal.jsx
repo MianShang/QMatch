@@ -3,7 +3,7 @@ import './inputModal.css';
 
 const dnfServers = ['카인', '디레지에', '시로코', '프레이', '카시야스', '힐더', '안톤', '바칼'];
 
-function InputModal({ type, onClose, sendUserGameCode }) {
+function InputModal({ type, onClose, sendUserGameCode, sendUserTag }) {
   const [gameName, setGameName] = useState('');
   const [gameCode, setGameCode] = useState('');
   const [tag, setTag] = useState('');
@@ -16,13 +16,13 @@ function InputModal({ type, onClose, sendUserGameCode }) {
         return;
       }
       const finalCode = gameName === 'dnf' ? `${server}-${gameCode}` : gameCode;
-      sendUserGameCode(gameName, finalCode,onClose);
+      sendUserGameCode(gameName, finalCode);
     } else if (type === 'tag') {
       if (!tag) {
         alert("#태그를 입력해주세요.");
         return;
       }
-      console.log("입력된 태그:", tag); 
+      sendUserTag(tag);
     }
 
     onClose(); 

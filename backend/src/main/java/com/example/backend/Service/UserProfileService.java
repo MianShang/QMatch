@@ -4,6 +4,7 @@ import com.example.backend.Dto.Response.UserResponseDto;
 import com.example.backend.Entity.User;
 import com.example.backend.Repository.UserRepository;
 import jakarta.servlet.ServletContext;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -55,6 +56,7 @@ public class UserProfileService {
                 user.getUserName(),
                 user.getUserEmail(),
                 user.getUserProfile(),
+                user.getUserTags(),
                 user.getUserStatusMessage(),
                 user.getUserIntro()
         );
@@ -74,6 +76,7 @@ public class UserProfileService {
                 user.getUserName(),
                 user.getUserEmail(),
                 user.getUserProfile(),
+                user.getUserTags(),
                 user.getUserStatusMessage(),
                 user.getUserIntro()
         );
@@ -89,6 +92,7 @@ public class UserProfileService {
                 user.getUserName(),
                 user.getUserEmail(),
                 user.getUserProfile(),
+                user.getUserTags(),
                 user.getUserStatusMessage(),
                 user.getUserIntro()
         );
@@ -107,6 +111,7 @@ public class UserProfileService {
                 user.getUserName(),
                 user.getUserEmail(),
                 user.getUserProfile(),
+                user.getUserTags(),
                 user.getUserStatusMessage(),
                 user.getUserIntro()
         );
@@ -122,9 +127,47 @@ public class UserProfileService {
                 user.getUserName(),
                 user.getUserEmail(),
                 user.getUserProfile(),
+                user.getUserTags(),
                 user.getUserStatusMessage(),
                 user.getUserIntro()
         );
     }
+
+    //태그
+    @Transactional
+    public UserResponseDto updateUserTag(String userId, String userTag){
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(()->new RuntimeException("그런 유저는 없어"));
+
+        user.getUserTags().add(userTag);
+        userRepository.save(user);
+
+        return new UserResponseDto(
+                user.getUserId(),
+                user.getUserName(),
+                user.getUserEmail(),
+                user.getUserProfile(),
+                user.getUserTags(),
+                user.getUserStatusMessage(),
+                user.getUserIntro()
+        );
+    }
+
+    //태그 조회
+    public UserResponseDto getUserTag(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(()-> new RuntimeException("그런 유저는 없어"));
+
+        return new UserResponseDto(
+                user.getUserId(),
+                user.getUserName(),
+                user.getUserEmail(),
+                user.getUserProfile(),
+                user.getUserTags(),
+                user.getUserStatusMessage(),
+                user.getUserIntro()
+        );
+    }
+
 
 }

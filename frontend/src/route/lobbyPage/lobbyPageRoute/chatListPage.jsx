@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import './list.css';
 import { Client } from '@stomp/stompjs';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 
 // 전역 유저 State 데이터 가져오기용 Context API import
@@ -303,6 +302,7 @@ function ChatListPage({
         } catch (e) {
           toast.error('kick payload parse error', e);
         }
+
       });
 
       // join 구독
@@ -374,6 +374,7 @@ function ChatListPage({
     stomp.activate();
     return () => stomp.deactivate();
   }, [selectedRoom?.id, userData?.userId]);
+
 
   /* 열기/닫기 헬퍼 */
   function openMembers(roomId) {
@@ -799,7 +800,14 @@ function ChatListPage({
             const requesterId = userData.userId;
             const addresseeId = menu.userId;
             const result = await sendRequest(requesterId, addresseeId);
-            alert(result.message);
+            if (result.success) 
+              {
+                toast.success(result.message);
+              } 
+            else 
+              {
+                toast.error(result.message);
+              }
             setMenu(null);
             }}>
             친구 추가

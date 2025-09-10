@@ -1,7 +1,8 @@
 import React, { useState, useEffect, createContext, useMemo } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
+import { Client } from '@stomp/stompjs';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -89,6 +90,38 @@ function App() {
     setUserData,
     isLoading
   }), [isLogIn, userData, isLoading]);
+
+  //전역 Stomp
+  useEffect(() => {
+        // 사용자 정보가 없으면 연결하지 않습니다.
+        if (!userData?.userId) return;
+
+        const stomp = new Client({
+            brokerURL: 'ws://localhost:8080/gs-guide-websocket',
+            reconnectDelay: 5000,
+            connectHeaders: { userId: userData.userId }
+        });
+
+        stomp.onConnect = () => {
+            //친구 요청구독
+            stomp.subscribe(`/topic/friends/${userData.userId}`, (frame) => {
+                try {
+                    const payload = JSON.parse(frame.body);
+                    toast.info(payload.message || "새로운 친구 요청이 도착했습니다.");
+                } catch (e) {
+                    console.error("친구추가 요청 에러", e);
+                }
+            });
+        };
+
+        stomp.activate();
+
+        return ()=>
+          {
+            stomp.deactivate();
+          };
+
+      }, [userData?.userId]);
 
   // 렌더링 숨기고 로딩창 표시 
   if (isLoading) {

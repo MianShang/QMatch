@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect, useContext, memo } from 'react'
 import { Routes, Route, Link, useNavigate} from 'react-router-dom'
-import { Client } from '@stomp/stompjs';
 import axios from 'axios';
 import './lobbyPage.css'
 
@@ -53,8 +52,8 @@ function LobbyPage() {
   const [voiceSpeakers, setVoiceSpeakers] = useState({});
   const [localMuted, setLocalMuted] = useState(false);
   const [joinedVoice, setJoinedVoice] = useState(false);
-  const voiceChatRef = useRef(null);
-
+   const voiceChatRef = useRef(null);
+  
   // 음성설정 모달
   const [showVoiceChatModal, setShowVoiceChatModal] = useState(false);
   
@@ -247,7 +246,7 @@ function LobbyPage() {
                   joinedVoice={joinedVoice} 
                   voiceChatRoomId={voiceChatRoomId} 
                 />
-                : <FriendListPage userId={userData.userId}/>}
+                : <FriendListPage userId={userData.userId}/>} 
             </div>
           </div>
         }
@@ -302,7 +301,7 @@ function LobbyPage() {
         userData={userData}
         setUserData={setUserData}
         onClose={() => setShowVoiceChatModal(false)}
-      />}
+        />}
 
       {/* VoiceChat 컴포넌트를 lobbyPage에 렌더링 */}
           <VoiceChat

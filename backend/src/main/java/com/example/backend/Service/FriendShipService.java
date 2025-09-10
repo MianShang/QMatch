@@ -7,10 +7,12 @@ import com.example.backend.Repository.FriendShipRepository;
 import com.example.backend.Repository.UserRepository;
 import com.example.backend.enums.FriendShipStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +22,7 @@ public class FriendShipService {
 
     private final FriendShipRepository friendshipRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     //친구 요청 보낼때
     @Transactional
@@ -40,6 +43,12 @@ public class FriendShipService {
         }
 
         FriendShip newRequest = new FriendShip(requester, addressee, FriendShipStatus.PENDING);
+
+        simpMessagingTemplate.convertAndSend("/topic/friends/" + addresseeId,
+                Map.of("title", "새로운 친구 요청", "message", requester.getUserName() + "님이 친구 요청을 보냈습니다."
+                )
+        );
+
         friendshipRepository.save(newRequest);
     }
 

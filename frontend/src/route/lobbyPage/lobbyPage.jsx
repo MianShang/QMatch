@@ -119,6 +119,8 @@ function LobbyPage() {
               name: data.name ?? s.chatName,
               gameName: data.gameName ?? s.gameName,
               tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
+              currentUsers: (typeof data.currentUsers === 'number') ? data.currentUsers : s.currentUsers,
+              maxUsers: (typeof data.maxUsers === 'number') ? data.maxUsers : s.maxUsers,
             });
           } catch (e) {
             console.warn('방 상세 조회 실패. state로 대체:', e);
@@ -129,6 +131,8 @@ function LobbyPage() {
               name: s.chatName,
               gameName: s.gameName,
               tagNames: s.tagNames ?? [],
+              currentUsers: s.currentUsers,
+              maxUsers: s.maxUsers,
             });
           } finally {
             setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거

@@ -38,6 +38,8 @@ function JoinRoomModal({ open, onClose, room, onJoin }) {
 
   const chatName = (detail?.chatName ?? detail?.name) || room.chatName || room.name || '-';
   const gameName = detail?.gameName || room.gameName || room.game || '-';
+  const currentUsers = (typeof detail?.currentUsers === 'number') ? detail.currentUsers : room.currentUsers;
+  const maxUsers = (typeof detail?.maxUsers === 'number') ? detail.maxUsers : room.maxUsers;
 
   // 우선 상세(tagNames) > props(room.tags) > 빈 배열
   const tagNames = useMemo(() => {
@@ -76,6 +78,13 @@ function JoinRoomModal({ open, onClose, room, onJoin }) {
             <div className="infoText">{gameName}</div>
           </div>
 
+          {(typeof currentUsers === 'number' && typeof maxUsers === 'number') && (
+            <div className="formGroup">
+              <label>인원</label>
+              <div className="infoText">{currentUsers} / {maxUsers}</div>
+            </div>
+          )}
+
           {!!tagNames.length && (
             <div className="formGroup">
               <label>태그</label>
@@ -93,9 +102,9 @@ function JoinRoomModal({ open, onClose, room, onJoin }) {
             type="button"               
             className="joinBtn"
             onClick={handleJoin}        
-            disabled={joiningRef.current}
+            disabled={joiningRef.current || (typeof currentUsers === 'number' && typeof maxUsers === 'number' && currentUsers >= maxUsers)}
             >
-          {joiningRef.current ? '입장 중…' : '입장하기'}
+          {joiningRef.current ? '입장 중…' : ((typeof currentUsers === 'number' && typeof maxUsers === 'number' && currentUsers >= maxUsers) ? '입장 불가' : '입장하기')}
           </button>
         </div>
       </div>

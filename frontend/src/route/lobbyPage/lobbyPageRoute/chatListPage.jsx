@@ -564,7 +564,14 @@ function ChatListPage({
         >
           <div className='selectCardHeaderStyle'>
             <img src={setGameIcon(selectedRoom.gameName)} alt="방 아이콘" className="chatCardImage" />
-            <p>{selectedRoom.name}</p>
+            <p>
+              {selectedRoom.name}
+              {typeof selectedRoom.currentUsers === 'number' && typeof selectedRoom.maxUsers === 'number' && (
+                <span style={{ marginLeft: 8, color: '#9aa0a6', fontSize: 12 }}>
+                  {selectedRoom.currentUsers} / {selectedRoom.maxUsers}
+                </span>
+              )}
+            </p>
             <p></p>
             {/* 선택된 방 참여자 패널 열기 버튼
             <button

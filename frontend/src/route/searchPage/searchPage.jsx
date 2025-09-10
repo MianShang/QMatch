@@ -187,7 +187,9 @@ function SearchPage() {
               state: { 
                 roomId: newRoom.id, 
                 chatName: newRoom.name, 
-                gameName: newRoom.gameName 
+                gameName: newRoom.gameName,
+                currentUsers: newRoom.currentUsers,
+                maxUsers: newRoom.maxUsers
               } 
             });
           }}
@@ -265,7 +267,14 @@ function SearchPage() {
                   <div className='chatRoomList'
                     key={room.id}
                     onClick={() => { setSelectedRoom(room); setJoinOpen(true); }}>
-                    <div>{room.chatName || room.name}</div>
+                    <div>
+                      {room.chatName || room.name}
+                      {typeof room.currentUsers === 'number' && typeof room.maxUsers === 'number' && (
+                        <span style={{ marginLeft: 8, color: '#9aa0a6', fontSize: 12 }}>
+                          {room.currentUsers} / {room.maxUsers}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))
               }

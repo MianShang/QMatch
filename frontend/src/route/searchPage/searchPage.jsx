@@ -192,23 +192,23 @@ function SearchPage() {
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('lol')}>
-                  <img src="./public/gameIcons/lol_Icon.png" alt="LOL" />
+                  <img src="/gameIcons/lol_Icon.png" alt="LOL" />
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('maplestory')}>
-                  <img src="./public/gameIcons/maplestory_Icon.png" alt="MapleStory" />
+                  <img src="/gameIcons/maplestory_Icon.png" alt="MapleStory" />
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('tft')}>
-                  <img src="./public/gameIcons/tft_Icon.png" alt="TFT"/>
+                  <img src="/gameIcons/tft_Icon.png" alt="TFT"/>
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('dnf')}>
-                  <img src="./public/gameIcons/dnf_Icon.png" alt="Dnf"/>
+                  <img src="/gameIcons/dnf_Icon.png" alt="Dnf"/>
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('lostark')}>
-                  <img src="./public/gameIcons/lostark_Icon.png" alt="lostark"/>
+                  <img src="/gameIcons/lostark_Icon.png" alt="lostark"/>
                 </button>
 
                 <hr style={{width:"280px", margin:"3px"}}></hr>

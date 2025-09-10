@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useContext, memo } from 'react'
 import { Routes, Route, Link, useNavigate} from 'react-router-dom'
+import { Client } from '@stomp/stompjs';
 import axios from 'axios';
 import './lobbyPage.css'
 
@@ -46,6 +47,11 @@ function LobbyPage() {
 
   // State 보관함 해체
   const { isLogIn, setIsLogIn, userData, setUserData } = useContext(LogContext)
+
+  // // userData가 로드될 때까지 로딩
+  // if (!userData) {
+  //   return <div>userData 로딩중</div>; 
+  // }
 
   // voiceChat
   const [voiceChatRoomId, setVoiceChatRoomId] = useState(null);
@@ -191,8 +197,8 @@ function LobbyPage() {
           <p onClick={() => logoutFunc(setIsLogIn)} style={{ cursor: 'pointer', marginTop: '10px' }}>로그아웃</p>
 
           <div class="voice-chat-button-wrapper">
-            <button class="voice-chat-button" aria-label="음성 채팅 설정" onClick={()=>{setShowVoiceChatModal(true);}}>
-                <svg class="phone-icon" viewBox="0 0 24 24" fill="currentColor">
+            <button className="voice-chat-button" aria-label="음성 채팅 설정" onClick={()=>{setShowVoiceChatModal(true);}}>
+                <svg className="phone-icon" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.32.57 3.55.57.55 0 1 .45 1 1v3.5c0 .55-.45 1-1 1C12.95 22 2 11.05 2 4c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.23.2 2.43.57 3.55.12.35.03.75-.24 1.02l-2.2 2.2z"/>
                 </svg>
             </button>

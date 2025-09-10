@@ -32,11 +32,11 @@ function FriendListPage({userId}) {
               <div className="chatCardHeader">
                 {/* 친구 프로필 이미지 또는 아이콘 */}
                 <img 
-                  src={friend.profileImage || "https://placehold.co/45"} 
+                  src={friend.userProfile || "https://placehold.co/45"} 
                   alt="프로필 이미지" 
                   className="chatCardImage"
                 />
-                
+                {console.log(friend)}
                 {/* 친구 이름 */}
                 <span className="chatCardTitle">{friend.userId}</span>
 

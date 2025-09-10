@@ -1,6 +1,6 @@
 package com.example.backend.Service;
 
-import com.example.backend.Dto.UserDto;
+import com.example.backend.Dto.Response.UserResponseDto;
 import com.example.backend.Entity.FriendShip;
 import com.example.backend.Entity.User;
 import com.example.backend.Repository.FriendShipRepository;
@@ -84,7 +84,7 @@ public class FriendShipService {
 
     // 친구 목록을 조회하는 메서드
     @Transactional(readOnly = true) // 데이터 변경이 없으므로 읽기 전용으로 설정
-    public List<UserDto> getFriendsList(String userId) {
+    public List<UserResponseDto> getFriendsList(String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
@@ -98,7 +98,7 @@ public class FriendShipService {
                     } else {
                         friendUser = friendship.getRequester();
                     }
-                    return new UserDto(friendUser); // User 엔티티를 DTO로 변환
+                    return new UserResponseDto(friendUser); // User 엔티티를 DTO로 변환
                 })
                 .collect(Collectors.toList());
     }

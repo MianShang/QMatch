@@ -1,5 +1,6 @@
 package com.example.backend.Dto.Response;
 
+import com.example.backend.Entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,4 +18,10 @@ public class UserResponseDto {
     private String userProfile;
     private String userStatusMessage;
     private String userIntro;
+
+    public UserResponseDto(User friendUser) {
+        this.userId = friendUser.getUserId();
+        this.userName = friendUser.getUserName();
+        this.userProfile = friendUser.getUserProfile();
+    }
 }

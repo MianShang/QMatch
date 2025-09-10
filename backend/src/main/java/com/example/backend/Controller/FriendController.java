@@ -1,6 +1,6 @@
 package com.example.backend.Controller;
 
-import com.example.backend.Dto.UserDto;
+import com.example.backend.Dto.Response.UserResponseDto;
 import com.example.backend.Service.FriendShipService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -48,9 +48,9 @@ public class FriendController {
 
     // 친구 목록을 조회하는 새로운 엔드포인트
     @GetMapping("/list")
-    public ResponseEntity<List<UserDto>> getFriendsList(@RequestParam String userId) {
+    public ResponseEntity<List<UserResponseDto>> getFriendsList(@RequestParam String userId) {
         try {
-            List<UserDto> friends = friendShipService.getFriendsList(userId);
+            List<UserResponseDto> friends = friendShipService.getFriendsList(userId);
             return ResponseEntity.ok(friends);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Collections.emptyList());

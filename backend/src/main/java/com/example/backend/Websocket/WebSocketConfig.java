@@ -24,7 +24,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/gs-guide-websocket")
-                .setAllowedOriginPatterns("*"); // CORS 허용
+                .setAllowedOriginPatterns("*") // CORS 허용
+                .withSockJS();
     }
 
     @Override

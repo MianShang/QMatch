@@ -1,44 +1,24 @@
-import { useState, useEffect } from 'react'
-import { Routes, Route, Link } from 'react-router-dom'
-import axios from 'axios';
+import { useContext } from 'react';
 import './list.css';
+import { LogContext } from '../../../App.jsx';
 
-function FriendListPage({userId}) {
-  
-  const [friends,setFriends] = useState([]);
+function FriendListPage() {
+  const { friends, statusByUser } = useContext(LogContext);
 
-  useEffect(() => {
-    if (!userId) return; // userId가 없으면 API 호출을 건너뜁니다.
-
-    const fetchFriends = async () => {
-      try {
-        const response = await axios.get(`/api/friends/list?userId=${userId}`);
-        setFriends(response.data);
-      } catch (error) {
-        console.error("친구 목록 불러오기 실패:", error);
-      }
-    };
-
-    fetchFriends();
-  }, [userId]);
+  const friendsWithStatus = friends.map(friend => ({ ...friend, status: statusByUser[friend.userId] || friend.status }));
 
   return (
     <div className='listRouteSize contentStyle'>
       <div className="chatListScrollWrapper chatListScroll">
-        {friends.length > 0 ? (
-          friends.map(friend => (
-            // chatCard 클래스를 활용해 친구 목록 카드 디자인
-            <div key={friend.id} className="chatCard">
+        {friendsWithStatus.length > 0 ? (
+          friendsWithStatus.map(friend => (
+            <div key={friend.userId} className="chatCard">
               <div className="chatCardHeader">
                 {/* 친구 프로필 이미지 또는 아이콘 */}
-                <img 
-                  src={friend.userProfile || "https://placehold.co/45"} 
-                  alt="프로필 이미지" 
-                  className="chatCardImage"
-                />
-                {console.log(friend)}
+                <img src={friend.userProfile || "https://placehold.co/45"} alt="프로필 이미지" className="chatCardImage" />
                 {/* 친구 이름 */}
-                <span className="chatCardTitle">{friend.userId}</span>
+                <span className="chatCardTitle">{friend.userName}</span>
+                <p>{friend.status}</p>
 
                 {/* 여기에 친구 삭제 또는 더보기 버튼 추가 가능 */}
                 <button className="chatCardDelete">🗑</button>

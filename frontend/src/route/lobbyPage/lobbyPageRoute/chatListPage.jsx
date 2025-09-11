@@ -1,5 +1,4 @@
 import { useState, useContext, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom'
 import './list.css';
 import { Client } from '@stomp/stompjs';
 import { toast } from 'react-toastify';
@@ -223,6 +222,7 @@ function ChatListPage({
           const payload = JSON.parse(frame.body); // { userId, status, ts }
         // 실시간 반영
           setStatusByUser(prev => ({ ...prev, [payload.userId]: payload.status }));
+          
         } catch (e) {
           console.warn('presence parse error', e);
         }

@@ -1,16 +1,19 @@
 package com.example.backend.Service;
 
-import com.example.backend.Dto.UserDto;
+import com.example.backend.Dto.Response.FriendShipResponseDto;
 import com.example.backend.Entity.FriendShip;
 import com.example.backend.Entity.User;
 import com.example.backend.Repository.FriendShipRepository;
 import com.example.backend.Repository.UserRepository;
 import com.example.backend.enums.FriendShipStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.backend.Repository.UserStatusRepository;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +23,8 @@ public class FriendShipService {
 
     private final FriendShipRepository friendshipRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate simpMessagingTemplate;
+    private final UserStatusRepository userStatusRepository;
 
     //친구 요청 보낼때
     @Transactional
@@ -40,6 +45,12 @@ public class FriendShipService {
         }
 
         FriendShip newRequest = new FriendShip(requester, addressee, FriendShipStatus.PENDING);
+
+        simpMessagingTemplate.convertAndSend("/topic/friends/" + addresseeId,
+                Map.of("title", "새로운 친구 요청", "message", requester.getUserName() + "님이 친구 요청을 보냈습니다."
+                )
+        );
+
         friendshipRepository.save(newRequest);
     }
 
@@ -58,7 +69,7 @@ public class FriendShipService {
         friendshipRepository.save(friendship);
     }
     
-    //수락 대기중인 친구
+    //친구요청 거절
     @Transactional
     public void rejectFriendRequest(String requesterId, String addresseeId) {
         User requester = userRepository.findByUserId(requesterId)
@@ -75,23 +86,24 @@ public class FriendShipService {
 
     // 친구 목록을 조회하는 메서드
     @Transactional(readOnly = true) // 데이터 변경이 없으므로 읽기 전용으로 설정
-    public List<UserDto> getFriendsList(String userId) {
+    public List<FriendShipResponseDto> getFriendsList(String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        List<FriendShip> friendships = friendshipRepository.findFriendsByUserAndStatus(user, FriendShipStatus.ACCEPTED);
+
+        List<FriendShip> friendships = friendshipRepository.findFriendsAndStatusByUserIdAndStatus(user.getId(), FriendShipStatus.ACCEPTED);
 
         return friendships.stream()
                 .map(friendship -> {
-                    User friendUser;
-                    if (friendship.getRequester().getUserId().equals(userId)) {
-                        friendUser = friendship.getAddressee();
-                    } else {
-                        friendUser = friendship.getRequester();
-                    }
-                    return new UserDto(friendUser); // User 엔티티를 DTO로 변환
+                    User friendUser = friendship.getRequester().getUserId().equals(userId)
+                            ? friendship.getAddressee()
+                            : friendship.getRequester();
+
+                    String status = userStatusRepository.findStatusByUserId(friendUser.getUserId())
+                            .orElse("오프라인");
+
+                    return new FriendShipResponseDto(friendUser, status);
                 })
                 .collect(Collectors.toList());
     }
-
 }

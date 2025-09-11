@@ -1,7 +1,8 @@
 import React, { useState, useEffect, createContext, useMemo } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
+import { Client } from '@stomp/stompjs';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -22,6 +23,8 @@ function App() {
   const [isLogIn, setIsLogIn] = useState(false);
   // 전역 유저 데이터 State
   const [userData, setUserData] = useState(null);
+  const [friends,setFriends] = useState([]);
+  const [statusByUser, setStatusByUser] = useState([]);
 
   // 새로고침 or 첫 로딩시 자동 실행
   useEffect(() => {
@@ -87,9 +90,69 @@ function App() {
     setIsLogIn,
     userData,
     setUserData,
-    isLoading
-  }), [isLogIn, userData, isLoading]);
+    isLoading,
+    friends,
+    statusByUser
+  }), [isLogIn, userData, isLoading, friends, statusByUser]);
 
+  //친구 목록 가져오기
+    useEffect(() => {
+        if (!userData?.userId) return;
+        const fetchFriends = async () => {
+            try {
+                const response = await axios.get(`/api/friends/list?userId=${userData.userId}`);
+                setFriends(response.data);
+            } catch (error) {
+                console.error("친구 목록 불러오기 실패:", error);
+            }
+        };
+        fetchFriends();
+    }, [userData?.userId]);
+
+  //전역 Stomp
+  useEffect(() => {
+    if (!userData?.userId) return;
+
+    const stomp = new Client({
+      brokerURL: 'ws://localhost:8080/gs-guide-websocket',
+      reconnectDelay: 5000,
+      connectHeaders: { userId: userData.userId }
+    });
+
+    stomp.onConnect = () => {
+      //친구 요청구독
+      stomp.subscribe(`/topic/friends/${userData.userId}`, (frame) => {
+      try {
+            const payload = JSON.parse(frame.body);
+              toast.info(payload.message || "새로운 친구 요청이 도착했습니다.");
+            } catch (e) {
+                console.error("친구추가 요청 에러", e);
+            }
+      });
+    
+        //친구 상태구독
+      stomp.subscribe(`/topic/friends/status`, (frame) => {
+          try {
+            const payload = JSON.parse(frame.body);
+            setStatusByUser(prev => ({ ...prev, [payload.userId]: payload.status }));
+          }
+           catch (e) {
+              console.error("친구상태 업데이트 에러", e);
+          }
+      });
+    };
+
+    stomp.activate();
+
+        return ()=>
+          {
+            stomp.deactivate();
+          };
+
+      }, [userData?.userId]
+  );
+
+    
   // 렌더링 숨기고 로딩창 표시 
   if (isLoading) {
     return (

@@ -1,9 +1,7 @@
 import { useState, useContext, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom'
 import './list.css';
 import { Client } from '@stomp/stompjs';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 
 // 전역 유저 State 데이터 가져오기용 Context API import
@@ -223,6 +221,7 @@ function ChatListPage({
           const payload = JSON.parse(frame.body); // { userId, status, ts }
         // 실시간 반영
           setStatusByUser(prev => ({ ...prev, [payload.userId]: payload.status }));
+          
         } catch (e) {
           console.warn('presence parse error', e);
         }
@@ -302,6 +301,7 @@ function ChatListPage({
         } catch (e) {
           toast.error('kick payload parse error', e);
         }
+
       });
 
       // join 구독
@@ -373,6 +373,7 @@ function ChatListPage({
     stomp.activate();
     return () => stomp.deactivate();
   }, [selectedRoom?.id, userData?.userId]);
+
 
   /* 열기/닫기 헬퍼 */
   function openMembers(roomId) {
@@ -830,6 +831,25 @@ function ChatListPage({
                 방 삭제
               </p>
             )}
+
+            {/* 친구 추가 기능 */}
+          <p onClick={async () => {
+            // 훅에서 반환된 함수 호출
+            const requesterId = userData.userId;
+            const addresseeId = menu.userId;
+            const result = await sendRequest(requesterId, addresseeId);
+            if (result.success) 
+              {
+                toast.success(result.message);
+              } 
+            else 
+              {
+                toast.error(result.message);
+              }
+            setMenu(null);
+            }}>
+            친구 추가
+          </p>
 
             {/* 여기는 추후에 추가 */}
             <p onClick={() => { console.log('차단', menu.userId); setMenu(null); }}>

@@ -43,6 +43,8 @@ public class UserStatusController {
         if (!Objects.equals(prev, dto.getStatus())) {
             PresenceEvent payload = new PresenceEvent(dto.getUserId(), dto.getStatus(), System.currentTimeMillis());
             messagingTemplate.convertAndSend("/topic/presence", payload);
+            messagingTemplate.convertAndSend("/topic/friends/status", Map.of("userId", payload.getUserId(), "status", payload.getStatus())
+            );
         }
         return ResponseEntity.ok().build();
     }

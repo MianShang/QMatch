@@ -14,6 +14,7 @@ import { useChatGetUserList } from '../../../hooks/chat/useChatGetUserList.js'
 import { useChatDeleteRoom } from '../../../hooks/chat/useChatDeleteRoom.js'
 import { useNewChatNotice } from '../../../hooks/chatNotice/useNewChatNotice.js';
 import { useChatGetRooms } from '../../../hooks/chat/useChatGetRooms.js';
+import { useFriendRequest } from '../../../hooks/friends/useFriendRequest.js';
 import { useChatListGet } from '../../../hooks/chatList/useChatListGet.js'
 
 // Modal
@@ -38,7 +39,7 @@ function ChatListPage({
 }) {
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   // State 보관함 해체
-  const { userData } = useContext(LogContext);
+  const { userData, friends } = useContext(LogContext);
 
   // State
   const [sendToModalGameName, setSendToModalGameName] = useState(null);
@@ -80,6 +81,7 @@ function ChatListPage({
   const deleteUserRoom = useChatDeleteRoom();
   const getChatList = useChatListGet();
   const setRead = useSetReadUnReadChat(userData);
+  const { sendRequest } = useFriendRequest();
 
   // 아이콘
   function setGameIcon(gameName) {
@@ -834,23 +836,26 @@ function ChatListPage({
             )}
 
             {/* 친구 추가 기능 */}
-          <p onClick={async () => {
-            // 훅에서 반환된 함수 호출
-            const requesterId = userData.userId;
-            const addresseeId = menu.userId;
-            const result = await sendRequest(requesterId, addresseeId);
-            if (result.success) 
-              {
-                toast.success(result.message);
-              } 
-            else 
-              {
-                toast.error(result.message);
-              }
-            setMenu(null);
-            }}>
-            친구 추가
-          </p>
+            {/* 자기 자신에게는 친구 추가 메뉴가 보이지 않도록 수정 */}
+            {(menu.userId !== userData.userId) && (
+              <p onClick={async () => {
+                // 훅에서 반환된 함수 호출
+                const requesterId = userData.userId;
+                const addresseeId = menu.userId;
+                const result = await sendRequest(requesterId, addresseeId);
+                if (result.success) 
+                  {
+                    toast.success(result.message);
+                  } 
+                else 
+                  {
+                    toast.error(result.message);
+                  }
+                setMenu(null);
+                }}>
+                친구 추가
+              </p>
+            )}
 
             {/* 여기는 추후에 추가 */}
             <p onClick={() => { console.log('차단', menu.userId); setMenu(null); }}>

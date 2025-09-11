@@ -14,6 +14,7 @@ import com.example.backend.Repository.UserStatusRepository;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -91,7 +92,7 @@ public class FriendShipService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
 
-        List<FriendShip> friendships = friendshipRepository.findFriendsAndStatusByUserIdAndStatus(user.getId(), FriendShipStatus.ACCEPTED);
+        List<FriendShip> friendships = friendshipRepository.findFriendsAndStatusByUserIdAndStatus(user.getId());
 
         return friendships.stream()
                 .map(friendship -> {
@@ -106,4 +107,28 @@ public class FriendShipService {
                 })
                 .collect(Collectors.toList());
     }
+
+    //사용자 차단
+    @Transactional
+    public void blockUser(String requesterId, String blockedId) {
+        User requester = userRepository.findByUserId(requesterId)
+                .orElseThrow(() -> new IllegalArgumentException("요청한 사용자를 찾을 수 없습니다."));
+
+        User blockedUser = userRepository.findByUserId(blockedId)
+                .orElseThrow(() -> new IllegalArgumentException("차단할 사용자를 찾을 수 없습니다."));
+
+        Optional<FriendShip> friendshipOptional = friendshipRepository.findByRequesterAndAddressee(requester, blockedUser)
+                .or(() -> friendshipRepository.findByRequesterAndAddressee(blockedUser, requester));
+
+        FriendShip friendship = friendshipOptional.orElseGet(() -> {
+            return new FriendShip(requester, blockedUser, FriendShipStatus.BLOCKED);
+        });
+
+        friendship.setStatus(FriendShipStatus.BLOCKED);
+        friendshipRepository.save(friendship);
+
+        simpMessagingTemplate.convertAndSend("/topic/friends/status", Map.of("userId", requesterId));
+    }
+
+
 }

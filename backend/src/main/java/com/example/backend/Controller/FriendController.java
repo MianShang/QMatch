@@ -58,6 +58,14 @@ public class FriendController {
         }
     }
 
-
-
+    @PostMapping("/block")
+    public ResponseEntity<String> blockFriendRequest(@RequestParam String requesterId, @RequestParam String blockedId)
+    {
+        try {
+            friendShipService.blockUser(requesterId, blockedId);
+            return ResponseEntity.ok(blockedId +" 차단되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

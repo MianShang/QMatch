@@ -16,6 +16,7 @@ import { useNewChatNotice } from '../../../hooks/chatNotice/useNewChatNotice.js'
 import { useChatGetRooms } from '../../../hooks/chat/useChatGetRooms.js';
 import { useFriendRequest } from '../../../hooks/friends/useFriendRequest.js';
 import { useChatListGet } from '../../../hooks/chatList/useChatListGet.js'
+import { blockUser } from '../../../hooks/friends/userBlock.js';
 
 // Modal
 import UserHistoryModal from '../../../modal/userHistory/UserHistoryModal.jsx'
@@ -82,6 +83,7 @@ function ChatListPage({
   const getChatList = useChatListGet();
   const setRead = useSetReadUnReadChat(userData);
   const { sendRequest } = useFriendRequest();
+  const { sendBlockRequest } = blockUser();
 
   // 아이콘
   function setGameIcon(gameName) {
@@ -858,9 +860,25 @@ function ChatListPage({
             )}
 
             {/* 여기는 추후에 추가 */}
-            <p onClick={() => { console.log('차단', menu.userId); setMenu(null); }}>
-              차단하기
-            </p>
+            {(menu.userId !== userData.userId) && (
+              <p onClick={async () => {
+                // 훅에서 반환된 함수 호출
+                const requesterId = userData.userId;
+                const blockedId = menu.userId;
+                const result = await sendBlockRequest(requesterId, blockedId);
+                if (result.success) 
+                  {
+                    toast.success(result.message);
+                  } 
+                else 
+                  {
+                    toast.error(result.message);
+                  }
+                setMenu(null);
+                }}>
+                차단 하기
+              </p>
+            )}
           </div>
         </DropdownPortal>
       )}

@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
 import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -16,6 +17,7 @@ import SignUpRoutePage from './route/loginPage/loginPageRoute/signupRoutePage.js
 export const LogContext = createContext();
 
 function App() {
+  const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   
   // 로딩 State
   const [isLoading, setIsLoading] = useState(true);
@@ -114,7 +116,7 @@ function App() {
     if (!userData?.userId) return;
 
     const stomp = new Client({
-      brokerURL: 'ws://localhost:8080/gs-guide-websocket',
+      webSocketFactory: () => new SockJS(`${BASE_URL}/gs-guide-websocket`),
       reconnectDelay: 5000,
       connectHeaders: { userId: userData.userId }
     });

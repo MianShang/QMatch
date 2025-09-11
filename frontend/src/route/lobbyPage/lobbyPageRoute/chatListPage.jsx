@@ -2,7 +2,7 @@ import { useState, useContext, useEffect, useRef } from 'react';
 import './list.css';
 import { Client } from '@stomp/stompjs';
 import { toast } from 'react-toastify';
-
+import SockJS from 'sockjs-client';
 
 // 전역 유저 State 데이터 가져오기용 Context API import
 import { LogContext } from '../../../App.jsx';
@@ -36,6 +36,7 @@ function ChatListPage({
   joinedVoice,
   voiceChatRoomId
 }) {
+  const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   // State 보관함 해체
   const { userData } = useContext(LogContext);
 
@@ -210,10 +211,10 @@ function ChatListPage({
     if (presenceStompRef.current?.active) return; // 이미 연결됨
 
     const stomp = new Client({
-      brokerURL: 'ws://localhost:8080/gs-guide-websocket',
+      webSocketFactory: () => new SockJS(`${BASE_URL}/gs-guide-websocket`),
       reconnectDelay: 5000,
       connectHeaders: { userId: userData.userId }
-    });
+    }); 
 
     stomp.onConnect = () => {
       stomp.subscribe('/topic/presence', (frame) => {
@@ -264,7 +265,7 @@ function ChatListPage({
     if (!selectedRoom?.id || !userData?.userId) return;
 
     const stomp = new Client({
-      brokerURL: 'ws://localhost:8080/gs-guide-websocket',    
+      webSocketFactory: () => new SockJS(`${BASE_URL}/gs-guide-websocket`),    
       reconnectDelay: 5000,
       connectHeaders: {
         userId: userData.userId,

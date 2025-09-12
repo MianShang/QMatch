@@ -1,5 +1,6 @@
 package com.example.backend.Dto.Response;
 
+import com.example.backend.Entity.FriendShip;
 import com.example.backend.Entity.User;
 import com.example.backend.Entity.UserStatus;
 import lombok.*;
@@ -18,5 +19,13 @@ public class FriendShipResponseDto {
         this.userName = friendUser.getUserName();
         this.userProfile = friendUser.getUserProfile();
         this.status = status;
+    }
+
+    public FriendShipResponseDto(User friendUser)
+    {
+        this.userId = friendUser.getUserId();
+        this.userName = friendUser.getUserName();
+        this.userProfile = friendUser.getUserProfile();
+        this.status = "null";
     }
 }

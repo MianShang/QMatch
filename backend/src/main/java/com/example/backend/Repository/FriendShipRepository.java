@@ -14,7 +14,14 @@ import java.util.Optional;
 public interface FriendShipRepository extends JpaRepository<FriendShip,Long> {
     Optional<FriendShip> findByRequesterAndAddresseeAndStatus(User requester, User addressee, FriendShipStatus status);
     Optional<FriendShip> findByRequesterAndAddressee(User requester, User addressee);
-    Optional<FriendShip> findByAddresseeAndRequester(User addressee, User requester);
-    @Query("SELECT f FROM FriendShip f WHERE (f.requester.id = :userId OR f.addressee.id = :userId) AND f.status NOT IN ('BLOCKED')")
-    List<FriendShip> findFriendsAndStatusByUserIdAndStatus(@Param("userId") Long userId);
+
+    @Query("SELECT f FROM FriendShip f WHERE (f.requester.id = :userId OR f.addressee.id = :userId) AND f.status IN ('ACCEPTED')")
+    List<FriendShip> findFriendsAcceptedByUserId(@Param("userId") long id);
+
+    @Query("SELECT f FROM FriendShip f where (f.requester = :requesterId) AND f.status IN ('BLOCKED')")
+    List<FriendShip> findByBlockUser(@Param("requesterId") User requester);
+
+    @Query("SELECT f FROM FriendShip f where (f.addressee.id = :userId) AND f.status IN ('PENDING')")
+    List<FriendShip> findFriendsPendingByUserId(@Param("userId") long id);
+
 }

@@ -40,7 +40,7 @@ function ChatListPage({
 }) {
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   // State 보관함 해체
-  const { userData, friends } = useContext(LogContext);
+  const { userData } = useContext(LogContext);
 
   // State
   const [sendToModalGameName, setSendToModalGameName] = useState(null);

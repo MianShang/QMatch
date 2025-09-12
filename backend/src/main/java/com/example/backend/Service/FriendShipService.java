@@ -3,6 +3,7 @@ package com.example.backend.Service;
 import com.example.backend.Dto.Response.FriendShipResponseDto;
 import com.example.backend.Entity.FriendShip;
 import com.example.backend.Entity.User;
+import com.example.backend.Entity.UserStatus;
 import com.example.backend.Repository.FriendShipRepository;
 import com.example.backend.Repository.UserRepository;
 import com.example.backend.enums.FriendShipStatus;
@@ -40,19 +41,32 @@ public class FriendShipService {
         User addressee = userRepository.findByUserId(addresseeId)
                 .orElseThrow(() -> new IllegalArgumentException("요청을 받은 사용자를 찾을 수 없습니다."));
 
-        if (friendshipRepository.findByRequesterAndAddressee(requester, addressee).isPresent() ||
-                friendshipRepository.findByAddresseeAndRequester(addressee, requester).isPresent()) {
-            throw new IllegalStateException("이미 친구이거나 요청이 존재합니다.");
+        // Addressee -> Requester 관계,Requester -> Addressee 관계 확인
+        Optional<FriendShip> friendshipOptional = friendshipRepository.findByRequesterAndAddressee(requester, addressee)
+                .or(() -> friendshipRepository.findByRequesterAndAddressee(addressee, requester));
+
+        if (friendshipOptional.isPresent()) {
+            FriendShip existingFriendship = friendshipOptional.get();
+
+            if (existingFriendship.getStatus() == FriendShipStatus.BLOCKED) {
+                throw new IllegalStateException("차단된 사용자입니다.");
+            }
+
+            if (existingFriendship.getStatus() == FriendShipStatus.PENDING || existingFriendship.getStatus() == FriendShipStatus.ACCEPTED) {
+                throw new IllegalStateException("이미 친구이거나 요청이 존재합니다.");
+            }
+
+            // REJECTED 상태라면 PENDING으로 상태 업데이트
+            existingFriendship.setStatus(FriendShipStatus.PENDING);
+            friendshipRepository.save(existingFriendship);
+        } else {
+            // 기존 관계가 없는 경우, 새로운 요청 생성
+            FriendShip newRequest = new FriendShip(requester, addressee, FriendShipStatus.PENDING);
+            friendshipRepository.save(newRequest);
         }
-
-        FriendShip newRequest = new FriendShip(requester, addressee, FriendShipStatus.PENDING);
-
         simpMessagingTemplate.convertAndSend("/topic/friends/" + addresseeId,
-                Map.of("title", "새로운 친구 요청", "message", requester.getUserName() + "님이 친구 요청을 보냈습니다."
-                )
-        );
+                Map.of("title", "새로운 친구 요청", "message", requester.getUserName() + "님이 친구 요청을 보냈습니다."));
 
-        friendshipRepository.save(newRequest);
     }
 
     //친구요청 수락
@@ -91,17 +105,31 @@ public class FriendShipService {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
+        //차단된 관계를 제외한 모든 친구 관계를 조회
+        List<FriendShip> friendships = friendshipRepository.findFriendsAcceptedByUserId(user.getId());
 
-        List<FriendShip> friendships = friendshipRepository.findFriendsAndStatusByUserIdAndStatus(user.getId());
+        //친구Id를 목록으로 추출
+        List<String> friendUserIds = friendships.stream()
+                .map(friendship -> friendship.getRequester().getUserId().equals(userId)
+                        ? friendship.getAddressee().getUserId()
+                        : friendship.getRequester().getUserId())
+                .collect(Collectors.toList());
 
+        //친구들의 상태 조회하여 Map으로 변환
+        Map<String, String> statusMap = userStatusRepository.findStatusByUserIdIn(friendUserIds).stream()
+                .collect(Collectors.toMap(UserStatus::getUserId, UserStatus::getStatus, (oldValue, newValue) -> newValue));
+        
+        System.out.println("친구목록 조회 성공");
+        
+        // 4. DTO로 변환
         return friendships.stream()
                 .map(friendship -> {
                     User friendUser = friendship.getRequester().getUserId().equals(userId)
                             ? friendship.getAddressee()
                             : friendship.getRequester();
 
-                    String status = userStatusRepository.findStatusByUserId(friendUser.getUserId())
-                            .orElse("오프라인");
+                    // Map에서 올바른 친구의 상태를 조회
+                    String status = statusMap.getOrDefault(friendUser.getUserId(), "오프라인");
 
                     return new FriendShipResponseDto(friendUser, status);
                 })
@@ -120,9 +148,7 @@ public class FriendShipService {
         Optional<FriendShip> friendshipOptional = friendshipRepository.findByRequesterAndAddressee(requester, blockedUser)
                 .or(() -> friendshipRepository.findByRequesterAndAddressee(blockedUser, requester));
 
-        FriendShip friendship = friendshipOptional.orElseGet(() -> {
-            return new FriendShip(requester, blockedUser, FriendShipStatus.BLOCKED);
-        });
+        FriendShip friendship = friendshipOptional.orElseGet(() -> new FriendShip(requester, blockedUser, FriendShipStatus.BLOCKED));
 
         friendship.setStatus(FriendShipStatus.BLOCKED);
         friendshipRepository.save(friendship);
@@ -130,5 +156,28 @@ public class FriendShipService {
         simpMessagingTemplate.convertAndSend("/topic/friends/status", Map.of("userId", requesterId));
     }
 
+    @Transactional
+    public List<FriendShipResponseDto> getUserInventoryList(String requesterId, String bottomToggle)
+    {
+        User user = userRepository.findByUserId(requesterId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
+        List<FriendShip> friendships;
+
+        friendships = bottomToggle.equals("friends") ? friendshipRepository.findFriendsPendingByUserId(user.getId())
+                : friendshipRepository.findByBlockUser(user);
+
+        return friendships.stream()
+                .map(friendship -> {
+                    User friendUser;
+                    if (bottomToggle.equals("friends")) {
+                        friendUser = friendship.getRequester();
+                    } else { // "blocked"인 경우
+                        friendUser = friendship.getAddressee(); // receiver를 가져오도록 수정
+                    }
+
+                    return new FriendShipResponseDto(friendUser);
+                })
+                .collect(Collectors.toList());
+    }
 }

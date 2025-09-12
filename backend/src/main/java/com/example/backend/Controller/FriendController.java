@@ -68,4 +68,17 @@ public class FriendController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/inventory")
+    public ResponseEntity<List<FriendShipResponseDto>> getUserInventory(@RequestParam String userId, @RequestParam String bottomToggle) {
+        try {
+            List<FriendShipResponseDto> inventory = friendShipService.getUserInventoryList(userId, bottomToggle);
+            return ResponseEntity.ok(inventory);
+        }catch (IllegalArgumentException e)
+        {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+
 }

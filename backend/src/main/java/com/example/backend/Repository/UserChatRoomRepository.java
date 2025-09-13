@@ -3,6 +3,7 @@ package com.example.backend.Repository;
 import com.example.backend.Entity.ChatRoom;
 import com.example.backend.Entity.User;
 import com.example.backend.Entity.UserChatRoom;
+import com.example.backend.enums.ChatRoomUserStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -28,6 +29,18 @@ public interface UserChatRoomRepository extends JpaRepository<UserChatRoom, Long
     // 방장 넘기기에 필요 → 특정 유저 / 방 매핑 가져오기
     Optional<UserChatRoom> findByUser_UserIdAndChatRoom_Id(String userId, String roomId);
 
+    // 입장 수락, 거절
+    List<UserChatRoom> findByChatRoomAndStatus(ChatRoom chatRoom, ChatRoomUserStatus status);
+    
+    // 채팅방 ID와 상태로 입장 신청 목록 조회
+    List<UserChatRoom> findByChatRoom_IdAndStatus(String roomId, ChatRoomUserStatus status);
+
     // 방 삭제에 필요 → 채팅방에 속한 모든 매핑 삭제
     void deleteByChatRoom_Id(String roomId);
+    
+    // 특정 유저와 채팅방의 PENDING 상태 UserChatRoom 찾기
+    Optional<UserChatRoom> findByUser_UserIdAndChatRoom_IdAndStatus(String userId, String roomId, ChatRoomUserStatus status);
+    
+    // 특정 유저의 특정 상태 채팅방 목록 조회
+    List<UserChatRoom> findByUser_UserIdAndStatus(String userId, ChatRoomUserStatus status);
 }

@@ -9,6 +9,7 @@ import com.example.backend.Entity.UserChatRoom;
 import com.example.backend.Repository.ChatRoomRepository;
 import com.example.backend.Repository.UserChatRoomRepository;
 import com.example.backend.Repository.UserRepository;
+import com.example.backend.enums.ChatRoomUserStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -40,16 +41,16 @@ public class UserChatRoomService {
         UserChatRoom userChatRoom = new UserChatRoom(user, room, Role.MEMBER);
         userChatRoom.setUser(user);
         userChatRoom.setChatRoom(room);
+        userChatRoom.setStatus(ChatRoomUserStatus.ACCEPTED); // 방장은 자동으로 승인됨
 
-        userChatRoomRepository.save(new UserChatRoom(user, room, Role.MEMBER));
         userChatRoomRepository.save(userChatRoom);
     }
 
 
-    // 유저가 저장한 채팅방을 불러오는 Service
+    // 유저가 저장한 채팅방을 불러오는 Service (ACCEPTED 상태만)
     public List<UserChatRoom> getUserChatRooms(String userId) {
 
-        List<UserChatRoom> userChatRooms = userChatRoomRepository.findByUser_UserId(userId);
+        List<UserChatRoom> userChatRooms = userChatRoomRepository.findByUser_UserIdAndStatus(userId, ChatRoomUserStatus.ACCEPTED);
 
         return userChatRooms;
     }
@@ -57,8 +58,8 @@ public class UserChatRoomService {
 
     // 채팅방에 포함된 유저 목록 가져오는 Service
     public List<UserResponseDto> getChatRoomUsers(String roomId) {
-        // RoomId를 통해 UserChatRoom 컬럼 select
-        List<UserChatRoom> userChatRooms = userChatRoomRepository.findByChatRoom_Id(roomId);
+        // RoomId를 통해 UserChatRoom 컬럼 select (ACCEPTED 상태만)
+        List<UserChatRoom> userChatRooms = userChatRoomRepository.findByChatRoom_IdAndStatus(roomId, ChatRoomUserStatus.ACCEPTED);
 
         // UserDto 리스트 선언
         List<UserResponseDto> userDtos = new ArrayList<>();
@@ -75,6 +76,7 @@ public class UserChatRoomService {
             dto.setUserName(user.getUserName());
             dto.setUserEmail(user.getUserEmail());
             dto.setUserProfile(user.getUserProfile());
+            dto.setJoinStatus(ucr.getStatus()); // 입장 신청 상태 추가
 
             // List Add
             userDtos.add(dto);

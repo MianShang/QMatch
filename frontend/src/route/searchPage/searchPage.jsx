@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import './searchPage.css';
 import { useNavigate } from 'react-router-dom';
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 
 // 로그인 체크용 Context API import
 import { LogContext } from '../../App.jsx';
@@ -11,9 +13,13 @@ import JoinRoomModal from '../../modal/joinRoomModal/JoinRoomModal.jsx';
 // custom hook import
 import { useLoginCheck } from '../../hooks/login/useLoginCheck.js';
 import { useChatGetRooms } from '../../hooks/chat/useChatGetRooms.js';
+import useToast from '../../hooks/useToast.js';
 
 // Modal import
 import CreateRoomModal from '../../modal/CreateRoomModal/CreateRoomModal.jsx';
+
+// Toast components
+import ToastContainer from '../../components/ToastContainer.jsx';
 
 function SearchPage() {
   const navigate = useNavigate();
@@ -28,11 +34,74 @@ function SearchPage() {
   const [selectedTags, setSelectedTags] = useState([]); // number[]
   const [groupedTags, setGroupedTags] = useState({});
   const [subscribedRooms, setSubscribedRooms] = useState([]); // 본인이 구독한 채팅방 목록
+  const { toasts, showToast, hideToast } = useToast();
+  const [stompClient, setStompClient] = useState(null);
 
 
 
   const { isLogIn, setIsLogIn, userData } = useContext(LogContext);
   useLoginCheck(isLogIn); // 로그인 체크
+
+  // WebSocket 연결 및 입장 승인 알림 처리
+  useEffect(() => {
+    if (!userData?.userId) return;
+    
+    // 이미 연결되어 있다면 재연결하지 않음
+    if (stompClient && stompClient.connected) {
+      return;
+    }
+    
+    // 이전 연결이 있다면 정리
+    if (stompClient) {
+      stompClient.deactivate();
+    }
+
+    const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
+    
+    const stomp = new Client({
+      webSocketFactory: () => new SockJS(`${BASE_URL}/gs-guide-websocket`),
+      reconnectDelay: 5000,
+      connectHeaders: {
+        userId: userData.userId
+      },
+      onConnect: () => {
+        // 개인 입장 응답 알림 구독
+        stomp.subscribe(`/topic/user/${userData.userId}/join-response`, (message) => {
+          const data = JSON.parse(message.body);
+          
+          if (data.type === 'join-approved') {
+            showToast(data.message, 'success');
+            // 승인된 경우 채팅방으로 이동
+            navigate('/', { 
+              state: { 
+                roomId: data.roomId, 
+                chatName: data.roomName,
+                gameName: data.gameName || '',
+                tagNames: data.tagNames || []
+              } 
+            });
+          } else if (data.type === 'join-rejected') {
+            showToast(data.message, 'error');
+          }
+        });
+      },
+      onStompError: (frame) => {
+        console.error('WebSocket STOMP 오류:', frame);
+      },
+      onWebSocketError: (error) => {
+        console.error('WebSocket 연결 오류:', error);
+      }
+    });
+
+    stomp.activate();
+    setStompClient(stomp);
+
+    return () => {
+      if (stomp.connected) {
+        stomp.deactivate();
+      }
+    };
+  }, [userData?.userId]);
 
   // 본인이 구독한 채팅방 목록 가져오기
   useChatGetRooms(userData, setSubscribedRooms);
@@ -55,9 +124,10 @@ function SearchPage() {
       .catch((err) => console.error("검색 실패:", err));
   }, [searchKeyword, gametag, selectedTags]);
 
-  // 방 입장 모달에서 "입장하기" 버튼 클릭 시 실행
+  // 방 입장 모달에서 "입장 신청" 버튼 클릭 시 실행
   async function handleJoinRoom(payload) {
     const { roomId, chatName, gameName, tagNames } = payload || {};
+    
     if (!roomId) {
       console.error('room id 없음:', payload);
       setJoinOpen(false);
@@ -66,39 +136,28 @@ function SearchPage() {
     }
 
     try {
-      // 서버에 유저-채팅방 매핑 저장 (한 번만)
-      await saveUserChatRoom(roomId);
+      // 입장 신청 API 호출
+      const response = await axios.post(`/api/chat/rooms/${roomId}/join-request`, {
+        userId: userData.userId
+      });
 
-      // 성공하면 채팅 화면으로 라우팅
-      navigate('/', { state: { roomId, chatName, gameName, tagNames } });
+      if (response.data.status === 'PENDING') {
+        // 입장 신청 성공 - 토스트 메시지 표시
+        showToast('입장 신청이 전송되었습니다. 방장의 승인을 기다려주세요.', 'info');
+        setJoinOpen(false);
+        setSelectedRoom(null);
+      }
     } catch (err) {
       const status = err?.response?.status;
       if (status === 409) {
-        // alert('이미 참여 중인 방입니다.');
-        // 이미 참여 중이면 그냥 라우팅
-        navigate('/', { state: { roomId, chatName, gameName, tagNames } });
+        showToast('이미 입장 신청을 했습니다.', 'warning');
+      } else if (status === 404) {
+        showToast('채팅방을 찾을 수 없습니다.', 'error');
       } else {
-        // alert('입장에 실패했습니다. 다시 시도해주세요.');
-        return; // 실패 시 모달 안 닫음
+        showToast('입장 신청에 실패했습니다. 다시 시도해주세요.', 'error');
       }
+      return; // 실패 시 모달 안 닫음
     }
-
-    setJoinOpen(false);
-    setSelectedRoom(null);
-  }
-
-  function saveUserChatRoom(roomId) {
-    return axios.post(`/api/chat/rooms/${roomId}/join`, {
-      userId: userData.userId
-    })
-    .then((res) => {
-      console.log("입장 성공", res.data);
-      return res.data;
-    })
-    .catch((err) => {
-      // 에러를 throw 해서 handleJoinRoom에서 잡을 수 있게 함
-      throw err;
-    });
   }
 
   // 게임태그 바뀔 때마다 태그 초기화
@@ -300,6 +359,9 @@ function SearchPage() {
           </div>
         </div>
       </div>
+      
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onHideToast={hideToast} />
     </>
   );
 }

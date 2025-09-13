@@ -41,7 +41,8 @@ public class userProfileController {
                 user.getUserProfile(),
                 user.getUserTags(),
                 user.getUserStatusMessage(),
-                user.getUserIntro()
+                user.getUserIntro(),
+                null // joinStatus는 프로필 조회 시에는 null
         ));
     }
 

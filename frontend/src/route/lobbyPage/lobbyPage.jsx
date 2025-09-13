@@ -9,6 +9,7 @@ import FriendListPage from './lobbyPageRoute/friendListPage.jsx';
 import MyProfile from '../../feature/profile/myProfileModal.jsx';
 import VoiceChat from './lobbyPageRoute/VoiceChat.jsx';
 import VoiceChatModal from '../../modal/voiceChatSetting/VoiceChatModal.jsx';
+// JoinRequestModal 제거 - 기존 UI에 통합
 
 // 로그인 체크용 Context API import
 import { LogContext } from '../../App.jsx'
@@ -61,6 +62,8 @@ function LobbyPage() {
   
   // 음성설정 모달
   const [showVoiceChatModal, setShowVoiceChatModal] = useState(false);
+  
+  // 입장 신청 관리 상태 제거 - 기존 UI에 통합
   
   // 커스텀 훅 가져오기
   // --UseEffect
@@ -118,6 +121,7 @@ function LobbyPage() {
             const { data } = await axios.get(`/api/chat/rooms/${id}`);
           
             // 서버에서 상세 방 정보를 가져와 state 업데이트
+            console.log('서버에서 받은 방 정보:', data);
             setSelectedRoom({
               id: data.id,
               name: data.name ?? s.chatName,
@@ -125,11 +129,9 @@ function LobbyPage() {
               tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
               currentUsers: (typeof data.currentUsers === 'number') ? data.currentUsers : s.currentUsers,
               maxUsers: (typeof data.maxUsers === 'number') ? data.maxUsers : s.maxUsers,
+              hostUserId: data.hostUserId, // 방장 ID 추가
             });
           } catch (e) {
-            console.warn('방 상세 조회 실패. state로 대체:', e);
-          
-            // 서버 조회 실패 시, props(state) 값으로 대체
             setSelectedRoom({
               id: s.roomId,
               name: s.chatName,
@@ -137,6 +139,7 @@ function LobbyPage() {
               tagNames: s.tagNames ?? [],
               currentUsers: s.currentUsers,
               maxUsers: s.maxUsers,
+              hostUserId: s.hostUserId, // chatList에서 hostUserId 가져오기
             });
           } finally {
             setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
@@ -262,6 +265,23 @@ function LobbyPage() {
 
         {/*우측 채팅방 */}
         <div className='rightBarSize'>
+          {/* 채팅방 헤더 */}
+          {selectedRoom && (
+            <div className='chatRoomHeader'>
+              <div className='chatRoomInfo'>
+                <h3 className='chatRoomTitle'>{selectedRoom.name}</h3>
+                <div className='chatRoomMeta'>
+                  <span className='gameName'>{selectedRoom.gameName}</span>
+                  <span className='userCount'>{selectedRoom.currentUsers}/{selectedRoom.maxUsers}</span>
+                </div>
+              </div>
+              {/* 방장 표시 */}
+              {selectedRoom.hostUserId === userData?.userId && (
+                <span className='hostBadge'>방장</span>
+              )}
+            </div>
+          )}
+          
           <div className='contentStyle chatSize' style={{ textAlign: "left" }}>
             <div ref={messageContainerRef} className='scroll-container chatDivStyle'>
               <MessageList
@@ -321,6 +341,8 @@ function LobbyPage() {
               onJoinChange={setJoinedVoice}
               ref={voiceChatRef}
           />
+
+      {/* 입장 신청 관리 모달 제거 - 기존 UI에 통합 */}
     </>
   )
 }

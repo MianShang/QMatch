@@ -6,6 +6,7 @@ import com.example.backend.Entity.*;
 import com.example.backend.Repository.*;
 import com.example.backend.Service.ChatRoomService;
 import com.example.backend.Websocket.RealTimeUserManagement;
+import com.example.backend.enums.ChatRoomUserStatus;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -202,8 +203,9 @@ public class ChatController {
         // (3) 저장
         ChatRoom savedRoom = chatRoomRepository.save(room);
 
-        // (4) 참여자 관리용 엔티티도 저장 (방장 HOST)
+        // (4) 참여자 관리용 엔티티도 저장 (방장 HOST, 자동 승인)
         UserChatRoom ucr = new UserChatRoom(creator, savedRoom, Role.HOST);
+        ucr.setStatus(  ChatRoomUserStatus.ACCEPTED); // 방장은 자동으로 승인됨
         userChatRoomRepository.save(ucr);
 
         // (5) 태그 연결

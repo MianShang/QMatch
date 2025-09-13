@@ -1,0 +1,150 @@
+.joinRequestModal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: #666;
+  transition: background-color 0.2s ease;
+}
+
+.closeBtn:hover {
+  background-color: #e9ecef;
+}
+
+.modalContent {
+  padding: 20px 24px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.noRequests {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  font-size: 14px;
+}
+
+.requestList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.requestItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+  transition: background-color 0.2s ease;
+}
+
+.requestItem:hover {
+  background: #f0f0f0;
+}
+
+.userInfo {
+  flex: 1;
+}
+
+.userName {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.userId {
+  font-size: 12px;
+  color: #666;
+}
+
+.requestActions {
+  display: flex;
+  gap: 8px;
+}
+
+.approveBtn, .rejectBtn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.approveBtn {
+  background-color: #4caf50;
+  color: white;
+}
+
+.approveBtn:hover {
+  background-color: #45a049;
+  transform: translateY(-1px);
+}
+
+.rejectBtn {
+  background-color: #f44336;
+  color: white;
+}
+
+.rejectBtn:hover {
+  background-color: #da190b;
+  transform: translateY(-1px);
+}
+
+/* 스크롤바 스타일링 */
+.modalContent::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modalContent::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.modalContent::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.modalContent::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

@@ -41,6 +41,7 @@ public class AuthService {
         userResponseDto.setUserProfile(user.userProfile);
         userResponseDto.setUserStatusMessage(user.userStatusMessage);
         userResponseDto.setUserIntro(user.userIntro);
+        userResponseDto.setJoinStatus(null); // 인증 서비스에서는 joinStatus는 null
 
         return userResponseDto;
     }

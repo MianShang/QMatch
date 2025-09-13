@@ -4,6 +4,59 @@
     width: 100%;
 }
 
+/* ================================채팅방 헤더============================= */
+.chatRoomHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: #1e2328;
+    border-bottom: 1px solid #3c4043;
+    border-radius: 12px 12px 0 0;
+    margin-bottom: 8px;
+}
+
+.chatRoomInfo {
+    flex: 1;
+}
+
+.chatRoomTitle {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.chatRoomMeta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.gameName {
+    background: #4a6ee1;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.userCount {
+    color: #9aa0a6;
+    font-size: 14px;
+}
+
+.hostBadge {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #333;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+}
+
 /* div 외곽선 표시 (개발용) */
 .getLine{
     border: 1px solid white;

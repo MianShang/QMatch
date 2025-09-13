@@ -1,5 +1,6 @@
 package com.example.backend.Entity;
 
+import com.example.backend.enums.ChatRoomUserStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -28,6 +29,10 @@ public class UserChatRoom {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role; // HOST, MEMBER
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ChatRoomUserStatus status = ChatRoomUserStatus.PENDING;
 
     protected UserChatRoom() {}
 

@@ -12,6 +12,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.backend.Repository.UserStatusRepository;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 import java.util.Map;
@@ -49,7 +51,7 @@ public class FriendShipService {
             FriendShip existingFriendship = friendshipOptional.get();
 
             if (existingFriendship.getStatus() == FriendShipStatus.BLOCKED) {
-                throw new IllegalStateException("차단된 사용자입니다.");
+                throw new IllegalStateException("사용자가 없거나 차단된 사용자입니다.");
             }
 
             if (existingFriendship.getStatus() == FriendShipStatus.PENDING || existingFriendship.getStatus() == FriendShipStatus.ACCEPTED) {
@@ -82,6 +84,33 @@ public class FriendShipService {
 
         friendship.setStatus(FriendShipStatus.ACCEPTED);
         friendshipRepository.save(friendship);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                // 요청자 토스트
+                simpMessagingTemplate.convertAndSend(
+                        "/topic/friends/" + requester.getUserId(),
+                        Map.of("message", addressee.getUserName() + "님이 친구 요청을 수락했습니다.")
+                );
+
+                // 수락자 토스트
+                simpMessagingTemplate.convertAndSend(
+                        "/topic/friends/" + addressee.getUserId(),
+                        Map.of("message", requester.getUserName() + "님과 친구가 되었습니다.")
+                );
+
+                //inventory 양방향 갱신
+                simpMessagingTemplate.convertAndSend(
+                        "/topic/friends/inventory/" + requesterId,
+                        Map.of("bottomToggle", "friends")
+                );
+                simpMessagingTemplate.convertAndSend(
+                        "/topic/friends/inventory/" + addresseeId,
+                        Map.of("bottomToggle", "friends")
+                );
+            }
+        });
     }
     
     //친구요청 거절
@@ -97,6 +126,33 @@ public class FriendShipService {
 
         friendship.setStatus(FriendShipStatus.REJECTED);
         friendshipRepository.save(friendship);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                //요청자 토스트
+                simpMessagingTemplate.convertAndSend(
+                        "/topic/friends/" + requesterId,
+                        Map.of("message", addressee.getUserName() + "님이 친구요청을 거절하였습니다.")
+                );
+
+                //수락자 토스트
+                simpMessagingTemplate.convertAndSend(
+                        "/topic/friends/" + addresseeId,
+                        Map.of("message", requester.getUserName() + "님의 친구요청 거절되었습니다.")
+                );
+
+                //inventory 양방향 갱신
+                simpMessagingTemplate.convertAndSend(
+                        "/topic/friends/inventory/" + requesterId,
+                        Map.of("bottomToggle", "friends")
+                );
+                simpMessagingTemplate.convertAndSend(
+                        "/topic/friends/inventory/" + addresseeId,
+                        Map.of("bottomToggle", "friends")
+                );
+            }
+        });
     }
 
     // 친구 목록을 조회하는 메서드
@@ -142,18 +198,36 @@ public class FriendShipService {
         User requester = userRepository.findByUserId(requesterId)
                 .orElseThrow(() -> new IllegalArgumentException("요청한 사용자를 찾을 수 없습니다."));
 
-        User blockedUser = userRepository.findByUserId(blockedId)
+        User targetUser = userRepository.findByUserId(blockedId)
                 .orElseThrow(() -> new IllegalArgumentException("차단할 사용자를 찾을 수 없습니다."));
 
-        Optional<FriendShip> friendshipOptional = friendshipRepository.findByRequesterAndAddressee(requester, blockedUser)
-                .or(() -> friendshipRepository.findByRequesterAndAddressee(blockedUser, requester));
+        // 요청자 → 대상
+        Optional<FriendShip> directRelation = friendshipRepository.findByRequesterAndAddressee(requester, targetUser);
 
-        FriendShip friendship = friendshipOptional.orElseGet(() -> new FriendShip(requester, blockedUser, FriendShipStatus.BLOCKED));
+        // 대상 → 요청자 (역방향)
+        Optional<FriendShip> reverseRelation = friendshipRepository.findByRequesterAndAddressee(targetUser, requester);
 
-        friendship.setStatus(FriendShipStatus.BLOCKED);
-        friendshipRepository.save(friendship);
+        // 직접 관계가 없으면 새로 생성
+        FriendShip relation = directRelation.orElseGet(
+                () -> new FriendShip(requester, targetUser, FriendShipStatus.BLOCKED)
+        );
+        relation.setStatus(FriendShipStatus.BLOCKED);
+        friendshipRepository.save(relation);
 
-        simpMessagingTemplate.convertAndSend("/topic/friends/status", Map.of("userId", requesterId));
+        // 양쪽 모두 BLOCKED라면 BLOCKS 처리
+        if (reverseRelation.isPresent() && reverseRelation.get().getStatus() == FriendShipStatus.BLOCKED) {
+            relation.setStatus(FriendShipStatus.BLOCKS);
+            FriendShip reverse = reverseRelation.get();
+            reverse.setStatus(FriendShipStatus.BLOCKS);
+
+            friendshipRepository.save(relation);
+            friendshipRepository.save(reverse);
+        }
+
+        simpMessagingTemplate.convertAndSend(
+                "/topic/friends/status",
+                Map.of("userId", requesterId, "status", relation.getStatus().name())
+        );
     }
 
     @Transactional

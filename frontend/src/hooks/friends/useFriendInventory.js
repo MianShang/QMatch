@@ -1,7 +1,10 @@
 import { useContext, useEffect, useState } from "react";
 import axios from "axios";
+import { LogContext } from "../../App.jsx";
 
 export function useFriendsinventory(userId, bottomToggle) {
+
+    const { friendInventoryUpdate } = useContext(LogContext);
     const [responseUsers, setResponseUsers] = useState([]);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -32,7 +35,7 @@ export function useFriendsinventory(userId, bottomToggle) {
         } else {
             setResponseUsers([]);
         }
-    }, [userId, bottomToggle]);
+    }, [userId, bottomToggle,friendInventoryUpdate]);
 
     return { responseUsers, error, loading };
 }

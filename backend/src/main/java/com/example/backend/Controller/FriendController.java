@@ -5,10 +5,7 @@ import com.example.backend.Service.FriendShipService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,24 +24,25 @@ public class FriendController {
         }
     }
 
-    @PutMapping("/accept")
-    public ResponseEntity<String> acceptFriendRequest(@RequestParam String requesterId, @RequestParam String addresseeId) {
+    @PostMapping("/accept")
+    public ResponseEntity<String> acceptFriendRequest(@RequestParam String responseId, @RequestParam String userId) {
         try {
-            friendShipService.acceptFriendRequest(requesterId, addresseeId);
+            friendShipService.acceptFriendRequest(responseId, userId);
             return ResponseEntity.ok("친구 요청이 수락되었습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @PutMapping("/reject")
-    public ResponseEntity<String> rejectFriendRequest(@RequestParam String requesterId, @RequestParam String addresseeId) {
+    @PostMapping("/reject")
+    public ResponseEntity<String> rejectFriendRequest(@RequestParam String responseId, @RequestParam String userId) {
         try {
-            friendShipService.rejectFriendRequest(requesterId, addresseeId);
+            friendShipService.rejectFriendRequest(responseId, userId);
             return ResponseEntity.ok("친구 요청이 거절되었습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+
     }
 
     // 친구 목록을 조회하는 새로운 엔드포인트

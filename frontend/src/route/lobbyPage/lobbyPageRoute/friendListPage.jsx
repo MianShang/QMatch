@@ -3,10 +3,12 @@ import './list.css';
 import './friendListPage.css';
 import { LogContext } from '../../../App.jsx';
 import { FriendInventory } from './friendInventory.jsx';
+import { FaXmark } from "react-icons/fa6";
 
 function FriendListPage() {
   const { friends, statusByUser, userData } = useContext(LogContext);
   const [bottomToggle, setBottomToggle] = useState(null);
+  const [selected, setSelected] = useState(null);
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -39,15 +41,19 @@ function FriendListPage() {
   });
 
   return (
-    <div className='listRouteSize contentStyle' ref={containerRef}  style={{ position: 'relative' }}>
-    {/* bottomToggle이 활성화되면 FriendInventory를 렌더링 */}
-    {bottomToggle && <FriendInventory bottomToggle={bottomToggle} userId={userData.userId} />}
+    <div className='listRouteSize contentStyle' ref={containerRef} style={{ position: 'relative' }}>
+      {/* bottomToggle이 활성화되면 FriendInventory를 렌더링 */}
+      {bottomToggle && <FriendInventory bottomToggle={bottomToggle} userId={userData.userId} />}
       {/* 친구 목록과 인벤토리를 감싸는 div */}
       <div className="chatListScrollWrapper chatListScroll">
         {/* 친구 목록 렌더링 */}
         {friendsWithStatus.length > 0 ? (
           friendsWithStatus.map(friend => (
-            <div key={friend.userId} className="chatCard">
+            <div
+              key={friend.userId}
+              className={selected === friend.userId ? 'selectCardStyle' : 'chatCard'}
+              onClick={() => setSelected(friend.userId)}
+            >
               <div className="chatCardHeader">
                 <div className="profile-image-container">
                   <img
@@ -60,8 +66,14 @@ function FriendListPage() {
                     title={friend.statusInfo.title}
                   />
                 </div>
-                <span className="chatCardTitle">{friend.userName}</span>
-                <button className="chatCardDelete">🗑</button>
+                <span className="chatCardTitle ellipsis">{friend.userName}</span>
+                <FaXmark
+                  size={25}
+                  color="red"
+                  style={{ marginRight: "5px" }}
+                  onClick={() => console.log("친구 삭제")}
+                  className='CheckBox'
+                />
               </div>
             </div>
           ))

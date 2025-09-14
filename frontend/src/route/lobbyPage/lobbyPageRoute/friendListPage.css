@@ -89,3 +89,27 @@
     background: #1a202a;
     color: #e0e0e0;
 }
+
+.chatCardDelete
+{
+  background-color: transparent;
+}
+
+/* 글자 넘어갔을때 ... 표시 */
+.ellipsis
+{
+  width: 110px;
+  white-space: nowrap;        /* 줄바꿈 X */
+  overflow: hidden;           /* 넘친 글자 숨기기 */
+  text-overflow: ellipsis;
+}
+
+.CheckBox:hover
+{
+  transform: translateY(-3px);
+}
+
+.CheckBox:active
+{
+  transform: translateY(3px);
+}

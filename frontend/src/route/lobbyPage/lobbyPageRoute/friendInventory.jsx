@@ -1,6 +1,9 @@
 import './list.css';
 import './friendListPage.css';
 import { useFriendsinventory } from '../../../hooks/friends/useFriendInventory';
+import { FaCheck } from "react-icons/fa";
+import { FaXmark } from "react-icons/fa6";
+import { useFriendResponse } from '../../../hooks/friends/useFriendResponse';
 
 
 export function FriendInventory({ bottomToggle, userId }) {
@@ -47,8 +50,24 @@ export function FriendInventory({ bottomToggle, userId }) {
                                     className="chatCardImage"
                                 />
                             </div>
-                            <span className="chatCardTitle">{RequestUser.userName}</span>
-                            <button className="chatCardDelete">🗑</button>
+                            <span className="chatCardTitle ellipsis">{RequestUser.userName}</span>
+                            {bottomToggle === "friends" && (
+                                <FaCheck
+                                    size={20}
+                                    color="#32CD32"
+                                    style={{ marginRight: "-10px" }}
+                                    onClick={async() => useFriendResponse(RequestUser.userId, userId, 'accept')}
+                                    className='CheckBox'
+                                />
+                            )}
+                            <FaXmark
+                                size={25}
+                                color="red"
+                                style={{ marginRight: "5px" }}
+                                onClick={async() => useFriendResponse(RequestUser.userId, userId, 'reject')}
+                                className='CheckBox'
+                            />
+
                         </div>
                     </div>
                 ))

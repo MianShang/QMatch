@@ -27,6 +27,25 @@ function App() {
   const [userData, setUserData] = useState(null);
   const [friends,setFriends] = useState([]);
   const [statusByUser, setStatusByUser] = useState([]);
+  // 안 읽은 메시지 상태
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+  // 테마 상태
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme || 'dark';
+  });
+
+  // 테마 변경 함수
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+
+  // 테마 적용
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   // 새로고침 or 첫 로딩시 자동 실행
   useEffect(() => {
@@ -94,8 +113,12 @@ function App() {
     setUserData,
     isLoading,
     friends,
-    statusByUser
-  }), [isLogIn, userData, isLoading, friends, statusByUser]);
+    statusByUser,
+    hasUnreadMessages,
+    setHasUnreadMessages,
+    theme,
+    toggleTheme
+  }), [isLogIn, userData, isLoading, friends, statusByUser, hasUnreadMessages, theme]);
 
   //친구 목록 가져오기
     useEffect(() => {

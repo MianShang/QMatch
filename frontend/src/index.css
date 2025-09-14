@@ -32,6 +32,50 @@
   --discord-radius: 8px;
   --discord-radius-small: 4px;
   --discord-radius-large: 12px;
+  
+  /* 아이콘 필터 */
+  --icon-filter: invert(1);
+}
+
+/* 라이트모드 변수 */
+[data-theme="light"] {
+  /* 라이트모드 배경색 */
+  --discord-bg-primary: #ffffff;
+  --discord-bg-secondary: #f8f9fa;
+  --discord-bg-tertiary: #e3e5e8;
+  --discord-bg-quaternary: #d1d9e0;
+  --discord-bg-modifier-hover: #e8eaed;
+  --discord-bg-modifier-active: #dadce0;
+  --discord-bg-modifier-selected: #e3f2fd;
+  
+  /* 라이트모드 텍스트색 */
+  --discord-text-normal: #2e3338;
+  --discord-text-muted: #747f8d;
+  --discord-text-link: #0066cc;
+  --discord-text-positive: #00a86b;
+  --discord-text-warning: #f39c12;
+  --discord-text-danger: #e74c3c;
+  
+  /* 라이트모드 인터랙티브 */
+  --discord-interactive-normal: #4f5660;
+  --discord-interactive-hover: #2e3338;
+  --discord-interactive-active: #000000;
+  --discord-interactive-muted: #b9bbbe;
+  
+  /* 라이트모드 액센트 (동일) */
+  --discord-accent: #7289da;
+  --discord-accent-hover: #677bc4;
+  --discord-accent-active: #5b6eae;
+  
+  /* 라이트모드 그림자 */
+  --discord-elevation-low: 0 1px 0 rgba(0,0,0,0.1), 0 1.5px 0 rgba(0,0,0,0.05), 0 2px 0 rgba(0,0,0,0.05);
+  --discord-elevation-medium: 0 4px 4px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.15);
+  --discord-elevation-high: 0 8px 16px rgba(0,0,0,0.15), 0 16px 32px rgba(0,0,0,0.15);
+  --discord-elevation-stroke: 0 0 0 1px rgba(0,0,0,0.1);
+  --discord-elevation-border: 0 0 0 1px rgba(0,0,0,0.2);
+  
+  /* 라이트모드 아이콘 필터 */
+  --icon-filter: invert(0);
 }
 
 :root, html, body, #root {

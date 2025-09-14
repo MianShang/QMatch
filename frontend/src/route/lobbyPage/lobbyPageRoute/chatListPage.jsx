@@ -39,7 +39,8 @@ function ChatListPage({
   onMembersPanelToggle, // 참여자 패널 상태 변경 콜백 추가
   showMembersOnly = false, // 참여자 패널만 표시하는 플래그
   membersToggle = true, // 참여자/음성채팅 토글 상태
-  setMembersToggle = () => {} // 참여자/음성채팅 토글 상태 변경 함수
+  setMembersToggle = () => {}, // 참여자/음성채팅 토글 상태 변경 함수
+  setHasUnreadMessages // 안 읽은 메시지 상태 업데이트 함수
 }) {
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   // State 보관함 해체
@@ -53,6 +54,14 @@ function ChatListPage({
   const [chatListExtend, setChatListExtend] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
   const [chatUserList, setChatUserList] = useState([]);
+  
+  // 안 읽은 메시지가 있는지 확인하고 전역 상태 업데이트
+  useEffect(() => {
+    const hasUnread = Object.values(unreadCounts).some(count => count > 0);
+    if (setHasUnreadMessages) {
+      setHasUnreadMessages(hasUnread);
+    }
+  }, [unreadCounts, setHasUnreadMessages]);
 
   // chatList를 다시 로컬 state로 관리합니다.
   const [chatList, setChatList] = useState([]);
@@ -104,8 +113,9 @@ function ChatListPage({
   function getStatusIcon(status) {
     if (status === '온라인') return '🟢';
     if (status === '자리비움') return '🟠';
-    return '🔴';
+    return '⚫'; // 오프라인을 검정색으로 설정 (CSS에서 회색으로 변경)
   }
+
 
   // 방 삭제
   async function handleDeleteRoom(roomId, userId) {
@@ -178,12 +188,12 @@ function ChatListPage({
     return { online, away, offline };
   }
 
-  /* 패널을 오른쪽에 고정 배치 */
+  /* 패널을 좌측바와 메시지창 사이에 배치 */
   function measurePanel() {
     if (!leftColRef.current) return;
     const r = leftColRef.current.getBoundingClientRect();
-    // 오른쪽에 고정하므로 left는 계산하지 않음
-    setPanelRect({ left: 0, top: 0, height: r.height });
+    // 좌측바(240px) 오른쪽에 위치하도록 설정
+    setPanelRect({ left: 240, top: 0, height: r.height });
   }
 
   /* 패널 열릴 때/리사이즈 시 위치 재측정 */
@@ -444,14 +454,9 @@ function ChatListPage({
           />
         )}
 
-      {/* 참여자 패널(채팅창 내부 시작점에 맞춰 뜸) */}
+      {/* 참여자 패널(채팅창과 채팅목록 사이에 위치) */}
       <div
         className={`membersDrawerInline ${isMembersOpen ? 'open' : ''}`}
-        style={{
-          left: panelRect.left + 'px',
-          top: panelRect.top + 'px',
-          height: panelRect.height + 'px'
-        }}
       >
         <div className="membersDrawerHeader">
           <div onClick={() => { setToggle(true); }}
@@ -459,8 +464,7 @@ function ChatListPage({
             참여자
           </div>
           <div onClick={() => setToggle(false)}
-            className={`toggleSwitchText contentStyle toggleSwitch ${!toggle ? 'activeBorder' : ''}`}
-            style={{ marginLeft: "10px" }}>
+            className={`toggleSwitchText contentStyle toggleSwitch ${!toggle ? 'activeBorder' : ''}`} >
             음성채팅
           </div>
         </div>
@@ -489,7 +493,7 @@ function ChatListPage({
                         <div
                           className="MoreButtonStyle"
                           onClick={(e) => openMenu(e, u.userId)}
-                        >...
+                        >···
                         </div>
                       </div>
                     );
@@ -511,7 +515,7 @@ function ChatListPage({
                         <div
                           className="MoreButtonStyle"
                           onClick={(e) => openMenu(e, u.userId)}
-                        >...
+                        >···
                         </div>
                       </div>
                     );
@@ -534,7 +538,7 @@ function ChatListPage({
                             className="MoreButtonStyle"
                             onClick={(e) => openMenu(e, u.userId)}
                           >
-                            …
+                            ···
                           </div>
                         </div>
                       );
@@ -575,12 +579,6 @@ function ChatListPage({
               )}
             </p>
             <p></p>
-            {/* 선택된 방 참여자 패널 열기 버튼 */}
-            <button
-              className="membersIconBtn"
-              title="참여자 보기"
-              onClick={() => selectedRoom && openMembers(selectedRoom.id)}
-            >👥</button>
           </div>
 
           {/* 더보기 클릭시 채팅방 구독한 유저 리스트 표시 */}
@@ -692,6 +690,13 @@ function ChatListPage({
                 getChatList(item.chatRoom.id, setMessages);
                 setRead(item.chatRoom);
                 setUnreadCounts(prev => ({ ...prev, [item.chatRoom.id]: 0 }));
+                
+                // 패널 토글: 열려있으면 닫고, 닫혀있으면 열기
+                if (isMembersOpen) {
+                  closeMembers();
+                } else {
+                  openMembers(item.chatRoom.id);
+                }
               }}
             >
               <div className="chatCardHeader">
@@ -699,27 +704,19 @@ function ChatListPage({
                 <img src={`${setGameIcon(item.chatRoom.gameName)}`} alt="방 아이콘" className="chatCardImage" />
 
                 {/* 채팅방 이름 */}
-                <span className="chatCardTitle">{item.chatRoom.name} </span>
+                <span className="chatCardTitle">{item.chatRoom.name}</span>
 
-                {/* 카드에서 바로 참여자 패널 열기 */}
-                {/* <button
-                  className="chatCardMembersBtn"
-                  title="참여자 보기"
-                  onClick={(e) => { e.stopPropagation(); openMembers(item.chatRoom.id); }}
-                >👥</button> */}
+                 {/* 안읽은 메시지가 있을 때만 별도 영역에 표시 */}
+                 {unread > 0 && (
+                   <div className="chatCardUnread">
+                     <span className="chatCardBadge">{unread}</span>
+                   </div>
+                 )}
 
                 {/* 채팅방 나가기 */}
                 <span className="chatCardDelete">
                 </span>
               </div>
-
-              {/* 안읽은 메세지 개수를 출력한다.*/}
-              {unread > 0 &&
-                <div className="chatCardFooter">
-                  <span className="chatCardBadge">{unread}</span>
-                  <span className="chatCardLastMessage">안읽은 메세지가 있습니다</span>
-                </div>
-              }
             </div>)
         })}
       </div>

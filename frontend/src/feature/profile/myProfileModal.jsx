@@ -1,29 +1,28 @@
-  import React, { useState, useEffect, useContext } from 'react';
-  import InputModal from './components/inputModal.jsx';
-  import SpecModal from './components/specModal/specModal.jsx';
-  import axios from 'axios';
-  import './myProfileModal.css';
+import React, { useState, useEffect, useContext } from 'react';
+import InputModal from './components/inputModal.jsx';
+import SpecModal from './components/specModal/specModal.jsx';
+import axios from 'axios';
+import './myProfileModal.css';
 import { LogContext } from '../../App.jsx';
 import { useLogout } from '../../hooks/login/useLogout.js';
 
-  function MyProfile({ viewUserId, onClose }) {
-    const { userData, setUserData, setIsLogIn } = useContext(LogContext); // 내 로그인 정보
-    const [profileData, setProfileData] = useState(null); // 현재 열려있는 프로필 데이터
-    const [showGameModal, setShowGameModal] = useState(false);
+function MyProfile({ viewUserId, onClose }) {
+  const { userData, setUserData, setIsLogIn } = useContext(LogContext); // 내 로그인 정보
+  const [profileData, setProfileData] = useState(null); // 모든 프로필 정보(소개, 상태메시지, 태그 등)
+  const [showGameModal, setShowGameModal] = useState(false);
   const [showTagModal, setShowTagModal] = useState(false);
   const [gameData, setGameData] = useState([]);
-  const [edit, setEdit] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-    const [intro, setIntro] = useState("");
-    const [tempIntro, setTempIntro] = useState("");
-    const [selectedGame, setSelectedGame] = useState(null);
-    const [showSpecModal, setShowSpecModal] = useState(false);
-    const [statusMessage, setStatusMessage] = useState('');
-    const [editStatus, setEditStatus] = useState(false);
-    const [tempStatus, setTempStatus] = useState("");
 
-    const isMe = viewUserId === userData?.userId; // 본인 여부
-    const logoutFunc = useLogout(); // 로그아웃 함수
+  const [edit, setEdit] = useState(false);
+  const [tempIntro, setTempIntro] = useState("");
+  const [selectedGame, setSelectedGame] = useState(null);
+  const [showSpecModal, setShowSpecModal] = useState(false);
+  const [editStatus, setEditStatus] = useState(false);
+  const [tempStatus, setTempStatus] = useState("");
+
+  const isMe = viewUserId === userData?.userId; // 본인 여부
+  const logoutFunc = useLogout(); // 로그아웃 함수
 
   
   const fetchProfileData = () => {
@@ -149,8 +148,9 @@ import { useLogout } from '../../hooks/login/useLogout.js';
   return (
     <div className="modal-overlay">
       <div className="modal-content">
-        {/* 상단 프로필 영역 */}
-        <div className="profile-flex-box">
+        <div className="modal-content-scrollable">
+          {/* 상단 프로필 영역 */}
+          <div className="profile-flex-box">
           <div className="left-box">
             {isMe ? (
               <>
@@ -177,7 +177,7 @@ import { useLogout } from '../../hooks/login/useLogout.js';
                     }
                   }}
                 />
-                              </>
+              </>
             ) : (
               <img
                 src={
@@ -188,132 +188,177 @@ import { useLogout } from '../../hooks/login/useLogout.js';
                 alt="프로필"
               />
             )}
+          </div>
+
+          {/* 오른쪽 프로필 정보 */}
+          <div className="right-box">
+            <div className="profile-header-actions">
+              <button className="close-btn" onClick={onClose}>
+                <span>✕</span>
+              </button>
+              
+              {isMe && (
+                <button 
+                  className="logout-btn" 
+                  onClick={() => setShowLogoutConfirm(true)}
+                >
+                  로그아웃
+                </button>
+              )}
             </div>
 
-            {/* 오른쪽 프로필 정보 */}
-            <div className="right-box">
-              <div className="modal-actions">
-                <label onClick={onClose}>닫기</label>
-                {isMe && (
-                  <label 
-                    className="logout-btn" 
-                    onClick={() => setShowLogoutConfirm(true)}
+            <div className="profile-user-info">
+              <h2 className="profile-username">{profileData?.userId}</h2>
+              
+              <div className="profile-status-section">
+                {isMe && !editStatus && (
+                  <button 
+                    className="edit-status-btn"
+                    onClick={() => { 
+                      setTempStatus(profileData?.userStatusMessage || ''); 
+                      setEditStatus(true); 
+                    }}
                   >
-                    로그아웃
-                  </label>
+                     상태 메시지 수정
+                  </button>
+                )}
+
+                {!editStatus && (
+                  <p className="status-message">
+                    {profileData?.userStatusMessage || "상태 메시지가 없습니다."}
+                  </p>
+                )}
+                
+                {editStatus && isMe && (
+                  <div className="status-edit-form">
+                    <textarea
+                      className="status-textarea"
+                      value={tempStatus}
+                      onChange={(e) => setTempStatus(e.target.value)}
+                      rows={3}
+                      placeholder="상태 메시지를 입력하세요..."
+                    />
+                    <div className="status-edit-actions">
+                      <button className="save-btn" onClick={handleStatusSave}>저장</button>
+                      <button className="cancel-btn" onClick={() => setEditStatus(false)}>취소</button>
+                    </div>
+                  </div>
                 )}
               </div>
-              <h2>{viewUserId}</h2>
+            </div>
 
-              {isMe && !editStatus && (
-                <span onClick={() => { setTempStatus(statusMessage); setEditStatus(true); }}>
-                  + 내 상태 메시지 수정
-                </span>
-              )}
-
-              {!editStatus && <p>{statusMessage}</p>}
-              {editStatus && isMe && (
-                <>
-                  <textarea
-                    value={tempStatus}
-                    onChange={(e) => setTempStatus(e.target.value)}
-                    rows={3}
-                    style={{ width: '100%' }}
-                  />
-                  <button onClick={handleStatusSave}>저장</button>
-                </>
-              )}
-
-              <div className="tag-title">자주 사용하는 태그</div>
-              {isMe && (
-                <span className="add-text" onClick={() => setShowTagModal(true)}>
-                  + 태그 추가
-                </span>
-              )}
+            <div className="profile-tags-section">
+              <div className="section-header">
+                <h3 className="section-title">자주 사용하는 태그</h3>
+                {isMe && (
+                  <button className="add-tag-btn" onClick={() => setShowTagModal(true)}>
+                    <span>+</span> 태그 추가
+                  </button>
+                )}
+              </div>
               <div className="frequent-tags">
-                <span className="tag">#뉴비 환영</span>
-                <span className="tag">#마이크 필수</span>
-                <span className="tag">#빡겜</span>
+                {Array.isArray(profileData?.userTag) && profileData.userTag.length > 0 ? (
+                  profileData.userTag.map((tag, index) => (
+                    <span key={index} className="tag">#{tag}</span>
+                  ))
+                ) : (
+                  <p className="no-tags">등록된 태그가 없습니다.</p>
+                )}
               </div>
             </div>
           </div>
-
-            <div className="frequent-tags">
-            {Array.isArray(profileData?.userTag) && profileData.userTag.map((tag, index) => (
-            <span key={index} className="tag">#{tag}</span>
-          ))}
+        </div>
 
         {/* 게임 목록 */}
-        <div className="tag-box">
-          <h3>자주 하는 게임</h3>
-          {isMe && (
-            <span className="add-text" onClick={() => setShowGameModal(true)}>
-              + 게임 추가
-            </span>
-          )}
-          <div className="tag-list">
+        <div className="profile-games-section">
+          <div className="section-header">
+            <h3 className="section-title">자주 하는 게임</h3>
+            {isMe && (
+              <button className="add-game-btn" onClick={() => setShowGameModal(true)}>
+                <span>+</span> 게임 추가
+              </button>
+            )}
+          </div>
+          <div className="games-list">
             {Array.isArray(gameData) && gameData.length > 0 ? (
               gameData.map((item) => (
-                <span
+                <div
                   key={item.id}
-                  className="tag"
+                  className="game-item"
                   onClick={() => {
                     setSelectedGame(item);
                     setShowSpecModal(true);
                   }}
                 >
-                  {item.gameName} ({item.gameCode})
-                </span>
+                  <span className="game-name">{item.gameName}</span>
+                  <span className="game-code">({item.gameCode})</span>
+                </div>
               ))
             ) : (
-              <p>등록된 게임이 없습니다.</p>
+              <p className="no-games">등록된 게임이 없습니다.</p>
             )}
           </div>
         </div>
 
         {/* 자기소개 */}
-        <div className="bottom-box">
-          <h3>소개</h3>
-          {isMe && (
-            <span
-              onClick={() => {
-               
-                setTempIntro(profileData?.userIntro || '');
-                setEdit(true);
-              }}
+        <div className="profile-bio-section">
+          <div className="section-header">
+            <h3 className="section-title">소개</h3>
+            {isMe && (
+              <button 
+                className="edit-bio-btn"
+                onClick={() => {
+                  setTempIntro(profileData?.userIntro || '');
+                  setEdit(true);
+                }}
               >
-              + 수정
-            </span>
-          )}
-         
-          {!edit && <p>{profileData?.userIntro}</p>}
-          {edit && isMe && (
-            <>
-              <textarea
-                value={tempIntro}
-                onChange={(e) => setTempIntro(e.target.value)}
-                rows={3}
-                style={{ width: '100%' }}
-              />
-              <button onClick={handleSave}>저장</button>
-            </>
-          )}
+                수정
+              </button>
+            )}
+          </div>
+          
+          <div className="bio-content">
+            {!edit && (
+              <p className="bio-text">
+                {profileData?.userIntro || "자기소개가 없습니다."}
+              </p>
+            )}
+            
+            {edit && isMe && (
+              <div className="bio-edit-form">
+                <textarea
+                  className="bio-textarea"
+                  value={tempIntro}
+                  onChange={(e) => setTempIntro(e.target.value)}
+                  rows={4}
+                  placeholder="자기소개를 입력하세요..."
+                />
+                <div className="bio-edit-actions">
+                  <button className="save-btn" onClick={handleSave}>저장</button>
+                  <button className="cancel-btn" onClick={() => setEdit(false)}>취소</button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+        </div>
+      </div>
 
-        {/* 입력 모달 */}
-        {showGameModal && (
-          <InputModal
-            type="game"
-            onClose={() => setShowGameModal(false)}
-            sendUserGameCode={sendUserGameCode}
+      {/* 오른쪽 전적 모달 패널 */}
+      {selectedGame && showSpecModal && (
+        <div className="spec-modal-panel">
+          <SpecModal
+            game={selectedGame}
+            onClose={() => {
+              setShowSpecModal(false);
+              setSelectedGame(null);
+            }}
           />
-        )}
-        {showTagModal && (
-          <InputModal type="tag" onClose={() => setShowTagModal(false)} />
-        )}
+        </div>
+      )}
 
-        {/* 로그아웃 확인 모달 */}
-        {showLogoutConfirm && (
+      {/* 로그아웃 확인 모달 */}
+      {showLogoutConfirm && (
           <div className="logout-confirm-overlay" onClick={() => setShowLogoutConfirm(false)}>
             <div className="logout-confirm-modal" onClick={(e) => e.stopPropagation()}>
               <h3>로그아웃 확인</h3>
@@ -339,32 +384,17 @@ import { useLogout } from '../../hooks/login/useLogout.js';
           </div>
         )}
 
-        {/* 오른쪽 전적 모달 패널 */}
-        {selectedGame && showSpecModal && (
-          <div className="spec-modal-panel">
-            <SpecModal
-              game={selectedGame}
-              onClose={() => {
-                setShowSpecModal(false);
-                setSelectedGame(null);
-              }}
-            />
-          </div>
-        )}
-
-        {/* 입력 모달 */}
-        {showGameModal && (
-          <InputModal
-            type="game"
-            onClose={() => setShowGameModal(false)}
-            sendUserGameCode={sendUserGameCode}
-          />
-        )}
-        {showTagModal && (
-          <InputModal type="tag" onClose={() => setShowTagModal(false)} sendUserTag={sendUserTag} />
-        )}
-        </div>
-      </div>
+      {/* 입력 모달 */}
+      {showGameModal && (
+        <InputModal
+          type="game"
+          onClose={() => setShowGameModal(false)}
+          sendUserGameCode={sendUserGameCode}
+        />
+      )}
+      {showTagModal && (
+        <InputModal type="tag" onClose={() => setShowTagModal(false)} sendUserTag={sendUserTag} />
+      )}
     </div>
   );
 }

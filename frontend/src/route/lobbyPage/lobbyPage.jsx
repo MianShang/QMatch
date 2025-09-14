@@ -1,5 +1,6 @@
 import { useRef, useState, useEffect, useContext, memo } from 'react'
 import { Routes, Route, Link, useNavigate} from 'react-router-dom'
+import { Client } from '@stomp/stompjs';
 import axios from 'axios';
 import './lobbyPage.css'
 
@@ -32,18 +33,21 @@ function LobbyPage() {
 
   // 상태 패널 열림 여부
   const [isStatusPanelOpen, setIsStatusPanelOpen] = useState(false);
-  
-  // 참여자 패널 열림 여부
-  const [isMembersPanelOpen, setIsMembersPanelOpen] = useState(false);
-  
-  // 참여자 패널 내부 토글 - 기본값 true (참여자)
-  const [membersToggle, setMembersToggle] = useState(true);
 
   // 사이드바 프로필 이미지 클릭시 중앙 div는 사라지게 - 기본값 true(중앙 div 표시)
   const [showMidBar, setShowMidBar] = useState(true);
 
   // toggle State를 기준으로 채팅 / 친구 컴포넌트 교체 - 기본값 true (채팅)
   const [toggle, setToggle] = useState(true);
+  
+  // 토글 상태 변경 시 참여자 패널 자동 닫기
+  const handleToggleChange = (newToggle) => {
+    setToggle(newToggle);
+    if (!newToggle) {
+      // 친구 토글로 변경 시 참여자 패널 닫기
+      setIsMembersPanelOpen(false);
+    }
+  };
 
   const [selectedRoom, setSelectedRoom] = useState();      // 실시간 참여한 채팅방 데이터를 담은 State
   const [messages, setMessages] = useState([]);      // 보낼 메세지
@@ -51,12 +55,7 @@ function LobbyPage() {
   const [input, setInput] = useState('');      // input 입력 Sate      
 
   // State 보관함 해체
-  const { isLogIn, setIsLogIn, userData, setUserData } = useContext(LogContext)
-
-  // // userData가 로드될 때까지 로딩
-  // if (!userData) {
-  //   return <div>userData 로딩중</div>; 
-  // }
+  const { isLogIn, setIsLogIn, userData, setUserData, setHasUnreadMessages, theme, toggleTheme } = useContext(LogContext)
 
   // voiceChat
   const [voiceChatRoomId, setVoiceChatRoomId] = useState(null);
@@ -64,9 +63,12 @@ function LobbyPage() {
   const [localMuted, setLocalMuted] = useState(false);
   const [joinedVoice, setJoinedVoice] = useState(false);
   const voiceChatRef = useRef(null);
-  
+
   // 음성설정 모달
   const [showVoiceChatModal, setShowVoiceChatModal] = useState(false);
+  
+  // 참여자 패널 상태
+  const [isMembersPanelOpen, setIsMembersPanelOpen] = useState(false);
   
   // 커스텀 훅 가져오기
   // --UseEffect
@@ -129,8 +131,6 @@ function LobbyPage() {
               name: data.name ?? s.chatName,
               gameName: data.gameName ?? s.gameName,
               tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
-              currentUsers: (typeof data.currentUsers === 'number') ? data.currentUsers : s.currentUsers,
-              maxUsers: (typeof data.maxUsers === 'number') ? data.maxUsers : s.maxUsers,
             });
           } catch (e) {
             console.warn('방 상세 조회 실패. state로 대체:', e);
@@ -141,8 +141,6 @@ function LobbyPage() {
               name: s.chatName,
               gameName: s.gameName,
               tagNames: s.tagNames ?? [],
-              currentUsers: s.currentUsers,
-              maxUsers: s.maxUsers,
             });
           } finally {
             setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
@@ -158,17 +156,19 @@ function LobbyPage() {
 
   return (
     <>
+
       <div className='fullscreen'>
+
         {/* 좌측 채팅/친구 바 - 맨 왼쪽으로 이동 */}
         {showMidBar &&
           <div className='leftBarSize'>
             <div className="toggle-container">
-              <div onClick={() => { setToggle(true); }}
+              <div onClick={() => { handleToggleChange(true); }}
                 className={`toggleSwitchText toggleSwitch ${toggle ? 'activeBorder' : ''}`} >
                 채팅
               </div>
 
-              <div onClick={() => setToggle(false)}
+              <div onClick={() => handleToggleChange(false)}
                 className={`toggleSwitchText toggleSwitch ${!toggle ? 'activeBorder' : ''}`}>
                 친구
               </div>
@@ -204,9 +204,10 @@ function LobbyPage() {
                   localMuted={localMuted}
                   joinedVoice={joinedVoice} 
                   voiceChatRoomId={voiceChatRoomId}
-                  onMembersPanelToggle={setIsMembersPanelOpen} // 참여자 패널 상태 콜백 추가
+                  onMembersPanelToggle={setIsMembersPanelOpen}
+                  setHasUnreadMessages={setHasUnreadMessages}
                 />
-                : <FriendListPage />} 
+                : <FriendListPage userId={userData.userId}/>}
             </div>
 
             {/* 하단 버튼 영역 */}
@@ -262,12 +263,16 @@ function LobbyPage() {
                 </svg>
               </button>
 
-              {/* 검색 페이지 이동 버튼 */}
-              <Link to="/search">
-                <button className="bottom-button" aria-label="검색">
-                  <img src="/SearchIcon.png" className="button-icon" alt="검색" />
-                </button>
-              </Link>
+              {/* 다크모드 토글 버튼 */}
+              <button 
+                className="bottom-button" 
+                aria-label="테마 토글"
+                onClick={toggleTheme}
+              >
+                <svg className="button-icon" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12,18C11.11,18 10.26,17.8 9.5,17.45C11.56,16.5 13,14.42 13,12C13,9.58 11.56,7.5 9.5,6.55C10.26,6.2 11.11,6 12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31L23.31,12L20,8.69Z"/>
+                </svg>
+              </button>
 
               {/* 전체 설정 버튼 */}
               <button 
@@ -287,32 +292,48 @@ function LobbyPage() {
         }
 
         {/*우측 채팅방 - Discord 스타일 */}
-        <div className="rightBarSize">
+        <div className={`rightBarSize ${isMembersPanelOpen ? 'with-members-panel' : ''}`}>
           <div className='chatSize'>
-            <div ref={messageContainerRef} className={`scroll-container chatDivStyle ${isMembersPanelOpen ? 'with-members-panel' : ''}`}>
-              <MessageList
-                messages={messages}
-                userData={userData} />
+            <div ref={messageContainerRef} className='scroll-container chatDivStyle'>
+              {selectedRoom ? (
+                <MessageList
+                  messages={messages}
+                  userData={userData} />
+              ) : (
+                <div className="empty-chat-container">
+                  <div className="empty-chat-logo">
+                    <div className="logo-icon">Q</div>
+                    <span className="brand-name">QMatch</span>
+                  </div>
+                  <p className="empty-chat-text">채팅방을 선택하여 대화를 시작하세요</p>
+                </div>
+              )}
             </div>
 
-            <div className={`inputSize ${isMembersPanelOpen ? 'with-members-panel' : ''}`}>
-              <input
-                className='chatInputStyle'
-                type="text"
-                placeholder="메시지를 입력하세요..."
-                value={input}
-                onChange={(e) => { setInput(e.target.value); }}
-                onKeyDown={(e) => { if (e.key === 'Enter') { sendMessage(); } }} />
+            {selectedRoom && (
+              <div className="inputSize">
+                <input
+                  className='chatInputStyle'
+                  type="text"
+                  placeholder="메시지를 입력하세요..."
+                  value={input}
+                  onChange={(e) => { setInput(e.target.value); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { sendMessage(); } }} />
 
-              <button className='chatButtonStyle'
-                onClick={() => { sendMessage(); }}> 전송 </button>
-            </div>
+                <button className='chatButtonStyle'
+                  onClick={() => { sendMessage(); }}>
+                  ➤
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className={`adSize ${isMembersPanelOpen ? 'with-members-panel' : ''}`}>
-            <span style={{ color: 'var(--discord-text-muted)', fontSize: '14px' }}>
-              QMatch - 게임 매칭 플랫폼
-            </span>
+          <div style={{ display: "flex", height: '60px' }}>
+            <div className='adSize'>
+              <span style={{ color: 'var(--discord-text-muted)', fontSize: '14px' }}>
+                QMatch - 게임 팀원 모집 플랫폼
+              </span>
+            </div>
             <Link to="/search">
               <div className='searchSize'>
                 <img src="/SearchIcon.png" className='imgPos' alt="검색"></img>
@@ -320,43 +341,6 @@ function LobbyPage() {
             </Link>
           </div>
         </div>
-
-        {/* 참여자 패널 - 자동으로 열림 */}
-        <div className={`members-panel-overlay ${isMembersPanelOpen ? 'open' : ''}`}>
-          <ChatListPage
-            selectedRoom={selectedRoom}
-            setSelectedRoom={setSelectedRoom}
-            setMessages={setMessages}
-            onOpenProfile={(targetUserId) => { setProfileUserId(targetUserId); setShowProfileModal(true); }}
-            currentUserStatus={userStatus} 
-            refreshTick={listRefreshTick}
-            voiceSpeakers={voiceSpeakers} 
-            onJoinVoice={(roomId) => {
-              setVoiceChatRoomId(roomId)
-              if (voiceChatRef.current) {
-                voiceChatRef.current.joinChannel(roomId);
-              }
-            }}
-            onLeaveVoice={() => {
-              if (voiceChatRef.current) {
-                voiceChatRef.current.leaveChannel();
-              }
-            }}
-            onToggleMute={() => { 
-              if (voiceChatRef.current) {
-                voiceChatRef.current.toggleMute();
-              }
-            }}
-            localMuted={localMuted}
-            joinedVoice={joinedVoice} 
-            voiceChatRoomId={voiceChatRoomId}
-            onMembersPanelToggle={setIsMembersPanelOpen}
-            showMembersOnly={true}
-            membersToggle={membersToggle}
-            setMembersToggle={setMembersToggle}
-          />
-        </div>
-
       </div>
 
       {/*프로필 모달 */}
@@ -374,7 +358,7 @@ function LobbyPage() {
         userData={userData}
         setUserData={setUserData}
         onClose={() => setShowVoiceChatModal(false)}
-        />}
+      />}
 
       {/* VoiceChat 컴포넌트를 lobbyPage에 렌더링 */}
           <VoiceChat

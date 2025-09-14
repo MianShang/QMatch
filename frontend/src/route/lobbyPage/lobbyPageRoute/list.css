@@ -8,6 +8,9 @@
   height: 100%;
   padding: 0;
   background: var(--discord-bg-primary);
+  position: relative;
+  z-index: 999; /* 최상단으로 이동 */
+  /* transition 제거 - 채팅목록 레이아웃은 애니메이션 없음 */
 }
 
 .contentListStyle{
@@ -121,10 +124,11 @@
 
 .chatCardHeader {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   margin-bottom: 0;
   flex: 1;
+  gap: 12px;
+  position: relative;
 }
 
 .chatCardImage{ 
@@ -132,6 +136,7 @@
   height: 40px; 
   border-radius: 50%;
   object-fit: cover;
+  flex-shrink: 0;
 }
 
 .chatCardTitle {
@@ -139,6 +144,11 @@
   font-weight: 500;
   color: var(--discord-text-normal);
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  max-width: calc(100% - 40px); /* 안읽은 메시지 알람 공간 확보 */
 }
 
 .chatCardDelete {
@@ -155,35 +165,33 @@
   background: var(--discord-bg-modifier-hover);
 }
 
-/* ================================Discord 채팅 카드 푸터============================= */
+/* ================================Discord 채팅 카드 안읽은 메시지============================= */
 
-.chatCardFooter {
-  margin: 0;
+.chatCardUnread {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  width: 100%;
+  justify-content: center;
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
-.chatCardLastMessage {
-  font-size: 14px;
-  color: var(--discord-text-muted);
-  max-width: 150px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin: 0;
-}
 
 .chatCardBadge {
-  background: var(--discord-accent);
+  background: #ff4757;
   color: white;
-  font-size: 12px;
-  padding: 2px 6px;
-  border-radius: 10px;
+  font-size: 11px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
   font-weight: 600;
-  min-width: 18px;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 4px rgba(255, 71, 87, 0.3);
 }
 
 /* ================================Discord 선택된 카드============================= */
@@ -199,8 +207,15 @@
   cursor: pointer;
   border: none;
   border-bottom: 1px solid var(--discord-bg-tertiary);
-  display: flex;
-  flex-direction: column;
+}
+
+.selectCardStyle .chatCardTitle {
+  color: var(--discord-text-normal) !important;
+  font-weight: 600;
+}
+
+.selectCardStyle .chatCardImage {
+  border: 2px solid var(--discord-accent);
 }
 
 .selectCardHeaderStyle{
@@ -296,27 +311,29 @@
 
 /* ====== 추가: 참여자 패널(UI) ====== */
 .membersDrawerInline {
-  position: absolute;
+  position: fixed;
   width: 0;
   overflow: hidden;
   background: var(--discord-bg-secondary);
-  transition: width 0.25s ease;
-  z-index: 20;
-  box-shadow: none;
+  transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
+  z-index: 1; /* 채팅목록 레이아웃 아래로 완전히 숨김 */
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
   pointer-events: none;
   border-radius: 0;
   border-left: 1px solid var(--discord-bg-tertiary);
-  height: 100vh; /* 전체 높이로 설정 */
-  right: 0;
+  height: 100vh;
+  left: 240px; /* 좌측바(240px) 오른쪽에 위치 */
   top: 0;
+  transform: translateX(-100%); /* 초기 상태: 화면 밖으로 숨김 */
+  /* 채팅목록과 겹치지 않도록 위치 조정 */
+  margin-left: 0;
 }
 
 .membersDrawerInline.open {
   width: 300px; /* 참여자 패널 너비를 300px로 증가 */
-  box-shadow: var(--discord-elevation-high);
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
   pointer-events: auto;
-  right: 0; /* 오른쪽에 고정 */
-  top: 0; /* 상단에 고정 */
+  transform: translateX(0); /* 화면 안으로 슬라이드 */
 }
 
 .membersDrawerInline .membersDrawerHeader,
@@ -336,12 +353,15 @@
   z-index: 3;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 16px;
+  justify-content: flex-start;
+  padding: 0;
   font-weight: 600;
   border-bottom: 1px solid var(--discord-bg-tertiary);
   color: var(--discord-text-normal);
   background: var(--discord-bg-secondary);
+  height: 50px;
+  min-height: 50px;
+  gap: 0; /* 버튼 사이 간격 완전 제거 */
 }
 
 .membersCloseBtn {
@@ -360,6 +380,45 @@
   color: var(--discord-text-normal);
 }
 
+/* 참여자 패널 토글 버튼 스타일 */
+.membersDrawerHeader .toggleSwitch {
+  width: 50%;
+  height: 50px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  color: var(--discord-text-muted);
+  background: transparent;
+  font-size: 16px;
+  font-weight: 500;
+  position: relative;
+  margin: 0; /* 버튼 사이 간격 제거 */
+}
+
+.membersDrawerHeader .toggleSwitch:hover {
+  background: var(--discord-bg-modifier-hover);
+  color: var(--discord-text-normal);
+}
+
+.membersDrawerHeader .toggleSwitch.activeBorder {
+  color: var(--discord-text-normal);
+  background: var(--discord-bg-modifier-hover);
+}
+
+.membersDrawerHeader .toggleSwitch.activeBorder::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--discord-accent);
+  border-radius: 0 2px 2px 0;
+}
+
 .membersDrawerInline.open .membersListScroll {
   opacity: 0;
   pointer-events: none;
@@ -371,40 +430,40 @@
   z-index: 2;
   background: var(--discord-bg-secondary);
   overflow-y: auto;
-  top: 60px;
-  padding: 8px;
+  top: 50px; /* 토글 높이에 맞춰 조정 */
+  padding: 16px 8px; /* 상하 패딩 증가 */
 }
 
 /* ================================Discord 멤버 섹션 헤더============================= */
 
 .onlineMembersSectionHeader{
-  padding: 8px 12px;
+  padding: 12px 12px 8px 12px; /* 상단 패딩 증가 */
   font-weight: 600;
   font-size: 12px;
   color: var(--discord-text-positive);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin: 8px 0 4px 0;
+  margin: 0 0 4px 0; /* 상단 마진 제거 */
 }
 
 .awayMembersSectionHeader{
-  padding: 8px 12px;
+  padding: 12px 12px 8px 12px; /* 상단 패딩 증가 */
   font-weight: 600;
   font-size: 12px;
   color: var(--discord-text-warning);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin: 8px 0 4px 0;
+  margin: 0 0 4px 0; /* 상단 마진 제거 */
 }
 
 .offlineMembersSectionHeader{
-  padding: 8px 12px;
+  padding: 12px 12px 8px 12px; /* 상단 패딩 증가 */
   font-weight: 600;
   font-size: 12px;
   color: var(--discord-text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin: 8px 0 4px 0;
+  margin: 0 0 4px 0; /* 상단 마진 제거 */
 }
 
 .membersRow {
@@ -445,6 +504,13 @@
   height: 8px;
   border-radius: 50%;
   background: var(--discord-text-positive);
+}
+
+/* 오프라인 상태 아이콘을 회색으로 변경 */
+.membersName--offline .membersDot {
+  background: var(--discord-text-muted);
+  color: var(--discord-text-muted);
+  filter: grayscale(100%) brightness(0.7);
 }
 
 .membersMoreBtn {
@@ -609,6 +675,17 @@
   
   .chatCardTitle {
     font-size: 14px;
+    max-width: calc(100% - 35px);
+  }
+  
+  .chatCardUnread {
+    right: 6px;
+  }
+  
+  .chatCardBadge {
+    font-size: 10px;
+    width: 18px;
+    height: 18px;
   }
   
   .membersName {
@@ -628,6 +705,17 @@
   
   .chatCardTitle {
     font-size: 13px;
+    max-width: calc(100% - 30px);
+  }
+  
+  .chatCardUnread {
+    right: 4px;
+  }
+  
+  .chatCardBadge {
+    font-size: 9px;
+    width: 16px;
+    height: 16px;
   }
 }
 

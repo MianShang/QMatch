@@ -20,7 +20,6 @@ function LoginPage() {
           <div className="logo-icon">Q</div>
           <span className="brand-name">QMatch</span>
         </div>
-        <p className="brand-subtitle">게임 매칭 플랫폼</p>
       </div>
 
       <div className='LogComponentStyle'>

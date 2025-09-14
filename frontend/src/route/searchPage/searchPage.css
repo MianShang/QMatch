@@ -5,7 +5,7 @@
     width: 100vw;
     background: var(--discord-bg-tertiary);
     display: flex;
-    padding: 0;
+    padding: 0 !important; /* 패딩 강제 제거 */
     margin: 0;
     box-sizing: border-box; /* padding과 border를 포함한 크기 계산 */
 }
@@ -205,6 +205,7 @@
   transition: all 0.2s ease;
   cursor: pointer;
   border-bottom: 1px solid var(--discord-bg-primary);
+  gap: 12px; /* 아이콘과 텍스트 사이 간격 */
 }
 
 .chatRoomList:hover {
@@ -216,6 +217,14 @@
 
 .chatRoomList:active {
   background: var(--discord-bg-modifier-active);
+}
+
+.chatRoomIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0; /* 아이콘 크기 고정 */
 }
 
 .chatListScroll {
@@ -252,8 +261,8 @@
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background: var(--discord-bg-primary);
-  border-bottom: 1px solid var(--discord-bg-tertiary);
+  background: var(--discord-bg-tertiary);
+  border-bottom: 1px solid var(--discord-bg-quaternary);
 }
 
 .chatCreate button {
@@ -471,5 +480,46 @@
   
   .chat_tag {
     justify-content: center;
+  }
+}
+
+/* 안 읽은 메시지 알림 배지 */
+.unread-notification-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  z-index: 10;
+}
+
+.unread-dot {
+  display: block;
+  width: 12px;
+  height: 12px;
+  background: #ff4757;
+  border-radius: 50%;
+  border: 2px solid var(--discord-bg-primary);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7);
+  }
+  70% {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 6px rgba(255, 71, 87, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 71, 87, 0);
+  }
+}
+
+/* 반응형 - 알림 배지 */
+@media (max-width: 768px) {
+  .unread-dot {
+    width: 10px;
+    height: 10px;
   }
 }

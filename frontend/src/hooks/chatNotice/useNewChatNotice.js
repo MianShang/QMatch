@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import { Client } from '@stomp/stompjs';
-
+import SockJS from 'sockjs-client';
 
 
 export function useNewChatNotice(userData, selectedRoom, setUnreadCounts){
+  const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
 
     
       // 유저가 포함된 채팅방에서 채팅 기록이 업로드가 되었을시 실행
@@ -11,7 +12,7 @@ export function useNewChatNotice(userData, selectedRoom, setUnreadCounts){
         if (!userData || !userData.userId) return;
     
         const stomp = new Client({
-          brokerURL: 'ws://localhost:8080/gs-guide-websocket',
+          webSocketFactory: () => new SockJS(`${BASE_URL}/gs-guide-websocket`),
           reconnectDelay: 5000,
           
           // STOMP 연결 API

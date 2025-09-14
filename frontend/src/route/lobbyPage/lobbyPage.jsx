@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect, useContext, memo } from 'react'
 import { Routes, Route, Link, useNavigate} from 'react-router-dom'
-import { Client } from '@stomp/stompjs';
 import axios from 'axios';
 import './lobbyPage.css'
 
@@ -54,13 +53,18 @@ function LobbyPage() {
   // State 보관함 해체
   const { isLogIn, setIsLogIn, userData, setUserData } = useContext(LogContext)
 
+  // // userData가 로드될 때까지 로딩
+  // if (!userData) {
+  //   return <div>userData 로딩중</div>; 
+  // }
+
   // voiceChat
   const [voiceChatRoomId, setVoiceChatRoomId] = useState(null);
   const [voiceSpeakers, setVoiceSpeakers] = useState({});
   const [localMuted, setLocalMuted] = useState(false);
   const [joinedVoice, setJoinedVoice] = useState(false);
   const voiceChatRef = useRef(null);
-
+  
   // 음성설정 모달
   const [showVoiceChatModal, setShowVoiceChatModal] = useState(false);
   
@@ -125,6 +129,8 @@ function LobbyPage() {
               name: data.name ?? s.chatName,
               gameName: data.gameName ?? s.gameName,
               tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
+              currentUsers: (typeof data.currentUsers === 'number') ? data.currentUsers : s.currentUsers,
+              maxUsers: (typeof data.maxUsers === 'number') ? data.maxUsers : s.maxUsers,
             });
           } catch (e) {
             console.warn('방 상세 조회 실패. state로 대체:', e);
@@ -135,6 +141,8 @@ function LobbyPage() {
               name: s.chatName,
               gameName: s.gameName,
               tagNames: s.tagNames ?? [],
+              currentUsers: s.currentUsers,
+              maxUsers: s.maxUsers,
             });
           } finally {
             setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
@@ -151,7 +159,6 @@ function LobbyPage() {
   return (
     <>
       <div className='fullscreen'>
-
         {/* 좌측 채팅/친구 바 - 맨 왼쪽으로 이동 */}
         {showMidBar &&
           <div className='leftBarSize'>
@@ -199,7 +206,7 @@ function LobbyPage() {
                   voiceChatRoomId={voiceChatRoomId}
                   onMembersPanelToggle={setIsMembersPanelOpen} // 참여자 패널 상태 콜백 추가
                 />
-                : <FriendListPage userId={userData.userId}/>}
+                : <FriendListPage />} 
             </div>
 
             {/* 하단 버튼 영역 */}
@@ -367,7 +374,7 @@ function LobbyPage() {
         userData={userData}
         setUserData={setUserData}
         onClose={() => setShowVoiceChatModal(false)}
-      />}
+        />}
 
       {/* VoiceChat 컴포넌트를 lobbyPage에 렌더링 */}
           <VoiceChat

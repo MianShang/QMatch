@@ -29,7 +29,7 @@ public class SecurityConfig {
         config.addAllowedOrigin("http://localhost");      // Electron 앱 기본 주소 (개발용)
 
         // 필요하다면 전체 허용도 가능 (단, 보안 위험 높음)
-        // config.addAllowedOriginPattern("*");
+        config.addAllowedOriginPattern("*"); // 개발 단계에서 허용
 
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");

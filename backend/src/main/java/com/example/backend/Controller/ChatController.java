@@ -246,6 +246,8 @@ public class ChatController {
             dto.put("tagNames", tagNames);
             dto.put("hostName", hostName);
             dto.put("hostUserId", cr.getOwner() != null ? cr.getOwner().getUserId() : null);
+            dto.put("currentUsers", cr.getCurrentUsers());
+            dto.put("maxUsers", cr.getMaxUsers());
 
             return ResponseEntity.ok(dto);
         }).orElseGet(() -> ResponseEntity.notFound().build());
@@ -272,6 +274,9 @@ public class ChatController {
             );
         }
 
+        // 채팅방과 연결된 ChatList 먼저 삭제
+        chatListRepository.deleteByChatRoom_Id(roomId);
+        
         // 채팅방과 연결된 UserChatRoom 관계 삭제
         userChatRoomRepository.deleteByChatRoom_Id(roomId);
         chatRoomRepository.delete(room);
@@ -345,6 +350,15 @@ public class ChatController {
         boolean exists = userChatRoomRepository.existsByUser_UserIdAndChatRoom_Id(userId, roomId);
         if (exists) {
             return ResponseEntity.status(409).body(Map.of("error", "already joined"));
+        }
+
+        // 인원 제한 체크 (현재 인원이 최대 인원보다 크거나 같으면 입장 불가)
+        if (room.getCurrentUsers() >= room.getMaxUsers()) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "error", "room is full",
+                    "currentUsers", room.getCurrentUsers(),
+                    "maxUsers", room.getMaxUsers()
+            ));
         }
 
         // 새로 참여 엔티티 저장

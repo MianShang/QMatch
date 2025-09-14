@@ -294,8 +294,7 @@
   color: var(--discord-text-normal);
 }
 
-/* ================================Discord 멤버 드로어============================= */
-
+/* ====== 추가: 참여자 패널(UI) ====== */
 .membersDrawerInline {
   position: absolute;
   width: 0;

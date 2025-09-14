@@ -9,4 +9,7 @@ public interface ChatListRepository extends JpaRepository<ChatList, Long> {
 
     // 채팅방 아이디로 컬럼 검색
     List<ChatList> findByChatRoom_Id(String chatRoom);
+    
+    // 채팅방 아이디로 채팅 목록 삭제
+    void deleteByChatRoom_Id(String chatRoomId);
 }

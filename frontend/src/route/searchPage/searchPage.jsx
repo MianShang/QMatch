@@ -10,6 +10,7 @@ import JoinRoomModal from '../../modal/joinRoomModal/JoinRoomModal.jsx';
 
 // custom hook import
 import { useLoginCheck } from '../../hooks/login/useLoginCheck.js';
+import { useChatGetRooms } from '../../hooks/chat/useChatGetRooms.js';
 
 // Modal import
 import CreateRoomModal from '../../modal/CreateRoomModal/CreateRoomModal.jsx';
@@ -26,11 +27,15 @@ function SearchPage() {
   const [gametag, setGameTag] = useState('ALL');
   const [selectedTags, setSelectedTags] = useState([]); // number[]
   const [groupedTags, setGroupedTags] = useState({});
+  const [subscribedRooms, setSubscribedRooms] = useState([]); // 본인이 구독한 채팅방 목록
 
 
 
   const { isLogIn, setIsLogIn, userData } = useContext(LogContext);
   useLoginCheck(isLogIn); // 로그인 체크
+
+  // 본인이 구독한 채팅방 목록 가져오기
+  useChatGetRooms(userData, setSubscribedRooms);
 
   // 처음 url에 입장할때 목록 가져오기 실행 및 채팅방 검색
   useEffect(() => {
@@ -134,6 +139,16 @@ function SearchPage() {
     );
   }
 
+  // 구독한 채팅방을 제외하고 필터링하는 함수
+  function getFilteredRooms() {
+    if (!subscribedRooms || subscribedRooms.length === 0) {
+      return rooms; // 구독한 방이 없으면 모든 방 반환
+    }
+    
+    const subscribedRoomIds = subscribedRooms.map(room => room.chatRoom.id);
+    return rooms.filter(room => !subscribedRoomIds.includes(room.id));
+  }
+
 
   function chatTagRoom() {  
     if (!groupedTags || Object.keys(groupedTags).length === 0) {
@@ -167,6 +182,16 @@ function SearchPage() {
           setOpenModal={setOpenModal}
           onRoomCreated={(newRoom) => {
             setRooms(prev => [...prev, newRoom]);
+            // 방 생성 후 lobbyPage로 이동
+            navigate('/', { 
+              state: { 
+                roomId: newRoom.id, 
+                chatName: newRoom.name, 
+                gameName: newRoom.gameName,
+                currentUsers: newRoom.currentUsers,
+                maxUsers: newRoom.maxUsers
+              } 
+            });
           }}
         />
       )}
@@ -192,23 +217,23 @@ function SearchPage() {
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('lol')}>
-                  <img src="./public/gameIcons/lol_Icon.png" alt="LOL" />
+                  <img src="/gameIcons/lol_Icon.png" alt="LOL" />
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('maplestory')}>
-                  <img src="./public/gameIcons/maplestory_Icon.png" alt="MapleStory" />
+                  <img src="/gameIcons/maplestory_Icon.png" alt="MapleStory" />
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('tft')}>
-                  <img src="./public/gameIcons/tft_Icon.png" alt="TFT"/>
+                  <img src="/gameIcons/tft_Icon.png" alt="TFT"/>
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('dnf')}>
-                  <img src="./public/gameIcons/dnf_Icon.png" alt="Dnf"/>
+                  <img src="/gameIcons/dnf_Icon.png" alt="Dnf"/>
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('lostark')}>
-                  <img src="./public/gameIcons/lostark_Icon.png" alt="lostark"/>
+                  <img src="/gameIcons/lostark_Icon.png" alt="lostark"/>
                 </button>
 
                 <hr style={{width:"280px", margin:"3px"}}></hr>
@@ -237,11 +262,18 @@ function SearchPage() {
           <div className='contentStyle chatListSize'>
             <div className='chatListScroll'>
               {
-                rooms.map((room) => (
+                getFilteredRooms().map((room) => (
                   <div className='chatRoomList'
                     key={room.id}
                     onClick={() => { setSelectedRoom(room); setJoinOpen(true); }}>
-                    <div>{room.chatName || room.name}</div>
+                    <div>
+                      {room.chatName || room.name}
+                      {typeof room.currentUsers === 'number' && typeof room.maxUsers === 'number' && (
+                        <span style={{ marginLeft: 8, color: '#9aa0a6', fontSize: 12 }}>
+                          {room.currentUsers} / {room.maxUsers}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 ))
               }

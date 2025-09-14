@@ -1,10 +1,8 @@
 import { useState, useContext, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom'
 import './list.css';
 import { Client } from '@stomp/stompjs';
 import { toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
+import SockJS from 'sockjs-client';
 
 // 전역 유저 State 데이터 가져오기용 Context API import
 import { LogContext } from '../../../App.jsx';
@@ -16,8 +14,8 @@ import { useChatGetUserList } from '../../../hooks/chat/useChatGetUserList.js'
 import { useChatDeleteRoom } from '../../../hooks/chat/useChatDeleteRoom.js'
 import { useNewChatNotice } from '../../../hooks/chatNotice/useNewChatNotice.js';
 import { useChatGetRooms } from '../../../hooks/chat/useChatGetRooms.js';
-import { useChatListGet } from '../../../hooks/chatList/useChatListGet.js'
 import { useFriendRequest } from '../../../hooks/friends/useFriendRequest.js';
+import { useChatListGet } from '../../../hooks/chatList/useChatListGet.js'
 
 // Modal
 import UserHistoryModal from '../../../modal/userHistory/UserHistoryModal.jsx'
@@ -43,8 +41,9 @@ function ChatListPage({
   membersToggle = true, // 참여자/음성채팅 토글 상태
   setMembersToggle = () => {} // 참여자/음성채팅 토글 상태 변경 함수
 }) {
+  const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   // State 보관함 해체
-  const { userData } = useContext(LogContext);
+  const { userData, friends } = useContext(LogContext);
 
   // State
   const [sendToModalGameName, setSendToModalGameName] = useState(null);
@@ -82,11 +81,11 @@ function ChatListPage({
   useUnReadChatCount(userData, chatList, setUnreadCounts);     // 안읽은 메세지 카운트
   useNewChatNotice(userData, selectedRoom, setUnreadCounts);   // 새 메세지 알림
 
-  const { sendRequest } = useFriendRequest(); //친구 추가 훅  
   const getChatUserList = useChatGetUserList(setChatUserList);
   const deleteUserRoom = useChatDeleteRoom();
   const getChatList = useChatListGet();
   const setRead = useSetReadUnReadChat(userData);
+  const { sendRequest } = useFriendRequest();
 
   // 아이콘
   function setGameIcon(gameName) {
@@ -123,6 +122,7 @@ function ChatListPage({
       }
       toast.success("방이 삭제되었습니다.");
       setSelectedRoom(null);
+      setMessages([]); // 메시지 목록 초기화
       setChatList((prev) =>
         prev.filter((it) => it.chatRoom.id !== roomId)
       );
@@ -218,10 +218,10 @@ function ChatListPage({
     if (presenceStompRef.current?.active) return; // 이미 연결됨
 
     const stomp = new Client({
-      brokerURL: 'ws://localhost:8080/gs-guide-websocket',
+      webSocketFactory: () => new SockJS(`${BASE_URL}/gs-guide-websocket`),
       reconnectDelay: 5000,
       connectHeaders: { userId: userData.userId }
-    });
+    }); 
 
     stomp.onConnect = () => {
       stomp.subscribe('/topic/presence', (frame) => {
@@ -229,6 +229,7 @@ function ChatListPage({
           const payload = JSON.parse(frame.body); // { userId, status, ts }
         // 실시간 반영
           setStatusByUser(prev => ({ ...prev, [payload.userId]: payload.status }));
+          
         } catch (e) {
           console.warn('presence parse error', e);
         }
@@ -271,7 +272,7 @@ function ChatListPage({
     if (!selectedRoom?.id || !userData?.userId) return;
 
     const stomp = new Client({
-      brokerURL: 'ws://localhost:8080/gs-guide-websocket',    
+      webSocketFactory: () => new SockJS(`${BASE_URL}/gs-guide-websocket`),    
       reconnectDelay: 5000,
       connectHeaders: {
         userId: userData.userId,
@@ -308,6 +309,7 @@ function ChatListPage({
         } catch (e) {
           toast.error('kick payload parse error', e);
         }
+
       });
 
       // join 구독
@@ -380,6 +382,7 @@ function ChatListPage({
     return () => stomp.deactivate();
   }, [selectedRoom?.id, userData?.userId]);
 
+
   /* 열기/닫기 헬퍼 */
   function openMembers(roomId) {
     console.log('openMembers 호출됨:', roomId); // 디버깅용
@@ -412,6 +415,13 @@ function ChatListPage({
   // 공통 메뉴 열기 함수
   function openMenu(e, userId) {
     e.stopPropagation();
+    
+    // 같은 사용자의 메뉴가 이미 열려있으면 닫기
+    if (menu && menu.userId === userId) {
+      setMenu(null);
+      return;
+    }
+    
     const rect = e.currentTarget.getBoundingClientRect();
     const menuWidth = 170;
     const gap = 8;
@@ -423,10 +433,8 @@ function ChatListPage({
     });
   }
 
-  // showMembersOnly가 true면 참여자 패널만 표시
-  if (showMembersOnly) {
     return (
-      <div className="members-panel-only">
+      <div className='listRouteSize contentStyle' ref={leftColRef}>
         {/* 전적 모달 */}
         {isUserHistoryOpen && (
           <UserHistoryModal
@@ -436,276 +444,136 @@ function ChatListPage({
           />
         )}
 
-        {/* 참여자 패널 토글 - 최상단 고정 */}
-        <div className="members-toggle-container">
-          <div 
-            onClick={() => setMembersToggle(true)}
-            className={`members-toggle-switch ${membersToggle ? 'active' : ''}`}
-          >
+      {/* 참여자 패널(채팅창 내부 시작점에 맞춰 뜸) */}
+      <div
+        className={`membersDrawerInline ${isMembersOpen ? 'open' : ''}`}
+        style={{
+          left: panelRect.left + 'px',
+          top: panelRect.top + 'px',
+          height: panelRect.height + 'px'
+        }}
+      >
+        <div className="membersDrawerHeader">
+          <div onClick={() => { setToggle(true); }}
+            className={`toggleSwitchText contentStyle toggleSwitch ${toggle ? 'activeBorder' : ''}`} >
             참여자
           </div>
-          <div 
-            onClick={() => setMembersToggle(false)}
-            className={`members-toggle-switch ${!membersToggle ? 'active' : ''}`}
-          >
+          <div onClick={() => setToggle(false)}
+            className={`toggleSwitchText contentStyle toggleSwitch ${!toggle ? 'activeBorder' : ''}`}
+            style={{ marginLeft: "10px" }}>
             음성채팅
           </div>
         </div>
 
         {/* 토글 아래 내용 영역 */}
         <div className="members-content-area">
+          {/* toggle이 true일 때 */}
+          {toggle ? (
+          <div className="membersOverlayGrouped">
+              {(() => {
+                const { online, away, offline } = splitMembersByStatus(chatUserList);
 
-        {/* 토글에 따른 내용 표시 */}
-        {membersToggle ? (
-          /* 참여자 목록 */
-          <div className="membersListScroll">
-            {chatUserList.map(u => {
-              const eff = getEffectiveStatus(u);
-              return (
-                <div className="membersRow" key={u.userId}>
-                <span className="membersName">
-                  {u.userId}
-                  <span className="membersDot">{getStatusIcon(eff)}</span>
-                </span>
-                <button
-                  className="membersMoreBtn"
-                  onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
-                  title="상세보기"
-                >…</button>
-              </div>
-            );
-          })}
-          {chatUserList.length === 0 && (
-            <div className="membersEmpty">참여자가 없습니다.</div>
-          )}
-          </div>
-        ) : (
-          /* 음성채팅 컨트롤 */
-          <div className="voice-chat-controls">
-            <div className="voice-status">
-              <h3>음성 채팅</h3>
-              <p>현재 상태: {joinedVoice ? '참여 중' : '미참여'}</p>
-              {voiceChatRoomId && (
-                <p>채널: {voiceChatRoomId}</p>
-              )}
-            </div>
-            
-            <div className="voice-controls">
-              {joinedVoice ? (
-                <div className="voice-buttons">
-                  <button 
-                    className="voice-btn leave-btn"
-                    onClick={() => {
-                      if (onLeaveVoice) onLeaveVoice();
-                    }}
-                  >
-                    나가기
-                  </button>
-                  <button 
-                    className={`voice-btn mute-btn ${localMuted ? 'muted' : ''}`}
-                    onClick={() => {
-                      if (onToggleMute) onToggleMute();
-                    }}
-                  >
-                    {localMuted ? '음소거 해제' : '음소거'}
-                  </button>
-                </div>
-              ) : (
-                <div className="voice-buttons">
-                  <button 
-                    className="voice-btn join-btn"
-                    onClick={() => {
-                      if (selectedRoom && onJoinVoice) {
-                        onJoinVoice(selectedRoom.id);
-                      }
-                    }}
-                    disabled={!selectedRoom}
-                  >
-                    음성채팅 참여
-                  </button>
-                </div>
-              )}
-            </div>
+                return (
+                  <>
+                    {/* 온라인 */}
+                    <div className="onlineMembersSectionHeader">온라인 — {online.length}</div>
+                  {online.map(u => {
+                    const eff = getEffectiveStatus(u);
+                    return (
+                      <div className="membersRow" key={'on-' + u.userId}>
+                        <span className="membersName">
+                          {u.userId}
+                          <span className="membersDot">{getStatusIcon(eff)}</span>
+                        </span>
+                        {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                        <div
+                          className="MoreButtonStyle"
+                          onClick={(e) => openMenu(e, u.userId)}
+                        >...
+                        </div>
+                      </div>
+                    );
+                  })}
 
-            {/* 현재 참여 중인 음성채팅 사용자 목록 */}
-            <div className="voice-participants">
-              <h4>참여자 ({Object.keys(voiceSpeakers || {}).length}명)</h4>
-              <div className="participants-list">
-                {Object.entries(voiceSpeakers || {}).map(([userId, info]) => (
-                  <div key={userId} className="participant-item">
-                    <span className="participant-name">{userId}</span>
-                    <span className={`speaking-indicator ${info.speaking ? 'speaking' : ''}`}>
-                      {info.speaking ? '🎤' : '🔇'}
-                    </span>
+                  {/* 자리비움 */}
+                  <div className="awayMembersSectionHeader" style={{ marginTop: 10 }}>
+                    자리비움 — {away.length}
                   </div>
-                ))}
-              </div>
+                  {away.map(u => {
+                    const eff = getEffectiveStatus(u);
+                    return (
+                      <div className="membersRow" key={'away-' + u.userId}>
+                        <span className="membersName">
+                          {u.userId}
+                          <span className="membersDot">{getStatusIcon(eff)}</span>
+                        </span>
+                        {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                        <div
+                          className="MoreButtonStyle"
+                          onClick={(e) => openMenu(e, u.userId)}
+                        >...
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* 오프라인 */}
+                    <div className="offlineMembersSectionHeader" style={{ marginTop: 10 }}>
+                      오프라인 — {offline.length}
+                    </div>
+                    {offline.map(u => {
+                      const eff = getEffectiveStatus(u);
+                      return (
+                        <div className="membersRow" key={'off-' + u.userId}>
+                          <span className="membersName membersName--offline">
+                            {u.userId}
+                            <span className="membersDot">{getStatusIcon(eff)}</span>
+                          </span>
+                          {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                          <div
+                            className="MoreButtonStyle"
+                            onClick={(e) => openMenu(e, u.userId)}
+                          >
+                            …
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
+                );
+              })()}
             </div>
-          </div>
+          ) : (    // toggle이 false일 때 음성채팅 UI
+          <div className="membersOverlayGrouped">
+            <div className="voice-chat-container" style={{ padding: '16px' }}>
+              {/* 음성채팅 UI */}
+            </div>
+          </div> 
         )}
-
-        </div> {/* members-content-area 닫기 */}
-
-        {/* 상태별 그룹 오버레이 */}
-        <div className="membersOverlayGrouped">
-          {membersToggle ? (
-            /* 참여자 목록 */
-            (() => {
-              const { online, away, offline } = splitMembersByStatus(chatUserList);
-
-              return (
-                <>
-                  {/* 온라인 */}
-                  <div className="onlineMembersSectionHeader">온라인 — {online.length}</div>
-                {online.map(u => {
-                  const eff = getEffectiveStatus(u);
-                  return (
-                    <div className="membersRow" key={'on-' + u.userId}>
-                      <span className="membersName">
-                        {u.userId}
-                        <span className="membersDot">{getStatusIcon(eff)}</span>
-                      </span>
-                      <button
-                        className="membersMoreBtn"
-                        onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
-                        title="상세보기"
-                      >…</button>
-                    </div>
-                  );
-                })}
-
-                {/* 자리비움 */}
-                <div className="awayMembersSectionHeader" style={{ marginTop: 10 }}>
-                  자리비움 — {away.length}
-                </div>
-                {away.map(u => {
-                  const eff = getEffectiveStatus(u);
-                  return (
-                    <div className="membersRow" key={'away-' + u.userId}>
-                      <span className="membersName">
-                        {u.userId}
-                        <span className="membersDot">{getStatusIcon(eff)}</span>
-                      </span>
-                      <button
-                        className="membersMoreBtn"
-                        onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
-                        title="상세보기"
-                      >…</button>
-                    </div>
-                  );
-                })}
-
-                {/* 오프라인 */}
-                <div className="offlineMembersSectionHeader" style={{ marginTop: 10 }}>
-                  오프라인 — {offline.length}
-                </div>
-                {offline.map(u => {
-                  const eff = getEffectiveStatus(u);
-                  return (
-                    <div className="membersRow" key={'off-' + u.userId}>
-                      <span className="membersName membersName--offline">
-                        {u.userId}
-                        <span className="membersDot">{getStatusIcon(eff)}</span>
-                      </span>
-                      <button
-                        className="membersMoreBtn"
-                        onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
-                        title="상세보기"
-                      >…</button>
-                    </div>
-                  );
-                })}
-              </>
-            );
-          })()
-          ) : (
-            /* 음성채팅 컨트롤 */
-            <div className="voice-chat-controls">
-              <div className="voice-status">
-                <h3>음성 채팅</h3>
-                <p>현재 상태: {joinedVoice ? '참여 중' : '미참여'}</p>
-                {voiceChatRoomId && (
-                  <p>채널: {voiceChatRoomId}</p>
-                )}
-              </div>
-              
-              <div className="voice-controls">
-                {joinedVoice ? (
-                  <div className="voice-buttons">
-                    <button 
-                      className="voice-btn leave-btn"
-                      onClick={() => {
-                        if (onLeaveVoice) onLeaveVoice();
-                      }}
-                    >
-                      나가기
-                    </button>
-                    <button 
-                      className={`voice-btn mute-btn ${localMuted ? 'muted' : ''}`}
-                      onClick={() => {
-                        if (onToggleMute) onToggleMute();
-                      }}
-                    >
-                      {localMuted ? '음소거 해제' : '음소거'}
-                    </button>
-                  </div>
-                ) : (
-                  <div className="voice-buttons">
-                    <button 
-                      className="voice-btn join-btn"
-                      onClick={() => {
-                        if (selectedRoom && onJoinVoice) {
-                          onJoinVoice(selectedRoom.id);
-                        }
-                      }}
-                      disabled={!selectedRoom}
-                    >
-                      음성채팅 참여
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* 현재 참여 중인 음성채팅 사용자 목록 */}
-              <div className="voice-participants">
-                <h4>참여자 ({Object.keys(voiceSpeakers || {}).length}명)</h4>
-                <div className="participants-list">
-                  {Object.entries(voiceSpeakers || {}).map(([userId, info]) => (
-                    <div key={userId} className="participant-item">
-                      <span className="participant-name">{userId}</span>
-                      <span className={`participant-status ${info.speaking ? 'speaking' : ''}`}>
-                        {info.speaking ? '🎤' : '🔇'}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
         </div>
       </div>
-    );
-  }
-
-  return (
-    <div className='listRouteSize contentStyle' ref={leftColRef}>
-      {/* 전적 모달 */}
-      {isUserHistoryOpen && (
-        <UserHistoryModal
-          sendToModalGameName={sendToModalGameName}
-          setUserHistoryOpen={setUserHistoryOpen}
-          historyUserId={historyUserId}
-        />
-      )}
-
-      
-
       {/* 상단: 선택한 채팅방 카드 */}
       {selectedRoom && (
-        <div className='selectCardStyle'>
+        <div 
+          className='selectCardStyle'
+          onClick={() => {
+            if (isMembersOpen) {
+              closeMembers();
+            } else {
+              openMembers(selectedRoom.id);
+            }
+          }}
+        >
           <div className='selectCardHeaderStyle'>
             <img src={setGameIcon(selectedRoom.gameName)} alt="방 아이콘" className="chatCardImage" />
-            <p>{selectedRoom.name}</p>
+            <p>
+              {selectedRoom.name}
+              {typeof selectedRoom.currentUsers === 'number' && typeof selectedRoom.maxUsers === 'number' && (
+                <span style={{ marginLeft: 8, color: '#9aa0a6', fontSize: 12 }}>
+                  {selectedRoom.currentUsers} / {selectedRoom.maxUsers}
+                </span>
+              )}
+            </p>
             <p></p>
             {/* 선택된 방 참여자 패널 열기 버튼 */}
             <button
@@ -809,7 +677,9 @@ function ChatListPage({
 
       {/* 하단: 저장된 채팅방 리스트 */}
       <div className="chatListScrollWrapper chatListScroll">
-        {chatList.map((item) => {
+        {chatList
+          .filter((item) => !selectedRoom || item.chatRoom.id !== selectedRoom.id)
+          .map((item) => {
           const unread = unreadCounts[item.chatRoom.id] || 0;
           return (
             <div
@@ -839,40 +709,7 @@ function ChatListPage({
                 >👥</button> */}
 
                 {/* 채팅방 나가기 */}
-                <span
-                  className="chatCardDelete"
-                  onClick={async (e) => {
-                    e.stopPropagation();
-
-                    if (ownerUserId === userData.userId) {
-                      // 방장일 경우
-                      if (chatUserList.length > 1) {
-                        toast.error("방장은 멤버가 남아있으면 나갈 수 없습니다. 방장을 넘기거나 멤버가 모두 나가야 합니다.");
-                        return;
-                      } else {
-                        toast.error("방장은 혼자일 때는 나가기 대신 방 삭제 버튼을 사용해야 합니다.");
-                        return;
-                      }
-                    } else {
-                      // 일반 멤버일 경우 → 나가기 API
-                      const ok = await confirmToast("정말 이 방에서 나가시겠습니까?");
-                      if (!ok) return;
-
-                      try {
-                        await fetch(
-                          `/api/chat/rooms/${item.chatRoom.id}/leave?userId=${userData.userId}`,
-                          { method: "DELETE" }
-                        );
-                        setChatList(prev => prev.filter(r => r.id !== item.id));
-                        toast.success("성공적으로 나가졌습니다!");
-                      } catch (err) {
-                        console.error("방 나가기 실패:", err);
-                        toast.error("방 나가기 실패");
-                      }
-                    }
-                  }}
-                >
-                  🗑
+                <span className="chatCardDelete">
                 </span>
               </div>
 
@@ -949,13 +786,47 @@ function ChatListPage({
               </p>
             )}
 
+            {/* 채팅방 나가기 */}
+            {(menu.userId === userData.userId) && (ownerUserId !== userData.userId) && (
+            <p
+              className="chatCardDelete"
+              onClick={async (e) => {
+                e.stopPropagation();
+          
+                const ok = await confirmToast("정말 이 방에서 나가시겠습니까?");
+                if (!ok) return;
+          
+                try {
+                  await fetch(
+                    // item 대신 selectedRoom을 사용
+                    `/api/chat/rooms/${selectedRoom.id}/leave?userId=${userData.userId}`,
+                    { method: "DELETE" }
+                  );
+                  // setChatList 로직도 selectedRoom.id를 사용하도록 수정
+                  setChatList(prev => prev.filter(r => r.chatRoom.id !== selectedRoom.id)); 
+                  setSelectedRoom(null);
+                  setMessages([]);
+                  toast.success("성공적으로 나가졌습니다!");
+                } catch (err) {
+                  console.error("방 나가기 실패:", err);
+                  toast.error("방 나가기 실패");
+                }
+                setMenu(null);
+                closeMembers();
+              }}
+            >
+              방 나가기
+            </p> 
+            )}
+                
             {/* 방 삭제 */}
             {(ownerUserId === userData.userId) && (chatUserList.length === 1) && (
               <p
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDeleteRoom(selectedRoom.id, userData.userId);
-                  setMenu(null); 
+                  setMenu(null);
+                  closeMembers();
                 }}
               >
                 방 삭제
@@ -963,16 +834,26 @@ function ChatListPage({
             )}
 
             {/* 친구 추가 기능 */}
-          <p onClick={async () => {
-            // 훅에서 반환된 함수 호출
-            const requesterId = userData.userId;
-            const addresseeId = menu.userId;
-            const result = await sendRequest(requesterId, addresseeId);
-            alert(result.message);
-            setMenu(null);
-            }}>
-            친구 추가
-          </p>
+            {/* 자기 자신에게는 친구 추가 메뉴가 보이지 않도록 수정 */}
+            {(menu.userId !== userData.userId) && (
+              <p onClick={async () => {
+                // 훅에서 반환된 함수 호출
+                const requesterId = userData.userId;
+                const addresseeId = menu.userId;
+                const result = await sendRequest(requesterId, addresseeId);
+                if (result.success) 
+                  {
+                    toast.success(result.message);
+                  } 
+                else 
+                  {
+                    toast.error(result.message);
+                  }
+                setMenu(null);
+                }}>
+                친구 추가
+              </p>
+            )}
 
             {/* 여기는 추후에 추가 */}
             <p onClick={() => { console.log('차단', menu.userId); setMenu(null); }}>

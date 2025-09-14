@@ -1,6 +1,7 @@
 // hooks/useChatSubscriber.js
 import { useEffect } from 'react';
 import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 
 /**
  * 채팅방을 구독하고, 실시간 메시지를 수신하는 커스텀 훅
@@ -11,12 +12,13 @@ import { Client } from '@stomp/stompjs';
  * @param {string} userData       - 현재 접속한 유저의 데이터 이 함수에선 아이디(userId)를 요구한다.
  */
 export function useChatSubscriber(selectedRoom, setMessages, setClient, userData) {
+  const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   
   useEffect(() => {
     if (!selectedRoom) return;
 
     const stomp = new Client({
-      brokerURL: 'ws://localhost:8080/gs-guide-websocket',
+      webSocketFactory: () => new SockJS(`${BASE_URL}/gs-guide-websocket`),
       reconnectDelay: 5000,
 
       connectHeaders: {

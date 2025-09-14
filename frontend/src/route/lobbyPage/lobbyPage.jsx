@@ -33,6 +33,12 @@ function LobbyPage() {
 
   // 상태 패널 열림 여부
   const [isStatusPanelOpen, setIsStatusPanelOpen] = useState(false);
+  
+  // 참여자 패널 열림 여부
+  const [isMembersPanelOpen, setIsMembersPanelOpen] = useState(false);
+  
+  // 참여자 패널 내부 토글 - 기본값 true (참여자)
+  const [membersToggle, setMembersToggle] = useState(true);
 
   // 사이드바 프로필 이미지 클릭시 중앙 div는 사라지게 - 기본값 true(중앙 div 표시)
   const [showMidBar, setShowMidBar] = useState(true);
@@ -144,74 +150,19 @@ function LobbyPage() {
 
   return (
     <>
-      <div className='fullscreen' style={{ display: "flex", padding: "10px" }}>
+      <div className='fullscreen'>
 
-        {/* 좌측 사이드바 - 좌측 사이드바는 showMidBar State를 기준으로 동적 조절*/}
-        <div className={`contentStyle ${showMidBar ? 'sideBarSize' : 'sideBarExpanded'}`}>
-
-          {/* 현재 상태 표시 + Hover 패널 */}
-          <div
-            className="status-wrapper"
-            onMouseEnter={() => setIsStatusPanelOpen(true)}
-            onMouseLeave={(e) => {
-              // 상태 영역과 패널 모두 벗어났을 때만 닫기
-              if (!e.currentTarget.contains(e.relatedTarget)) {
-                setIsStatusPanelOpen(false);
-              }
-            }}
-          >
-            <div className="status-container">
-              <span>{getStatusIcon(userStatus)}</span>
-              <span> {userStatus}</span>
-            </div>
-
-            {isStatusPanelOpen && (
-              <div
-                className="status-side-panel"
-                onMouseEnter={() => setIsStatusPanelOpen(true)}   // 패널 위에서는 안 닫힘
-                onMouseLeave={(e) => {
-                  if (!e.currentTarget.contains(e.relatedTarget)) {
-                    setIsStatusPanelOpen(false);
-                  }
-                }}
-              >
-                <div className="status-item" onClick={() => manuallySetStatus('온라인')}>🟢 온라인</div>
-                <div className="status-item" onClick={() => manuallySetStatus('자리비움')}>🟠 자리 비움</div>
-                <div className="status-item" onClick={() => manuallySetStatus('오프라인')}>🔴 오프라인</div>
-              </div>
-            )}
-          </div>
-
-
-          {/*프로필 이미지 클릭 → 바로 모달 열림 */}
-          <img
-            src={userData?.userProfile ? `${userData.userProfile}` : "https://placehold.co/250x250"} style={{ width: '80px', height: '80px', objectFit: 'cover' }}
-            onClick={() => { setProfileUserId(userData?.userId); setShowProfileModal(true); }}
-            className={`${showMidBar ? 'sideBarImgSize' : 'sideBarImgSizeExpanded'}`}
-          />
-          <p onClick={() => logoutFunc(setIsLogIn)} style={{ cursor: 'pointer', marginTop: '10px' }}>로그아웃</p>
-
-          <div class="voice-chat-button-wrapper">
-            <button class="voice-chat-button" aria-label="음성 채팅 설정" onClick={()=>{setShowVoiceChatModal(true);}}>
-                <svg class="phone-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.32.57 3.55.57.55 0 1 .45 1 1v3.5c0 .55-.45 1-1 1C12.95 22 2 11.05 2 4c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.23.2 2.43.57 3.55.12.35.03.75-.24 1.02l-2.2 2.2z"/>
-                </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* 중앙 친구/채팅 바 */}
+        {/* 좌측 채팅/친구 바 - 맨 왼쪽으로 이동 */}
         {showMidBar &&
-          <div className='midBarSize'>
-            <div style={{ display: "flex" }}>
+          <div className='leftBarSize'>
+            <div className="toggle-container">
               <div onClick={() => { setToggle(true); }}
-                className={`toggleSwitchText contentStyle toggleSwitch ${toggle ? 'activeBorder' : ''}`} >
+                className={`toggleSwitchText toggleSwitch ${toggle ? 'activeBorder' : ''}`} >
                 채팅
               </div>
 
               <div onClick={() => setToggle(false)}
-                className={`toggleSwitchText contentStyle toggleSwitch ${!toggle ? 'activeBorder' : ''}`}
-                style={{ marginLeft: "10px" }}>
+                className={`toggleSwitchText toggleSwitch ${!toggle ? 'activeBorder' : ''}`}>
                 친구
               </div>
             </div>
@@ -245,26 +196,103 @@ function LobbyPage() {
                   }}
                   localMuted={localMuted}
                   joinedVoice={joinedVoice} 
-                  voiceChatRoomId={voiceChatRoomId} 
+                  voiceChatRoomId={voiceChatRoomId}
+                  onMembersPanelToggle={setIsMembersPanelOpen} // 참여자 패널 상태 콜백 추가
                 />
                 : <FriendListPage userId={userData.userId}/>}
+            </div>
+
+            {/* 하단 버튼 영역 */}
+            <div className="bottom-buttons-container">
+              {/* 프로필 이미지 버튼 */}
+              <div className="profile-button-wrapper">
+                <img
+                  src={userData?.userProfile ? `${userData.userProfile}` : "https://placehold.co/250x250"}
+                  onClick={() => { setProfileUserId(userData?.userId); setShowProfileModal(true); }}
+                  className="profile-button"
+                  alt="프로필"
+                />
+                {/* 상태 표시 - 프로필 이미지 우상단 */}
+                <div
+                  className="status-indicator-wrapper"
+                  onMouseEnter={() => setIsStatusPanelOpen(true)}
+                  onMouseLeave={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget)) {
+                      setIsStatusPanelOpen(false);
+                    }
+                  }}
+                >
+                  <div className="status-indicator">
+                    <span>{getStatusIcon(userStatus)}</span>
+                  </div>
+                  
+                  {isStatusPanelOpen && (
+                    <div
+                      className="status-side-panel"
+                      onMouseEnter={() => setIsStatusPanelOpen(true)}
+                      onMouseLeave={(e) => {
+                        if (!e.currentTarget.contains(e.relatedTarget)) {
+                          setIsStatusPanelOpen(false);
+                        }
+                      }}
+                    >
+                      <div className="status-item" onClick={() => manuallySetStatus('온라인')}>🟢 온라인</div>
+                      <div className="status-item" onClick={() => manuallySetStatus('자리비움')}>🟠 자리 비움</div>
+                      <div className="status-item" onClick={() => manuallySetStatus('오프라인')}>🔴 오프라인</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 음성 설정 버튼 */}
+              <button 
+                className="bottom-button" 
+                aria-label="음성 채팅 설정" 
+                onClick={() => { setShowVoiceChatModal(true); }}
+              >
+                <svg className="button-icon" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.32.57 3.55.57.55 0 1 .45 1 1v3.5c0 .55-.45 1-1 1C12.95 22 2 11.05 2 4c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.23.2 2.43.57 3.55.12.35.03.75-.24 1.02l-2.2 2.2z"/>
+                </svg>
+              </button>
+
+              {/* 검색 페이지 이동 버튼 */}
+              <Link to="/search">
+                <button className="bottom-button" aria-label="검색">
+                  <img src="/SearchIcon.png" className="button-icon" alt="검색" />
+                </button>
+              </Link>
+
+              {/* 전체 설정 버튼 */}
+              <button 
+                className="bottom-button" 
+                aria-label="설정"
+                onClick={() => {
+                  // 설정 모달 열기 (추후 구현)
+                  console.log('설정 버튼 클릭');
+                }}
+              >
+                <svg className="button-icon" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.22,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.22,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"/>
+                </svg>
+              </button>
             </div>
           </div>
         }
 
-        {/*우측 채팅방 */}
-        <div className='rightBarSize'>
-          <div className='contentStyle chatSize' style={{ textAlign: "left" }}>
-            <div ref={messageContainerRef} className='scroll-container chatDivStyle'>
+        {/*우측 채팅방 - Discord 스타일 */}
+        <div className="rightBarSize">
+          <div className='chatSize'>
+            <div ref={messageContainerRef} className={`scroll-container chatDivStyle ${isMembersPanelOpen ? 'with-members-panel' : ''}`}>
               <MessageList
                 messages={messages}
                 userData={userData} />
             </div>
 
-            <div className="inputSize">
+            <div className={`inputSize ${isMembersPanelOpen ? 'with-members-panel' : ''}`}>
               <input
                 className='chatInputStyle'
                 type="text"
+                placeholder="메시지를 입력하세요..."
                 value={input}
                 onChange={(e) => { setInput(e.target.value); }}
                 onKeyDown={(e) => { if (e.key === 'Enter') { sendMessage(); } }} />
@@ -274,17 +302,54 @@ function LobbyPage() {
             </div>
           </div>
 
-          <div style={{ display: "flex" }}>
-            <div className='contentStyle adSize'>
-              광고든 뭐든 암튼 뭐든 채울거
-            </div>
+          <div className={`adSize ${isMembersPanelOpen ? 'with-members-panel' : ''}`}>
+            <span style={{ color: 'var(--discord-text-muted)', fontSize: '14px' }}>
+              QMatch - 게임 매칭 플랫폼
+            </span>
             <Link to="/search">
-              <div className='contentStyle searchSize'>
-                <img src="/SearchIcon.png" className='imgPos'></img>
+              <div className='searchSize'>
+                <img src="/SearchIcon.png" className='imgPos' alt="검색"></img>
               </div>
             </Link>
           </div>
         </div>
+
+        {/* 참여자 패널 - 자동으로 열림 */}
+        <div className={`members-panel-overlay ${isMembersPanelOpen ? 'open' : ''}`}>
+          <ChatListPage
+            selectedRoom={selectedRoom}
+            setSelectedRoom={setSelectedRoom}
+            setMessages={setMessages}
+            onOpenProfile={(targetUserId) => { setProfileUserId(targetUserId); setShowProfileModal(true); }}
+            currentUserStatus={userStatus} 
+            refreshTick={listRefreshTick}
+            voiceSpeakers={voiceSpeakers} 
+            onJoinVoice={(roomId) => {
+              setVoiceChatRoomId(roomId)
+              if (voiceChatRef.current) {
+                voiceChatRef.current.joinChannel(roomId);
+              }
+            }}
+            onLeaveVoice={() => {
+              if (voiceChatRef.current) {
+                voiceChatRef.current.leaveChannel();
+              }
+            }}
+            onToggleMute={() => { 
+              if (voiceChatRef.current) {
+                voiceChatRef.current.toggleMute();
+              }
+            }}
+            localMuted={localMuted}
+            joinedVoice={joinedVoice} 
+            voiceChatRoomId={voiceChatRoomId}
+            onMembersPanelToggle={setIsMembersPanelOpen}
+            showMembersOnly={true}
+            membersToggle={membersToggle}
+            setMembersToggle={setMembersToggle}
+          />
+        </div>
+
       </div>
 
       {/*프로필 모달 */}
@@ -324,14 +389,14 @@ const MessageList = memo(({ messages, userData }) => {
     <div className='chatContentStyle'>
       {
         messages.map((msg, i) => (
-
-          <div key={i} style={{ marginTop: "5px" }}
-            className={`${msg.name == userData?.userId ? 'myChatStyle' : null} `}>
-
-            <div>{msg.name}</div>
+          <div key={i} 
+            className={`message-wrapper ${msg.name == userData?.userId ? 'myChatStyle' : 'otherChatStyle'}`}>
+            
+            {msg.name !== userData?.userId && (
+              <div className="message-author">{msg.name}</div>
+            )}
 
             <div className='chatStyle'>{msg.message}</div>
-
           </div>
         ))
       }

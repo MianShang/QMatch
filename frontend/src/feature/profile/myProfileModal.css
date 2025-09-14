@@ -1,112 +1,498 @@
+/* Discord 스타일 프로필 모달 */
+
 .modal-overlay {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
+    top: 0; 
+    left: 0; 
+    right: 0; 
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
-  }
-  
-  .modal-content {
-    background-color: #1e1e1e;       
-    color: #f0f0f0;                 
-    padding: 2rem;
-    border-radius: 10px;
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    background: var(--discord-bg-primary);
+    color: var(--discord-text-normal);
+    padding: 24px;
+    border-radius: var(--discord-radius);
     width: 600px;
+    max-width: 90vw;
     height: auto;
+    max-height: 90vh;
     display: flex;
     flex-direction: column;
     overflow: auto;
-    gap: 20px;
-  }
-  
-  .profile-flex-box {
-    
+    gap: 24px;
+    box-shadow: var(--discord-elevation-high);
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.profile-flex-box {
     display: flex;
     flex-direction: row;
-    gap: 30px;
-    align-items: stretch;
-    
-  }
+    gap: 24px;
+    align-items: flex-start;
+}
 
+.left-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    min-width: 200px;
+}
 
-  
-  .left-box img {
-    width: 250px;
-    height: 250px;
+.left-box img {
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     object-fit: cover;
-  }
-  
-  .left-box {
-    padding-right: 20px;
-    
-    display: flex;
-    align-items: flex-start;
-  }
-  
-  .right-box {
+    border: 3px solid var(--discord-bg-tertiary);
+    transition: all 0.2s ease;
+}
+
+.left-box img:hover {
+    border-color: var(--discord-accent);
+    transform: scale(1.05);
+}
+
+.right-box {
     flex: 1;
-    max-width: 250px; 
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    gap: 12px;
-    border-right: none;
-  }
-  
-  
- 
-  .tag-box {
+    gap: 16px;
+}
+
+.profile-header {
     display: flex;
-    max-width: 610px;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.profile-username {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--discord-text-normal);
+    margin: 0;
+}
+
+.profile-userid {
+    font-size: 14px;
+    color: var(--discord-text-muted);
+    margin: 0;
+}
+
+.profile-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--discord-text-muted);
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--discord-text-positive);
+}
+
+.status-indicator.away {
+    background: var(--discord-text-warning);
+}
+
+.status-indicator.offline {
+    background: var(--discord-text-muted);
+}
+
+.tag-box {
+    display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
-  }
-  
-  .tag-title {
-    font-weight: bold;
-    margin-top: 10px;
-    color: #aaa;
-  }
+    gap: 12px;
+    width: 100%;
+}
 
-  .tag-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
+.tag-title {
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--discord-text-muted);
+    margin: 0;
+}
 
-  .frequent-tags {
+.tag-list {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-  }
-  
-  .tag {
-    background-color: #3a3a3a;
-    color: #fff;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 13px;
-    
-    
-  }
-  
-  .bottom-box {
-    padding-top: 10px;
-    max-width: 500px;
-    
-  }
-  
+}
 
-  .image-upload-button {
-    display : inline-block;
-    cursor:pointer;
-    
-  }
- 
+.frequent-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
 
-  
-  
+.tag {
+    background: var(--discord-bg-quaternary);
+    color: var(--discord-text-normal);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.tag:hover {
+    background: var(--discord-bg-modifier-hover);
+    border-color: var(--discord-bg-modifier-active);
+}
+
+.bottom-box {
+    padding-top: 16px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.discord-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--discord-radius-small);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.discord-button.primary {
+    background: var(--discord-accent);
+    color: white;
+}
+
+.discord-button.primary:hover {
+    background: var(--discord-accent-hover);
+}
+
+.discord-button.secondary {
+    background: var(--discord-bg-quaternary);
+    color: var(--discord-text-normal);
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.discord-button.secondary:hover {
+    background: var(--discord-bg-modifier-hover);
+    border-color: var(--discord-bg-modifier-active);
+}
+
+.discord-button.danger {
+    background: var(--discord-text-danger);
+    color: white;
+}
+
+.discord-button.danger:hover {
+    background: #d32f2f;
+}
+
+.image-upload-button {
+    display: inline-block;
+    cursor: pointer;
+    padding: 8px 16px;
+    background: var(--discord-bg-secondary);
+    color: var(--discord-text-normal);
+    border: 1px solid var(--discord-bg-tertiary);
+    border-radius: var(--discord-radius-small);
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.image-upload-button:hover {
+    background: var(--discord-bg-modifier-hover);
+    border-color: var(--discord-bg-modifier-active);
+}
+
+.image-upload-input {
+    display: none;
+}
+
+.profile-section {
+    background: var(--discord-bg-secondary);
+    border-radius: var(--discord-radius);
+    padding: 16px;
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.profile-section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--discord-text-normal);
+    margin: 0 0 12px 0;
+}
+
+.profile-section-content {
+    font-size: 14px;
+    color: var(--discord-text-muted);
+    line-height: 1.5;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.stat-item {
+    text-align: center;
+    padding: 12px;
+    background: var(--discord-bg-tertiary);
+    border-radius: var(--discord-radius-small);
+    border: 1px solid var(--discord-bg-quaternary);
+}
+
+.stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--discord-text-normal);
+    margin: 0;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--discord-text-muted);
+    margin: 4px 0 0 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-bio {
+    background: var(--discord-bg-secondary);
+    border-radius: var(--discord-radius);
+    padding: 16px;
+    border: 1px solid var(--discord-bg-tertiary);
+    margin-top: 16px;
+}
+
+.bio-text {
+    font-size: 14px;
+    color: var(--discord-text-normal);
+    line-height: 1.5;
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+.bio-placeholder {
+    font-size: 14px;
+    color: var(--discord-text-muted);
+    font-style: italic;
+}
+
+/* Discord 스타일 반응형 디자인 */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95vw;
+        padding: 20px;
+        gap: 20px;
+    }
+    
+    .profile-flex-box {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .left-box {
+        min-width: auto;
+    }
+    
+    .profile-actions {
+        justify-content: center;
+    }
+    
+    .profile-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        padding: 16px;
+    }
+    
+    .profile-username {
+        font-size: 20px;
+    }
+    
+    .left-box img {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .profile-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ================================모달 액션 버튼들============================= */
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.modal-actions label {
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    background: var(--discord-bg-secondary);
+    color: var(--discord-text-normal);
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.modal-actions label:hover {
+    background: var(--discord-bg-modifier-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.logout-btn {
+    background: linear-gradient(135deg, #ff4757 0%, #ff3742 100%) !important;
+    color: white !important;
+    border: 1px solid #ff3742 !important;
+}
+
+.logout-btn:hover {
+    background: linear-gradient(135deg, #ff3742 0%, #ff2f3a 100%) !important;
+    box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* 로그아웃 확인 모달 */
+.logout-confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.logout-confirm-modal {
+  background: var(--discord-bg-primary);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--discord-bg-quaternary);
+  animation: modalSlideIn 0.2s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.logout-confirm-modal h3 {
+  color: var(--discord-text-normal);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+
+.logout-confirm-modal p {
+  color: var(--discord-text-muted);
+  font-size: 14px;
+  margin: 0 0 20px 0;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.logout-confirm-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.logout-confirm-buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.cancel-btn {
+  background: var(--discord-bg-secondary);
+  color: var(--discord-text-normal);
+  border: 1px solid var(--discord-bg-tertiary);
+}
+
+.cancel-btn:hover {
+  background: var(--discord-bg-modifier-hover);
+  border-color: var(--discord-bg-modifier-active);
+}
+
+.confirm-btn {
+  background: var(--discord-text-danger);
+  color: white;
+}
+
+.confirm-btn:hover {
+  background: #e74c3c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.confirm-btn:active {
+  transform: translateY(0);
+}
+
+/* 반응형 - 로그아웃 확인 모달 */
+@media (max-width: 768px) {
+  .logout-confirm-modal {
+    margin: 20px;
+    padding: 20px;
+  }
+}

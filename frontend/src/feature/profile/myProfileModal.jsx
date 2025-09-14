@@ -3,15 +3,17 @@
   import SpecModal from './components/specModal/specModal.jsx';
   import axios from 'axios';
   import './myProfileModal.css';
-  import { LogContext } from '../../App.jsx';
+import { LogContext } from '../../App.jsx';
+import { useLogout } from '../../hooks/login/useLogout.js';
 
   function MyProfile({ viewUserId, onClose }) {
-    const { userData, setUserData } = useContext(LogContext); // 내 로그인 정보
+    const { userData, setUserData, setIsLogIn } = useContext(LogContext); // 내 로그인 정보
     const [profileData, setProfileData] = useState(null); // 현재 열려있는 프로필 데이터
     const [showGameModal, setShowGameModal] = useState(false);
-    const [showTagModal, setShowTagModal] = useState(false);
-    const [gameData, setGameData] = useState([]);
-    const [edit, setEdit] = useState(false);
+  const [showTagModal, setShowTagModal] = useState(false);
+  const [gameData, setGameData] = useState([]);
+  const [edit, setEdit] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
     const [intro, setIntro] = useState("");
     const [tempIntro, setTempIntro] = useState("");
     const [selectedGame, setSelectedGame] = useState(null);
@@ -21,6 +23,7 @@
     const [tempStatus, setTempStatus] = useState("");
 
     const isMe = viewUserId === userData?.userId; // 본인 여부
+    const logoutFunc = useLogout(); // 로그아웃 함수
 
     // 소개글 저장
     const handleSave = async () => {
@@ -168,7 +171,17 @@
 
             {/* 오른쪽 프로필 정보 */}
             <div className="right-box">
-              <label onClick={onClose}>닫기</label>
+              <div className="modal-actions">
+                <label onClick={onClose}>닫기</label>
+                {isMe && (
+                  <label 
+                    className="logout-btn" 
+                    onClick={() => setShowLogoutConfirm(true)}
+                  >
+                    로그아웃
+                  </label>
+                )}
+              </div>
               <h2>{viewUserId}</h2>
 
               {isMe && !editStatus && (
@@ -283,6 +296,33 @@
         )}
         {showTagModal && (
           <InputModal type="tag" onClose={() => setShowTagModal(false)} />
+        )}
+
+        {/* 로그아웃 확인 모달 */}
+        {showLogoutConfirm && (
+          <div className="logout-confirm-overlay" onClick={() => setShowLogoutConfirm(false)}>
+            <div className="logout-confirm-modal" onClick={(e) => e.stopPropagation()}>
+              <h3>로그아웃 확인</h3>
+              <p>정말 로그아웃 하시겠습니까?</p>
+              <div className="logout-confirm-buttons">
+                <button 
+                  className="cancel-btn" 
+                  onClick={() => setShowLogoutConfirm(false)}
+                >
+                  취소
+                </button>
+                <button 
+                  className="confirm-btn" 
+                  onClick={() => {
+                    logoutFunc(setIsLogIn);
+                    onClose();
+                  }}
+                >
+                  로그아웃
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     );

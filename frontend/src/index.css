@@ -1,15 +1,110 @@
-/* index.css */
+/* Discord 스타일 CSS */
+:root {
+  /* Discord 색상 팔레트 */
+  --discord-bg-primary: #36393f;
+  --discord-bg-secondary: #2f3136;
+  --discord-bg-tertiary: #202225;
+  --discord-bg-quaternary: #40444b;
+  --discord-bg-modifier-hover: #4f545c;
+  --discord-bg-modifier-active: #5f6369;
+  --discord-bg-modifier-selected: #7289da;
+  
+  --discord-text-normal: #dcddde;
+  --discord-text-muted: #72767d;
+  --discord-text-link: #00b0f4;
+  --discord-text-positive: #43b581;
+  --discord-text-warning: #faa61a;
+  --discord-text-danger: #f04747;
+  
+  --discord-interactive-normal: #b9bbbe;
+  --discord-interactive-hover: #dcddde;
+  --discord-interactive-active: #fff;
+  --discord-interactive-muted: #4f545c;
+  
+  --discord-accent: #7289da;
+  --discord-accent-hover: #677bc4;
+  --discord-accent-active: #5b6eae;
+  
+  --discord-elevation-low: 0 1px 0 rgba(4,4,5,0.2), 0 1.5px 0 rgba(6,6,7,0.05), 0 2px 0 rgba(4,4,5,0.05);
+  --discord-elevation-medium: 0 4px 4px rgba(0,0,0,0.16), 0 8px 16px rgba(0,0,0,0.24);
+  --discord-elevation-high: 0 8px 16px rgba(0,0,0,0.24), 0 16px 32px rgba(0,0,0,0.24);
+  
+  --discord-radius: 8px;
+  --discord-radius-small: 4px;
+  --discord-radius-large: 12px;
+}
+
 :root, html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: #0b0f19; /* 짙은 어두운 남색 배경 */
-  color: #e0e0e0;
-  font-family: 'Segoe UI', sans-serif;
+  background-color: var(--discord-bg-tertiary);
+  color: var(--discord-text-normal);
+  font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.375;
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 스크롤바 스타일 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--discord-bg-quaternary);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--discord-bg-modifier-hover);
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* 모든 버튼, 링크, 입력창 등에 부드러운 전환 효과를 추가합니다 */
 * {
   transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
+}
+
+/* 기본 버튼 스타일 */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  outline: none;
+}
+
+/* 기본 입력 스타일 */
+input, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  outline: none;
+  background: none;
+}
+
+/* 기본 링크 스타일 */
+a {
+  color: var(--discord-text-link);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }

@@ -93,8 +93,9 @@ function App() {
   // 렌더링 숨기고 로딩창 표시 
   if (isLoading) {
     return (
-      <div className="fullscreen" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <h1>Loading</h1>
+      <div className="discord-loading">
+        <h1>QMatch</h1>
+        <div className="loading-spinner"></div>
       </div>
     );
   }

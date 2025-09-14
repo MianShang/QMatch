@@ -181,7 +181,7 @@ function SearchPage() {
         />
       )}
 
-      <div className='fullscreen' style={{ display: "flex", padding: "10px" }}>
+      <div className='fullscreen' style={{ display: "flex" }}>
         {/* 좌측 사이드바 */}
         <div className='contentStyle leftSize'>
           {/* 여긴 카테고리 */}
@@ -236,7 +236,6 @@ function SearchPage() {
           {/* 채팅방 리스트 */}
           <div className='contentStyle chatListSize'>
             <div className='chatListScroll'>
-              채팅 리스트
               {
                 rooms.map((room) => (
                   <div className='chatRoomList'

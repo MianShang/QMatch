@@ -4,6 +4,7 @@ import './UserHistoryModal.css';
 import LOLPage from './LOLPage';
 import DNFPage from './DNFPage'; 
 import LostArkPage from './LostArkPage';
+import MaplePage from './MaplePage';
 
 // Riot 전적 캐시: 동일한 gameCode에 대해 중복 요청을 막기 위함
 const riotCache = {};
@@ -44,7 +45,6 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
     setDelayedShow(true); // 초기값은 표시함
 
     // 게임코드 조회
-
     axios.get('/api/get/user/gamedata', {
       params: {
         userId: historyUserId,
@@ -123,8 +123,8 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
       }
 
       if (sendToModalGameName === 'lostark') {
-          (async () => {
-            try {
+        (async () => {
+          try {
             const res2 = await axios.get('/lostark/api/character/profile', {
               params: { name: gameCode }
             });
@@ -132,14 +132,30 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
             setUserGameCode(gameData);
             setErrorMessage(null);
             
-
           } catch (err2) {
             console.error('로스트아크 전적 불러오기 실패', err2);
             setErrorMessage("로스트아크 정보를 불러오지 못했습니다.");
           }
-          })();
-          return;
-        }
+        })();
+        return;
+      }
+
+      if (sendToModalGameName === 'maplestory') {
+        (async () => {
+          try {
+            const res2 = await axios.get('/maple/api/character', {
+              params: { name: gameCode }
+            });
+            gameData.mapleStats = res2.data;
+            setUserGameCode(gameData);
+            setErrorMessage(null);
+          } catch (err2) {
+            console.error('메이플스토리 전적 불러오기 실패', err2);
+            setErrorMessage("메이플스토리 정보를 불러오지 못했습니다.");
+          }
+        })();
+        return;
+      }
 
       setUserGameCode(gameData);
       setErrorMessage(null);
@@ -149,7 +165,6 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
       setUserGameCode(null);
       setErrorMessage("게임 정보를 불러오지 못했습니다.");
     });
-
 
   }, [historyUserId, sendToModalGameName]);
 
@@ -188,8 +203,11 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
             <LostArkPage lostarkStats={userGameCode?.lostarkStats}/>
           )}
 
-          {/* 에러 메시지 표시 */}
+          {sendToModalGameName === 'maplestory' && (
+            <MaplePage mapleStats={userGameCode?.mapleStats}/>
+          )}
 
+          {/* 에러 메시지 표시 */}
           {errorMessage && (
             <p style={{ color: 'red', fontWeight: 'bold', marginTop: '16px', textAlign: 'center' }}>
               {errorMessage}

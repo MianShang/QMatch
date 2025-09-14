@@ -4,15 +4,13 @@ import './friendListPage.css';
 import { LogContext } from '../../../App.jsx';
 import { FriendInventory } from './friendInventory.jsx';
 
-
 function FriendListPage() {
-
   const { friends, statusByUser, userData } = useContext(LogContext);
   const [bottomToggle, setBottomToggle] = useState(null);
   const containerRef = useRef(null);
 
   useEffect(() => {
-    //외부 클릭 감지 함수
+    // 외부 클릭 감지 함수
     function handleClickOutside(event) {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
         // 클릭된 곳이 containerRef 바깥이라면, 상태를 null로 초기화하여 비활성화
@@ -20,15 +18,14 @@ function FriendListPage() {
       }
     }
 
-    //문서에 이벤트 리스너 추가
+    // 문서에 이벤트 리스너 추가
     document.addEventListener("mousedown", handleClickOutside);
 
-    //컴포넌트가 사라질 때 이벤트 리스너 정리
+    // 컴포넌트가 사라질 때 이벤트 리스너 정리
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [containerRef]);
-
 
   // 친구 목록에 실시간 상태 정보를 결합, CSS 클래스와 title을 미리 계산
   const friendsWithStatus = friends.map(friend => {
@@ -42,8 +39,12 @@ function FriendListPage() {
   });
 
   return (
-    <div className='listRouteSize contentStyle'>
+    <div className='listRouteSize contentStyle' ref={containerRef}  style={{ position: 'relative' }}>
+    {/* bottomToggle이 활성화되면 FriendInventory를 렌더링 */}
+    {bottomToggle && <FriendInventory bottomToggle={bottomToggle} userId={userData.userId} />}
+      {/* 친구 목록과 인벤토리를 감싸는 div */}
       <div className="chatListScrollWrapper chatListScroll">
+        {/* 친구 목록 렌더링 */}
         {friendsWithStatus.length > 0 ? (
           friendsWithStatus.map(friend => (
             <div key={friend.userId} className="chatCard">
@@ -59,11 +60,7 @@ function FriendListPage() {
                     title={friend.statusInfo.title}
                   />
                 </div>
-
-                {/* 친구 이름 */}
                 <span className="chatCardTitle">{friend.userName}</span>
-
-                {/* 여기에 친구 삭제 또는 더보기 버튼 추가 가능 */}
                 <button className="chatCardDelete">🗑</button>
               </div>
             </div>
@@ -74,8 +71,9 @@ function FriendListPage() {
           </div>
         )}
       </div>
-      <div style={{ display: "flex", position: 'relative' }} ref={containerRef}>
-            {bottomToggle && <FriendInventory bottomToggle={bottomToggle} userId={userData.userId} />}
+
+      {/* 하단 버튼 영역 (친구 목록과 별개로 렌더링) */}
+      <div style={{ display: "flex", position: 'relative' }}>
         {/* 친구 요청 버튼 */}
         <div
           onClick={() => setBottomToggle('friends')}
@@ -93,7 +91,7 @@ function FriendListPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default FriendListPage
+export default FriendListPage;

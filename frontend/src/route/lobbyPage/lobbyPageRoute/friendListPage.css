@@ -2,16 +2,12 @@
 
 .inventoryOverlay {
   position: absolute;
-  margin-left: -10px;
+  z-index: 2;
+  height: calc(100% - 75px);
   width: 278px;
-  bottom:120%;
-  flex-direction: column;
-  background-color: #151a21; 
-  z-index: 1; 
-  border-radius: 12px;
-  padding: 10px; 
-  height: calc(100vh - 152px);
-  margin-top: 10px;
+  flex-grow: 1;
+  background-color: #151a21; /* 남은 공간을 채우도록 설정 */
+  border-radius: 15px;
 }
 
 
@@ -67,7 +63,9 @@
     justify-content: center;
     border: 2px solid transparent;
     color: #888;
-    font-size: 20px;
+    z-index: 2;
+    font-size: 18px;
+    font-family: 'Segoe UI', sans-serif;
 }
 
 /* 토글 버튼 활성시 그래픽 */

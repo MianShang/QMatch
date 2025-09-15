@@ -20,6 +20,7 @@ import { useChatSender } from '../../hooks/chat/useChatSender.js'
 import { useLoginCheck } from '../../hooks/login/useLoginCheck.js';
 import { useLogout } from '../../hooks/login/useLogout.js';
 import { useLocation }        from 'react-router-dom';
+import { useGlobalStomp } from '../../hooks/stomp/useGlobalStomp.js';
 
 // 상태 체크 훅 import 추가
 import useUserStatusReporter from '../../hooks/status/useUserStatusReporter.js';
@@ -48,6 +49,9 @@ function LobbyPage() {
   // State 보관함 해체
   const { isLogIn, setIsLogIn, userData, setUserData } = useContext(LogContext)
 
+  // 전역 STOMP 클라이언트 초기화
+  const globalStomp = useGlobalStomp(userData);
+
   // // userData가 로드될 때까지 로딩
   // if (!userData) {
   //   return <div>userData 로딩중</div>; 
@@ -68,7 +72,7 @@ function LobbyPage() {
   // 커스텀 훅 가져오기
   // --UseEffect
   useLoginCheck(isLogIn);                                          // 로그인 체크 훅
-  useChatSubscriber(selectedRoom, setMessages, setClient, userData);    // 채팅방 구독 훅
+  useChatSubscriber(selectedRoom, setMessages, setClient, userData, globalStomp);    // 채팅방 구독 훅
 
   // -- Function
   const logoutFunc = useLogout();                                          // 로그아웃 훅
@@ -234,7 +238,8 @@ function LobbyPage() {
                   selectedRoom={selectedRoom}
                   setSelectedRoom={setSelectedRoom}
                   onOpenProfile={(targetUserId) => { setProfileUserId(targetUserId); setShowProfileModal(true); }}
-                  currentUserStatus={userStatus} 
+                  currentUserStatus={userStatus}
+                  globalStomp={globalStomp} 
                   refreshTick     = { listRefreshTick }
                   voiceSpeakers={voiceSpeakers} 
                   onJoinVoice={(roomId) => {

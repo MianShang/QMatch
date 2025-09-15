@@ -1,8 +1,6 @@
 import { useState, useContext, useEffect, useRef } from 'react';
 import './list.css';
-import { Client } from '@stomp/stompjs';
 import { toast } from 'react-toastify';
-import SockJS from 'sockjs-client';
 import axios from 'axios';
 
 // 전역 유저 State 데이터 가져오기용 Context API import
@@ -36,7 +34,8 @@ function ChatListPage({
   onToggleMute,
   localMuted,
   joinedVoice,
-  voiceChatRoomId
+  voiceChatRoomId,
+  globalStomp
 }) {
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   // State 보관함 해체
@@ -68,16 +67,13 @@ function ChatListPage({
 
   const leftColRef = useRef(null);
 
-  // 실시간 프레즌스 상태 맵 & 전역 STOMP 커넥션
+  // 실시간 프레즌스 상태 맵
   const [statusByUser, setStatusByUser] = useState({});
-  const presenceStompRef = useRef(null);
-  const memberJoinedSubscriptionRef = useRef(null);
-  const joinRequestSubscriptionRef = useRef(null);
 
   // 커스텀훅
   useChatGetRooms(userData, setChatList);                      // 로그인한 유저의 채팅방
   useUnReadChatCount(userData, chatList, setUnreadCounts);     // 안읽은 메세지 카운트
-  useNewChatNotice(userData, selectedRoom, setUnreadCounts);   // 새 메세지 알림
+  useNewChatNotice(userData, selectedRoom, setUnreadCounts, globalStomp);   // 새 메세지 알림
 
   const getChatUserList = useChatGetUserList(setChatUserList);
   const deleteUserRoom = useChatDeleteRoom();
@@ -333,216 +329,124 @@ function ChatListPage({
 
   /* 전역 프레즌스 구독자: 앱 생애주기에서 1회 연결 */
   useEffect(() => {
-    if (!userData?.userId) return;
-    if (presenceStompRef.current?.active) return; // 이미 연결됨
+    if (!userData?.userId || !globalStomp) return;
 
-    const stomp = new Client({
-      webSocketFactory: () => new SockJS(`${BASE_URL}/gs-guide-websocket`),
-      reconnectDelay: 5000,
-      connectHeaders: { userId: userData.userId }
-    }); 
-
-    stomp.onConnect = () => {
-      stomp.subscribe('/topic/presence', (frame) => {
-        try {
-          const payload = JSON.parse(frame.body); // { userId, status, ts }
+    // 프레즌스 상태 구독
+    globalStomp.subscribe('/topic/presence', (frame) => {
+      try {
+        const payload = JSON.parse(frame.body); // { userId, status, ts }
         // 실시간 반영
-          setStatusByUser(prev => ({ ...prev, [payload.userId]: payload.status }));
-          
-        } catch (e) {
-          console.warn('presence parse error', e);
-        }
-      });
+        setStatusByUser(prev => ({ ...prev, [payload.userId]: payload.status }));
+      } catch (e) {
+        console.warn('presence parse error', e);
+      }
+    }, { id: 'presence-status' });
 
-      // 개인 입장 신청 알림 (방장이 채팅방에 없어도 받을 수 있음)
-      stomp.subscribe(`/user/queue/join-request`, (frame) => {
-        try {
-          const payload = JSON.parse(frame.body);
-          console.log('개인 입장 신청 알림 수신:', payload);
+    // 개인 입장 신청 알림 (방장이 채팅방에 없어도 받을 수 있음)
+    globalStomp.subscribe(`/user/queue/join-request`, (frame) => {
+      try {
+        const payload = JSON.parse(frame.body);
+        console.log('개인 입장 신청 알림 수신:', payload);
+        
+        // 방장에게만 토스트 알림 표시 (payload에서 hostUserId 확인)
+        console.log('개인 알림 토스트 조건 확인:', {
+          payloadHostUserId: payload.hostUserId,
+          userDataUserId: userData.userId,
+          isHost: payload.hostUserId === userData.userId
+        });
+        
+        if (payload.hostUserId === userData.userId) {
+          toast.info(`${payload.userName}님이 "${payload.roomName}" 방 입장을 신청했습니다!`);
           
-          // 방장에게만 토스트 알림 표시 (payload에서 hostUserId 확인)
-          console.log('개인 알림 토스트 조건 확인:', {
-            payloadHostUserId: payload.hostUserId,
-            userDataUserId: userData.userId,
-            isHost: payload.hostUserId === userData.userId
-          });
-          
-          if (payload.hostUserId === userData.userId) {
-            toast.info(`${payload.userName}님이 "${payload.roomName}" 방 입장을 신청했습니다!`);
-            
-            // 해당 채팅방이 선택된 상태라면 대기자 목록 새로고침
-            if (selectedRoom?.id === payload.roomId) {
-              setTimeout(() => {
-                fetchPendingRequests(payload.roomId, payload.hostUserId);
-              }, 1000);
-            }
+          // 해당 채팅방이 선택된 상태라면 대기자 목록 새로고침
+          if (selectedRoom?.id === payload.roomId) {
+            setTimeout(() => {
+              fetchPendingRequests(payload.roomId, payload.hostUserId);
+            }, 1000);
           }
-        } catch (e) {
-          console.warn('개인 입장 신청 알림 parse error', e);
         }
-      });
-
-    };
-
-    stomp.activate();
-    presenceStompRef.current = stomp;
+      } catch (e) {
+        console.warn('개인 입장 신청 알림 parse error', e);
+      }
+    }, { id: 'personal-join-request' });
 
     return () => {
-      // 멤버 입장 구독 정리
-      if (memberJoinedSubscriptionRef.current) {
-        memberJoinedSubscriptionRef.current.unsubscribe();
-        memberJoinedSubscriptionRef.current = null;
-      }
-      
-      // 입장 신청 구독 정리
-      if (joinRequestSubscriptionRef.current) {
-        joinRequestSubscriptionRef.current.unsubscribe();
-        joinRequestSubscriptionRef.current = null;
-      }
-      
-      presenceStompRef.current?.deactivate();
-      presenceStompRef.current = null;
+      // 전역 구독 해제
+      globalStomp.unsubscribe('presence-status');
+      globalStomp.unsubscribe('personal-join-request');
     };
-  }, [userData?.userId]);
+  }, [userData?.userId, globalStomp]);
 
   /* 채팅방 멤버 입장 알림 구독 업데이트 */
   useEffect(() => {
-    if (!presenceStompRef.current || !selectedRoom?.id) return;
+    if (!globalStomp || !selectedRoom?.id) return;
 
-    const stomp = presenceStompRef.current;
+    const subscriptionId = `member-joined-${selectedRoom.id}`;
     
-    // STOMP 연결이 완료될 때까지 기다리는 함수
-    const setupSubscription = () => {
-      if (!stomp.connected) {
-        // 연결이 안 되어 있으면 잠시 후 다시 시도
-        setTimeout(setupSubscription, 100);
-        return;
-      }
-
-      // 기존 구독 해제
-      if (memberJoinedSubscriptionRef.current) {
-        memberJoinedSubscriptionRef.current.unsubscribe();
-        memberJoinedSubscriptionRef.current = null;
-      }
-
+    // 멤버 입장 알림 구독
+    globalStomp.subscribe(`/topic/chat/${selectedRoom.id}/member-joined`, (frame) => {
       try {
-        // 새 구독
-        const subscription = stomp.subscribe(`/topic/chat/${selectedRoom.id}/member-joined`, (frame) => {
-          try {
-            const payload = JSON.parse(frame.body);
-            console.log('새 멤버 입장:', payload);
-            
-            // 모든 채팅방 멤버에게 토스트 알림 표시
-            toast.success(`${payload.userName}님이 입장했습니다!`);
-            
-            // 대기자 목록에서 제거 (입장한 사용자)
-            setPendingUsers(prev => prev.filter(req => req.userId !== payload.userId));
-            
-            // 멤버 목록 새로고침 (모든 사용자)
-            if (selectedRoom?.id) {
-              getChatUserList(selectedRoom.id);
-            }
-            
-          } catch (e) {
-            console.warn('member-joined parse error', e);
-          }
-        });
-
-        // 구독 참조 저장
-        memberJoinedSubscriptionRef.current = subscription;
-      } catch (error) {
-        console.error('구독 설정 실패:', error);
+        const payload = JSON.parse(frame.body);
+        console.log('새 멤버 입장:', payload);
+        
+        // 모든 채팅방 멤버에게 토스트 알림 표시
+        toast.success(`${payload.userName}님이 입장했습니다!`);
+        
+        // 대기자 목록에서 제거 (입장한 사용자)
+        setPendingUsers(prev => prev.filter(req => req.userId !== payload.userId));
+        
+        // 멤버 목록 새로고침 (모든 사용자)
+        if (selectedRoom?.id) {
+          getChatUserList(selectedRoom.id);
+        }
+      } catch (e) {
+        console.warn('member-joined parse error', e);
       }
-    };
-
-    // 구독 설정 시작
-    setupSubscription();
+    }, { id: subscriptionId });
 
     return () => {
-      if (memberJoinedSubscriptionRef.current) {
-        memberJoinedSubscriptionRef.current.unsubscribe();
-        memberJoinedSubscriptionRef.current = null;
-      }
+      globalStomp.unsubscribe(subscriptionId);
     };
-  }, [selectedRoom?.id]);
+  }, [selectedRoom?.id, globalStomp]);
 
   /* 방장에게 입장 신청 알림 구독 */
   useEffect(() => {
-    if (!presenceStompRef.current || !selectedRoom?.id || !userData?.userId) return;
+    if (!globalStomp || !selectedRoom?.id || !userData?.userId) return;
 
-    const stomp = presenceStompRef.current;
+    const subscriptionId = `join-request-${selectedRoom.id}`;
     
-    // STOMP 연결이 완료될 때까지 기다리는 함수
-    const setupJoinRequestSubscription = () => {
-      if (!stomp.connected) {
-        setTimeout(setupJoinRequestSubscription, 100);
-        return;
-      }
-
-      // 기존 구독 해제
-      if (joinRequestSubscriptionRef.current) {
-        joinRequestSubscriptionRef.current.unsubscribe();
-        joinRequestSubscriptionRef.current = null;
-      }
-
-      // STOMP 연결이 완료될 때까지 기다림
-      const waitForConnection = () => {
-        if (stomp.connected) {
-          try {
-            // 방장에게 입장 신청 알림 구독
-            const subscription = stomp.subscribe(`/topic/room/${selectedRoom.id}/join-request`, (frame) => {
-          try {
-            const payload = JSON.parse(frame.body);
-            console.log('새 입장 신청:', payload);
-            
-            // 방장에게만 토스트 알림 표시
-            console.log('토스트 조건 확인:', {
-              selectedRoomHostUserId: selectedRoom.hostUserId,
-              userDataUserId: userData.userId,
-              isHost: selectedRoom.hostUserId === userData.userId
-            });
-            
-            if (selectedRoom.hostUserId === userData.userId) {
-              toast.info(`${payload.userName}님이 입장을 신청했습니다!`);
-              
-              // 대기자 목록 새로고침
-              setTimeout(() => {
-                if (selectedRoom?.id) {
-                  fetchPendingRequests(selectedRoom.id, selectedRoom.hostUserId);
-                }
-              }, 1000);
-            }
-            
-          } catch (e) {
-            console.warn('join-request parse error', e);
-          }
-        });
-
-          // 구독 참조 저장
-          joinRequestSubscriptionRef.current = subscription;
-            } catch (error) {
-              console.error('입장 신청 구독 설정 실패:', error);
-            }
-          } else {
-            // 연결이 안 되어 있으면 100ms 후 다시 시도
-            console.log('STOMP 연결 대기 중...');
-            setTimeout(waitForConnection, 100);
-          }
-        };
+    // 방장에게 입장 신청 알림 구독
+    globalStomp.subscribe(`/topic/room/${selectedRoom.id}/join-request`, (frame) => {
+      try {
+        const payload = JSON.parse(frame.body);
+        console.log('새 입장 신청:', payload);
         
-        waitForConnection();
-    };
-
-    // 구독 설정 시작
-    setupJoinRequestSubscription();
+        // 방장에게만 토스트 알림 표시
+        console.log('토스트 조건 확인:', {
+          selectedRoomHostUserId: selectedRoom.hostUserId,
+          userDataUserId: userData.userId,
+          isHost: selectedRoom.hostUserId === userData.userId
+        });
+        
+        if (selectedRoom.hostUserId === userData.userId) {
+          toast.info(`${payload.userName}님이 입장을 신청했습니다!`);
+          
+          // 대기자 목록 새로고침
+          setTimeout(() => {
+            if (selectedRoom?.id) {
+              fetchPendingRequests(selectedRoom.id, selectedRoom.hostUserId);
+            }
+          }, 1000);
+        }
+      } catch (e) {
+        console.warn('join-request parse error', e);
+      }
+    }, { id: subscriptionId });
 
     return () => {
-      if (joinRequestSubscriptionRef.current) {
-        joinRequestSubscriptionRef.current.unsubscribe();
-        joinRequestSubscriptionRef.current = null;
-      }
+      globalStomp.unsubscribe(subscriptionId);
     };
-  }, [selectedRoom?.id, userData?.userId]);
+  }, [selectedRoom?.id, userData?.userId, globalStomp]);
 
   /* 초기 스냅샷 가져오기: 참여자 패널 오픈 + 목록 로드 시 */
   useEffect(() => {
@@ -568,148 +472,128 @@ function ChatListPage({
 
   /* 강퇴 + 방장 변경 이벤트 (방 단위 구독) */
   useEffect(() => {
-    if (!selectedRoom?.id || !userData?.userId) return;
+    if (!selectedRoom?.id || !userData?.userId || !globalStomp) return;
 
-    const stomp = new Client({
-      webSocketFactory: () => new SockJS(`${BASE_URL}/gs-guide-websocket`),    
-      reconnectDelay: 5000,
-      connectHeaders: {
-        userId: userData.userId,
-        roomId: selectedRoom.id,
-      },
-    });
+    const roomId = selectedRoom.id;
+    
+    // 강퇴 이벤트 구독
+    globalStomp.subscribe(`/topic/chat/${roomId}/kick`, (frame) => {
+      try {
+        const payload = JSON.parse(frame.body);
 
-    stomp.onConnect = () => {
-      // 강퇴 이벤트
-      stomp.subscribe(`/topic/chat/${selectedRoom.id}/kick`, (frame) => {
-        try {
-          const payload = JSON.parse(frame.body);
-
-          if (payload?.targetUserId === userData.userId) {
-            // 내가 추방된 경우
-            setSelectedRoom(null);
-            setMessages?.([]);
-            setIsMembersOpen(false);
-            setChatList((prev) =>
-              prev.filter((it) =>
-                it.id !== selectedRoom.id && it.chatRoom?.id !== selectedRoom.id
-              )
-            );
-            setUnreadCounts(prev => {
-              const next = { ...prev };
-              delete next[payload.roomId];
-              return next;
-            });
-            toast.success('방장에게 의해 방에서 추방되었습니다.');
-          } else {
-            // 다른 사람 추방 시 참여자 목록 갱신
-            setChatUserList(prev => prev.filter(u => u.userId !== payload?.targetUserId));
-            // 인원수 감소
-            updateChatRoomUserCount(payload.roomId, -1);
-          }
-        } catch (e) {
-          toast.error('kick payload parse error', e);
+        if (payload?.targetUserId === userData.userId) {
+          // 내가 추방된 경우
+          setSelectedRoom(null);
+          setMessages?.([]);
+          setIsMembersOpen(false);
+          setChatList((prev) =>
+            prev.filter((it) =>
+              it.id !== selectedRoom.id && it.chatRoom?.id !== selectedRoom.id
+            )
+          );
+          setUnreadCounts(prev => {
+            const next = { ...prev };
+            delete next[payload.roomId];
+            return next;
+          });
+          toast.success('방장에게 의해 방에서 추방되었습니다.');
+        } else {
+          // 다른 사람 추방 시 참여자 목록 갱신
+          setChatUserList(prev => prev.filter(u => u.userId !== payload?.targetUserId));
+          // 인원수 감소
+          updateChatRoomUserCount(payload.roomId, -1);
         }
+      } catch (e) {
+        toast.error('kick payload parse error', e);
+      }
+    }, { id: `kick-${roomId}` });
 
-      });
+    // join 구독
+    globalStomp.subscribe(`/topic/chat/${roomId}/join`, (frame) => {
+      const payload = JSON.parse(frame.body);
+      if (payload.userId !== userData.userId) {
+        toast.info(`${payload.userId} 님이 방에 입장했습니다.`);
+        setChatUserList(prev => {
+          if (prev.find(u => u.userId === payload.userId)) return prev;
+          return [...prev, { userId: payload.userId, status: '온라인' }];
+        });
+      }
+    }, { id: `join-${roomId}` });
 
-      // join 구독
-      stomp.subscribe(
-        `/topic/chat/${selectedRoom.id}/join`,
-        (frame) => {
-          const payload = JSON.parse(frame.body);
-          if (payload.userId !== userData.userId) {
-            toast.info(`${payload.userId} 님이 방에 입장했습니다.`);
-            setChatUserList(prev => {
-              if (prev.find(u => u.userId === payload.userId)) return prev;
-              return [...prev, { userId: payload.userId, status: '온라인' }];
-            });
-          }
-        },
-        { id: `join-${selectedRoom.id}` } // 고유 id
-      );
+    // leave 구독
+    globalStomp.subscribe(`/topic/chat/${roomId}/leave`, (frame) => {
+      const payload = JSON.parse(frame.body);
+      if (payload.userId !== userData.userId) {
+        // 다른 사람이 나간 경우 → 참여자 목록만 갱신
+        toast.info(`${payload.userId} 님이 방에서 나갔습니다.`);
+        setChatUserList(prev => prev.filter(u => u.userId !== payload.userId));
+        // 인원수 감소
+        updateChatRoomUserCount(payload.roomId, -1);
+      } else {
+        // 내가 나간 경우 → chatList에서도 제거
+        setChatList(prev => prev.filter(r => 
+          r.id !== payload.roomId && r.chatRoom?.id !== payload.roomId
+        ));
+        setSelectedRoom(null);
+        setMessages?.([]);
+      }
+    }, { id: `leave-${roomId}` });
 
-      // leave 구독
-      stomp.subscribe(
-        `/topic/chat/${selectedRoom.id}/leave`,
-        (frame) => {
-          const payload = JSON.parse(frame.body);
-          if (payload.userId !== userData.userId) {
-            // 다른 사람이 나간 경우 → 참여자 목록만 갱신
-            toast.info(`${payload.userId} 님이 방에서 나갔습니다.`);
-            setChatUserList(prev => prev.filter(u => u.userId !== payload.userId));
-            // 인원수 감소
-            updateChatRoomUserCount(payload.roomId, -1);
-          } else {
-            // 내가 나간 경우 → chatList에서도 제거
-            setChatList(prev => prev.filter(r => 
-              r.id !== payload.roomId && r.chatRoom?.id !== payload.roomId
-            ));
-            setSelectedRoom(null);
-            setMessages?.([]);
-          }
-        },
-        { id: `leave-${selectedRoom.id}` }
-      );
+    // 방장 변경 이벤트 구독
+    globalStomp.subscribe(`/topic/chat/${roomId}/host-transfer`, (frame) => {
+      try {
+        const payload = JSON.parse(frame.body);
+        console.log("방장 변경 이벤트:", payload);
 
-      // // 구독 끝나자마자 내 입장 이벤트 브로드캐스트
-      // stomp.publish({
-      //   destination: `/topic/chat/${selectedRoom.id}/join`,
-      //   body: JSON.stringify({
-      //     userId: userData.userId,
-      //     roomId: selectedRoom.id,
-      //   }),
-      // });
+        // selectedRoom의 hostUserId 업데이트
+        setSelectedRoom(prev => prev ? ({
+          ...prev,
+          hostUserId: payload.newHost
+        }) : null);
 
-      // 방장 변경 이벤트
-      stomp.subscribe(`/topic/chat/${selectedRoom.id}/host-transfer`, (frame) => {
-        try {
-          const payload = JSON.parse(frame.body);
-          console.log("방장 변경 이벤트:", payload);
-
-          // selectedRoom의 hostUserId 업데이트
-          setSelectedRoom(prev => prev ? ({
-            ...prev,
-            hostUserId: payload.newHost
-          }) : null);
-
-          if (payload.newHost === userData.userId) {
-            toast.success("당신이 새로운 방장이 되었습니다!");
-          }
-          if (payload.oldHost === userData.userId) {
-            toast.success("방장을 넘겼습니다.");
-          }
-        } catch (e) {
-          console.error("host-transfer parse error", e);
+        if (payload.newHost === userData.userId) {
+          toast.success("당신이 새로운 방장이 되었습니다!");
         }
-      });
+        if (payload.oldHost === userData.userId) {
+          toast.success("방장을 넘겼습니다.");
+        }
+      } catch (e) {
+        console.error("host-transfer parse error", e);
+      }
+    }, { id: `host-transfer-${roomId}` });
 
-      // 수락 알림
-      stomp.subscribe(`/topic/chat/${selectedRoom.id}/accept`, (frame) => {
-        const payload = JSON.parse(frame.body);
-        toast.success(payload.message);
-        setPendingUsers(prev => prev.filter(p => p.userId !== payload.userId));
-        setChatUserList(prev => [...prev, { userId: payload.userId, status: '온라인' }]);
-      });
+    // 수락 알림 구독
+    globalStomp.subscribe(`/topic/chat/${roomId}/accept`, (frame) => {
+      const payload = JSON.parse(frame.body);
+      toast.success(payload.message);
+      setPendingUsers(prev => prev.filter(p => p.userId !== payload.userId));
+      setChatUserList(prev => [...prev, { userId: payload.userId, status: '온라인' }]);
+    }, { id: `accept-${roomId}` });
 
+    // 개인 수락 알림 구독
+    globalStomp.subscribe(`/user/queue/accept`, (frame) => {
+      const payload = JSON.parse(frame.body);
+      toast.success(payload.message); // "성공적으로 입장하였습니다"
+    }, { id: 'personal-accept' });
 
-      // 개인 수락 알림
-      stomp.subscribe(`/user/queue/accept`, (frame) => {
-        const payload = JSON.parse(frame.body);
-        toast.success(payload.message); // "성공적으로 입장하였습니다"
-       });
+    // 개인 거절 알림 구독
+    globalStomp.subscribe(`/user/queue/reject`, (frame) => {
+      const payload = JSON.parse(frame.body);
+      toast.error(payload.message); // "방장이 입장 요청을 거절했습니다"
+      setPendingUsers(prev => prev.filter(p => p.userId !== userData.userId));
+    }, { id: 'personal-reject' });
 
-      // 개인 거절 알림
-      stomp.subscribe(`/user/queue/reject`, (frame) => {
-        const payload = JSON.parse(frame.body);
-        toast.error(payload.message); // "방장이 입장 요청을 거절했습니다"
-        setPendingUsers(prev => prev.filter(p => p.userId !== userData.userId));
-      });
+    return () => {
+      // 모든 구독 해제
+      globalStomp.unsubscribe(`kick-${roomId}`);
+      globalStomp.unsubscribe(`join-${roomId}`);
+      globalStomp.unsubscribe(`leave-${roomId}`);
+      globalStomp.unsubscribe(`host-transfer-${roomId}`);
+      globalStomp.unsubscribe(`accept-${roomId}`);
+      globalStomp.unsubscribe('personal-accept');
+      globalStomp.unsubscribe('personal-reject');
     };
-
-    stomp.activate();
-    return () => stomp.deactivate();
-  }, [selectedRoom?.id, userData?.userId]);
+  }, [selectedRoom?.id, userData?.userId, globalStomp]);
 
 
   /* 열기/닫기 헬퍼 */

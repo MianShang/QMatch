@@ -36,7 +36,12 @@ function ChatListPage({
   localMuted,
   joinedVoice,
   voiceChatRoomId,
-  globalStomp
+  globalStomp,
+  onMembersPanelToggle, // 참여자 패널 상태 변경 콜백 추가
+  showMembersOnly = false, // 참여자 패널만 표시하는 플래그
+  membersToggle = true, // 참여자/음성채팅 토글 상태
+  setMembersToggle = () => { }, // 참여자/음성채팅 토글 상태 변경 함수
+  setHasUnreadMessages // 안 읽은 메시지 상태 업데이트 함수
 }) {
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   // State 보관함 해체
@@ -50,6 +55,14 @@ function ChatListPage({
   const [chatListExtend, setChatListExtend] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
   const [chatUserList, setChatUserList] = useState([]);
+
+  // 안 읽은 메시지가 있는지 확인하고 전역 상태 업데이트
+  useEffect(() => {
+    const hasUnread = Object.values(unreadCounts).some(count => count > 0);
+    if (setHasUnreadMessages) {
+      setHasUnreadMessages(hasUnread);
+    }
+  }, [unreadCounts, setHasUnreadMessages]);
 
   const [pendingUsers, setPendingUsers] = useState([]);
 
@@ -100,8 +113,9 @@ function ChatListPage({
   function getStatusIcon(status) {
     if (status === '온라인') return '🟢';
     if (status === '자리비움') return '🟠';
-    return '🔴';
+    return '⚫'; // 오프라인을 검정색으로 설정 (CSS에서 회색으로 변경)
   }
+
 
   // 방 삭제
   async function handleDeleteRoom(roomId, userId) {
@@ -172,16 +186,17 @@ function ChatListPage({
     // 대기 중인 사용자 제외
     const activeUsers = updatedList.filter(u => u.joinStatus !== 'PENDING');
     const online = activeUsers.filter(u => u.status === '온라인');
-    const away   = activeUsers.filter(u => u.status === '자리비움');
-    const offline= activeUsers.filter(u => u.status === '오프라인' || !u.status);
+    const away = activeUsers.filter(u => u.status === '자리비움');
+    const offline = activeUsers.filter(u => u.status === '오프라인' || !u.status);
     return { online, away, offline };
   }
 
-  /* 패널을 왼쪽 리스트 오른쪽 경계(=채팅 내부 시작점)에 붙이기 위한 위치 측정 */
+  /* 패널을 좌측바와 메시지창 사이에 배치 */
   function measurePanel() {
     if (!leftColRef.current) return;
     const r = leftColRef.current.getBoundingClientRect();
-    setPanelRect({ left: r.right + 10, top: r.top - 50, height: r.height - 37 });
+    // 좌측바(240px) 오른쪽에 위치하도록 설정
+    setPanelRect({ left: 240, top: 0, height: r.height });
   }
 
   /* 패널 열릴 때/리사이즈 시 위치 재측정 */
@@ -208,7 +223,7 @@ function ChatListPage({
       }
       return chat;
     }));
-    
+
     // selectedRoom도 업데이트
     if (selectedRoom?.id === roomId) {
       setSelectedRoom(prev => prev ? {
@@ -221,7 +236,7 @@ function ChatListPage({
   // 입장 대기자 불러오기
   useEffect(() => {
     if (!selectedRoom?.id) return;
-    
+
     (async () => {
       try {
         // hostUserId가 없으면 방 정보를 다시 가져와서 hostUserId 획득
@@ -235,12 +250,12 @@ function ChatListPage({
             setSelectedRoom(prev => prev ? { ...prev, hostUserId: ownerId } : null);
           }
         }
-        
+
         if (!ownerId) {
           console.warn("방장 ID를 찾을 수 없습니다.");
           return;
         }
-        
+
         const res = await fetch(`/api/chat/rooms/${selectedRoom.id}/pending-requests?ownerId=${ownerId}`);
         if (res.ok) {
           const data = await res.json();
@@ -261,7 +276,7 @@ function ChatListPage({
         console.warn("방장 ID를 찾을 수 없습니다.");
         return;
       }
-      
+
       const response = await axios.get(`/api/chat/rooms/${roomId}/pending-requests`, {
         params: { ownerId: actualOwnerId }
       });
@@ -277,14 +292,14 @@ function ChatListPage({
       await axios.post(`/api/chat/rooms/${selectedRoom.id}/approve-join`, null, {
         params: { ownerId: selectedRoom.hostUserId, applicantId }
       });
-      
+
       // 목록에서 제거
       setPendingUsers(prev => prev.filter(req => req.userId !== applicantId));
       console.log('입장 승인 완료:', applicantId);
-      
+
       // 인원수 증가
       updateChatRoomUserCount(selectedRoom.id, 1);
-      
+
       // 멤버 목록에 즉시 추가
       setChatUserList(prev => {
         // 이미 존재하는지 확인
@@ -294,7 +309,7 @@ function ChatListPage({
         // 새 멤버 추가
         return [...prev, { userId: applicantId, status: '온라인', joinStatus: 'APPROVED' }];
       });
-      
+
       // 멤버 목록 새로고침 (서버에서 최신 데이터 가져오기)
       if (selectedRoom?.id) {
         getChatUserList(selectedRoom.id);
@@ -311,14 +326,14 @@ function ChatListPage({
       await axios.post(`/api/chat/rooms/${selectedRoom.id}/reject-join`, null, {
         params: { ownerId: selectedRoom.hostUserId, applicantId }
       });
-      
+
       // 목록에서 제거
       setPendingUsers(prev => prev.filter(req => req.userId !== applicantId));
       console.log('입장 거절 완료:', applicantId);
-      
+
       // 토스트 알림 표시
       toast.warning('입장을 거절했습니다.');
-      
+
       // 대기자 목록 새로고침
       if (selectedRoom?.id) {
         fetchPendingRequests(selectedRoom.id, selectedRoom.hostUserId);
@@ -349,17 +364,17 @@ function ChatListPage({
       try {
         const payload = JSON.parse(frame.body);
         console.log('개인 입장 신청 알림 수신:', payload);
-        
+
         // 방장에게만 토스트 알림 표시 (payload에서 hostUserId 확인)
         console.log('개인 알림 토스트 조건 확인:', {
           payloadHostUserId: payload.hostUserId,
           userDataUserId: userData.userId,
           isHost: payload.hostUserId === userData.userId
         });
-        
+
         if (payload.hostUserId === userData.userId) {
           toast.info(`${payload.userName}님이 "${payload.roomName}" 방 입장을 신청했습니다!`);
-          
+
           // 해당 채팅방이 선택된 상태라면 대기자 목록 새로고침
           if (selectedRoom?.id === payload.roomId) {
             setTimeout(() => {
@@ -384,19 +399,19 @@ function ChatListPage({
     if (!globalStomp || !selectedRoom?.id) return;
 
     const subscriptionId = `member-joined-${selectedRoom.id}`;
-    
+
     // 멤버 입장 알림 구독
     globalStomp.subscribe(`/topic/chat/${selectedRoom.id}/member-joined`, (frame) => {
       try {
         const payload = JSON.parse(frame.body);
         console.log('새 멤버 입장:', payload);
-        
+
         // 모든 채팅방 멤버에게 토스트 알림 표시
         toast.success(`${payload.userName}님이 입장했습니다!`);
-        
+
         // 대기자 목록에서 제거 (입장한 사용자)
         setPendingUsers(prev => prev.filter(req => req.userId !== payload.userId));
-        
+
         // 멤버 목록 새로고침 (모든 사용자)
         if (selectedRoom?.id) {
           getChatUserList(selectedRoom.id);
@@ -416,23 +431,23 @@ function ChatListPage({
     if (!globalStomp || !selectedRoom?.id || !userData?.userId) return;
 
     const subscriptionId = `join-request-${selectedRoom.id}`;
-    
+
     // 방장에게 입장 신청 알림 구독
     globalStomp.subscribe(`/topic/room/${selectedRoom.id}/join-request`, (frame) => {
       try {
         const payload = JSON.parse(frame.body);
         console.log('새 입장 신청:', payload);
-        
+
         // 방장에게만 토스트 알림 표시
         console.log('토스트 조건 확인:', {
           selectedRoomHostUserId: selectedRoom.hostUserId,
           userDataUserId: userData.userId,
           isHost: selectedRoom.hostUserId === userData.userId
         });
-        
+
         if (selectedRoom.hostUserId === userData.userId) {
           toast.info(`${payload.userName}님이 입장을 신청했습니다!`);
-          
+
           // 대기자 목록 새로고침
           setTimeout(() => {
             if (selectedRoom?.id) {
@@ -477,7 +492,7 @@ function ChatListPage({
     if (!selectedRoom?.id || !userData?.userId || !globalStomp) return;
 
     const roomId = selectedRoom.id;
-    
+
     // 강퇴 이벤트 구독
     globalStomp.subscribe(`/topic/chat/${roomId}/kick`, (frame) => {
       try {
@@ -533,7 +548,7 @@ function ChatListPage({
         updateChatRoomUserCount(payload.roomId, -1);
       } else {
         // 내가 나간 경우 → chatList에서도 제거
-        setChatList(prev => prev.filter(r => 
+        setChatList(prev => prev.filter(r =>
           r.id !== payload.roomId && r.chatRoom?.id !== payload.roomId
         ));
         setSelectedRoom(null);
@@ -570,13 +585,13 @@ function ChatListPage({
       toast.success(payload.message);
       setPendingUsers(prev => prev.filter(p => p.userId !== payload.userId));
       setChatUserList(prev => [...prev, { userId: payload.userId, status: '온라인' }]);
-      
+
       // 승인된 사용자가 현재 사용자라면 메시지 불러오기
       if (payload.userId === userData.userId) {
         getChatList(roomId, setMessages);
         // 읽음 처리
         setRead({ id: roomId });
-        
+
         // 해당 채팅방을 선택된 방으로 설정
         if (!selectedRoom || selectedRoom.id !== roomId) {
           // 채팅방 정보를 가져와서 selectedRoom 설정
@@ -594,14 +609,14 @@ function ChatListPage({
     globalStomp.subscribe(`/user/queue/accept`, (frame) => {
       const payload = JSON.parse(frame.body);
       toast.success(payload.message); // "성공적으로 입장하였습니다"
-      
+
       // 채팅방에 입장했으므로 메시지 목록 불러오기
       if (payload.roomId) {
         console.log('개인 수락 알림: 메시지를 가져옵니다. roomId:', payload.roomId);
         getChatList(payload.roomId, setMessages);
         // 읽음 처리
         setRead({ id: payload.roomId });
-        
+
         // 해당 채팅방을 선택된 방으로 설정
         if (!selectedRoom || selectedRoom.id !== payload.roomId) {
           // 채팅방 정보를 가져와서 selectedRoom 설정
@@ -637,31 +652,43 @@ function ChatListPage({
 
   /* 열기/닫기 헬퍼 */
   function openMembers(roomId) {
+    console.log('openMembers 호출됨:', roomId); // 디버깅용
     setIsMembersOpen(true);
     getChatUserList(roomId);
     setTimeout(measurePanel, 0);
+    // 상위 컴포넌트에 참여자 패널 열림 알림
+    if (onMembersPanelToggle) {
+      console.log('onMembersPanelToggle 호출됨'); // 디버깅용
+      onMembersPanelToggle(true);
+    } else {
+      console.log('onMembersPanelToggle이 없음'); // 디버깅용
+    }
   }
 
   function closeMembers() {
     setIsMembersOpen(false);
+    // 상위 컴포넌트에 참여자 패널 닫힘 알림
+    if (onMembersPanelToggle) {
+      onMembersPanelToggle(false);
+    }
   }
 
   useEffect(() => {
     if (selectedRoom?.id) {
       openMembers(selectedRoom.id);
-    } 
+    }
   }, [selectedRoom?.id]);
 
   // 공통 메뉴 열기 함수
   function openMenu(e, userId) {
     e.stopPropagation();
-    
+
     // 같은 사용자의 메뉴가 이미 열려있으면 닫기
     if (menu && menu.userId === userId) {
       setMenu(null);
       return;
     }
-    
+
     const rect = e.currentTarget.getBoundingClientRect();
     const menuWidth = 170;
     const gap = 8;
@@ -674,265 +701,101 @@ function ChatListPage({
   }
 
   return (
-    <div className='listRouteSize contentStyle' ref={leftColRef}>
-      {/* 전적 모달 */}
-      {isUserHistoryOpen && (
-        <UserHistoryModal
-          sendToModalGameName={sendToModalGameName}
-          setUserHistoryOpen={setUserHistoryOpen}
-          historyUserId={historyUserId}
-        />
-      )}
+    <>
+      <div className='listRouteSize contentStyle' ref={leftColRef}>
+        {/* 전적 모달 */}
+        {isUserHistoryOpen && (
+          <UserHistoryModal
+            sendToModalGameName={sendToModalGameName}
+            setUserHistoryOpen={setUserHistoryOpen}
+            historyUserId={historyUserId}
+          />
+        )}
 
-      {/* 참여자 패널(채팅창 내부 시작점에 맞춰 뜸) */}
-      <div
-        className={`membersDrawerInline ${isMembersOpen ? 'open' : ''}`}
-        style={{
-          left: panelRect.left + 'px',
-          top: panelRect.top + 'px',
-          height: panelRect.height + 'px'
-        }}
-      >
-        <div className="membersDrawerHeader">
-          <div onClick={() => { setToggle(true); }}
-            className={`toggleSwitchText contentStyle toggleSwitch ${toggle ? 'activeBorder' : ''}`} >
-            참여자
-          </div>
-          <div onClick={() => setToggle(false)}
-            className={`toggleSwitchText contentStyle toggleSwitch ${!toggle ? 'activeBorder' : ''}`}
-            style={{ marginLeft: "10px" }}>
-            음성채팅
-          </div>
-        </div>
-        {/* 원본 리스트(간단 표시) - presence 반영 */}
-        {/* <div className="membersListScroll">
-          {chatUserList.map(u => {
-            const eff = getEffectiveStatus(u);
-            return (
-              <div className="membersRow" key={u.userId}>
-                <span className="membersName">
-                  {u.userId}
-                  <span className="membersDot">{getStatusIcon(eff)}</span>
-                </span>
-                <button
-                  className="membersMoreBtn"
-                  onClick={() => { setHistoryUserId(u.userId); setUserHistoryOpen(true); }}
-                  title="상세보기"
-                >…</button>
-              </div>
-            );
-          })}
-          {chatUserList.length === 0 && (
-            <div className="membersEmpty">참여자가 없습니다.</div>
-          )}
-        </div> */}
-        {/* toggle이 true일 때 */}
-        {toggle ? (
-        <div className="membersOverlayGrouped">
-          {(() => {
-            const { online, away, offline } = splitMembersByStatus(chatUserList);
+        {/* 상단: 선택한 채팅방 카드 */}
+        {selectedRoom && (
+          <div
+            className='selectCardStyle'
+            onClick={() => {
+              if (isMembersOpen) {
+                closeMembers();
+              } else {
+                openMembers(selectedRoom.id);
+              }
+            }}
+          >
+            <div className='selectCardHeaderStyle'>
+              <img src={setGameIcon(selectedRoom.gameName)} alt="방 아이콘" className="chatCardImage" />
+              <p>
+                {selectedRoom.name}
+                {typeof selectedRoom.currentUsers === 'number' && typeof selectedRoom.maxUsers === 'number' && (
+                  <span style={{ marginLeft: 8, color: '#9aa0a6', fontSize: 12 }}>
+                    {selectedRoom.currentUsers} / {selectedRoom.maxUsers}
+                  </span>
+                )}
+              </p>
+              <p></p>
+            </div>
 
-            return (
-              <>
-                {/* 온라인 */}
-                <div className="onlineMembersSectionHeader">온라인 — {online.length}</div>
-                {online.map(u => {
-                  const eff = getEffectiveStatus(u);
-                  const isPending = u.joinStatus === 'PENDING';
+            {/* 더보기 클릭시 채팅방 구독한 유저 리스트 표시 */}
+            {chatListExtend &&
+              <div className='selectCardUserListStyle'>
+                {chatUserList.map((item) => {
+                  const key = String(item.userId);
+                  const info = voiceSpeakers[key] || { level: 0, speaking: false };
+                  const isMe = item.userId === userData.userId;
+
+                  const isVoiceParticipant = joinedVoice && (voiceChatRoomId === selectedRoom.id);
+                  const talkingOn = isVoiceParticipant && info.speaking && !(isMe && localMuted);
+
+                  const eff = getEffectiveStatus(item);
+
                   return (
-                    <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'on-' + u.userId}>
-                      <span className={`membersName ${isPending ? 'membersName--pending' : ''}`}>
-                        {u.userId}
-                        {isPending && ' (대기중)'}
-                        <span className="membersDot">{getStatusIcon(eff)}</span>
-                      </span>
-                      {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
-                      <div
-                        className="MoreButtonStyle"
-                        onClick={(e) => openMenu(e, u.userId)}
-                      >
-                        …
-                      </div>
-                    </div>
-                  );
-                })}
-                {/* 자리비움 */}
-                <div className="awayMembersSectionHeader" style={{ marginTop: 10 }}>
-                  자리비움 — {away.length}
-                </div>
-                {away.map(u => {
-                  const eff = getEffectiveStatus(u);
-                  const isPending = u.joinStatus === 'PENDING';
-                  return (
-                    <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'away-' + u.userId}>
-                      <span className={`membersName ${isPending ? 'membersName--pending' : ''}`}>
-                        {u.userId}
-                        {isPending && ' (대기중)'}
-                        <span className="membersDot">{getStatusIcon(eff)}</span>
-                      </span>
-                      {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
-                      <div
-                        className="MoreButtonStyle"
-                        onClick={(e) => openMenu(e, u.userId)}
-                      >
-                        …
-                      </div>
-                    </div>
-                  );
-                })}
-
-                {/* 오프라인 */}
-                  <div className="offlineMembersSectionHeader" style={{ marginTop: 10 }}>
-                    오프라인 — {offline.length}
-                  </div>
-                {offline.map(u => {
-                  const eff = getEffectiveStatus(u);
-                  const isPending = u.joinStatus === 'PENDING';
-                  return (
-                    <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'off-' + u.userId}>
-                      <span className={`membersName membersName--offline ${isPending ? 'membersName--pending' : ''}`}>
-                        {u.userId}
-                        {isPending && ' (대기중)'}
-                        <span className="membersDot">{getStatusIcon(eff)}</span>
-                      </span>
-                        {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
-                        <div
-                          className="MoreButtonStyle"
-                          onClick={(e) => openMenu(e, u.userId)}
-                        >
-                          …
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  <div className="PendingApproval" style={{ marginTop: 10 }}>
-                    수락 대기 중
-                  </div>
-                  {Array.isArray(pendingUsers) && pendingUsers.map(u => (
-                    <div className="membersRow" key={'pending-' + u.userId}>
-                      <span className="membersName membersName--offline">
-                        {u.userId}
-                        <span className="membersDot">⚪</span>
-                      </span>
-
-                      {/* 방장만 수락/거절 버튼 표시 */}
-                      {(selectedRoom?.hostUserId === userData.userId) && (
-                        <div className="pending-actions">
-                          <button onClick={() => handleAccept(u.userId)}>수락</button>
-                          <button onClick={() => handleReject(u.userId)}>거절</button>
-                        </div>
-                      )}
-                      <div
-                        className="MoreButtonStyle"
-                        onClick={(e) => openMenu(e, u.userId)}
-                      >
-                        …
-                      </div>
-                    </div>
-                  ))}
-                </>
-              );
-            })()}
-          </div>
-        ) : (    // toggle이 false일 때 음성채팅 UI
-        <div className="membersOverlayGrouped">
-          <div className="voice-chat-container" style={{ padding: '16px' }}>
-            {/* 음성채팅 UI */}
-          </div>
-        </div> 
-      )}
-      </div>
-      {/* 상단: 선택한 채팅방 카드 */}
-      {selectedRoom && (
-        <div 
-          className='selectCardStyle'
-          onClick={() => {
-            if (isMembersOpen) {
-              closeMembers();
-            } else {
-              openMembers(selectedRoom.id);
-            }
-          }}
-        >
-          <div className='selectCardHeaderStyle'>
-            <img src={setGameIcon(selectedRoom.gameName)} alt="방 아이콘" className="chatCardImage" />
-            <p>
-              {selectedRoom.name}
-              {typeof selectedRoom.currentUsers === 'number' && typeof selectedRoom.maxUsers === 'number' && (
-                <span style={{ marginLeft: 8, color: '#9aa0a6', fontSize: 12 }}>
-                  {selectedRoom.currentUsers} / {selectedRoom.maxUsers}
-                </span>
-              )}
-            </p>
-            <p></p>
-            {/* 선택된 방 참여자 패널 열기 버튼
-            <button
-              className="membersIconBtn"
-              title="참여자 보기"
-              onClick={() => selectedRoom && openMembers(selectedRoom.id)}
-            >👥</button> */}
-          </div>
-
-          {/* 더보기 클릭시 채팅방 구독한 유저 리스트 표시 */}
-          {chatListExtend &&
-            <div className='selectCardUserListStyle'>
-              {chatUserList.map((item) => {
-                const key = String(item.userId);
-                const info = voiceSpeakers[key] || { level: 0, speaking: false };
-                const isMe = item.userId === userData.userId;
-
-                const isVoiceParticipant = joinedVoice && (voiceChatRoomId === selectedRoom.id);
-                const talkingOn = isVoiceParticipant && info.speaking && !(isMe && localMuted);
-
-                const eff = getEffectiveStatus(item);
-
-                return (
-                  <div key={item.userId} className='UserListContentStyle'>
-                    <p>
-                      {item.userId} <span className="membersDot">{getStatusIcon(eff)}</span>
-                      {/* 말하는 중 표시 */}
-                      {isVoiceParticipant && (
-                        <span
-                          className={`talkSpeakerArc ${talkingOn ? 'on' : ''}`}
-                          aria-label={talkingOn ? '말하는 중' : '말하지 않음'}
-                        >
-                          <svg className="icon" viewBox="0 0 64 32" aria-hidden="true">
-                            {/* 스피커 본체 */}
-                            <path className="spk" d="M6 12v8h8l10 8V4L14 12H6z" />
-                            {/* 반원 파동 3개 (오른쪽으로 퍼짐) */}
-                            <path className="wave w1" d="M30 8a8 8 0 0 1 0 16" />
-                            <path className="wave w2" d="M36 5a12 12 0 0 1 0 22" />
-                            <path className="wave w3" d="M42 2a16 16 0 0 1 0 28" />
-                          </svg>
-                        </span>
-                      )}
-                    </p>
-
-                    {/* VoiceChat 버튼 UI */}
-                    {isMe && (
-                      <div className="voice-control-panel">
-                        {joinedVoice ? (
-                          /* 현재 보고 있는 방과 참여 중인 방이 같은 경우 */
-                          voiceChatRoomId === selectedRoom.id ? (
-                            <>
-                              <button onClick={onLeaveVoice}>🎧 퇴장</button>
-                              <button onClick={onToggleMute}>
-                                {localMuted ? '🔊' : '🔇'}
-                              </button>
-                            </>
-                          ) : (
-                            /* 다른 방에 참여 중인 경우 */
-                            <p>다른 방에 참여 중입니다.</p>
-                          )
-                        ) : (
-                          /* 음성 채팅에 참여하고 있지 않은 경우 */
-                          <button onClick={() => onJoinVoice(selectedRoom.id)}>🎙️ 입장</button>
+                    <div key={item.userId} className='UserListContentStyle'>
+                      <p>
+                        {item.userId} <span className="membersDot">{getStatusIcon(eff)}</span>
+                        {/* 말하는 중 표시 */}
+                        {isVoiceParticipant && (
+                          <span
+                            className={`talkSpeakerArc ${talkingOn ? 'on' : ''}`}
+                            aria-label={talkingOn ? '말하는 중' : '말하지 않음'}
+                          >
+                            <svg className="icon" viewBox="0 0 64 32" aria-hidden="true">
+                              {/* 스피커 본체 */}
+                              <path className="spk" d="M6 12v8h8l10 8V4L14 12H6z" />
+                              {/* 반원 파동 3개 (오른쪽으로 퍼짐) */}
+                              <path className="wave w1" d="M30 8a8 8 0 0 1 0 16" />
+                              <path className="wave w2" d="M36 5a12 12 0 0 1 0 22" />
+                              <path className="wave w3" d="M42 2a16 16 0 0 1 0 28" />
+                            </svg>
+                          </span>
                         )}
-                      </div>
-                    )}
+                      </p>
 
-                    {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 
+                      {/* VoiceChat 버튼 UI */}
+                      {isMe && (
+                        <div className="voice-control-panel">
+                          {joinedVoice ? (
+                            /* 현재 보고 있는 방과 참여 중인 방이 같은 경우 */
+                            voiceChatRoomId === selectedRoom.id ? (
+                              <>
+                                <button onClick={onLeaveVoice}>🎧 퇴장</button>
+                                <button onClick={onToggleMute}>
+                                  {localMuted ? '🔊' : '🔇'}
+                                </button>
+                              </>
+                            ) : (
+                              /* 다른 방에 참여 중인 경우 */
+                              <p>다른 방에 참여 중입니다.</p>
+                            )
+                          ) : (
+                            /* 음성 채팅에 참여하고 있지 않은 경우 */
+                            <button onClick={() => onJoinVoice(selectedRoom.id)}>🎙️ 입장</button>
+                          )}
+                        </div>
+                      )}
+
+                      {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 
                     <div
                       className="MoreButtonStyle"
                       onClick={(e) => {
@@ -950,227 +813,361 @@ function ChatListPage({
                     >
                       …
                     </div>*/}
-                  </div>
-                );
-              })}
-            </div>
-          }
+                    </div>
+                  );
+                })}
+              </div>
+            }
 
-          {/* 확장 토글
+            {/* 확장 토글
           <div onClick={() => {
             setChatListExtend(!chatListExtend);
             getChatUserList(selectedRoom.id);
           }}>
             {!chatListExtend ? <p>▼</p> : <p>▲</p>}
           </div> */}
+          </div>
+        )}
+
+        {/* 하단: 저장된 채팅방 리스트 */}
+        <div className="chatListScrollWrapper chatListScroll">
+          {chatList
+            .filter((item) => !selectedRoom || item.chatRoom.id !== selectedRoom.id)
+            .map((item) => {
+              const unread = unreadCounts[item.chatRoom.id] || 0;
+              return (
+                <div
+                  key={item.id}
+                  className="chatCard"
+                  onClick={() => {
+                    setSendToModalGameName(item.chatRoom.gameName);
+                    setChatListExtend(false);
+                    setSelectedRoom(item.chatRoom);
+                    getChatList(item.chatRoom.id, setMessages);
+                    setRead(item.chatRoom);
+                    setUnreadCounts(prev => ({ ...prev, [item.chatRoom.id]: 0 }));
+
+                    // 패널 토글: 열려있으면 닫고, 닫혀있으면 열기
+                    if (isMembersOpen) {
+                      closeMembers();
+                    } else {
+                      openMembers(item.chatRoom.id);
+                    }
+                  }}
+                >
+                  <div className="chatCardHeader">
+                    {/* 게임 아이콘 */}
+                    <img src={`${setGameIcon(item.chatRoom.gameName)}`} alt="방 아이콘" className="chatCardImage" />
+
+                    {/* 채팅방 이름 */}
+                    <span className="chatCardTitle">{item.chatRoom.name}</span>
+
+                    {/* 안읽은 메시지가 있을 때만 별도 영역에 표시 */}
+                    {unread > 0 && (
+                      <div className="chatCardUnread">
+                        <span className="chatCardBadge">{unread}</span>
+                      </div>
+                    )}
+
+                    {/* 채팅방 나가기 */}
+                    <span className="chatCardDelete">
+                    </span>
+                  </div>
+                </div>)
+            })}
         </div>
-      )}
 
-      {/* 하단: 저장된 채팅방 리스트 */}
-      <div className="chatListScrollWrapper chatListScroll">
-        {chatList
-          .filter((item) => !selectedRoom || item.chatRoom.id !== selectedRoom.id)
-          .map((item) => {
-          const unread = unreadCounts[item.chatRoom.id] || 0;
-          return (
-            <div
-              key={item.id}
-              className="chatCard"
-              onClick={() => {
-                setSendToModalGameName(item.chatRoom.gameName);
-                setChatListExtend(false);
-                setSelectedRoom(item.chatRoom);
-                getChatList(item.chatRoom.id, setMessages);
-                setRead(item.chatRoom);
-                setUnreadCounts(prev => ({ ...prev, [item.chatRoom.id]: 0 }));
-              }}
-            >
-              <div className="chatCardHeader">
-                {/* 게임 아이콘 */}
-                <img src={`${setGameIcon(item.chatRoom.gameName)}`} alt="방 아이콘" className="chatCardImage" />
+        {/* 드롭 다운을 최상단에 위치 */}
+        {menu && (
+          <DropdownPortal x={menu.x} y={menu.y} onClose={() => setMenu(null)}>
+            <div className="dropdownMenu">
+              <p onClick={() => {
+                onOpenProfile?.(menu.userId);
+                setMenu(null);
+              }}> 프로필 보기</p>
 
-                {/* 채팅방 이름 */}
-                <span className="chatCardTitle">{item.chatRoom.name} </span>
+              <p onClick={() => {
+                console.log('간단 스펙 보기', menu.userId);
+                setSendToModalGameName(menu.gameName);
+                setHistoryUserId(menu.userId);
+                setUserHistoryOpen(true)
+                setMenu(null);
+              }}>
+                간단 스펙 보기
+              </p>
 
-                {/* 카드에서 바로 참여자 패널 열기 */}
-                {/* <button
-                  className="chatCardMembersBtn"
-                  title="참여자 보기"
-                  onClick={(e) => { e.stopPropagation(); openMembers(item.chatRoom.id); }}
-                >👥</button> */}
+              {pendingUsers.find(u => u.userId === menu.userId) ? null : (
+                <>
+                  {/* 강퇴 */}
+                  {(selectedRoom?.hostUserId === userData.userId) && (menu.userId !== userData.userId) && (
+                    <p onClick={async () => {
+                      try {
+                        await fetch(`/api/chat/rooms/${selectedRoom.id}/kick`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            targetUserId: menu.userId,
+                            requesterUserId: userData.userId
+                          })
+                        });
+                        toast.success('강퇴 성공:', menu.userId);
+                      } catch (err) {
+                        toast.error('강퇴 실패:', err);
+                      }
+                      setMenu(null);
+                    }}>
+                      강퇴하기
+                    </p>
+                  )}
 
-                {/* 채팅방 나가기 */}
-                <span className="chatCardDelete">
-                </span>
-              </div>
+                  {/* 방장 권한 넘기기 */}
+                  {(selectedRoom?.hostUserId === userData.userId) && (menu.userId !== userData.userId) && (
+                    <p onClick={async () => {
+                      try {
+                        await fetch(`/api/chat/rooms/${selectedRoom.id}/transfer`, {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            fromUserId: userData.userId,
+                            toUserId: menu.userId
+                          })
+                        });
+                      } catch (err) {
+                        toast.error('방장 넘기기에 실패했습니다.');
+                      }
+                      setMenu(null);
+                    }}>
+                      방장 넘기기
+                    </p>
+                  )}
 
-              {/* 안읽은 메세지 개수를 출력한다.*/}
-              {unread > 0 &&
-                <div className="chatCardFooter">
-                  <span className="chatCardBadge">{unread}</span>
-                  <span className="chatCardLastMessage">안읽은 메세지가 있습니다</span>
-                </div>
-              }
-            </div>)
-        })}
+                  {/* 채팅방 나가기 */}
+                  {(menu.userId === userData.userId) && (selectedRoom?.hostUserId !== userData.userId) && (
+                    <p
+                      className="chatCardDelete"
+                      onClick={async (e) => {
+                        e.stopPropagation();
+
+                        const ok = await confirmToast("정말 이 방에서 나가시겠습니까?");
+                        if (!ok) return;
+
+                        try {
+                          await fetch(
+                            // item 대신 selectedRoom을 사용
+                            `/api/chat/rooms/${selectedRoom.id}/leave?userId=${userData.userId}`,
+                            { method: "DELETE" }
+                          );
+                          setChatList(prev => prev.filter(r => r.chatRoom.id !== selectedRoom.id));
+                          setSelectedRoom(null);
+                          setMessages([]);
+                          toast.success("성공적으로 나가졌습니다!");
+                        } catch (err) {
+                          console.error("방 나가기 실패:", err);
+                          toast.error("방 나가기 실패");
+                        }
+                        setMenu(null);
+                        closeMembers();
+                      }}
+                    >
+                      방 나가기
+                    </p>
+                  )}
+
+                  {/* 방 삭제 */}
+                  {(selectedRoom?.hostUserId === userData.userId) && (chatUserList.length === 1) && (
+                    <p
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteRoom(selectedRoom.id, userData.userId);
+                        setMenu(null);
+                        closeMembers();
+                      }}
+                    >
+                      방 삭제
+                    </p>
+                  )}
+
+                  {/* 친구 추가 기능 */}
+                  {/* 자기 자신에게는 친구 추가 메뉴가 보이지 않도록 수정 */}
+                  {(menu.userId !== userData.userId) && (
+                    <p onClick={async () => {
+                      // 훅에서 반환된 함수 호출
+                      const requesterId = userData.userId;
+                      const addresseeId = menu.userId;
+                      const result = await sendRequest(requesterId, addresseeId);
+                      if (result.success) {
+                        toast.success(result.message);
+                      }
+                      else {
+                        toast.error(result.message);
+                      }
+                      setMenu(null);
+                    }}>
+                      친구 추가
+                    </p>
+                  )}
+
+                  {/* 여기는 추후에 추가 */}
+                  {(menu.userId !== userData.userId) && (
+                    <p onClick={async () => {
+                      // 훅에서 반환된 함수 호출
+                      const requesterId = userData.userId;
+                      const blockedId = menu.userId;
+                      const result = await sendBlockRequest(requesterId, blockedId);
+                      if (result.success) {
+                        toast.success(result.message);
+                      }
+                      else {
+                        toast.error(result.message);
+                      }
+                      setMenu(null);
+                    }}>
+                      차단 하기
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          </DropdownPortal>
+        )}
       </div>
 
-      {/* 드롭 다운을 최상단에 위치 */}
-      {menu && (
-        <DropdownPortal x={menu.x} y={menu.y} onClose={() => setMenu(null)}>
-          <div className="dropdownMenu">
-            <p onClick={() => {
-              onOpenProfile?.(menu.userId);
-              setMenu(null);
-            }}> 프로필 보기</p>
-
-            <p onClick={() => {
-              console.log('간단 스펙 보기', menu.userId);
-              setSendToModalGameName(menu.gameName);
-              setHistoryUserId(menu.userId);
-              setUserHistoryOpen(true)
-              setMenu(null);
-            }}>
-              간단 스펙 보기
-            </p>
-
-            {pendingUsers.find(u => u.userId === menu.userId) ? null : (
-              <>
-            {/* 강퇴 */}
-            {(selectedRoom?.hostUserId === userData.userId) && (menu.userId !== userData.userId) && (
-              <p onClick={async () => {
-                try {
-                  await fetch(`/api/chat/rooms/${selectedRoom.id}/kick`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      targetUserId: menu.userId,
-                      requesterUserId: userData.userId
-                    })
-                  });              
-                  toast.success('강퇴 성공:', menu.userId);
-                } catch (err) {
-                  toast.error('강퇴 실패:', err);
-                }
-                setMenu(null);
-              }}>
-                강퇴하기
-              </p> 
-            )}
-
-            {/* 방장 권한 넘기기 */}
-            {(selectedRoom?.hostUserId === userData.userId) && (menu.userId !== userData.userId) && (
-              <p onClick={async () => {
-                try {
-                  await fetch(`/api/chat/rooms/${selectedRoom.id}/transfer`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      fromUserId: userData.userId,
-                      toUserId: menu.userId
-                    })
-                  });
-                } catch (err) {
-                  toast.error('방장 넘기기에 실패했습니다.');
-                }
-                setMenu(null);
-              }}>
-                방장 넘기기
-              </p>
-            )}
-
-            {/* 채팅방 나가기 */}
-            {(menu.userId === userData.userId) && (selectedRoom?.hostUserId !== userData.userId) && (
-            <p
-              className="chatCardDelete"
-              onClick={async (e) => {
-                e.stopPropagation();
-          
-                const ok = await confirmToast("정말 이 방에서 나가시겠습니까?");
-                if (!ok) return;
-          
-                try {
-                  await fetch(
-                    // item 대신 selectedRoom을 사용
-                    `/api/chat/rooms/${selectedRoom.id}/leave?userId=${userData.userId}`,
-                    { method: "DELETE" }
-                  );
-                  setChatList(prev => prev.filter(r => r.chatRoom.id !== selectedRoom.id)); 
-                  setSelectedRoom(null);
-                  setMessages([]);
-                  toast.success("성공적으로 나가졌습니다!");
-                } catch (err) {
-                  console.error("방 나가기 실패:", err);
-                  toast.error("방 나가기 실패");
-                }
-                setMenu(null);
-                closeMembers();
-              }}
-            >
-              방 나가기
-            </p> 
-            )}
-                
-            {/* 방 삭제 */}
-            {(selectedRoom?.hostUserId === userData.userId) && (chatUserList.length === 1) && (
-              <p
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteRoom(selectedRoom.id, userData.userId);
-                  setMenu(null);
-                  closeMembers();
-                }}
-              >
-                방 삭제
-              </p>
-            )}
-
-            {/* 친구 추가 기능 */}
-            {/* 자기 자신에게는 친구 추가 메뉴가 보이지 않도록 수정 */}
-            {(menu.userId !== userData.userId) && (
-              <p onClick={async () => {
-                // 훅에서 반환된 함수 호출
-                const requesterId = userData.userId;
-                const addresseeId = menu.userId;
-                const result = await sendRequest(requesterId, addresseeId);
-                if (result.success) 
-                  {
-                    toast.success(result.message);
-                  } 
-                else 
-                  {
-                    toast.error(result.message);
-                  }
-                setMenu(null);
-                }}>
-                친구 추가
-              </p>
-            )}
-
-            {/* 여기는 추후에 추가 */}
-            {(menu.userId !== userData.userId) && (
-              <p onClick={async () => {
-                // 훅에서 반환된 함수 호출
-                const requesterId = userData.userId;
-                const blockedId = menu.userId;
-                const result = await sendBlockRequest(requesterId, blockedId);
-                if (result.success) 
-                  {
-                    toast.success(result.message);
-                  } 
-                else 
-                  {
-                    toast.error(result.message);
-                  }
-                setMenu(null);
-                }}>
-                차단 하기
-              </p>
-            )}
+      {/* 참여자 패널(채팅창과 채팅목록 사이에 위치) */}
+      <div
+        className={`membersDrawerInline ${isMembersOpen ? 'open' : ''}`}
+      >
+        <div className="membersDrawerHeader">
+          <div onClick={() => { setToggle(true); }}
+            className={`toggleSwitchText contentStyle toggleSwitch ${toggle ? 'activeBorder' : ''}`} >
+            참여자
           </div>
-        </DropdownPortal>
-      )}
-    </div>
+          <div onClick={() => setToggle(false)}
+            className={`toggleSwitchText contentStyle toggleSwitch ${!toggle ? 'activeBorder' : ''}`} >
+            음성채팅
+          </div>
+        </div>
+
+        {/* 토글 아래 내용 영역 */}
+        <div className="members-content-area">
+          {/* toggle이 true일 때 */}
+          {toggle ? (
+            <div className="membersOverlayGrouped">
+              {(() => {
+                const { online, away, offline } = splitMembersByStatus(chatUserList);
+
+                return (
+                  <>
+                    {/* 온라인 */}
+                    <div className="onlineMembersSectionHeader">온라인 — {online.length}</div>
+                    {online.map(u => {
+                      const eff = getEffectiveStatus(u);
+                      const isPending = u.joinStatus === 'PENDING';
+                      return (
+                        <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'away-' + u.userId}>
+                          <span className={`membersName ${isPending ? 'membersName--pending' : ''}`}>
+                            {u.userId}
+                            {isPending && ' (대기중)'}
+                            <span className="membersDot">{getStatusIcon(eff)}</span>
+                          </span>
+                          {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                          <div
+                            className="MoreButtonStyle"
+                            onClick={(e) => openMenu(e, u.userId)}
+                          >···
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* 자리비움 */}
+                    <div className="awayMembersSectionHeader" style={{ marginTop: 10 }}>
+                      자리비움 — {away.length}
+                    </div>
+                    {away.map(u => {
+                      const eff = getEffectiveStatus(u);
+                      const isPending = u.joinStatus === 'PENDING';
+                      return (
+                        <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'away-' + u.userId}>
+                          <span className={`membersName ${isPending ? 'membersName--pending' : ''}`}>
+                            {u.userId}
+                            {isPending && ' (대기중)'}
+                            <span className="membersDot">{getStatusIcon(eff)}</span>
+                          </span>
+                          {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                          <div
+                            className="MoreButtonStyle"
+                            onClick={(e) => openMenu(e, u.userId)}
+                          >
+                            …
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* 오프라인 */}
+                    <div className="offlineMembersSectionHeader" style={{ marginTop: 10 }}>
+                      오프라인 — {offline.length}
+                    </div>
+                    {offline.map(u => {
+                      const eff = getEffectiveStatus(u);
+                      const isPending = u.joinStatus === 'PENDING';
+                      return (
+                        <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'off-' + u.userId}>
+                          <span className={`membersName membersName--offline ${isPending ? 'membersName--pending' : ''}`}>
+                            {u.userId}
+                            {isPending && ' (대기중)'}
+                            <span className="membersDot">{getStatusIcon(eff)}</span>
+                          </span>
+                          {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
+                          <div
+                            className="MoreButtonStyle"
+                            onClick={(e) => openMenu(e, u.userId)}
+                          >
+                            …
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div className="PendingApproval" style={{ marginTop: 10 }}>
+                      수락 대기 중
+                    </div>
+                    {Array.isArray(pendingUsers) && pendingUsers.map(u => (
+                      <div className="membersRow" key={'pending-' + u.userId}>
+                        <span className="membersName membersName--offline">
+                          {u.userId}
+                          <span className="membersDot">⚪</span>
+                        </span>
+
+                        {/* 방장만 수락/거절 버튼 표시 */}
+                        {(selectedRoom?.hostUserId === userData.userId) && (
+                          <div className="pending-actions">
+                            <button onClick={() => handleAccept(u.userId)}>수락</button>
+                            <button onClick={() => handleReject(u.userId)}>거절</button>
+                          </div>
+                        )}
+                        <div
+                          className="MoreButtonStyle"
+                          onClick={(e) => openMenu(e, u.userId)}
+                        >
+                          …
+                        </div>
+                      </div>
+                    ))}
+
+                  </>
+                );
+              })()}
+            </div>
+          ) : (    // toggle이 false일 때 음성채팅 UI
+            <div className="membersOverlayGrouped">
+              <div className="voice-chat-container" style={{ padding: '16px' }}>
+                {/* 음성채팅 UI */}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
   )
 }
 

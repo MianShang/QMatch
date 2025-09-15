@@ -5,27 +5,32 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
-  backdrop-filter: blur(5px);
+  backdrop-filter: blur(4px);
+}
+
+/* 라이트모드에서 모달 오버레이 조정 */
+[data-theme="light"] .modalOverlay {
+  background: rgba(0, 0, 0, 0.5);
 }
 
 /* 모달 내부 컨테이너 */
 .modalContent {
-  background: #1c2025;
-  border-radius: 12px;
+  background: var(--discord-bg-primary);
+  border-radius: var(--discord-radius);
   width: 420px;
-  padding: 25px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  padding: 24px;
+  box-shadow: var(--discord-elevation-high);
   display: flex;
   flex-direction: column;
   max-height: 90vh;
   overflow-y: auto;
-  color: #e0e0e0;
-  border: 1px solid rgba(74, 110, 225, 0.2);
+  color: var(--discord-text-normal);
+  border: 1px solid var(--discord-bg-tertiary);
 }
 
 /* 모달 상단 헤더 */
@@ -39,19 +44,23 @@
 .modalHeader h3 {
   margin: 0;
   font-size: 1.5rem;
-  color: #00e57a;
+  color: var(--discord-text-normal);
+  font-weight: 600;
 }
 
 .closeBtn {
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #cfcfcf;
+  color: var(--discord-text-muted);
   cursor: pointer;
   transition: color 0.2s ease;
+  padding: 4px;
+  border-radius: 4px;
 }
 .closeBtn:hover {
-  color: #ff0000;
+  color: var(--discord-text-danger);
+  background: var(--discord-bg-modifier-hover);
 }
 
 /* 입력 영역 */
@@ -68,18 +77,18 @@
 .formGroup label {
   font-weight: 500;
   margin-bottom: 6px;
-  color: #aaa;
+  color: var(--discord-text-muted);
   font-size: 0.9rem;
 }
 
 /* 정보 텍스트 */
 .infoText {
-  background: #2a2f36;
+  background: var(--discord-bg-secondary);
   padding: 12px 16px;
-  border-radius: 8px;
-  color: #e0e0e0;
+  border-radius: var(--discord-radius-small);
+  color: var(--discord-text-normal);
   font-size: 1rem;
-  border: 1px solid #444;
+  border: 1px solid var(--discord-bg-tertiary);
 }
 
 /* 태그 영역 */
@@ -92,12 +101,11 @@
 .tagBadge {
   display: inline-block;
   padding: 6px 14px;
-  border-radius: 20px;
-  background: #2a2f36;
-  color: #e0e0e0;
+  border-radius: var(--discord-radius-small);
+  background: var(--discord-bg-secondary);
+  color: var(--discord-text-normal);
   font-size: 0.9rem;
-  border: 1px solid #4a6ee1;
-  box-shadow: 0 2px 8px rgba(74, 110, 225, 0.2);
+  border: 1px solid var(--discord-accent);
 }
 
 /* 하단 버튼 */
@@ -110,20 +118,18 @@
 .joinBtn {
   padding: 12px 24px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--discord-radius-small);
   cursor: pointer;
-  font-weight: bold;
-  background: #007bff;
+  font-weight: 500;
+  background: var(--discord-accent);
   color: white;
   transition: all 0.2s;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  font-size: 14px;
 }
 
 .joinBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 192, 255, 0.4);
+  background: var(--discord-accent-hover);
 }
 .joinBtn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  background: var(--discord-accent-active);
 }

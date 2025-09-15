@@ -1,3 +1,4 @@
+/* Discord 스타일 입력 모달 */
 
 .input-modal-overlay {
     position: fixed;
@@ -5,50 +6,271 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    background-color: rgba(0, 0, 0, 0.5); 
+    background: rgba(0, 0, 0, 0.8);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999; 
-  }
-  
- 
-  .input-modal-content {
-    background-color: white;
-    padding: 20px;
-    width: 300px;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+.input-modal-content {
+    background: var(--discord-bg-primary);
+    padding: 24px;
+    width: 400px;
+    max-width: 90vw;
+    border-radius: var(--discord-radius);
+    box-shadow: var(--discord-elevation-high);
     z-index: 10000;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-  }
-  
-  .inputl-modal-content h2 {
-    margin-top: 0;
-  }
-  
-  .inputl-modal-content select,
-  .inputl-modal-content input {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-  }
-  
-  .inputl-modal-content button {
-    background-color: #3a3a3a;
-    color: white;
-    padding: 8px 12px;
+    gap: 20px;
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.input-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.input-modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--discord-text-normal);
+    margin: 0;
+}
+
+.input-modal-close {
+    background: none;
     border: none;
-    border-radius: 6px;
+    color: var(--discord-text-muted);
     cursor: pointer;
-    transition: background-color 0.2s ease;
-  }
-  
-  .inputl-modal-content button:hover {
-    background-color: #2c2c2c;
-  }
-  
+    font-size: 20px;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-modal-close:hover {
+    background: var(--discord-bg-modifier-hover);
+    color: var(--discord-text-normal);
+}
+
+.input-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.input-modal-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-modal-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--discord-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.input-modal-input,
+.input-modal-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--discord-bg-tertiary);
+    border-radius: var(--discord-radius-small);
+    background: var(--discord-bg-secondary);
+    color: var(--discord-text-normal);
+    font-size: 14px;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.input-modal-input:focus,
+.input-modal-select:focus {
+    border-color: var(--discord-accent);
+    box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.2);
+}
+
+.input-modal-input::placeholder {
+    color: var(--discord-text-muted);
+}
+
+.input-modal-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--discord-bg-tertiary);
+    border-radius: var(--discord-radius-small);
+    background: var(--discord-bg-secondary);
+    color: var(--discord-text-normal);
+    font-size: 14px;
+    transition: all 0.2s ease;
+    outline: none;
+    resize: vertical;
+    min-height: 80px;
+    font-family: inherit;
+}
+
+.input-modal-textarea:focus {
+    border-color: var(--discord-accent);
+    box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.2);
+}
+
+.input-modal-textarea::placeholder {
+    color: var(--discord-text-muted);
+}
+
+.input-modal-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.input-modal-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--discord-radius-small);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.input-modal-button.primary {
+    background: var(--discord-accent);
+    color: white;
+}
+
+.input-modal-button.primary:hover {
+    background: var(--discord-accent-hover);
+}
+
+.input-modal-button.primary:disabled {
+    background: var(--discord-bg-quaternary);
+    color: var(--discord-text-muted);
+    cursor: not-allowed;
+}
+
+.input-modal-button.secondary {
+    background: var(--discord-bg-quaternary);
+    color: var(--discord-text-normal);
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.input-modal-button.secondary:hover {
+    background: var(--discord-bg-modifier-hover);
+    border-color: var(--discord-bg-modifier-active);
+}
+
+.input-modal-button.danger {
+    background: var(--discord-text-danger);
+    color: white;
+}
+
+.input-modal-button.danger:hover {
+    background: #d32f2f;
+}
+
+.input-modal-error {
+    color: var(--discord-text-danger);
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.input-modal-success {
+    color: var(--discord-text-positive);
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.input-modal-help {
+    color: var(--discord-text-muted);
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+/* Discord 스타일 체크박스 */
+.input-modal-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--discord-text-normal);
+}
+
+.input-modal-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--discord-accent);
+    cursor: pointer;
+}
+
+.input-modal-checkbox label {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Discord 스타일 라디오 버튼 */
+.input-modal-radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.input-modal-radio {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--discord-text-normal);
+    padding: 8px 12px;
+    border-radius: var(--discord-radius-small);
+    transition: all 0.2s ease;
+}
+
+.input-modal-radio:hover {
+    background: var(--discord-bg-modifier-hover);
+}
+
+.input-modal-radio input[type="radio"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--discord-accent);
+    cursor: pointer;
+}
+
+.input-modal-radio label {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Discord 스타일 반응형 디자인 */
+@media (max-width: 480px) {
+    .input-modal-content {
+        width: 95vw;
+        padding: 20px;
+        gap: 16px;
+    }
+    
+    .input-modal-buttons {
+        flex-direction: column;
+    }
+    
+    .input-modal-button {
+        width: 100%;
+    }
+}

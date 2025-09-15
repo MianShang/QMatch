@@ -29,9 +29,12 @@
 }
 
 .login-form h1 {
-  color: #00e57a;
+  color: #4a9eff;
   margin-bottom: 10px;
-  font-size: 2.5rem;
+  font-size: 2.2rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: -0.5px;
 }
 
 .login-form input {

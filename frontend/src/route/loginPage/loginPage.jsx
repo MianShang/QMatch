@@ -14,13 +14,19 @@ function LoginPage() {
 
   return (
     <div className='fullscreen position'>
+      {/* 브랜드 로고 및 타이틀 */}
+      <div className="brand-header">
+        <div className="brand-logo">
+          <div className="logo-icon">Q</div>
+          <span className="brand-name">QMatch</span>
+        </div>
+      </div>
 
       <div className='LogComponentStyle'>
           {isResister 
           ? <SignUpRoutePage onSuccess={() => setIsRegister(false)} /> 
           : <LogInRoutePage />}
       </div>
-
 
       <div className='LogChangeButtonStyle' onClick={()=>{ setIsRegister(!isResister) }}>
         {

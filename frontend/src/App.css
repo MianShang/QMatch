@@ -1,15 +1,49 @@
-/* 화면 사이즈 지정 */
+/* Discord 스타일 App.css */
 .fullscreen {
-    height: 100%;
-    width: 100%;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    background-color: var(--discord-bg-tertiary);
 }
 
 .getLine{
-    border: 1px red solid;
+    border: 1px solid var(--discord-text-danger);
 }
 
-/*
- 잠시 만들어놓은 드래그 방지 속성
+/* Discord 스타일 로딩 화면 */
+.discord-loading {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: var(--discord-bg-tertiary);
+    color: var(--discord-text-normal);
+}
+
+.discord-loading h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--discord-text-normal);
+}
+
+.discord-loading .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--discord-bg-quaternary);
+    border-top: 3px solid var(--discord-accent);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-top: 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 드래그 방지 속성 */
 body, html, #root {
   user-select: none;
   -webkit-user-select: none;
@@ -19,4 +53,3 @@ body, html, #root {
 input, textarea {
   user-select: text;
 }
-*/

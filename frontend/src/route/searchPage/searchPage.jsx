@@ -24,20 +24,33 @@ function SearchPage() {
   const [openModal, setOpenModal] = useState(false);
   const [joinOpen, setJoinOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState(null);
+  const [showAlreadyJoinedModal, setShowAlreadyJoinedModal] = useState(false);
+  const [alreadyJoinedRoom, setAlreadyJoinedRoom] = useState(null);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [gametag, setGameTag] = useState('ALL');
   const [selectedTags, setSelectedTags] = useState([]); // number[]
   const [groupedTags, setGroupedTags] = useState({});
-  const [subscribedRooms, setSubscribedRooms] = useState([]); // 본인이 구독한 채팅방 목록
+  const [subscribedRooms, setSubscribedRooms] = useState([]);
 
-
-
-  const { isLogIn, setIsLogIn, userData } = useContext(LogContext);
+  const { isLogIn, setIsLogIn, userData, hasUnreadMessages, theme } = useContext(LogContext);
   useLoginCheck(isLogIn); // 로그인 체크
-
 
   // 본인이 구독한 채팅방 목록 가져오기
   useChatGetRooms(userData, setSubscribedRooms);
+
+  // 게임 아이콘 설정 함수
+  function setGameIcon(gameName) {
+    switch (gameName) {
+      case "overwatch": return "/gameIcons/overwatch_Icon.png";
+      case "lol": return "/gameIcons/lol_Icon.png";
+      case "dnf": return "/gameIcons/dnf_Icon.png";
+      case "maplestory": return "/gameIcons/maplestory_Icon.png";
+      case "lostark": return "/gameIcons/lostark_Icon.png";
+      case "tft": return "/gameIcons/tft_Icon.png";
+      case "valorant": return "/gameIcons/valorant_Icon.png";
+      default: return "https://placehold.co/45";
+    }
+  }
 
   // 처음 url에 입장할때 목록 가져오기 실행 및 채팅방 검색
   useEffect(() => {
@@ -131,16 +144,6 @@ function SearchPage() {
     );
   }
 
-  // 구독한 채팅방을 제외하고 필터링하는 함수
-  function getFilteredRooms() {
-    if (!subscribedRooms || subscribedRooms.length === 0) {
-      return rooms; // 구독한 방이 없으면 모든 방 반환
-    }
-    
-    const subscribedRoomIds = subscribedRooms.map(room => room.chatRoom.id);
-    return rooms.filter(room => !subscribedRoomIds.includes(room.id));
-  }
-
 
   function chatTagRoom() {  
     if (!groupedTags || Object.keys(groupedTags).length === 0) {
@@ -167,6 +170,30 @@ function SearchPage() {
     );
   }
 
+  // 이미 입장한 방 확인 모달 관련 함수들
+  function handleCancelMoveToRoom() {
+    setShowAlreadyJoinedModal(false);
+    setAlreadyJoinedRoom(null);
+  }
+
+  function handleMoveToAlreadyJoinedRoom() {
+    if (alreadyJoinedRoom) {
+      navigate('/', { 
+        state: { 
+          roomId: alreadyJoinedRoom.id,
+          chatName: alreadyJoinedRoom.chatName || alreadyJoinedRoom.name,
+          gameName: alreadyJoinedRoom.gameName,
+          tagNames: alreadyJoinedRoom.tagNames || [],
+          currentUsers: alreadyJoinedRoom.currentUsers,
+          maxUsers: alreadyJoinedRoom.maxUsers,
+          hostUserId: alreadyJoinedRoom.hostUserId
+        }
+      });
+    }
+    setShowAlreadyJoinedModal(false);
+    setAlreadyJoinedRoom(null);
+  }
+
   return (
     <>
       {openModal && (
@@ -174,16 +201,6 @@ function SearchPage() {
           setOpenModal={setOpenModal}
           onRoomCreated={(newRoom) => {
             setRooms(prev => [...prev, newRoom]);
-            // 방 생성 후 lobbyPage로 이동
-            navigate('/', { 
-              state: { 
-                roomId: newRoom.id, 
-                chatName: newRoom.name, 
-                gameName: newRoom.gameName,
-                currentUsers: newRoom.currentUsers,
-                maxUsers: newRoom.maxUsers
-              } 
-            });
           }}
         />
       )}
@@ -198,34 +215,121 @@ function SearchPage() {
         />
       )}
 
-      <div className='fullscreen' style={{ display: "flex", padding: "10px" }}>
+      {/* 이미 입장한 방 확인 모달 */}
+      {showAlreadyJoinedModal && (
+        <div className="modalOverlay" style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: theme === 'light' ? 'rgba(0, 0, 0, 0.5)' : 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 999,
+          backdropFilter: 'blur(4px)'
+        }}>
+          <div className="modalContent" style={{
+            background: 'var(--discord-bg-primary)',
+            borderRadius: 'var(--discord-radius)',
+            width: '400px',
+            padding: '24px',
+            boxShadow: 'var(--discord-elevation-high)',
+            display: 'flex',
+            flexDirection: 'column',
+            border: '1px solid var(--discord-bg-tertiary)',
+            color: 'var(--discord-text-normal)'
+          }}>
+            <h2 style={{ margin: '0 0 16px 0', fontSize: '20px', fontWeight: '600' }}>
+              이미 참여 중인 방입니다
+            </h2>
+            <p style={{ margin: '0 0 24px 0', color: 'var(--discord-text-muted)' }}>
+              "{alreadyJoinedRoom?.chatName}" 방에 이미 참여 중입니다.<br/>
+              해당 방으로 이동하시겠습니까?
+            </p>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={handleCancelMoveToRoom}
+                style={{
+                  padding: '10px 20px',
+                  border: 'none',
+                  borderRadius: 'var(--discord-radius-small)',
+                  background: 'var(--discord-bg-tertiary)',
+                  color: 'var(--discord-text-normal)',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                취소
+              </button>
+              <button
+                onClick={handleMoveToAlreadyJoinedRoom}
+                style={{
+                  padding: '10px 20px',
+                  border: 'none',
+                  borderRadius: 'var(--discord-radius-small)',
+                  background: 'var(--discord-accent)',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                이동하기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className='fullscreen' style={{ display: "flex", padding: "0" }}>
+
         {/* 좌측 사이드바 */}
         <div className='contentStyle leftSize'>
           {/* 여긴 카테고리 */}
-          <p style={{color:"white", fontSize:"20px", margin:"3px"}}>검색 태그</p>
+          <p style={{color:"var(--discord-text-normal)", fontSize:"20px", margin:"3px"}}>검색 태그</p>
           <div className='Category_tag'>
                 <button className='chat_tag' onClick={()=> setGameTag('ALL')}>
-                  <p style={{color:"white", fontSize:"30px"}}>ALL</p>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    background: 'linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #feca57)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    color: 'white'
+                  }}>ALL</div>
+                  <p>전체 게임</p>
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('lol')}>
-                  <img src="/gameIcons/lol_Icon.png" alt="LOL" />
+                  <img src="./public/gameIcons/lol_Icon.png" alt="LOL" />
+                  <p>League of Legends</p>
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('maplestory')}>
-                  <img src="/gameIcons/maplestory_Icon.png" alt="MapleStory" />
+                  <img src="./public/gameIcons/maplestory_Icon.png" alt="MapleStory" />
+                  <p>MapleStory</p>
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('tft')}>
-                  <img src="/gameIcons/tft_Icon.png" alt="TFT"/>
+                  <img src="./public/gameIcons/tft_Icon.png" alt="TFT"/>
+                  <p>Teamfight Tactics</p>
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('dnf')}>
-                  <img src="/gameIcons/dnf_Icon.png" alt="Dnf"/>
+                  <img src="./public/gameIcons/dnf_Icon.png" alt="Dnf"/>
+                  <p>던전앤파이터</p>
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('lostark')}>
-                  <img src="/gameIcons/lostark_Icon.png" alt="lostark"/>
+                  <img src="./public/gameIcons/lostark_Icon.png" alt="lostark"/>
+                  <p>로스트아크</p>
                 </button>
 
                 <hr style={{width:"280px", margin:"3px"}}></hr>
@@ -253,20 +357,17 @@ function SearchPage() {
           {/* 채팅방 리스트 */}
           <div className='contentStyle chatListSize'>
             <div className='chatListScroll'>
-              채팅 리스트
               {
-                getFilteredRooms().map((room) => (
+                rooms.map((room) => (
                   <div className='chatRoomList'
                     key={room.id}
                     onClick={() => { setSelectedRoom(room); setJoinOpen(true); }}>
-                    <div>
-                      {room.chatName || room.name}
-                      {typeof room.currentUsers === 'number' && typeof room.maxUsers === 'number' && (
-                        <span style={{ marginLeft: 8, color: '#9aa0a6', fontSize: 12 }}>
-                          {room.currentUsers} / {room.maxUsers}
-                        </span>
-                      )}
-                    </div>
+                    <img 
+                      src={setGameIcon(room.gameName)} 
+                      alt="게임 아이콘" 
+                      className="chatRoomIcon"
+                    />
+                    <div>{room.chatName || room.name}</div>
                   </div>
                 ))
               }
@@ -281,12 +382,17 @@ function SearchPage() {
           {/* 하단 광고 및 알림바 */}
           <div className='bottomSize' style={{ display: "flex" }}>
             <div className='contentStyle searchAdSize'>
-              광고든 뭐든 그거
+            QMatch - 게임 팀원 모집 플랫폼
             </div>
 
             <Link to="/">
-              <div className='contentStyle noticeSize'>
+              <div className='noticeSize' style={{ position: 'relative' }}>
                 <img src="/MessageIcon.png" className='imgPos' alt="알림" />
+                {hasUnreadMessages && (
+                  <div className="unread-notification-badge">
+                    <span className="unread-dot"></span>
+                  </div>
+                )}
               </div>
             </Link>
           </div>

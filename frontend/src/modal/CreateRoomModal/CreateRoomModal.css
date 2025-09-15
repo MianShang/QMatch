@@ -5,30 +5,32 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.6); /* 더 어두운 배경 */
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 999;
-  backdrop-filter: blur(5px); /* 배경 블러 효과 */
+  backdrop-filter: blur(4px);
+}
+
+/* 라이트모드에서 모달 오버레이 조정 */
+[data-theme="light"] .modalOverlay {
+  background: rgba(0, 0, 0, 0.5);
 }
 
 /* 모달 내부 컨테이너 */
 .modalContent {
-  background: #1c2025; /* 사이버펑크 배경색 */
-  border-radius: 12px; /* 둥근 모서리 */
-  width: 450px; /* 고정 너비 */
-  padding: 30px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  background: var(--discord-bg-primary);
+  border-radius: var(--discord-radius);
+  width: 450px;
+  padding: 24px;
+  box-shadow: var(--discord-elevation-high);
   display: flex;
   flex-direction: column;
-
-  /* 핵심 수정: 높이를 콘텐츠에 맞추고, 최대 높이 설정 */
-  height: max-content; /* 내부 콘텐츠 높이에 따라 자동으로 늘어나게 함 */
-  max-height: 90vh; /* 화면의 90%를 넘지 않도록 제한 */
-  
-  overflow-y: auto; /* 내용이 넘칠 경우 모달 자체에 스크롤 생성 */
-  border: 1px solid rgba(74, 110, 225, 0.2); /* 미세한 네온 테두리 */
+  height: max-content;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--discord-bg-tertiary);
 }
 
 /* 스크롤바 스타일링 */
@@ -36,18 +38,18 @@
   width: 8px;
 }
 .modalContent::-webkit-scrollbar-track {
-  background: #2a2f36;
-  border-radius: 4px;
+  background: transparent;
 }
 .modalContent::-webkit-scrollbar-thumb {
-  background-color: #555c66;
+  background-color: var(--discord-bg-quaternary);
   border-radius: 4px;
-  border: 2px solid #2a2f36;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 .modalContent::-webkit-scrollbar-thumb:hover {
-  background: #6a7482;
+  background: var(--discord-bg-modifier-hover);
+  background-clip: content-box;
 }
-
 
 /* 모달 상단 헤더 */
 .modalHeader {
@@ -55,13 +57,14 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  color: #e0e0e0;
+  color: var(--discord-text-normal);
 }
 
 .modalHeader h3 {
   margin: 0;
   font-size: 1.5rem;
-  color: #00e57a; /* 네온 초록색 제목 */
+  color: var(--discord-text-normal);
+  font-weight: 600;
 }
 
 /* 닫기 버튼 */
@@ -69,13 +72,16 @@
   background: none;
   border: none;
   font-size: 1.5rem;
-  color: #cfcfcf;
+  color: var(--discord-text-muted);
   cursor: pointer;
   transition: color 0.2s;
+  padding: 4px;
+  border-radius: 4px;
 }
 
 .closeBtn:hover {
-  color: #ff0000; /* 붉은색으로 변경 */
+  color: var(--discord-text-danger);
+  background: var(--discord-bg-modifier-hover);
 }
 
 /* 입력 영역 전체 */
@@ -99,7 +105,7 @@
 /* 라벨과 입력창 사이 여백 */
 .formGroup label {
   margin-bottom: 8px;
-  color: #aaa;
+  color: var(--discord-text-muted);
   font-weight: 500;
   font-size: 0.9rem;
 }
@@ -110,19 +116,19 @@
   width: 100%;
   padding: 12px;
   font-size: 1rem;
-  border: 1px solid #444;
-  border-radius: 8px;
+  border: 1px solid var(--discord-bg-tertiary);
+  border-radius: var(--discord-radius-small);
   box-sizing: border-box;
-  background-color: #2a2f36;
-  color: #e0e0e0;
+  background-color: var(--discord-bg-secondary);
+  color: var(--discord-text-normal);
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .modalInput:focus,
 .modalSelect:focus {
-  border-color: #4a6ee1;
-  box-shadow: 0 0 8px rgba(74, 110, 225, 0.4);
+  border-color: var(--discord-accent);
+  box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.2);
 }
 
 .modalSelect {
@@ -147,22 +153,20 @@
 .createBtn {
   padding: 12px 24px;
   border: none;
-  border-radius: 8px;
+  border-radius: var(--discord-radius-small);
   cursor: pointer;
-  font-weight: bold;
-  background-color: #007bff; /* 단색으로 변경 */
+  font-weight: 500;
+  background-color: var(--discord-accent);
   color: white;
   transition: all 0.2s;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  font-size: 14px;
 }
 
 .createBtn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+  background: var(--discord-accent-hover);
 }
 .createBtn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  background: var(--discord-accent-active);
 }
 
 /* 태그 버튼 컨테이너 */
@@ -200,39 +204,38 @@
 /* 개별 태그 버튼 스타일 */
 .tagButton {
   padding: 8px 15px;
-  border: 1px solid #444;
-  border-radius: 20px; /* 더 둥근 알약 형태 */
-  background: #2a2f36;
-  color: #aaa;
+  border: 1px solid var(--discord-bg-tertiary);
+  border-radius: var(--discord-radius-small);
+  background: var(--discord-bg-secondary);
+  color: var(--discord-text-muted);
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.2s ease;
-  user-select: none; /* 텍스트 선택 방지 */
-  white-space: nowrap; /* 태그 텍스트 줄바꿈 방지 */
+  user-select: none;
+  white-space: nowrap;
 }
 
 .tagButton:hover {
-  border-color: #6a059c;
-  color: #e0e0e0;
-  box-shadow: 0 0 8px rgba(106, 5, 156, 0.3);
+  border-color: var(--discord-accent);
+  color: var(--discord-text-normal);
+  background: var(--discord-bg-modifier-hover);
 }
 
 /* 선택된 태그 버튼 스타일 */
 .tagButton.selected {
-  background: linear-gradient(135deg, #6a059c, #4a6ee1);
-  border-color: #6a059c;
+  background: var(--discord-accent);
+  border-color: var(--discord-accent);
   color: white;
-  box-shadow: 0 0 12px rgba(106, 5, 156, 0.6);
 }
 
 /* 에러 메시지 */
 .errorMsg {
-  color: #ff5252;
+  color: var(--discord-text-danger);
   font-size: 0.9rem;
   text-align: center;
   margin-bottom: 10px;
-  background-color: #381a1a;
-  border-radius: 6px;
+  background-color: var(--discord-bg-secondary);
+  border-radius: var(--discord-radius-small);
   padding: 8px;
-  border: 1px solid #ff5252;
+  border: 1px solid var(--discord-text-danger);
 }

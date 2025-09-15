@@ -1,20 +1,60 @@
-import React, {useState}from "react";
-import axios from 'axios';
+import React from "react";
+import './LostArkPage.css';
 
-function LostArkPage({lostarkStats})
-{
-    if (!lostarkStats) return null;
+function LostArkPage({ lostarkStats }) {
+  if (!lostarkStats) return null;
 
-    return (
-    <div style={{ color: "white" }}>
-      <img src={lostarkStats.CharacterImage} alt="캐릭터 이미지"  style={{width:"350px"}}/>
-      <p>캐릭터 닉네임 : {lostarkStats.CharacterName}</p>
-      <p>클래스: {lostarkStats.CharacterClassName}</p>
-      <p>원정대 레벨 : {lostarkStats.ExpeditionLevel}</p>
-      <p>아이템 레벨 : {lostarkStats.ItemAvgLevel}</p>
-      <p>인게임 전투력 : {lostarkStats.CombatPower}</p>
-      <p>레벨: {lostarkStats.CharacterLevel}</p>
-      <p>서버: {lostarkStats.ServerName}</p>
+  const {
+    CharacterImage,
+    CharacterName,
+    CharacterClassName,
+    ExpeditionLevel,
+    ItemAvgLevel,
+    CombatPower,
+    CharacterLevel,
+    ServerName
+  } = lostarkStats;
+
+  return (
+    <div className="lostark-box">
+      {/* 캐릭터 이미지 컨테이너 */}
+      <div className="lostark-image-container">
+        <img 
+          src={CharacterImage} 
+          alt="캐릭터 이미지" 
+        />
+      </div>
+
+      {/* 스탯 섹션 */}
+      <div className="lostark-stats-section">
+        <h3 className="lostark-stats-header">{CharacterName}</h3>
+        <div className="lostark-stats-grid">
+          <div className="lostark-stat-item">
+            <span className="lostark-stat-label">클래스</span>
+            <span className="lostark-stat-value">{CharacterClassName}</span>
+          </div>
+          <div className="lostark-stat-item">
+            <span className="lostark-stat-label">원정대 레벨</span>
+            <span className="lostark-stat-value">{ExpeditionLevel}</span>
+          </div>
+          <div className="lostark-stat-item">
+            <span className="lostark-stat-label">아이템 레벨</span>
+            <span className="lostark-stat-value">{ItemAvgLevel}</span>
+          </div>
+          <div className="lostark-stat-item">
+            <span className="lostark-stat-label">전투력</span>
+            <span className="lostark-stat-value">{CombatPower?.toLocaleString()}</span>
+          </div>
+          <div className="lostark-stat-item">
+            <span className="lostark-stat-label">레벨</span>
+            <span className="lostark-stat-value">{CharacterLevel}</span>
+          </div>
+          <div className="lostark-stat-item">
+            <span className="lostark-stat-label">서버</span>
+            <span className="lostark-stat-value">{ServerName}</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -31,6 +31,26 @@ function App() {
   const [statusByUser, setStatusByUser] = useState([]);
   const [friendInventoryUpdate, setFriendInventoryUpdate] = useState(null);
 
+  // 안 읽은 메시지 상태
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+  // 테마 상태
+  const [theme, setTheme] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme || 'dark';
+  });
+
+  // 테마 변경 함수
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+
+  // 테마 적용
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
   // 새로고침 or 첫 로딩시 자동 실행
   useEffect(() => {
     // 앱이 처음 마운트 될 때 실행되는 초기 값 (메모리 누수 방지용)
@@ -98,9 +118,15 @@ function App() {
     isLoading,
     friends,
     statusByUser,
+
     friendInventoryUpdate, 
-    setFriendInventoryUpdate 
-  }), [isLogIn, userData, isLoading, friends, statusByUser,friendInventoryUpdate, setFriendInventoryUpdate]);
+    setFriendInventoryUpdate,
+    
+    hasUnreadMessages,
+    setHasUnreadMessages,
+    theme,
+    toggleTheme
+  }), [isLogIn, userData, isLoading, friends, statusByUser,friendInventoryUpdate, setFriendInventoryUpdate, hasUnreadMessages, theme]);
 
   //친구 목록 가져오기
     useEffect(() => {
@@ -205,8 +231,9 @@ function App() {
   // 렌더링 숨기고 로딩창 표시 
   if (isLoading) {
     return (
-      <div className="fullscreen" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <h1>Loading</h1>
+      <div className="discord-loading">
+        <h1>QMatch</h1>
+        <div className="loading-spinner"></div>
       </div>
     );
   }

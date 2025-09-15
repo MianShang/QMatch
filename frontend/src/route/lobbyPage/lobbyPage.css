@@ -1,7 +1,13 @@
+/* Discord 스타일 로비 페이지 */
+
 /* 전체 화면 채우기 */
 .fullscreen {
-    height: 100%;
-    width: 100%;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    background-color: var(--discord-bg-tertiary);
+    padding: 0;
+    margin: 0;
 }
 
 /* ================================채팅방 헤더============================= */
@@ -144,32 +150,12 @@
     height: 40px;
     cursor: pointer;
     transition: box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid transparent;
-    color: #888;
 }
 
-/* 중앙 채팅/친구 토글 div 폰트 스타일  */
-.toggleSwitchText{
-    font-size: 20px;
-}
-
+/* ================================Discord 좌측 바============================= */
 
 /* 토글 버튼 활성시 그래픽 */
-.activeBorder {
-    border : 1px solid #00e57a;
-    border-radius: 12px;  /* 초록색 활성화 */
-    color: #e0e0e0;
-    background: linear-gradient(135deg, #1d232e, #1a202a);
-    box-shadow: 0 0 10px rgba(0, 229, 122, 0.3);
-}
 
-.toggleSwitch:hover {
-    background: #1a202a;
-    color: #e0e0e0;
-}
 
 /* 토글버튼 하단의 div 사이즈 */
 .listSize{
@@ -183,8 +169,18 @@
 /* 우측 div 사이즈  */
 .rightBarSize{
     margin-left: 10px;
-    height: 97.5vh;
+    height: 100vh;
     width: calc(100% - 440px);
+    display: flex;
+    flex-direction: column;
+}
+
+/* 좌측 바 사이즈 */
+.leftBarSize{
+    width: 240px;
+    height: 100vh;
+    background: var(--discord-bg-primary);
+    border-right: 1px solid var(--discord-bg-tertiary);
     display: flex;
     flex-direction: column;
 }
@@ -195,43 +191,960 @@
     min-height: 0; /* 축소 가능하도록 */
     display: flex;
     flex-direction: column;
+    background: #111418; /* 하단바와 같은 배경색 */
 }
 
 /* 하단 광고바 사이즈 */
 .adSize{
-    margin-top: 10px;
+    margin-top: 0;
     height: 75px;
-    width: calc(100% - 85px);
+    width: calc(100% - 75px);
     background: #111418;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
-    border: 1px solid #1a1a1a;
     flex-shrink: 0; /* 광고바 크기 고정 */
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    color: var(--discord-text-normal);
+    border: 1px solid var(--discord-bg-tertiary);
 }
 
 /* 하단 검색창 버튼 div 사이즈 */
 .searchSize{
-    margin-left: 10px;
-    margin-top: 10px;
+    margin-left: 0;
+    margin-top: 0;
     height: 75px;
     flex-shrink: 0; /* 검색창 크기 고정 */
     width: 75px;
     display: flex;
     align-items: center;
     justify-content: center;
+    background: #111418;
+    border: 1px solid var(--discord-bg-tertiary);
+    border-left: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* 하단 검색창 버튼 호버 효과 */
+.searchSize:hover {
+    background: var(--discord-bg-modifier-hover);
+}
+
+/* 화이트모드에서 하단바 스타일 조정 */
+[data-theme="light"] .adSize {
+    background: var(--discord-bg-primary);
+    border: 1px solid var(--discord-bg-quaternary);
+    color: var(--discord-text-normal);
+}
+
+[data-theme="light"] .searchSize {
+    background: var(--discord-bg-primary);
+    border: 1px solid var(--discord-bg-quaternary);
+    border-left: none;
+}
+
+[data-theme="light"] .searchSize:hover {
+    background: var(--discord-bg-modifier-hover);
+}
+
+/* 토글 컨테이너 */
+.toggle-container {
+    display: flex;
+    border-bottom: 1px solid var(--discord-bg-tertiary);
+    height: 50px;
+    min-height: 50px;
+}
+
+/* ================================Discord 토글 스타일============================= */
+
+/* 토글 버튼 스타일 */
+.toggleSwitch{
+    width: 100%;
+    height: 50px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    color: var(--discord-text-muted);
+    background: transparent;
+    font-size: 16px;
+    font-weight: 500;
+    position: relative;
+}
+
+.toggleSwitch:hover {
+    background: var(--discord-bg-modifier-hover);
+    color: var(--discord-text-normal);
+}
+
+/* 토글 버튼 활성시 그래픽 */
+.activeBorder {
+    color: var(--discord-text-normal);
+    background: var(--discord-bg-modifier-hover);
+    border-bottom: 2px solid var(--discord-accent);
+}
+
+/* 토글 텍스트 스타일 */
+.toggleSwitchText{
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* 리스트 영역 */
+.listSize{
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 50px - 75px); /* 토글 높이 + 하단 버튼 영역 높이 */
+    max-height: calc(100vh - 50px - 75px);
+}
+
+/* 하단 버튼 컨테이너 */
+.bottom-buttons-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    height: 75px;
+    padding: 8px;
+    background: var(--discord-bg-tertiary);
+    border-top: 1px solid var(--discord-bg-primary);
+    box-shadow: var(--discord-elevation-low);
+}
+
+/* 프로필 버튼 래퍼 */
+.profile-button-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 프로필 버튼 */
+.profile-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    object-fit: cover;
+}
+
+.profile-button:hover {
+    border-radius: 12px;
+    border-color: var(--discord-bg-modifier-hover);
+}
+
+/* 상태 표시 래퍼 */
+.status-indicator-wrapper {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    z-index: 10000;
+}
+
+/* 상태 표시 */
+.status-indicator {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--discord-bg-tertiary);
+    border: 2px solid var(--discord-bg-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.status-indicator:hover {
+    transform: scale(1.1);
+}
+
+.status-indicator span {
+    font-size: 7px;
+}
+
+/* 하단 버튼 공통 스타일 */
+.bottom-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid var(--discord-bg-primary);
+    background: var(--discord-bg-quaternary);
+    color: var(--discord-text-normal);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: var(--discord-elevation-low);
+}
+
+.bottom-button:hover {
+    background: var(--discord-bg-modifier-hover);
+    border-radius: 12px;
+}
+
+.bottom-button:active {
+    transform: scale(0.95);
+}
+
+/* 버튼 아이콘 */
+.button-icon {
+    width: 18px;
+    height: 18px;
+    filter: var(--icon-filter, invert(1));
+    opacity: 0.8;
+    transition: all 0.2s ease;
+}
+
+/* 화이트모드에서 아이콘 더 진하게 */
+[data-theme="light"] .button-icon {
+    filter: invert(0) !important;
+    opacity: 0.9;
+}
+
+.bottom-button:hover .button-icon {
+    opacity: 1;
+}
+
+/* 검색 아이콘 특별 처리 */
+.bottom-button img.button-icon {
+    filter: var(--icon-filter, invert(1));
+    opacity: 0.8;
+}
+
+.bottom-button:hover img.button-icon {
+    opacity: 1;
+}
+
+/* ================================Discord 우측 바============================= */
+
+/* 우측 div 사이즈  */
+.rightBarSize{
+    flex: 1;
+    height: 100vh;
+    background: var(--discord-bg-tertiary);
+    display: flex;
+    flex-direction: column;
+    margin-left: 0;
+    /* transition 제거 - 채팅/친구 레이아웃은 애니메이션 없음 */
+}
+
+/* 참여자 패널이 열릴 때 채팅 영역 왼쪽 마진 조정 */
+.rightBarSize.with-members-panel {
+    margin-left: 300px; /* 참여자 패널 너비만큼 왼쪽 마진 추가 */
+}
+
+/* ================================참여자 패널============================= */
+
+/* 참여자 패널 컨테이너 */
+.members-panel-container {
+    width: 300px;
+    height: 100vh;
+    background: var(--discord-bg-secondary);
+    border-left: 1px solid var(--discord-bg-tertiary);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: absolute;
+    top: 0;
+    right: 0;
+    overflow: hidden;
+    z-index: 100;
+}
+
+/* 참여자 패널 콘텐츠 */
+.members-panel-content {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* 전체 화면 높이 사용 */
+    min-height: 100vh; /* 최소 높이 보장 */
+}
+
+/* 참여자 패널 헤더 */
+.members-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid var(--discord-bg-tertiary);
+    background: var(--discord-bg-primary);
+}
+
+.members-panel-header span {
+    color: var(--discord-text-normal);
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.members-close-btn {
+    background: none;
+    border: none;
+    color: var(--discord-text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.members-close-btn:hover {
+    background: var(--discord-bg-modifier-hover);
+    color: var(--discord-text-normal);
+}
+
+/* 참여자 패널 바디 */
+.members-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    height: calc(100vh - 60px); /* 헤더 높이 제외한 전체 높이 */
+    min-height: calc(100vh - 60px); /* 최소 높이 보장 */
+}
+
+/* 참여자 섹션 */
+.members-section {
+    margin-bottom: 16px;
+}
+
+.members-section-header {
+    color: var(--discord-text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+/* 참여자 리스트 */
+.members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* 참여자 아이템 */
+.members-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.members-item:hover {
+    background: var(--discord-bg-modifier-hover);
+}
+
+.members-name {
+    color: var(--discord-text-normal);
+    font-size: 14px;
+}
+
+.members-status {
+    font-size: 12px;
+}
+
+/* 참여자 패널 오버레이 */
+.members-panel-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 300px;
+    height: 100vh;
+    background: var(--discord-bg-secondary);
+    z-index: 999;
+    border-left: 1px solid var(--discord-bg-tertiary);
+    transform: translateX(100%); /* 초기 상태: 화면 밖으로 숨김 */
+    transition: transform 0.3s ease-in-out; /* 부드러운 슬라이드 애니메이션 */
+}
+
+/* 참여자 패널이 열릴 때 슬라이드 인 */
+.members-panel-overlay.open {
+    transform: translateX(0); /* 화면 안으로 슬라이드 */
+}
+
+/* 참여자 패널 전용 스타일 */
+.members-panel-only {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    width: 100%;
+    background: transparent;
+}
+
+/* 토글 아래 내용 영역 */
+.members-content-area {
+    margin-top: 60px; /* 토글 높이 + 여유 공간 */
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.members-panel-only .membersListScroll {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.members-panel-only .membersOverlayGrouped {
+    position: absolute;
+    top: 60px; /* 토글 높이 + 여유 공간 */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 16px;
+    overflow-y: auto;
+}
+
+/* 음성채팅 컨트롤 스타일 */
+.voice-chat-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    color: var(--discord-text-primary);
+}
+
+.voice-status h3 {
+    margin: 0 0 10px 0;
+    color: var(--discord-text-primary);
+    font-size: 16px;
+}
+
+.voice-status p {
+    margin: 5px 0;
+    color: var(--discord-text-secondary);
+    font-size: 14px;
+}
+
+.voice-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.voice-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.voice-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+.voice-btn.join-btn {
+    background: var(--discord-brand);
+    color: white;
+}
+
+.voice-btn.join-btn:hover {
+    background: var(--discord-brand-dark);
+}
+
+.voice-btn.leave-btn {
+    background: var(--discord-danger);
+    color: white;
+}
+
+.voice-btn.leave-btn:hover {
+    background: #d73a49;
+}
+
+.voice-btn.mute-btn {
+    background: var(--discord-bg-tertiary);
+    color: var(--discord-text-primary);
+}
+
+.voice-btn.mute-btn:hover {
+    background: var(--discord-bg-quaternary);
+}
+
+.voice-btn.mute-btn.muted {
+    background: var(--discord-danger);
+    color: white;
+}
+
+.voice-participants h4 {
+    margin: 0 0 10px 0;
+    color: var(--discord-text-primary);
+    font-size: 14px;
+}
+
+.participants-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.participant-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    background: var(--discord-bg-tertiary);
+    border-radius: 4px;
+}
+
+.participant-name {
+    color: var(--discord-text-primary);
+    font-size: 14px;
+}
+
+.participant-status {
+    font-size: 16px;
+}
+
+.participant-status.speaking {
+    color: #43b581;
+}
+
+/* 참여자 목록 헤더 스타일 */
+.onlineMembersSectionHeader,
+.awayMembersSectionHeader,
+.offlineMembersSectionHeader {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--discord-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 8px 0 4px 0;
+    padding: 0 8px;
+    transition: none !important; /* 글씨 크기 애니메이션 방지 */
+}
+
+/* 하단 광고바 사이즈 */
+.adSize{
+    height: 60px;
+    background: var(--discord-bg-secondary);
+    border-top: 1px solid var(--discord-bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* 양쪽 끝으로 정렬 */
+    padding: 0 20px; /* 좌우 패딩 추가 */
+    color: var(--discord-text-muted);
+    font-size: 14px;
+    flex: 1; /* 남은 공간을 모두 차지 */
+    transition: all 0.3s ease; /* 부드러운 전환 효과 */
+}
+
+/* 하단 검색창 버튼 div 사이즈 */
+.searchSize{
+    height: 60px;
+    width: 60px;
+    background: var(--discord-bg-secondary);
+    border-top: 1px solid var(--discord-bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
 /* 하단 검색창 버튼 div 호버시 그래픽 */
 .searchSize:hover {
-    transform: scale(1.05);
-    background: #1a202a;
-    box-shadow: 0 0 10px #6a059c;
+    background: var(--discord-bg-modifier-hover);
 }
 
 /* 하단 검색창 버튼 div 내부 이미지 포지션 */
 .imgPos{
-    width: 65px;
+    width: 24px;
+    height: 24px;
+    filter: var(--icon-filter, invert(1));
+    opacity: 0.7;
 }
 
+/* 화이트모드에서 아이콘 더 진하게 */
+[data-theme="light"] .imgPos {
+    filter: invert(0) !important;
+    opacity: 0.9;
+}
+
+/* 채팅창 사이즈 */
+.chatSize{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--discord-bg-tertiary);
+    min-height: 0; /* flex 아이템이 축소될 수 있도록 */
+    height: calc(100vh - 60px); /* 하단 광고바 높이 제외 */
+    transition: width 0.3s ease; /* 부드러운 전환 효과 */
+}
+
+
+/* ================================Discord 채팅 스타일============================= */
+
+.chatDivStyle{
+    width: 100%;
+    overflow-y: auto;
+    padding: 16px;
+    background: var(--discord-bg-tertiary);
+    min-height: 0; /* flex 축소 허용 */
+    height: calc(100% - 80px); /* 입력창 높이 제외 */
+    transition: width 0.3s ease; /* 부드러운 전환 효과 */
+}
+
+/* 참여자 패널이 열릴 때 채팅 영역 너비 조정 */
+.chatDivStyle.with-members-panel {
+    width: calc(100% - 300px); /* 참여자 패널 너비(300px)만큼 줄임 */
+}
+
+.chatContentStyle{
+    color: var(--discord-text-normal);
+    font-size: 16px;
+    line-height: 1.375;
+    padding: 16px 0;
+}
+
+.message-wrapper {
+    margin: 8px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.message-author {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--discord-text-normal);
+    margin-bottom: 4px;
+    margin-left: 16px;
+}
+
+.chatStyle{
+    display: inline-block;
+    max-width: 70%;
+    padding: 8px 12px;
+    margin: 2px 0;
+    border-radius: 18px;
+    background-color: var(--discord-bg-quaternary);
+    color: var(--discord-text-normal);
+    word-break: break-word;
+    font-size: 16px;
+    line-height: 1.375;
+}
+
+.myChatStyle{
+    display: flex;
+    margin-right: 0;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.otherChatStyle {
+    display: flex;
+    margin-left: 0;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+/* 내 채팅 스타일 */
+.myChatStyle .chatStyle {
+    background: var(--discord-accent);
+    color: white;
+}
+
+/* 다른 사용자 채팅 스타일 */
+.otherChatStyle .chatStyle {
+    background: var(--discord-bg-quaternary);
+    color: var(--discord-text-normal);
+}
+
+/* ================================Discord 입력 스타일============================= */
+.inputSize{
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background: var(--discord-bg-tertiary);
+    border-top: 1px solid var(--discord-bg-primary);
+    height: 80px; /* 고정 높이 설정 */
+    min-height: 80px; /* 최소 높이 보장 */
+    width: 100%; /* 명시적 너비 설정 */
+    transition: width 0.3s ease; /* 부드러운 전환 효과 */
+}
+
+/* 참여자 패널이 열릴 때 입력창 너비 조정 */
+.inputSize.with-members-panel {
+    width: calc(100% - 300px); /* 참여자 패널 너비(300px)만큼 줄임 */
+}
+
+.chatInputStyle {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    background-color: var(--discord-bg-quaternary);
+    color: var(--discord-text-normal);
+    font-size: 16px;
+    transition: all 0.2s ease;
+    resize: none;
+    height: 40px;
+    min-height: 40px;
+    max-height: 40px;
+}
+
+.chatInputStyle:focus {
+    background-color: var(--discord-bg-primary);
+}
+
+.chatInputStyle::placeholder {
+    color: var(--discord-text-muted);
+}
+
+.chatButtonStyle {
+    margin-left: 8px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    background: var(--discord-accent);
+    color: white;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    height: 40px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chatButtonStyle:hover {
+    background: var(--discord-accent-hover);
+}
+
+.chatButtonStyle:active {
+    background: var(--discord-accent-active);
+}
+
+/* ================================참여자 패널 토글============================= */
+
+/* 참여자 패널 토글 컨테이너 */
+.members-toggle-container {
+    display: flex;
+    border-bottom: 1px solid var(--discord-bg-tertiary);
+    height: 50px;
+    min-height: 50px;
+    background: var(--discord-bg-primary);
+    width: 300px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+/* 참여자 패널 토글 버튼 */
+.members-toggle-switch {
+    width: 100%;
+    height: 50px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    color: var(--discord-text-muted);
+    background: transparent;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.members-toggle-switch:hover {
+    background: var(--discord-bg-modifier-hover);
+    color: var(--discord-text-normal);
+}
+
+/* 참여자 패널 토글 활성 상태 */
+.members-toggle-switch.active {
+    color: var(--discord-text-normal);
+    background: var(--discord-bg-modifier-hover);
+    border-bottom: 2px solid var(--discord-accent);
+}
+
+/* ================================음성채팅 컨트롤============================= */
+
+.voice-chat-controls {
+    padding: 16px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.voice-status h3 {
+    color: var(--discord-text-normal);
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 8px 0;
+}
+
+.voice-status p {
+    color: var(--discord-text-muted);
+    font-size: 14px;
+    margin: 4px 0;
+}
+
+.voice-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.voice-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.voice-btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.join-btn {
+    background: var(--discord-accent);
+    color: white;
+}
+
+.join-btn:hover:not(:disabled) {
+    background: var(--discord-accent-hover);
+}
+
+.join-btn:disabled {
+    background: var(--discord-bg-quaternary);
+    color: var(--discord-text-muted);
+    cursor: not-allowed;
+}
+
+.leave-btn {
+    background: var(--discord-text-danger);
+    color: white;
+}
+
+.leave-btn:hover {
+    background: #d32f2f;
+}
+
+.mute-btn {
+    background: var(--discord-bg-secondary);
+    color: var(--discord-text-normal);
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.mute-btn:hover {
+    background: var(--discord-bg-modifier-hover);
+}
+
+.mute-btn.muted {
+    background: var(--discord-text-danger);
+    color: white;
+    border-color: var(--discord-text-danger);
+}
+
+.voice-participants {
+    flex: 1;
+    overflow: hidden;
+}
+
+.voice-participants h4 {
+    color: var(--discord-text-normal);
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 12px 0;
+}
+
+.participants-list {
+    max-height: 200px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.participant-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--discord-bg-secondary);
+    border-radius: 6px;
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.participant-name {
+    color: var(--discord-text-normal);
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.speaking-indicator {
+    font-size: 16px;
+    transition: all 0.2s ease;
+}
+
+.speaking-indicator.speaking {
+    animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ================================Discord 상태 패널============================= */
+
+/* 상태 선택 패널 */
+.status-side-panel {
+    position: absolute;
+    right: -150px;
+    bottom: 100%;
+    background: var(--discord-bg-primary);
+    border-radius: var(--discord-radius);
+    padding: 8px;
+    width: 180px;
+    box-shadow: var(--discord-elevation-high);
+    color: var(--discord-text-normal);
+    z-index: 9999;
+    margin-bottom: 4px;
+    border: 1px solid var(--discord-bg-quaternary);
+}
+
+/* 상태 아이템 */
+.status-side-panel .status-item {
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    border-radius: 4px;
+}
+
+.status-side-panel .status-item:hover {
+    background: var(--discord-bg-modifier-hover);
+}
+
+/* ================================Discord 스크롤바============================= */
 
 /* 스크롤바 전체 영역 */
 .scroll-container::-webkit-scrollbar {
@@ -240,223 +1153,232 @@
 
 /* 스크롤바 트랙(배경) */
 .scroll-container::-webkit-scrollbar-track {
-    background: #1e1e1e;
-    border-radius: 4px;
+    background: transparent;
 }
 
 /* 스크롤바 핸들 */
 .scroll-container::-webkit-scrollbar-thumb {
-    background-color: #3f4551;
+    background-color: var(--discord-bg-quaternary);
     border-radius: 4px;
-    border: 2px solid #1e1e1e;
+    border: 2px solid transparent;
+    background-clip: content-box;
 }
 
 /* 스크롤바 호버 시 */
 .scroll-container::-webkit-scrollbar-thumb:hover {
-    background: #5a6578;
+    background: var(--discord-bg-modifier-hover);
+    background-clip: content-box;
 }
 
 /* Firefox용 */
 .scroll-container {
     scrollbar-width: thin;
-    scrollbar-color: #3f4551 #1e1e1e;
+    scrollbar-color: var(--discord-bg-quaternary) transparent;
 }
 
-/* ================================ChatDiv============================= */
+/* ================================Discord 반응형 디자인============================= */
 
-.chatDivStyle{
-    flex: 1; /* 남은 공간을 모두 차지 */
-    overflow-y: auto;
-    box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.3);
-    min-height: 0; /* 축소 가능하도록 */
-}
-
-.chatContentStyle{
-    color: #d8d8d8;
-    margin-left: 10px;
-    font-size: 14px;
-}
-
-.chatStyle{
-    display: inline-block;
-    max-width: 300px;
-    padding: 10px 14px;
-    margin-left: 10px;
-    border-radius: 18px;
-    background-color: #d1d1d1;
-    color: #000000;
-    word-break: break-word;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-.myChatStyle{
-    display: flex;
-    margin-right: 10px;
-    flex-direction: column;
-    align-items: flex-end; /* 오른쪽 정렬 */
-}
-
-/* 내 채팅 스타일 */
-.myChatStyle .chatStyle {
-    background: #007bff;
-    color: white;
-    box-shadow: 0 2px 5px rgba(0, 123, 255, 0.3);
-}
-
-/* ================================input Style============================= */
-.inputSize{
-    display: flex;
-    align-items: center;
-    padding: 0 10px 10px;
-}
-
-.chatInputStyle {
-    flex: 1;
-    padding: 12px 18px;
-    border-radius: 25px;
-    border: 1px solid #444;
-    outline: none;
-    background-color: #1c2025;
-    color: #fff;
-    font-size: 14px;
-    transition: all 0.2s ease;
-}
-.chatInputStyle:focus {
-    background-color: #23272d;
-    border-color: #007bff;
-    box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
-}
-
-.chatInputStyle::placeholder {
-    color: #888;
-}
-
-.chatButtonStyle {
-    margin-left: 10px;
-    padding: 12px 24px;
-    border: none;
-    border-radius: 25px;
-    background: linear-gradient(135deg, #007bff, #5a65f2);
-    color: white;
-    cursor: pointer;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-.chatButtonStyle:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
-}
-.chatButtonStyle:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-/* ================================Status Popup============================= */
-
-/* 상태 전체 래퍼 */
-.status-wrapper {
-    position: relative;
-    display: inline-block;
-    margin: 10px;
-    padding: 0;
-}
-
-/* 상태 선택 패널 */
-.status-side-panel {
-    position: absolute;
-    left: 75px;
-    top: 0;
-    background: #1c2025;
-    border-radius: 8px;
-    padding: 10px;
-    width: 180px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.4);
-    color: #e0e0e0;
-    z-index: 300;
-}
-
-/* 상태 아이템 */
-.status-side-panel .status-item {
-    padding: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: background 0.2s ease;
-    font-size: 14px;
-}
-
-.status-side-panel .status-item:hover {
-    background: #2a2f36;
-    border-radius: 4px;
-}
+@media (max-width: 768px) {
+    .leftBarSize {
+        width: 200px;
+    }
     
-/*===============음성 설정 버튼 (기존 코드 유지)=================*/
-.voice-chat-button-wrapper {
-    position: fixed;
-    bottom: 25px; 
-    left: 25px;  
-    z-index: 1000;
+    .rightBarSize {
+        width: calc(100vw - 200px);
+    }
+    
+    .rightBarSize.with-members-panel {
+        width: calc(100vw - 200px - 250px); /* 모바일에서 참여자 패널 너비 조정 */
+        max-width: calc(100vw - 200px - 250px);
+    }
+    
+    .members-panel-container {
+        width: 250px; /* 모바일에서 참여자 패널 너비 조정 */
+        height: 100vh; /* 모바일에서도 전체 화면 높이 */
+    }
+    
+    .members-panel-content {
+        height: 100vh; /* 모바일에서도 전체 화면 높이 */
+        min-height: 100vh;
+    }
+    
+    .members-panel-body {
+        height: calc(100vh - 50px); /* 모바일에서 헤더 높이 조정 */
+        min-height: calc(100vh - 50px);
+    }
+    
+    .toggle-container {
+        height: 45px;
+        min-height: 45px;
+    }
+    
+    .toggleSwitch {
+        height: 45px;
+    }
+    
+    .listSize {
+        height: calc(100vh - 45px - 50px);
+        max-height: calc(100vh - 45px - 50px);
+    }
+    
+    .bottom-buttons-container {
+        height: 50px;
+        padding: 6px;
+    }
+    
+    .profile-button,
+    .bottom-button {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .button-icon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+    }
+    
+    .status-indicator span {
+        font-size: 6px;
+    }
 }
 
-.voice-chat-button {
-    width: 70px; 
-    height: 70px; 
-    border-radius: 50%; 
-    background-color: white; 
-    border: 2px solid #36393f; 
+@media (max-width: 480px) {
+    .leftBarSize {
+        width: 180px;
+    }
+    
+    .rightBarSize {
+        width: calc(100vw - 180px);
+    }
+    
+    .toggle-container {
+        height: 40px;
+        min-height: 40px;
+    }
+    
+    .toggleSwitch {
+        height: 40px;
+        font-size: 14px;
+    }
+    
+    .listSize {
+        height: calc(100vh - 40px - 45px);
+        max-height: calc(100vh - 40px - 45px);
+    }
+    
+    .bottom-buttons-container {
+        height: 45px;
+        padding: 4px;
+    }
+    
+    .profile-button,
+    .bottom-button {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .button-icon {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .status-indicator {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .status-indicator span {
+        font-size: 5px;
+    }
+    
+    .members-panel-container {
+        width: 200px; /* 작은 화면에서 참여자 패널 너비 더 축소 */
+        height: 100vh;
+    }
+    
+    .members-panel-content {
+        height: 100vh;
+        min-height: 100vh;
+    }
+    
+    .members-panel-body {
+        height: calc(100vh - 45px); /* 작은 화면에서 헤더 높이 조정 */
+        min-height: calc(100vh - 45px);
+    }
+}
+
+/* 빈 채팅창 스타일 */
+.empty-chat-container {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
-    cursor: pointer;
-    transition: all 0.3s ease-in-out, box-shadow 0.6s ease-in-out;
-    position: relative;
-    overflow: hidden;
+    justify-content: center;
+    height: 100%;
+    padding: 40px;
+    text-align: center;
 }
 
-.phone-icon {
-    width: 35px; 
-    height: 35px; 
-    color: black;
-    transition: color 0.3s ease-in-out;
+.empty-chat-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    opacity: 0.3;
 }
 
-/* 마우스 오버 시 효과 */
-.voice-chat-button:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3), 
-                0 0 20px #009000;
-    border-color: #009000;
+.empty-chat-logo .logo-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--discord-accent) 0%, #7289da 100%);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    font-weight: 700;
+    color: white;
+    box-shadow: 
+        0 8px 32px rgba(88, 101, 242, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
-.voice-chat-button:hover .phone-icon {
-    color: #009000;
+.empty-chat-logo .brand-name {
+    font-size: 36px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--discord-text-normal) 0%, #ffffff 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: -1px;
 }
 
-/* 반짝이 효과 (Glitter/Shine Effect) */
-.voice-chat-button::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
-    transform: rotate(45deg);
-    opacity: 0;
-    transition: all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-    pointer-events: none;
+.empty-chat-text {
+    color: var(--discord-text-muted);
+    font-size: 16px;
+    margin: 0;
+    opacity: 0.6;
+    font-weight: 500;
 }
 
-.voice-chat-button:hover::before {
-    opacity: 1;
-    transform: rotate(45deg) translate(25%, 25%);
-}
-
-/* 버튼 클릭 시 활성화 효과 (선택 사항) */
-.voice-chat-button:active {
-    transform: translateY(0) scale(0.98);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+/* 반응형 - 빈 채팅창 */
+@media (max-width: 768px) {
+    .empty-chat-logo .logo-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 25px;
+    }
+    
+    .empty-chat-logo .brand-name {
+        font-size: 28px;
+    }
+    
+    .empty-chat-text {
+        font-size: 14px;
+    }
 }

@@ -154,7 +154,7 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
   }, [historyUserId, sendToModalGameName]);
 
   return (
-    <div className="modalOverlay" onClick={handleOverlayClick}>
+    <div className="modalOverlay userHistoryModal" onClick={handleOverlayClick}>
       <div className={`modalContent ${isClosing ? 'pop-out' : ''}`} onClick={handleContentClick}>
 
         {/* 모달 헤더 */}

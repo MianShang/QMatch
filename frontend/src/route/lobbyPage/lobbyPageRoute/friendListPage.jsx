@@ -4,12 +4,14 @@ import './friendListPage.css';
 import { LogContext } from '../../../App.jsx';
 import { FriendInventory } from './friendInventory.jsx';
 import { FaXmark } from "react-icons/fa6";
+import { useFriendDelete } from '../../../hooks/friends/useFriendDelete.js';
 
 function FriendListPage() {
   const { friends, statusByUser, userData } = useContext(LogContext);
   const [bottomToggle, setBottomToggle] = useState(null);
   const [selected, setSelected] = useState(null);
   const containerRef = useRef(null);
+  const { deleteFriend } = useFriendDelete();
 
   useEffect(() => {
     // 외부 클릭 감지 함수
@@ -71,7 +73,7 @@ function FriendListPage() {
                   size={25}
                   color="red"
                   style={{ marginRight: "5px" }}
-                  onClick={() => console.log("친구 삭제")}
+                  onClick={()=>deleteFriend(friend.userId,userData.userId)}
                   className='CheckBox'
                 />
               </div>

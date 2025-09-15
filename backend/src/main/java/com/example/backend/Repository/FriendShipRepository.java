@@ -39,8 +39,7 @@ public interface FriendShipRepository extends JpaRepository<FriendShip,Long> {
             "WHERE ((f.requester = :requester AND f.addressee = :addressee) " +
             "   OR  (f.requester = :addressee AND f.addressee = :requester)) " +
             "AND f.status IN ('BLOCKED','BLOCKS','ACCEPTED')")
-    void deleteFriendshipBothWays(@Param("requester") User requester,
-                                  @Param("addressee") User addressee);
+    void deleteFriendship(@Param("requester") User requester, @Param("addressee") User addressee);
 
 
 }

@@ -78,5 +78,16 @@ public class FriendController {
         }
     }
 
+    @PostMapping("delete")
+    public ResponseEntity<String> deleteFriendRequest(@RequestParam String requesterId, @RequestParam String addresseeId)
+    {
+        try {
+            friendShipService.getDeleteFriend(requesterId,addresseeId);
+            return ResponseEntity.ok("친구가 삭제되었습니다.");
+        }catch (IllegalArgumentException e) {
+            ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().body("오류가 발새했습니다." + e.getMessage());
+        }
+    }
 
 }

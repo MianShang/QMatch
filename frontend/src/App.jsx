@@ -148,10 +148,15 @@ function App() {
           }
       });
 
+      //친구 요청/차단 목록 업데이트
       stomp.subscribe(`/topic/friends/inventory/${userData.userId}`, (frame) => {
           try {
             const payload = JSON.parse(frame.body);
             setFriendInventoryUpdate(payload);
+
+            axios.get(`/api/friends/list?userId=${userData.userId}`)
+         .then(res => setFriends(res.data))
+         .catch(err => console.error("친구 목록 갱신 실패:", err));
           }
            catch (e) {
               console.error("친구요청/차단 목록 업데이트 에러", e);

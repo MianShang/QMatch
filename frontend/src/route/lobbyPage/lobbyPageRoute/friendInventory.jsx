@@ -4,12 +4,14 @@ import { useFriendsinventory } from '../../../hooks/friends/useFriendInventory';
 import { FaCheck } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useFriendResponse } from '../../../hooks/friends/useFriendResponse';
+import { useFriendDelete } from '../../../hooks/friends/useFriendDelete';
 
 
 export function FriendInventory({ bottomToggle, userId }) {
 
     // useFriendsinventory 훅의 반환값을 올바르게 비구조화 할당
     const { responseUsers, loading, error } = useFriendsinventory(userId, bottomToggle);
+    const { deleteFriend } = useFriendDelete();
 
     // 렌더링할 제목을 결정
     const title = (bottomToggle === "friends" ? "친구 요청" : "차단된");
@@ -56,7 +58,7 @@ export function FriendInventory({ bottomToggle, userId }) {
                                     size={20}
                                     color="#32CD32"
                                     style={{ marginRight: "-10px" }}
-                                    onClick={async() => useFriendResponse(RequestUser.userId, userId, 'accept')}
+                                    onClick={async () => useFriendResponse(RequestUser.userId, userId, 'accept')}
                                     className='CheckBox'
                                 />
                             )}
@@ -64,8 +66,14 @@ export function FriendInventory({ bottomToggle, userId }) {
                                 size={25}
                                 color="red"
                                 style={{ marginRight: "5px" }}
-                                onClick={async() => useFriendResponse(RequestUser.userId, userId, 'reject')}
-                                className='CheckBox'
+                                onClick={async () => {
+                                    if (bottomToggle === "friends") {
+                                        await respondFriend(RequestUser.userId, userId, "reject");
+                                    } else {
+                                        await deleteFriend(RequestUser.userId, userId);
+                                    }
+                                }}
+                                className="CheckBox"
                             />
 
                         </div>

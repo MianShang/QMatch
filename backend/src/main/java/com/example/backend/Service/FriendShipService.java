@@ -109,6 +109,9 @@ public class FriendShipService {
                         "/topic/friends/inventory/" + addresseeId,
                         Map.of("bottomToggle", "friends")
                 );
+                simpMessagingTemplate.convertAndSend("/topic/friends/status",
+                        Map.of("userId", addresseeId, "status", "온라인")
+                );
             }
         });
     }
@@ -229,7 +232,9 @@ public class FriendShipService {
                 Map.of("userId", requesterId, "status", relation.getStatus().name())
         );
     }
-
+    
+    
+    //친구 요청/차단 목록 리스트
     @Transactional
     public List<FriendShipResponseDto> getUserInventoryList(String requesterId, String bottomToggle)
     {
@@ -254,4 +259,33 @@ public class FriendShipService {
                 })
                 .collect(Collectors.toList());
     }
+
+    
+    //친구 삭제
+    @Transactional
+    public void getDeleteFriend(String requesterId, String userId)
+    {
+        User user = userRepository.findByUserId(userId).orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User requester = userRepository.findByUserId(requesterId).orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        friendshipRepository.deleteFriendship(requester, user);
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                simpMessagingTemplate.convertAndSend("/topic/friends/" + userId,
+                        Map.of("message", requester.getUserName() + "님이 삭제되었습니다."));
+
+                //inventory 양방향 갱신
+                simpMessagingTemplate.convertAndSend(
+                        "/topic/friends/inventory/" + requesterId,
+                        Map.of("bottomToggle", "friends")
+                );
+                simpMessagingTemplate.convertAndSend(
+                        "/topic/friends/inventory/" + userId,
+                        Map.of("bottomToggle", "friends")
+                );
+            }
+        });
+    }
+
 }

@@ -21,6 +21,8 @@ import { useLoginCheck } from '../../hooks/login/useLoginCheck.js';
 import { useLogout } from '../../hooks/login/useLogout.js';
 import { useLocation }        from 'react-router-dom';
 import { useGlobalStomp } from '../../hooks/stomp/useGlobalStomp.js';
+import { useChatListGet } from '../../hooks/chatList/useChatListGet.js';
+import { useSetReadUnReadChat } from '../../hooks/chatNotice/useSetReadUnReadChat.js';
 
 // 상태 체크 훅 import 추가
 import useUserStatusReporter from '../../hooks/status/useUserStatusReporter.js';
@@ -51,6 +53,10 @@ function LobbyPage() {
 
   // 전역 STOMP 클라이언트 초기화
   const globalStomp = useGlobalStomp(userData);
+  
+  // 메시지 로딩 및 읽음 처리 훅
+  const getChatList = useChatListGet();
+  const setRead = useSetReadUnReadChat(userData);
 
   // // userData가 로드될 때까지 로딩
   // if (!userData) {
@@ -147,6 +153,11 @@ function LobbyPage() {
             });
           } finally {
             setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
+            
+            // 채팅방 이동 시 메시지 로딩 및 읽음 처리
+            console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId);
+            getChatList(s.roomId, setMessages);
+            setRead({ id: s.roomId });
           }
         })();
     }, [location.key]);

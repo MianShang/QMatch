@@ -14,6 +14,7 @@
     border-bottom: 1px solid #3c4043;
     border-radius: 12px 12px 0 0;
     margin-bottom: 8px;
+    flex-shrink: 0; /* 헤더 크기 고정 */
 }
 
 .chatRoomInfo {
@@ -189,7 +190,10 @@
 
 /* 채팅창 사이즈 */
 .chatSize{
-    height: calc(100% - 85px);
+    flex: 1; /* 남은 공간을 모두 차지 */
+    min-height: 0; /* 축소 가능하도록 */
+    display: flex;
+    flex-direction: column;
 }
 
 /* 하단 광고바 사이즈 */
@@ -200,6 +204,7 @@
     background: #111418;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
     border: 1px solid #1a1a1a;
+    flex-shrink: 0; /* 광고바 크기 고정 */
 }
 
 /* 하단 검색창 버튼 div 사이즈 */
@@ -207,6 +212,7 @@
     margin-left: 10px;
     margin-top: 10px;
     height: 75px;
+    flex-shrink: 0; /* 검색창 크기 고정 */
     width: 75px;
     display: flex;
     align-items: center;
@@ -258,9 +264,10 @@
 /* ================================ChatDiv============================= */
 
 .chatDivStyle{
-    height: calc(100% - 60px);
+    flex: 1; /* 남은 공간을 모두 차지 */
     overflow-y: auto;
     box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.3);
+    min-height: 0; /* 축소 가능하도록 */
 }
 
 .chatContentStyle{

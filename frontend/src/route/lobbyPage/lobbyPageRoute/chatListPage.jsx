@@ -568,12 +568,49 @@ function ChatListPage({
       toast.success(payload.message);
       setPendingUsers(prev => prev.filter(p => p.userId !== payload.userId));
       setChatUserList(prev => [...prev, { userId: payload.userId, status: '온라인' }]);
+      
+      // 승인된 사용자가 현재 사용자라면 메시지 불러오기
+      if (payload.userId === userData.userId) {
+        getChatList(roomId, setMessages);
+        // 읽음 처리
+        setRead({ id: roomId });
+        
+        // 해당 채팅방을 선택된 방으로 설정
+        if (!selectedRoom || selectedRoom.id !== roomId) {
+          // 채팅방 정보를 가져와서 selectedRoom 설정
+          fetch(`/api/chat/rooms/${roomId}`)
+            .then(res => res.json())
+            .then(roomData => {
+              setSelectedRoom(roomData);
+            })
+            .catch(err => console.error('채팅방 정보 가져오기 실패:', err));
+        }
+      }
     }, { id: `accept-${roomId}` });
 
     // 개인 수락 알림 구독
     globalStomp.subscribe(`/user/queue/accept`, (frame) => {
       const payload = JSON.parse(frame.body);
       toast.success(payload.message); // "성공적으로 입장하였습니다"
+      
+      // 채팅방에 입장했으므로 메시지 목록 불러오기
+      if (payload.roomId) {
+        console.log('개인 수락 알림: 메시지를 가져옵니다. roomId:', payload.roomId);
+        getChatList(payload.roomId, setMessages);
+        // 읽음 처리
+        setRead({ id: payload.roomId });
+        
+        // 해당 채팅방을 선택된 방으로 설정
+        if (!selectedRoom || selectedRoom.id !== payload.roomId) {
+          // 채팅방 정보를 가져와서 selectedRoom 설정
+          fetch(`/api/chat/rooms/${payload.roomId}`)
+            .then(res => res.json())
+            .then(roomData => {
+              setSelectedRoom(roomData);
+            })
+            .catch(err => console.error('채팅방 정보 가져오기 실패:', err));
+        }
+      }
     }, { id: 'personal-accept' });
 
     // 개인 거절 알림 구독

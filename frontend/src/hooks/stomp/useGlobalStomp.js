@@ -65,7 +65,6 @@ export function useGlobalStomp(userData) {
       const stomp = await initializeStomp();
       
       if (!stomp.connected) {
-        console.warn('STOMP 클라이언트가 연결되지 않음');
         return null;
       }
 

@@ -287,20 +287,23 @@ function ChatListPage({
       // 인원수 증가
       updateChatRoomUserCount(selectedRoom.id, 1);
       
-      // 멤버 목록 새로고침
+      // 멤버 목록에 즉시 추가
+      setChatUserList(prev => {
+        // 이미 존재하는지 확인
+        if (prev.find(u => u.userId === applicantId)) {
+          return prev;
+        }
+        // 새 멤버 추가
+        return [...prev, { userId: applicantId, status: '온라인', joinStatus: 'APPROVED' }];
+      });
+      
+      // 멤버 목록 새로고침 (서버에서 최신 데이터 가져오기)
       if (selectedRoom?.id) {
         getChatUserList(selectedRoom.id);
       }
     } catch (error) {
       console.error('입장 승인 실패:', error);
-      toast.error('입장 승인에 실패했습니다.', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.error('입장 승인에 실패했습니다.');
     }
   };
 
@@ -316,14 +319,7 @@ function ChatListPage({
       console.log('입장 거절 완료:', applicantId);
       
       // 토스트 알림 표시
-      toast.warning('입장을 거절했습니다.', {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.warning('입장을 거절했습니다.');
       
       // 대기자 목록 새로고침
       if (selectedRoom?.id) {
@@ -331,14 +327,7 @@ function ChatListPage({
       }
     } catch (error) {
       console.error('입장 거절 실패:', error);
-      toast.error('입장 거절에 실패했습니다.', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
+      toast.error('입장 거절에 실패했습니다.');
     }
   };
 
@@ -379,14 +368,7 @@ function ChatListPage({
           });
           
           if (payload.hostUserId === userData.userId) {
-            toast.info(`${payload.userName}님이 "${payload.roomName}" 방 입장을 신청했습니다!`, {
-              position: "top-right",
-              autoClose: 5000,
-              hideProgressBar: false,
-              closeOnClick: true,
-              pauseOnHover: true,
-              draggable: true,
-            });
+            toast.info(`${payload.userName}님이 "${payload.roomName}" 방 입장을 신청했습니다!`);
             
             // 해당 채팅방이 선택된 상태라면 대기자 목록 새로고침
             if (selectedRoom?.id === payload.roomId) {
@@ -452,14 +434,7 @@ function ChatListPage({
             
             // 방장에게만 토스트 알림 표시
             if (selectedRoom.hostUserId === userData.userId) {
-              toast.success(`${payload.userName}님이 입장했습니다!`, {
-                position: "top-right",
-                autoClose: 3000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-              });
+              toast.success(`${payload.userName}님이 입장했습니다!`);
             }
             
             // 멤버 목록 새로고침 (모든 사용자)
@@ -527,14 +502,7 @@ function ChatListPage({
             });
             
             if (selectedRoom.hostUserId === userData.userId) {
-              toast.info(`${payload.userName}님이 입장을 신청했습니다!`, {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-              });
+              toast.info(`${payload.userName}님이 입장을 신청했습니다!`);
               
               // 대기자 목록 새로고침
               setTimeout(() => {

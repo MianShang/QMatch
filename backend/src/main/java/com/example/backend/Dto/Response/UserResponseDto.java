@@ -1,5 +1,6 @@
 package com.example.backend.Dto.Response;
 
+import com.example.backend.enums.ChatRoomUserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,6 +21,7 @@ public class UserResponseDto {
     private List<String> userTag;
     private String userStatusMessage;
     private String userIntro;
+    private ChatRoomUserStatus joinStatus; // 입장 신청 상태 추가
 
 
 }

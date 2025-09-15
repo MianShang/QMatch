@@ -104,7 +104,7 @@ function JoinRoomModal({ open, onClose, room, onJoin }) {
             onClick={handleJoin}        
             disabled={joiningRef.current || (typeof currentUsers === 'number' && typeof maxUsers === 'number' && currentUsers >= maxUsers)}
             >
-          {joiningRef.current ? '입장 중…' : ((typeof currentUsers === 'number' && typeof maxUsers === 'number' && currentUsers >= maxUsers) ? '입장 불가' : '입장하기')}
+          {joiningRef.current ? '신청 중…' : ((typeof currentUsers === 'number' && typeof maxUsers === 'number' && currentUsers >= maxUsers) ? '입장 불가' : '입장 신청')}
           </button>
         </div>
       </div>

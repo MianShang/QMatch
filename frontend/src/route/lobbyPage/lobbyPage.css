@@ -4,6 +4,60 @@
     width: 100%;
 }
 
+/* ================================채팅방 헤더============================= */
+.chatRoomHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: #1e2328;
+    border-bottom: 1px solid #3c4043;
+    border-radius: 12px 12px 0 0;
+    margin-bottom: 8px;
+    flex-shrink: 0; /* 헤더 크기 고정 */
+}
+
+.chatRoomInfo {
+    flex: 1;
+}
+
+.chatRoomTitle {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.chatRoomMeta {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.gameName {
+    background: #4a6ee1;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.userCount {
+    color: #9aa0a6;
+    font-size: 14px;
+}
+
+.hostBadge {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #333;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+}
+
 /* div 외곽선 표시 (개발용) */
 .getLine{
     border: 1px solid white;
@@ -136,7 +190,10 @@
 
 /* 채팅창 사이즈 */
 .chatSize{
-    height: calc(100% - 85px);
+    flex: 1; /* 남은 공간을 모두 차지 */
+    min-height: 0; /* 축소 가능하도록 */
+    display: flex;
+    flex-direction: column;
 }
 
 /* 하단 광고바 사이즈 */
@@ -147,6 +204,7 @@
     background: #111418;
     box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
     border: 1px solid #1a1a1a;
+    flex-shrink: 0; /* 광고바 크기 고정 */
 }
 
 /* 하단 검색창 버튼 div 사이즈 */
@@ -154,6 +212,7 @@
     margin-left: 10px;
     margin-top: 10px;
     height: 75px;
+    flex-shrink: 0; /* 검색창 크기 고정 */
     width: 75px;
     display: flex;
     align-items: center;
@@ -205,9 +264,10 @@
 /* ================================ChatDiv============================= */
 
 .chatDivStyle{
-    height: calc(100% - 60px);
+    flex: 1; /* 남은 공간을 모두 차지 */
     overflow-y: auto;
     box-shadow: inset 0 5px 10px rgba(0, 0, 0, 0.3);
+    min-height: 0; /* 축소 가능하도록 */
 }
 
 .chatContentStyle{

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, createContext, useMemo } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
 import { Client } from '@stomp/stompjs';
@@ -18,6 +18,7 @@ export const LogContext = createContext();
 
 function App() {
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
+  const navigate = useNavigate();
   
   // 로딩 State
   const [isLoading, setIsLoading] = useState(true);
@@ -141,6 +142,32 @@ function App() {
            catch (e) {
               console.error("친구상태 업데이트 에러", e);
           }
+      });
+
+      // 채팅방 입장 응답 구독
+      stomp.subscribe(`/topic/user/${userData.userId}/join-response`, (message) => {
+        try {
+          const data = JSON.parse(message.body);
+          
+          if (data.type === 'join-approved') {
+            toast.success(data.message);
+            // 승인된 경우 채팅방으로 이동
+            if (window.location.pathname === '/search') {
+              navigate('/', { 
+                state: { 
+                  roomId: data.roomId, 
+                  chatName: data.roomName,
+                  gameName: data.gameName || '',
+                  tagNames: data.tagNames || []
+                } 
+              });
+            }
+          } else if (data.type === 'join-rejected') {
+            toast.error(data.message);
+          }
+        } catch (e) {
+          console.error("채팅방 입장 응답 에러", e);
+        }
       });
     };
 

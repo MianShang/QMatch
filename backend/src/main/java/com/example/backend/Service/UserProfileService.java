@@ -58,7 +58,8 @@ public class UserProfileService {
                 user.getUserProfile(),
                 user.getUserTags(),
                 user.getUserStatusMessage(),
-                user.getUserIntro()
+                user.getUserIntro(),
+                null // joinStatus는 프로필 관련 서비스에서는 null
         );
     }
 
@@ -78,7 +79,8 @@ public class UserProfileService {
                 user.getUserProfile(),
                 user.getUserTags(),
                 user.getUserStatusMessage(),
-                user.getUserIntro()
+                user.getUserIntro(),
+                null // joinStatus는 프로필 관련 서비스에서는 null
         );
     }
 
@@ -94,7 +96,8 @@ public class UserProfileService {
                 user.getUserProfile(),
                 user.getUserTags(),
                 user.getUserStatusMessage(),
-                user.getUserIntro()
+                user.getUserIntro(),
+                null // joinStatus는 프로필 관련 서비스에서는 null
         );
     }
 
@@ -113,7 +116,8 @@ public class UserProfileService {
                 user.getUserProfile(),
                 user.getUserTags(),
                 user.getUserStatusMessage(),
-                user.getUserIntro()
+                user.getUserIntro(),
+                null // joinStatus는 프로필 관련 서비스에서는 null
         );
     }
 
@@ -129,7 +133,8 @@ public class UserProfileService {
                 user.getUserProfile(),
                 user.getUserTags(),
                 user.getUserStatusMessage(),
-                user.getUserIntro()
+                user.getUserIntro(),
+                null // joinStatus는 프로필 관련 서비스에서는 null
         );
     }
 
@@ -149,7 +154,8 @@ public class UserProfileService {
                 user.getUserProfile(),
                 user.getUserTags(),
                 user.getUserStatusMessage(),
-                user.getUserIntro()
+                user.getUserIntro(),
+                null // joinStatus는 프로필 관련 서비스에서는 null
         );
     }
 
@@ -165,7 +171,8 @@ public class UserProfileService {
                 user.getUserProfile(),
                 user.getUserTags(),
                 user.getUserStatusMessage(),
-                user.getUserIntro()
+                user.getUserIntro(),
+                null // joinStatus는 프로필 관련 서비스에서는 null
         );
     }
 

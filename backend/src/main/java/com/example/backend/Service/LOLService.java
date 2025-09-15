@@ -68,7 +68,7 @@ public class LOLService {
                 int losses = (int) tier.get("losses");
                 double winRate = wins + losses > 0 ? wins * 100.0 / (wins + losses) : 0;
 
-                dto.setName(name + tag);
+                dto.setName(name + "#" + tag);
                 dto.setTier((String) tier.get("tier"));
                 dto.setRank((String) tier.get("rank"));
                 dto.setLp((int) tier.get("leaguePoints"));

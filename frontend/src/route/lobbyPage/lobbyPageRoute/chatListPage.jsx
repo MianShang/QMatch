@@ -432,10 +432,11 @@ function ChatListPage({
             const payload = JSON.parse(frame.body);
             console.log('새 멤버 입장:', payload);
             
-            // 방장에게만 토스트 알림 표시
-            if (selectedRoom.hostUserId === userData.userId) {
-              toast.success(`${payload.userName}님이 입장했습니다!`);
-            }
+            // 모든 채팅방 멤버에게 토스트 알림 표시
+            toast.success(`${payload.userName}님이 입장했습니다!`);
+            
+            // 대기자 목록에서 제거 (입장한 사용자)
+            setPendingUsers(prev => prev.filter(req => req.userId !== payload.userId));
             
             // 멤버 목록 새로고침 (모든 사용자)
             if (selectedRoom?.id) {

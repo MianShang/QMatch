@@ -14,6 +14,6 @@ public interface UserStatusRepository extends JpaRepository<UserStatus, Long> {
     Optional<UserStatus> findByUserId(String userId);
     List<UserStatus> findAllByUserIdIn(Collection<String> userIds);
 
-    @Query("SELECT us.status FROM UserStatus us WHERE us.userId = :userId")
-    Optional<String> findStatusByUserId(@Param("userId") String userId);
+    @Query("SELECT DISTINCT us FROM UserStatus us WHERE us.userId IN :userIds")
+    List<UserStatus> findStatusByUserIdIn(@Param("userIds") List<String> userIds);
 }

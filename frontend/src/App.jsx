@@ -13,6 +13,7 @@ import SearchPage from './route/searchPage/searchPage.jsx';
 import LoginPage from './route/loginPage/loginPage.jsx';
 import SignUpRoutePage from './route/loginPage/loginPageRoute/signupRoutePage.jsx';
 
+
 // 로그인 체크용 Context API 생성
 export const LogContext = createContext();
 
@@ -28,6 +29,7 @@ function App() {
   const [userData, setUserData] = useState(null);
   const [friends,setFriends] = useState([]);
   const [statusByUser, setStatusByUser] = useState([]);
+  const [friendInventoryUpdate, setFriendInventoryUpdate] = useState(null);
 
   // 새로고침 or 첫 로딩시 자동 실행
   useEffect(() => {
@@ -95,8 +97,10 @@ function App() {
     setUserData,
     isLoading,
     friends,
-    statusByUser
-  }), [isLogIn, userData, isLoading, friends, statusByUser]);
+    statusByUser,
+    friendInventoryUpdate, 
+    setFriendInventoryUpdate 
+  }), [isLogIn, userData, isLoading, friends, statusByUser,friendInventoryUpdate, setFriendInventoryUpdate]);
 
   //친구 목록 가져오기
     useEffect(() => {
@@ -123,6 +127,7 @@ function App() {
     });
 
     stomp.onConnect = () => {
+
       //친구 요청구독
       stomp.subscribe(`/topic/friends/${userData.userId}`, (frame) => {
       try {
@@ -168,6 +173,21 @@ function App() {
         } catch (e) {
           console.error("채팅방 입장 응답 에러", e);
         }
+      });
+
+      //친구 요청/차단 목록 업데이트
+      stomp.subscribe(`/topic/friends/inventory/${userData.userId}`, (frame) => {
+          try {
+            const payload = JSON.parse(frame.body);
+            setFriendInventoryUpdate(payload);
+
+            axios.get(`/api/friends/list?userId=${userData.userId}`)
+         .then(res => setFriends(res.data))
+         .catch(err => console.error("친구 목록 갱신 실패:", err));
+          }
+           catch (e) {
+              console.error("친구요청/차단 목록 업데이트 에러", e);
+          }
       });
     };
 

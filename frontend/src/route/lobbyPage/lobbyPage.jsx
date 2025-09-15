@@ -231,12 +231,12 @@ function LobbyPage() {
           <div className='midBarSize'>
             <div style={{ display: "flex" }}>
               <div onClick={() => { setToggle(true); }}
-                className={`toggleSwitchText contentStyle toggleSwitch ${toggle ? 'activeBorder' : ''}`} >
+                className={`toggleSwitchText toggleSwitch ${!toggle ? 'contentStyle' : ''} ${toggle ? 'activeBorder' : ''}`} >
                 채팅
               </div>
 
               <div onClick={() => setToggle(false)}
-                className={`toggleSwitchText contentStyle toggleSwitch ${!toggle ? 'activeBorder' : ''}`}
+                className={`toggleSwitchText toggleSwitch ${toggle ? 'contentStyle' : ''} ${!toggle ? 'activeBorder' : ''}`}
                 style={{ marginLeft: "10px" }}>
                 친구
               </div>

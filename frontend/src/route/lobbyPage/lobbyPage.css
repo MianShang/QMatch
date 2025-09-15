@@ -190,6 +190,12 @@
     transition: all 0.2s ease;
 }
 
+/* 화이트모드에서 아이콘 더 진하게 */
+[data-theme="light"] .button-icon {
+    filter: invert(0) !important;
+    opacity: 0.9;
+}
+
 .bottom-button:hover .button-icon {
     opacity: 1;
 }
@@ -544,6 +550,12 @@
     height: 24px;
     filter: var(--icon-filter, invert(1));
     opacity: 0.7;
+}
+
+/* 화이트모드에서 아이콘 더 진하게 */
+[data-theme="light"] .imgPos {
+    filter: invert(0) !important;
+    opacity: 0.9;
 }
 
 /* 채팅창 사이즈 */

@@ -392,7 +392,7 @@ function SearchPage() {
             </div>
 
             <Link to="/">
-              <div className='contentStyle noticeSize' style={{ position: 'relative' }}>
+              <div className='noticeSize' style={{ position: 'relative' }}>
                 <img src="/MessageIcon.png" className='imgPos' alt="알림" />
                 {hasUnreadMessages && (
                   <div className="unread-notification-badge">

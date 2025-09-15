@@ -1,0 +1,243 @@
+.lostark-box {
+  display: flex;
+  flex-direction: row;
+  padding: 20px;
+  gap: 20px;
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* 캐릭터 이미지 컨테이너 */
+.lostark-image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+  width: 350px;
+  flex-shrink: 0;
+  margin-bottom: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.lostark-image-container img {
+  max-width: 100%;
+  max-height: 400px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 0;
+  box-shadow: none;
+  transition: transform 0.3s ease;
+}
+.lostark-image-container img:hover {
+  transform: scale(1.05);
+}
+
+/* 스탯 섹션 */
+.lostark-stats-section {
+  flex: 1;
+  background: linear-gradient(135deg, var(--discord-bg-secondary) 0%, rgba(114, 137, 218, 0.05) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(114, 137, 218, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  backdrop-filter: blur(10px);
+}
+
+.lostark-stats-header {
+  background: var(--discord-bg-tertiary);
+  color: var(--discord-text-normal);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 16px 20px;
+  margin: 0;
+  border-bottom: 1px solid var(--discord-bg-quaternary);
+  text-align: center;
+}
+
+.lostark-stats-grid {
+  padding: 20px 25px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.lostark-stat-item {
+  background: linear-gradient(135deg, var(--discord-bg-primary) 0%, rgba(114, 137, 218, 0.03) 100%);
+  border-radius: 12px;
+  padding: 18px;
+  border: 1px solid rgba(114, 137, 218, 0.1);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+}
+
+.lostark-stat-item:hover {
+  background: var(--discord-bg-modifier-hover);
+  border-color: var(--discord-bg-quaternary);
+}
+
+.lostark-stat-label {
+  font-size: 12px;
+  color: var(--discord-text-muted);
+  font-weight: 500;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.lostark-stat-value {
+  font-size: 16px;
+  color: var(--discord-text-normal);
+  font-weight: 600;
+  margin: 0;
+}
+
+/* 특별한 색상 스타일 */
+.lostark-stat-item:nth-child(1) .lostark-stat-value {
+  color: var(--discord-text-link);
+}
+
+.lostark-stat-item:nth-child(2) .lostark-stat-value {
+  color: var(--discord-text-positive);
+}
+
+.lostark-stat-item:nth-child(3) .lostark-stat-value {
+  color: var(--discord-text-warning);
+}
+
+.lostark-stat-item:nth-child(4) .lostark-stat-value {
+  color: var(--discord-text-danger);
+}
+
+.lostark-stat-item:nth-child(5) .lostark-stat-value {
+  color: var(--discord-accent);
+}
+
+.lostark-stat-item:nth-child(6) .lostark-stat-value {
+  color: var(--discord-text-positive);
+}
+
+/* Discord 스타일 스크롤바 */
+.lostark-stats-grid::-webkit-scrollbar {
+  width: 8px;
+}
+
+.lostark-stats-grid::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.lostark-stats-grid::-webkit-scrollbar-thumb {
+  background: var(--discord-bg-quaternary);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.lostark-stats-grid::-webkit-scrollbar-thumb:hover {
+  background: var(--discord-bg-modifier-hover);
+  background-clip: content-box;
+}
+
+.lostark-stats-grid {
+  scrollbar-width: thin;
+  scrollbar-color: var(--discord-bg-quaternary) transparent;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 900px) {
+  .lostark-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+}
+
+@media (max-width: 768px) {
+  .lostark-box {
+    padding: 16px;
+    gap: 2px;
+  }
+  
+  .lostark-image-container {
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .lostark-image-container img {
+    max-height: 250px;
+  }
+  
+  .lostark-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 12px 16px;
+  }
+  
+  .lostark-stat-item {
+    padding: 10px;
+    gap: 4px;
+  }
+  
+  .lostark-stat-label {
+    font-size: 11px;
+  }
+  
+  .lostark-stat-value {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .lostark-box {
+    padding: 12px;
+    gap: 1px;
+  }
+  
+  .lostark-image-container {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .lostark-image-container img {
+    max-height: 200px;
+  }
+  
+  .lostark-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 10px 12px;
+  }
+  
+  .lostark-stat-item {
+    padding: 8px;
+    flex-direction: row;
+    text-align: left;
+    gap: 12px;
+  }
+  
+  .lostark-stat-label {
+    font-size: 10px;
+    min-width: 80px;
+  }
+  
+  .lostark-stat-value {
+    font-size: 12px;
+  }
+}

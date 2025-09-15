@@ -53,10 +53,10 @@ function DNFPage({ dnfStats, serverId, nickname }) {
              {item.amplificationName === "증폭" ? "증폭 +" : "+"}{item.reinforce}
             </p>
           )}
-            <p>부위: {item.slotName}</p>
-            <p>이름: {item.itemName}</p>
-            <p>종류: {item.itemType}</p>
-            <p>등급: {item.itemRarity}</p>
+            <p>{item.slotName}</p>
+            <p>{item.itemName}</p>
+            <p>{item.itemType}</p>
+            <p>{item.itemRarity}</p>
           </div>
         ))}
       </div>

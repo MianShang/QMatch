@@ -4,6 +4,7 @@ import axios from 'axios';
 import './searchPage.css';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { FaHome } from 'react-icons/fa';
 
 // 로그인 체크용 Context API import
 import { LogContext } from '../../App.jsx';
@@ -380,14 +381,16 @@ function SearchPage() {
           </div>
 
           {/* 하단 광고 및 알림바 */}
-          <div className='bottomSize' style={{ display: "flex" }}>
-            <div className='contentStyle searchAdSize'>
-            QMatch - 게임 팀원 모집 플랫폼
+          <div className='bottomSize'>
+            <div className='searchAdSize'>
+              <span style={{ color: 'var(--discord-text-muted)', fontSize: '14px' }}>
+                QMatch - 게임 팀원 모집 플랫폼
+              </span>
             </div>
 
             <Link to="/">
               <div className='noticeSize' style={{ position: 'relative' }}>
-                <img src="/MessageIcon.png" className='imgPos' alt="알림" />
+                <FaHome className='home-icon' />
                 {hasUnreadMessages && (
                   <div className="unread-notification-badge">
                     <span className="unread-dot"></span>

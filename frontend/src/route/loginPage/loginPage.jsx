@@ -34,7 +34,15 @@ function LoginPage() {
       {/* 브랜드 로고 및 타이틀 */}
       <div className="brand-header">
         <div className="brand-logo">
-          <img src="/qmatchLogo.png" alt="QMatch" className="qmatch-logo-image" />
+          <img 
+            src={
+              theme === 'dark' ? "/qmatchLogoBlue.png" : 
+              theme === 'pink' ? "/qmatchLogoPink.png" : 
+              "/qmatchLogo.png"
+            } 
+            alt="QMatch" 
+            className="qmatch-logo-image" 
+          />
         </div>
       </div>
 

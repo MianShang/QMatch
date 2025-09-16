@@ -130,6 +130,7 @@
     height: 60px;
     width: auto;
     object-fit: contain;
+    opacity: 0.9;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
     animation: logoGlow 2s ease-in-out infinite alternate;
 }

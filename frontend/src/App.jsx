@@ -12,6 +12,8 @@ import LobbyPage from './route/lobbyPage/lobbyPage.jsx';
 import SearchPage from './route/searchPage/searchPage.jsx';
 import LoginPage from './route/loginPage/loginPage.jsx';
 import SignUpRoutePage from './route/loginPage/loginPageRoute/signupRoutePage.jsx';
+import AdminPage from './feature/admin/adminPage.jsx';
+
 
 // 로그인 체크용 Context API 생성
 export const LogContext = createContext();
@@ -44,6 +46,7 @@ function App() {
         if (isMounted) {
           // 전역으로 관리할 유저 데이터 State Set
           setUserData(userDataResponse.data);
+          console.log("서버에서 받은 실제 유저 데이터:", userDataResponse.data);
           // 로그인 체크용 State TRUE
           setIsLogIn(true);
         }
@@ -183,7 +186,17 @@ function App() {
             element={!isLogIn ? <LoginPage /> : <Navigate to="/" replace />} 
           />
           <Route path="/signup" element={<SignUpRoutePage />} />
+          <Route 
+            path="/admin"
+            // 3. 로그인 상태이고, 유저 역할이 'ADMIN'일 때만 페이지를 보여줍니다.
+            element={
+              isLogIn && userData?.authorities?.some(auth => auth.authority === 'ROLE_ADMIN')
+              ? <AdminPage />
+              : <Navigate to="/" replace />
+            }
+          />
         </Routes>
+        
       </LogContext.Provider>
       <ToastContainer
         position="top-right"

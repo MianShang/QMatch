@@ -19,6 +19,7 @@ import { useChatListGet } from '../../../hooks/chatList/useChatListGet.js'
 
 // Modal
 import UserHistoryModal from '../../../modal/userHistory/UserHistoryModal.jsx'
+import ReportModal from '../../../modal/ReportModal/ReportModal.jsx';
 
 //포털
 import DropdownPortal from './dropDownPotal.jsx'
@@ -71,6 +72,11 @@ function ChatListPage({
   // 실시간 프레즌스 상태 맵 & 전역 STOMP 커넥션
   const [statusByUser, setStatusByUser] = useState({});
   const presenceStompRef = useRef(null);
+
+  // 신고 관리 모달
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  // 신고할 유저 ID 저장
+  const [reportedUser, setReportedUser] = useState(null);
 
   // 커스텀훅
   useChatGetRooms(userData, setChatList);                      // 로그인한 유저의 채팅방
@@ -424,6 +430,14 @@ function ChatListPage({
           sendToModalGameName={sendToModalGameName}
           setUserHistoryOpen={setUserHistoryOpen}
           historyUserId={historyUserId}
+        />
+      )}
+      {/* 신고 모달 */}
+      {isReportModalOpen && (
+        <ReportModal
+          onClose={() => setIsReportModalOpen(false)}
+          reporterId={userData.userId}
+          reportedUserId={reportedUser}
         />
       )}
 
@@ -788,6 +802,7 @@ function ChatListPage({
               </p>
             )}
 
+
             {/* 채팅방 나가기 */}
             {(menu.userId === userData.userId) && (ownerUserId !== userData.userId) && (
             <p
@@ -835,6 +850,7 @@ function ChatListPage({
               </p>
             )}
 
+
             {/* 친구 추가 기능 */}
             {/* 자기 자신에게는 친구 추가 메뉴가 보이지 않도록 수정 */}
             {(menu.userId !== userData.userId) && (
@@ -861,6 +877,18 @@ function ChatListPage({
             <p onClick={() => { console.log('차단', menu.userId); setMenu(null); }}>
               차단하기
             </p>
+
+                        {/* 신고하기 */}
+                        {(menu.userId !== userData.userId) && (
+              <p onClick={() => {
+                setReportedUser(menu.userId); // 신고할 유저 ID 설정
+                setIsReportModalOpen(true);   // 열고
+                setMenu(null);                // 닫아
+              }}>
+                신고하기
+              </p>
+            )}
+            
           </div>
         </DropdownPortal>
       )}

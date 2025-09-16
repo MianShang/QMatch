@@ -31,18 +31,9 @@ public class userProfileController {
     //유저 정보 가져오기
     @GetMapping("/user/info")
     public ResponseEntity<UserResponseDto> getUserInfo(@RequestParam String userId) {
-        User user = userRepository.findByUserId(userId)
-                .orElseThrow(() -> new RuntimeException("유저 없음"));
 
-        return ResponseEntity.ok(new UserResponseDto(
-                user.getUserId(),
-                user.getUserName(),
-                user.getUserEmail(),
-                user.getUserProfile(),
-                user.getUserTags(),
-                user.getUserStatusMessage(),
-                user.getUserIntro()
-        ));
+        UserResponseDto response = userprofileService.getUserIntro(userId);
+        return ResponseEntity.ok(response);
     }
 
     //내 소개

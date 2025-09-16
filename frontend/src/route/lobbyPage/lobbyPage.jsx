@@ -94,13 +94,7 @@ function LobbyPage() {
     }
   }, [messages]);
   
-  //프로필 정보 DB에서 불러오기
-  useEffect(() => {
-    if (!userData?.userId) return;
-    axios.get("/api/profile/user/info", { params: { userId: userData.userId } })
-      .then(res => setUserData(res.data))
-      .catch(err => console.error("유저 정보 불러오기 실패:", err));
-  }, [userData?.userId, setUserData]);
+  
 
   useEffect(() => {
     
@@ -189,6 +183,11 @@ function LobbyPage() {
               </div>
             )}
           </div>
+
+          {userData?.authorities?.some(auth => auth.authority === 'ROLE_ADMIN') && (
+           <span><Link to="/admin">관리자 페이지</Link></span>
+           
+)}
 
 
           {/*프로필 이미지 클릭 → 바로 모달 열림 */}

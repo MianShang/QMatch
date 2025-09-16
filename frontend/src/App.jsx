@@ -39,9 +39,11 @@ function App() {
     return savedTheme || 'dark';
   });
 
-  // 테마 변경 함수
+  // 테마 변경 함수 - 4개 테마 순환
   const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    const themes = ['dark', 'light', 'pink', 'blue'];
+    const currentIndex = themes.indexOf(theme);
+    const newTheme = themes[(currentIndex + 1) % themes.length];
     setTheme(newTheme);
     localStorage.setItem('theme', newTheme);
   };

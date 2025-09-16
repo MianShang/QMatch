@@ -9,7 +9,7 @@
 }
 
 .LogRoutePageStyle{
-    color: #e0e0e0;
+    color: var(--discord-text-normal);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -29,7 +29,7 @@
 }
 
 .login-form h1 {
-  color: #4a9eff;
+  color: var(--discord-accent);
   margin-bottom: 10px;
   font-size: 2.2rem;
   font-weight: 700;
@@ -40,21 +40,21 @@
 .login-form input {
   padding: 12px;
   font-size: 16px;
-  border: 1px solid #444;
+  border: 1px solid var(--discord-bg-quaternary);
   border-radius: 8px;
   outline: none;
-  background-color: #2a2f36;
-  color: #fff;
+  background-color: var(--discord-bg-secondary);
+  color: var(--discord-text-normal);
   transition: all 0.2s ease;
 }
 
 .login-form input:focus {
-  border-color: #4a6ee1;
-  box-shadow: 0 0 8px rgba(74, 110, 225, 0.5);
+  border-color: var(--discord-accent);
+  box-shadow: 0 0 8px rgba(114, 137, 218, 0.5);
 }
 
 .login-form input::placeholder {
-  color: #888;
+  color: var(--discord-text-muted);
 }
 
 .login-form button {
@@ -63,7 +63,7 @@
   border: none;
   border-radius: 8px;
   cursor: pointer;
-  background: linear-gradient(135deg, #007bff, #5a65f2);
+  background: linear-gradient(135deg, var(--discord-accent), var(--discord-accent-hover));
   color: white;
   transition: all 0.2s ease;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -71,7 +71,8 @@
 
 .login-form button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+  box-shadow: 0 6px 15px rgba(114, 137, 218, 0.4);
+  background: linear-gradient(135deg, var(--discord-accent-hover), var(--discord-accent-active));
 }
 .login-form button:active {
   transform: translateY(0);

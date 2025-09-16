@@ -47,7 +47,6 @@ function SignUpRoutePage({ onSuccess }) {
   return (
     <div className='fullscreen LogRoutePageStyle'>
         <form className="login-form" onSubmit={ userJoin }>
-        <h1>회원가입</h1>
 
         <input type="text" id="userId" placeholder="아이디" required
             value={user.userId} onChange={handleChange}/>

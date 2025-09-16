@@ -11,6 +11,65 @@
     overflow: hidden;
 }
 
+/* 로그인 페이지 테마 전환 버튼 */
+.login-theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+}
+
+.login-theme-toggle .theme-toggle-button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.login-theme-toggle .theme-toggle-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.login-theme-toggle .theme-toggle-button:active {
+  transform: scale(0.95);
+}
+
+/* 블루 테마 특별 효과 */
+[data-theme="blue"] .login-theme-toggle .theme-toggle-button {
+  background: linear-gradient(45deg, #2196f3, #1976d2);
+  animation: bluePulse 3s ease-in-out infinite;
+}
+
+[data-theme="blue"] .login-theme-toggle .theme-toggle-button:hover {
+  background: linear-gradient(45deg, #42a5f5, #1565c0);
+  transform: scale(1.1) rotate(-3deg);
+  box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+}
+
+/* 핑크 테마 특별 효과 */
+[data-theme="pink"] .login-theme-toggle .theme-toggle-button {
+  background: linear-gradient(45deg, #ff4da6, #e91e63);
+  animation: pinkPulse 2s ease-in-out infinite;
+}
+
+[data-theme="pink"] .login-theme-toggle .theme-toggle-button:hover {
+  background: linear-gradient(45deg, #ff66b3, #c2185b);
+  transform: scale(1.15) rotate(5deg);
+  box-shadow: 0 8px 25px rgba(233, 30, 99, 0.4);
+}
+
 /* 배경 애니메이션 효과 */
 .fullscreen::before {
     content: '';
@@ -64,40 +123,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
     margin-bottom: 4px;
 }
 
-.logo-icon {
-    width: 40px;
-    height: 40px;
-    background: linear-gradient(135deg, var(--discord-accent) 0%, #7289da 100%);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    font-weight: 700;
-    color: white;
-    box-shadow: 
-        0 4px 16px rgba(88, 101, 242, 0.3),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+.qmatch-logo-image {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
     animation: logoGlow 2s ease-in-out infinite alternate;
 }
 
 @keyframes logoGlow {
-    0% { box-shadow: 0 4px 16px rgba(88, 101, 242, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
-    100% { box-shadow: 0 4px 20px rgba(88, 101, 242, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
-}
-
-.brand-name {
-    font-size: 28px;
-    font-weight: 700;
-    background: linear-gradient(135deg, var(--discord-text-normal) 0%, #ffffff 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    letter-spacing: -0.5px;
+    0% { filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2)); }
+    100% { filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3)); }
 }
 
 .brand-subtitle {

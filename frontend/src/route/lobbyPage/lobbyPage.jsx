@@ -373,7 +373,7 @@ function LobbyPage() {
               )}
             </div>
 
-            <div style={{ display: "flex", height: '75px' }}>
+            <div style={{ display: "flex" }}>
               <div className='adSize'>
                 <span style={{ color: 'var(--discord-text-muted)', fontSize: '14px' }}>
                   QMatch - 게임 팀원 모집 플랫폼

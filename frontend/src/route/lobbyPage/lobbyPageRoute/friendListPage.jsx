@@ -72,7 +72,6 @@ function FriendListPage() {
                 <FaXmark
                   size={25}
                   color="red"
-                  style={{ marginRight: "5px" }}
                   onClick={()=>deleteFriend(friend.userId,userData.userId)}
                   className='CheckBox'
                 />
@@ -99,7 +98,6 @@ function FriendListPage() {
         <div
           onClick={() => setBottomToggle(bottomToggle === 'blocked' ? null : 'blocked')}
           className={`bottomToggleSwitch ${bottomToggle === 'blocked' ? 'bottomActiveBorder' : 'bottomContentStyle'} `}
-          style={{ marginLeft: "10px" }}
         >
           차단 목록
         </div>

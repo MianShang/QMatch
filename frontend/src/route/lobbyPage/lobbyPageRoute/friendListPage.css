@@ -3,15 +3,10 @@
 .inventoryOverlay {
   position: absolute;
   z-index: 2;
-  height: calc(100% - 75px);
-  width: 278px;
-  flex-grow: 1;
-  background: var(--discord-bg-secondary);
-  border-radius: 8px;
-  border: 1px solid var(--discord-bg-tertiary);
-  box-shadow: var(--discord-elevation-high);
+  height: calc(100% + 10px);
+  width: 100%;
+  background: var(--discord-bg-primary);
 }
-
 
 /* 프로필 이미지와 상태 아이콘을 감싸는 컨테이너 */
 .profile-image-container {
@@ -35,7 +30,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 2px solid var(--discord-bg-primary);
+  border: 1px solid var(--discord-bg-primary);
   box-sizing: border-box;
   box-shadow: 0 0 0 1px var(--discord-bg-tertiary);
 }
@@ -62,13 +57,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border: none;
     color: var(--discord-text-muted);
     z-index: 2;
     font-size: 16px;
     font-weight: 500;
-    border-radius: 6px;
-    background: transparent;
+    
 }
 
 /* 토글 버튼 활성시 그래픽 */
@@ -79,14 +72,11 @@
 }
 
 .bottomContentStyle{
-    background: transparent;
-    border-radius: 6px;
+    background: var(--discord-bg-primary);
     text-align: center;
-    border: none;
 }
 
 .bottomToggleSwitch:hover {
-    background: var(--discord-bg-modifier-hover);
     color: var(--discord-text-normal);
 }
 
@@ -107,7 +97,6 @@
 /* Discord 스타일 버튼 아이콘 */
 .CheckBox {
   padding: 6px;
-  border-radius: 4px;
   transition: all 0.2s ease;
   cursor: pointer;
   display: flex;

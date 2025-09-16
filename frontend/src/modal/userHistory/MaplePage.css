@@ -27,7 +27,6 @@
   margin-bottom: 10px;
 }
 
-/* 캐릭터 이미지 영역 - 왼쪽 */
 .maple-image {
   background-color: #444;
   border-radius: 8px;
@@ -46,14 +45,13 @@
   border: 2px solid #666;
 }
 
-/* 기본 정보 영역 - 오른쪽 */
 .maple-info {
   background-color: #444;
   color: white;
   padding: 15px;
   border-radius: 8px;
-  flex: 1; 
-  text-align: left; 
+  flex: 1;
+  text-align: left;
 }
 
 .maple-info h2 {
@@ -67,13 +65,13 @@
   color: #ddd;
 }
 
-/* 장비 섹션 - 하단 */
+/* 장비 섹션 */
 .maple-equipment-section {
   background-color: #333;
   border-radius: 8px;
   padding: 12px;
-  height: auto;             
-  max-height: 170px;        
+  height: auto;
+  max-height: 220px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -87,7 +85,7 @@
   text-align: center;
 }
 
-/* 장비 리스트 - 세로 스크롤 */
+/* 장비 리스트 */
 .maple-equipment-list {
   flex: 1;
   overflow-y: auto;
@@ -125,21 +123,18 @@
   font-size: 12px;
 }
 
-/* 스크롤바 스타일링 */
+/* 스크롤바 */
 .maple-equipment-list::-webkit-scrollbar {
   width: 6px;
 }
-
 .maple-equipment-list::-webkit-scrollbar-track {
   background: #444;
   border-radius: 3px;
 }
-
 .maple-equipment-list::-webkit-scrollbar-thumb {
   background: #666;
   border-radius: 3px;
 }
-
 .maple-equipment-list::-webkit-scrollbar-thumb:hover {
   background: #777;
 }
@@ -154,3 +149,63 @@
   align-items: center;
   justify-content: center;
 }
+
+/* ---------------- Tooltip ---------------- */
+.customTooltip {
+  background: rgba(20, 20, 20, 0.95) !important;
+  border: 1px solid #888 !important;
+  border-radius: 6px !important;
+  padding: 12px !important;
+  font-size: 13px;
+  color: white;
+  max-width: 280px;
+  text-align: left;
+  line-height: 1.5;
+}
+
+.customTooltip strong {
+  display: block;
+  font-size: 14px;
+  margin: 6px 0;
+}
+
+.customTooltip hr {
+  border: none;
+  border-top: 1px solid #555;
+  margin: 6px 0;
+}
+
+/* ⭐ 스타포스 별 */
+.stars {
+  display: inline-flex;        /* 컨테이너 자체는 인라인처럼 차지 */
+  flex-direction: column;      /* 줄 단위 세로 배치 */
+  gap: 2px;                    /* 줄 사이 간격 */
+  color: #FFD700;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.star-row {
+  display: flex;               /* 한 줄에서 그룹을 가로로 배치 */
+  gap: 6px;                    /* 5개 그룹 사이 간격 (인게임의 살짝 띄움) */
+}
+
+.star-group {
+  letter-spacing: 1px;         /* 그룹 내부 별 사이 미세 간격 */
+  /* 필요시 고정폭 느낌을 더 주고 싶으면 아래 주석 해제
+  font-family: "Noto Sans Symbols", "Segoe UI Symbol", "Malgun Gothic", sans-serif;
+  */
+}
+
+/* 스탯 색상 */
+.stat-total { color: #00FFFF; }
+.stat-base { color: #FFFFFF; }
+.stat-add { color: #00FF00; }
+.stat-enchant { color: #AAAAAA; }
+.stat-starforce { color: #FFD700; }
+
+/* 잠재옵션 등급별 */
+.potential-legendary { color: #00FF00; font-weight: bold; }
+.potential-unique { color: #FFD700; font-weight: bold; }
+.potential-epic { color: #A020F0; font-weight: bold; }
+.potential-rare { color: #00BFFF; font-weight: bold; }

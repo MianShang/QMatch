@@ -1,8 +1,8 @@
 .lostark-box {
   display: flex;
   flex-direction: row;
-  padding: 20px;
-  gap: 20px;
+  padding: 24px;
+  gap: 24px;
   height: 100%;
   overflow-y: auto;
 }
@@ -17,39 +17,30 @@
   border-radius: 0;
   border: none;
   box-shadow: none;
-  width: 350px;
+  width: 280px;
   flex-shrink: 0;
   margin-bottom: 0;
-  position: relative;
-  overflow: hidden;
 }
 
 .lostark-image-container img {
   max-width: 100%;
-  max-height: 400px;
+  max-height: 300px;
   width: auto;
   height: auto;
   object-fit: contain;
   border-radius: 0;
   box-shadow: none;
-  transition: transform 0.3s ease;
-}
-.lostark-image-container img:hover {
-  transform: scale(1.05);
 }
 
 /* 스탯 섹션 */
 .lostark-stats-section {
   flex: 1;
-  background: linear-gradient(135deg, var(--discord-bg-secondary) 0%, rgba(114, 137, 218, 0.05) 100%);
-  border-radius: 16px;
-  border: 1px solid rgba(114, 137, 218, 0.15);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  background: var(--discord-bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--discord-bg-tertiary);
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  position: relative;
-  backdrop-filter: blur(10px);
 }
 
 .lostark-stats-header {
@@ -64,49 +55,46 @@
 }
 
 .lostark-stats-grid {
-  padding: 20px 25px;
+  padding: 16px 20px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
+  gap: 12px;
   flex: 1;
   overflow-y: auto;
 }
 
 .lostark-stat-item {
-  background: linear-gradient(135deg, var(--discord-bg-primary) 0%, rgba(114, 137, 218, 0.03) 100%);
-  border-radius: 12px;
-  padding: 18px;
-  border: 1px solid rgba(114, 137, 218, 0.1);
-  transition: all 0.3s ease;
+  background: var(--discord-bg-primary);
+  border-radius: 6px;
+  padding: 12px;
+  border: 1px solid var(--discord-bg-quaternary);
+  transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 10px;
-  position: relative;
-  overflow: hidden;
+  gap: 6px;
   justify-content: center;
-  backdrop-filter: blur(5px);
 }
 
 .lostark-stat-item:hover {
   background: var(--discord-bg-modifier-hover);
-  border-color: var(--discord-bg-quaternary);
+  border-color: var(--discord-bg-tertiary);
 }
 
 .lostark-stat-label {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--discord-text-muted);
   font-weight: 500;
   margin: 0;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .lostark-stat-value {
-  font-size: 16px;
+  font-size: 14px;
   color: var(--discord-text-normal);
-  font-weight: 600;
+  font-weight: 500;
   margin: 0;
 }
 

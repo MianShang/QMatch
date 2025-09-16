@@ -83,10 +83,6 @@ function LogInRoutePage() {
     <div className="LogRoutePageStyle fullscreen">
 
       <form className="login-form" onSubmit={handleSubmit}>
-        {/* 상단 로그인 문구 */}
-        <div>
-            <h1>로그인 </h1>
-        </div>
 
         <input type="text" name="username" placeholder='ID' required
             value={credentials.username} onChange={handleChange} />

@@ -90,14 +90,14 @@ function FriendListPage() {
       <div style={{ display: "flex", position: 'relative' }}>
         {/* 친구 요청 버튼 */}
         <div
-          onClick={() => setBottomToggle('friends')}
+          onClick={() => setBottomToggle(bottomToggle === 'friends' ? null : 'friends')}
           className={`bottomToggleSwitch ${bottomToggle === 'friends' ? 'bottomActiveBorder' : 'bottomContentStyle'}`} >
           친구 요청
         </div>
 
         {/* 차단 목록 버튼 */}
         <div
-          onClick={() => setBottomToggle('blocked')}
+          onClick={() => setBottomToggle(bottomToggle === 'blocked' ? null : 'blocked')}
           className={`bottomToggleSwitch ${bottomToggle === 'blocked' ? 'bottomActiveBorder' : 'bottomContentStyle'} `}
           style={{ marginLeft: "10px" }}
         >

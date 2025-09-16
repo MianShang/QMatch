@@ -1,8 +1,8 @@
 .lol-box {
   display: flex;
   flex-direction: row;
-  padding: 20px;
-  gap: 20px;
+  padding: 24px;
+  gap: 24px;
   height: 100%;
   overflow-y: auto;
 }
@@ -10,75 +10,63 @@
 .tier-box {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 20px;
     align-items: center;
-    padding: 32px 28px;
-    background: linear-gradient(135deg, var(--discord-bg-secondary) 0%, rgba(114, 137, 218, 0.1) 100%);
-    border-radius: 16px;
-    border: 1px solid rgba(114, 137, 218, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
-    width: 320px;
+    padding: 24px;
+    background: var(--discord-bg-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--discord-bg-tertiary);
+    width: 280px;
     flex-shrink: 0;
-    position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(10px);
 }
 
 .tier-img {
-    width: 120px;
-    height: 120px;
+    width: 100px;
+    height: 100px;
     border-radius: 0;
     box-shadow: none;
-    transition: transform 0.3s ease;
-}
-.tier-img:hover {
-    transform: scale(1.05);
 }
 
 .tier-info p {
     margin: 0;
-    font-size: 15px;
+    font-size: 14px;
     color: var(--discord-text-normal);
-    line-height: 1.6;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    letter-spacing: 0.3px;
+    line-height: 1.4;
+    text-align: center;
 }
 
 .tier-info p:first-child {
-    font-size: 20px;
-    font-weight: 700;
+    font-size: 18px;
+    font-weight: 600;
     color: var(--discord-text-normal);
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .tier-info p:nth-child(2) {
-    font-size: 18px;
-    font-weight: 600;
+    font-size: 16px;
+    font-weight: 500;
     color: var(--discord-accent);
     margin-bottom: 4px;
 }
 
 .tier-info p:nth-child(3) {
     color: var(--discord-text-positive);
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .tier-info p:last-child {
     color: var(--discord-text-link);
-    font-weight: 600;
+    font-weight: 500;
 }
 
 .most-section {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, var(--discord-bg-secondary) 0%, rgba(114, 137, 218, 0.05) 100%);
-  border-radius: 16px;
-  border: 1px solid rgba(114, 137, 218, 0.15);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  background: var(--discord-bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--discord-bg-tertiary);
   overflow: hidden;
-  position: relative;
-  backdrop-filter: blur(10px);
 }
 
 .most-title {
@@ -92,10 +80,10 @@
 }
 
 .champion-list {
-  padding: 20px 25px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
   flex: 1;
   overflow-y: auto;
 }
@@ -103,59 +91,41 @@
 .champ-item {
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 18px;
-  background: linear-gradient(135deg, var(--discord-bg-primary) 0%, rgba(114, 137, 218, 0.03) 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(114, 137, 218, 0.1);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(5px);
+  gap: 16px;
+  padding: 12px;
+  background: var(--discord-bg-primary);
+  border-radius: 6px;
+  border: 1px solid var(--discord-bg-quaternary);
+  transition: all 0.2s ease;
 }
 
 .champ-item:hover {
   background: var(--discord-bg-modifier-hover);
-  border-color: var(--discord-bg-quaternary);
-}
-
-.champ-item:first-child {
-  background: var(--discord-bg-primary);
-  border-color: var(--discord-bg-tertiary);
-}
-
-.champ-item:nth-child(2) {
-  background: var(--discord-bg-primary);
-  border-color: var(--discord-bg-tertiary);
-}
-
-.champ-item:nth-child(3) {
-  background: var(--discord-bg-primary);
   border-color: var(--discord-bg-tertiary);
 }
 
 .champ-img {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
 }
 
 .champ-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
 }
 
 .champ-name {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--discord-text-normal);
   margin: 0;
 }
 
 .champ-points {
-  font-size: 14px;
+  font-size: 12px;
   color: var(--discord-text-muted);
   margin: 0;
 }

@@ -87,7 +87,7 @@ function LobbyPage() {
 
   // 참여자 패널 상태
   const [isMembersPanelOpen, setIsMembersPanelOpen] = useState(false);
-
+  
   // 커스텀 훅 가져오기
   // --UseEffect
   useLoginCheck(isLogIn);                                          // 로그인 체크 훅
@@ -119,7 +119,7 @@ function LobbyPage() {
       container.scrollTop = container.scrollHeight;
     }
   }, [messages]);
-
+  
   //프로필 정보 DB에서 불러오기
   useEffect(() => {
     if (!userData?.userId) return;
@@ -129,9 +129,9 @@ function LobbyPage() {
   }, [userData?.userId, setUserData]);
 
   useEffect(() => {
-
+    
     const s = location.state;
-
+    
     if (!s?.roomId) return;
 
     setSelectedRoom(undefined);
@@ -140,42 +140,42 @@ function LobbyPage() {
 
     (async () => {
       try {
-        const id = encodeURIComponent(s.roomId);
-        const { data } = await axios.get(`/api/chat/rooms/${id}`);
-
-        // 서버에서 상세 방 정보를 가져와 state 업데이트
+            const id = encodeURIComponent(s.roomId);
+            const { data } = await axios.get(`/api/chat/rooms/${id}`);
+          
+            // 서버에서 상세 방 정보를 가져와 state 업데이트
         console.log('서버에서 받은 방 정보:', data);
-        setSelectedRoom({
-          id: data.id,
-          name: data.name ?? s.chatName,
-          gameName: data.gameName ?? s.gameName,
-          tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
+            setSelectedRoom({
+              id: data.id,
+              name: data.name ?? s.chatName,
+              gameName: data.gameName ?? s.gameName,
+              tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
           currentUsers: (typeof data.currentUsers === 'number') ? data.currentUsers : s.currentUsers,
           maxUsers: (typeof data.maxUsers === 'number') ? data.maxUsers : s.maxUsers,
           hostUserId: data.hostUserId, // 방장 ID 추가
-        });
-      } catch (e) {
-        setSelectedRoom({
-          id: s.roomId,
-          name: s.chatName,
-          gameName: s.gameName,
-          tagNames: s.tagNames ?? [],
+            });
+          } catch (e) {
+            setSelectedRoom({
+              id: s.roomId,
+              name: s.chatName,
+              gameName: s.gameName,
+              tagNames: s.tagNames ?? [],
           currentUsers: s.currentUsers,
           maxUsers: s.maxUsers,
           hostUserId: s.hostUserId, // chatList에서 hostUserId 가져오기
-        });
-      } finally {
-        setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
+            });
+          } finally {
+            setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
 
         // 채팅방 이동 시 메시지 로딩 및 읽음 처리
         console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId);
         getChatList(s.roomId, setMessages);
         setRead({ id: s.roomId });
-      }
-    })();
-  }, [location.key]);
+          }
+        })();
+    }, [location.key]);
 
-  // userData가 로드될 때까지 로딩
+        // userData가 로드될 때까지 로딩
   if (!userData) {
     return <div>userData 로딩중</div>;
   }
@@ -208,10 +208,10 @@ function LobbyPage() {
                   selectedRoom={selectedRoom}
                   setSelectedRoom={setSelectedRoom}
                   onOpenProfile={(targetUserId) => { setProfileUserId(targetUserId); setShowProfileModal(true); }}
-                  currentUserStatus={userStatus}
+                  currentUserStatus={userStatus} 
                   globalStomp={globalStomp}
                   refreshTick={listRefreshTick}
-                  voiceSpeakers={voiceSpeakers}
+                  voiceSpeakers={voiceSpeakers} 
                   onJoinVoice={(roomId) => {
                     setVoiceChatRoomId(roomId)
                     // ref를 통해 VoiceChat 컴포넌트의 joinChannel 함수를 호출
@@ -224,14 +224,14 @@ function LobbyPage() {
                       voiceChatRef.current.leaveChannel();
                     }
                   }}
-                  onToggleMute={() => {
+                  onToggleMute={() => { 
                     if (voiceChatRef.current) {
                       voiceChatRef.current.toggleMute();
                     }
                   }}
                   localMuted={localMuted}
-                  joinedVoice={joinedVoice}
-                  voiceChatRoomId={voiceChatRoomId}
+                  joinedVoice={joinedVoice} 
+                  voiceChatRoomId={voiceChatRoomId} 
                   onMembersPanelToggle={setIsMembersPanelOpen}
                   setHasUnreadMessages={setHasUnreadMessages}
                 />
@@ -280,6 +280,20 @@ function LobbyPage() {
                 </div>
               </div>
 
+              {/* 테마 전환 버튼 */}
+              <div className="theme-toggle-wrapper">
+                <button
+                  onClick={toggleTheme}
+                  className="theme-toggle-button"
+                  title={`현재 테마: ${theme === 'dark' ? '다크' : theme === 'light' ? '라이트' : theme === 'pink' ? '핑크' : '블루'}`}
+                >
+                  {theme === 'dark' && '🌙'}
+                  {theme === 'light' && '☀️'}
+                  {theme === 'pink' && '💖'}
+                  {theme === 'blue' && '💙'}
+                </button>
+              </div>
+
               {/* 음성 설정 버튼 */}
               <button
                 className="bottom-button"
@@ -291,16 +305,6 @@ function LobbyPage() {
                 </svg>
               </button>
 
-              {/* 다크모드 토글 버튼 */}
-              <button
-                className="bottom-button"
-                aria-label="테마 토글"
-                onClick={toggleTheme}
-              >
-                <svg className="button-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12,18C11.11,18 10.26,17.8 9.5,17.45C11.56,16.5 13,14.42 13,12C13,9.58 11.56,7.5 9.5,6.55C10.26,6.2 11.11,6 12,6A6,6 0 0,1 18,12A6,6 0 0,1 12,18M20,8.69V4H15.31L12,0.69L8.69,4H4V8.69L0.69,12L4,15.31V20H8.69L12,23.31L15.31,20H20V15.31L23.31,12L20,8.69Z" />
-                </svg>
-              </button>
 
               {/* 전체 설정 버튼 */}
               <button
@@ -340,38 +344,37 @@ function LobbyPage() {
               </div>
             )}
 
-            <div className='contentStyle chatSize' style={{ textAlign: "left" }}>
-              <div ref={messageContainerRef} className='scroll-container chatDivStyle'>
+          <div className='contentStyle chatSize' style={{ textAlign: "left" }}>
+            <div ref={messageContainerRef} className='scroll-container chatDivStyle'>
                 {selectedRoom ? (
-                  <MessageList
-                    messages={messages}
-                    userData={userData} />
+              <MessageList
+                messages={messages}
+                userData={userData} />
                 ) : (
                   <div className="empty-chat-container">
                     <div className="empty-chat-logo">
-                      <div className="logo-icon">Q</div>
-                      <span className="brand-name">QMatch</span>
+                      <img src="/qmatchLogo.png" alt="QMatch" className="qmatch-logo-image" />
                     </div>
                     <p className="empty-chat-text">채팅방을 선택하여 대화를 시작하세요</p>
                   </div>
                 )}
-              </div>
+            </div>
 
               {selectedRoom && (
-                <div className="inputSize">
-                  <input
-                    className='chatInputStyle'
-                    type="text"
+            <div className="inputSize">
+              <input
+                className='chatInputStyle'
+                type="text"
                     placeholder="메시지를 입력하세요..."
-                    value={input}
-                    onChange={(e) => { setInput(e.target.value); }}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { sendMessage(); } }} />
+                value={input}
+                onChange={(e) => { setInput(e.target.value); }}
+                onKeyDown={(e) => { if (e.key === 'Enter') { sendMessage(); } }} />
 
-                  <button className='chatButtonStyle'
+              <button className='chatButtonStyle'
                     onClick={() => { sendMessage(); }}>
                     ➤
                   </button>
-                </div>
+            </div>
               )}
             </div>
 
@@ -384,8 +387,8 @@ function LobbyPage() {
               <Link to="/search">
                 <div className='searchSize'>
                   <img src="/SearchIcon.png" className='imgPos' alt="검색"></img>
-                </div>
-              </Link>
+              </div>
+            </Link>
             </div>
           </div>
         </div>
@@ -403,20 +406,20 @@ function LobbyPage() {
       {/*음성설정 모달*/}
       {showVoiceChatModal &&
         <VoiceChatModal viewUserId={profileUserId}
-          userData={userData}
-          setUserData={setUserData}
-          onClose={() => setShowVoiceChatModal(false)}
-        />}
+        userData={userData}
+        setUserData={setUserData}
+        onClose={() => setShowVoiceChatModal(false)}
+      />}
 
       {/* VoiceChat 컴포넌트를 lobbyPage에 렌더링 */}
-      <VoiceChat
-        channelName={voiceChatRoomId}
-        uid={userData.userId}
-        onSpeakers={setVoiceSpeakers}
-        onLocalMuteChange={setLocalMuted}
-        onJoinChange={setJoinedVoice}
-        ref={voiceChatRef}
-      />
+          <VoiceChat
+              channelName={voiceChatRoomId}
+              uid={userData.userId}
+              onSpeakers={setVoiceSpeakers}
+              onLocalMuteChange={setLocalMuted}
+              onJoinChange={setJoinedVoice}
+              ref={voiceChatRef}
+          />
 
       {/* 입장 신청 관리 모달 제거 - 기존 UI에 통합 */}
     </>

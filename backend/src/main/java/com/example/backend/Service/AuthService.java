@@ -32,18 +32,21 @@ public class AuthService {
         MyUserDetailsService.CustomUserDetails user = (MyUserDetailsService.CustomUserDetails) auth.getPrincipal();
 
         // UserDTO
-        UserResponseDto userResponseDto = new UserResponseDto();
+        //UserResponseDto userResponseDto = new UserResponseDto();
+
 
         // 데이터 Set
-        userResponseDto.setUserId(user.userId);
-        userResponseDto.setUserName(user.getUsername());
-        userResponseDto.setUserEmail(user.userEmail);
-        userResponseDto.setUserProfile(user.userProfile);
-        userResponseDto.setUserStatusMessage(user.userStatusMessage);
-        userResponseDto.setUserIntro(user.userIntro);
-        userResponseDto.setJoinStatus(null); // 인증 서비스에서는 joinStatus는 null
 
-        return userResponseDto;
+//        userResponseDto.setUserId(user.userId);
+//        userResponseDto.setUserName(user.getUsername());
+//        userResponseDto.setUserEmail(user.userEmail);
+//        userResponseDto.setUserProfile(user.userProfile);
+//        userResponseDto.setUserStatusMessage(user.userStatusMessage);
+//        userResponseDto.setUserIntro(user.userIntro);
+//        userResponseDto.setJoinStatus(null); // 인증 서비스에서는 joinStatus는 null
+
+
+        return UserResponseDto.from(user);
     }
 
 

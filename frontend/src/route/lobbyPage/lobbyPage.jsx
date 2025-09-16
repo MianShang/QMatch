@@ -90,14 +90,14 @@ function LobbyPage() {
   
   // 커스텀 훅 가져오기
   // --UseEffect
-  useLoginCheck(isLogIn);                                          // 로그인 체크 훅
+  useLoginCheck(isLogIn);                                         // 로그인 체크 훅
   useChatSubscriber(selectedRoom, setMessages, setClient, userData, globalStomp);    // 채팅방 구독 훅
 
   // -- Function
   const logoutFunc = useLogout();                                          // 로그아웃 훅
   const sendMessage = useChatSender(client, selectedRoom, userData, input, setInput);   // 메세지 전송 훅 
 
-  const location = useLocation();                                 // 방 입장 시 전달된 state 확인
+  const location = useLocation();                                      // 방 입장 시 전달된 state 확인
   const [listRefreshTick, setListRefreshTick] = useState(0);      // 방 목록 강제 리렌더링 트리거
 
   // useUserStatusReporter 훅에서 반환되는 새로운 함수를 받음
@@ -120,13 +120,7 @@ function LobbyPage() {
     }
   }, [messages]);
   
-  //프로필 정보 DB에서 불러오기
-  useEffect(() => {
-    if (!userData?.userId) return;
-    axios.get("/api/profile/user/info", { params: { userId: userData.userId } })
-      .then(res => setUserData(res.data))
-      .catch(err => console.error("유저 정보 불러오기 실패:", err));
-  }, [userData?.userId, setUserData]);
+  
 
   useEffect(() => {
     
@@ -140,39 +134,39 @@ function LobbyPage() {
 
     (async () => {
       try {
-            const id = encodeURIComponent(s.roomId);
-            const { data } = await axios.get(`/api/chat/rooms/${id}`);
-          
-            // 서버에서 상세 방 정보를 가져와 state 업데이트
+          const id = encodeURIComponent(s.roomId);
+          const { data } = await axios.get(`/api/chat/rooms/${id}`);
+        
+          // 서버에서 상세 방 정보를 가져와 state 업데이트
         console.log('서버에서 받은 방 정보:', data);
-            setSelectedRoom({
-              id: data.id,
-              name: data.name ?? s.chatName,
-              gameName: data.gameName ?? s.gameName,
-              tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
+          setSelectedRoom({
+            id: data.id,
+            name: data.name ?? s.chatName,
+            gameName: data.gameName ?? s.gameName,
+            tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
           currentUsers: (typeof data.currentUsers === 'number') ? data.currentUsers : s.currentUsers,
           maxUsers: (typeof data.maxUsers === 'number') ? data.maxUsers : s.maxUsers,
           hostUserId: data.hostUserId, // 방장 ID 추가
-            });
-          } catch (e) {
-            setSelectedRoom({
-              id: s.roomId,
-              name: s.chatName,
-              gameName: s.gameName,
-              tagNames: s.tagNames ?? [],
+          });
+        } catch (e) {
+          setSelectedRoom({
+            id: s.roomId,
+            name: s.chatName,
+            gameName: s.gameName,
+            tagNames: s.tagNames ?? [],
           currentUsers: s.currentUsers,
           maxUsers: s.maxUsers,
           hostUserId: s.hostUserId, // chatList에서 hostUserId 가져오기
-            });
-          } finally {
-            setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
+          });
+        } finally {
+          setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
 
         // 채팅방 이동 시 메시지 로딩 및 읽음 처리
         console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId);
         getChatList(s.roomId, setMessages);
         setRead({ id: s.roomId });
-          }
-        })();
+        }
+      })();
     }, [location.key]);
 
         // userData가 로드될 때까지 로딩
@@ -183,10 +177,8 @@ function LobbyPage() {
 
   return (
     <>
-
       <div className='fullscreen'>
-
-        {/* 좌측 채팅/친구 바 - 맨 왼쪽으로 이동 */}
+        {/* 중앙 친구/채팅 바 */}
         {showMidBar &&
           <div className='leftBarSize'>
             <div className="toggle-container">
@@ -240,6 +232,9 @@ function LobbyPage() {
 
             {/* 하단 버튼 영역 */}
             <div className="bottom-buttons-container">
+            {userData?.authorities?.some(auth => auth.authority === 'ROLE_ADMIN') && (
+                  <span><Link to="/admin">관리자 페이지</Link></span>
+                )}
               {/* 프로필 이미지 버튼 */}
               <div className="profile-button-wrapper">
                 <img

@@ -19,6 +19,7 @@ import { blockUser } from '../../../hooks/friends/userBlock.js';
 
 // Modal
 import UserHistoryModal from '../../../modal/userHistory/UserHistoryModal.jsx'
+import ReportModal from '../../../modal/ReportModal/ReportModal.jsx';
 
 //포털
 import DropdownPortal from './dropDownPotal.jsx'
@@ -84,8 +85,13 @@ function ChatListPage({
   // 실시간 프레즌스 상태 맵
   const [statusByUser, setStatusByUser] = useState({});
 
+  // 신고 관리 모달
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  // 신고할 유저 ID 저장
+  const [reportedUser, setReportedUser] = useState(null);
+
   // 커스텀훅
-  useChatGetRooms(userData, setChatList);                      // 로그인한 유저의 채팅방
+  useChatGetRooms(userData, setChatList);              // 로그인한 유저의 채팅방
   useUnReadChatCount(userData, chatList, setUnreadCounts);     // 안읽은 메세지 카운트
   useNewChatNotice(userData, selectedRoom, setUnreadCounts, globalStomp);   // 새 메세지 알림
 
@@ -711,6 +717,15 @@ function ChatListPage({
             historyUserId={historyUserId}
           />
         )}
+        {/* 신고 모달 */}
+        {isReportModalOpen && (
+          <ReportModal
+            onClose={() => setIsReportModalOpen(false)}
+            reporterId={userData.userId}
+            reportedUserId={reportedUser}
+          />
+        )}
+
 
         {/* 상단: 선택한 채팅방 카드 */}
         {selectedRoom && (
@@ -796,23 +811,23 @@ function ChatListPage({
                       )}
 
                       {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 
-                    <div
-                      className="MoreButtonStyle"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        const menuWidth = 170;
-                        const gap = 8;
-                        setMenu({
-                          userId: item.userId,
-                          gameName: selectedRoom?.gameName,
-                          x: Math.max(8, rect.right - menuWidth),
-                          y: rect.bottom + gap,
-                        });
-                      }}
-                    >
-                      …
-                    </div>*/}
+                      <div
+                        className="MoreButtonStyle"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const menuWidth = 170;
+                          const gap = 8;
+                          setMenu({
+                            userId: item.userId,
+                            gameName: selectedRoom?.gameName,
+                            x: Math.max(8, rect.right - menuWidth),
+                            y: rect.bottom + gap,
+                          });
+                        }}
+                      >
+                        …
+                      </div>*/}
                     </div>
                   );
                 })}
@@ -820,12 +835,12 @@ function ChatListPage({
             }
 
             {/* 확장 토글
-          <div onClick={() => {
-            setChatListExtend(!chatListExtend);
-            getChatUserList(selectedRoom.id);
-          }}>
-            {!chatListExtend ? <p>▼</p> : <p>▲</p>}
-          </div> */}
+            <div onClick={() => {
+              setChatListExtend(!chatListExtend);
+              getChatUserList(selectedRoom.id);
+            }}>
+              {!chatListExtend ? <p>▼</p> : <p>▲</p>}
+            </div> */}
           </div>
         )}
 
@@ -876,160 +891,6 @@ function ChatListPage({
                 </div>)
             })}
         </div>
-
-        {/* 드롭 다운을 최상단에 위치 */}
-        {menu && (
-          <DropdownPortal x={menu.x} y={menu.y} onClose={() => setMenu(null)}>
-            <div className="dropdownMenu">
-              <p onClick={() => {
-                onOpenProfile?.(menu.userId);
-                setMenu(null);
-              }}> 프로필 보기</p>
-
-              <p onClick={() => {
-                console.log('간단 스펙 보기', menu.userId);
-                setSendToModalGameName(menu.gameName);
-                setHistoryUserId(menu.userId);
-                setUserHistoryOpen(true)
-                setMenu(null);
-              }}>
-                간단 스펙 보기
-              </p>
-
-              {pendingUsers.find(u => u.userId === menu.userId) ? null : (
-                <>
-                  {/* 강퇴 */}
-                  {(selectedRoom?.hostUserId === userData.userId) && (menu.userId !== userData.userId) && (
-                    <p onClick={async () => {
-                      try {
-                        await fetch(`/api/chat/rooms/${selectedRoom.id}/kick`, {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            targetUserId: menu.userId,
-                            requesterUserId: userData.userId
-                          })
-                        });
-                        toast.success('강퇴 성공:', menu.userId);
-                      } catch (err) {
-                        toast.error('강퇴 실패:', err);
-                      }
-                      setMenu(null);
-                    }}>
-                      강퇴하기
-                    </p>
-                  )}
-
-                  {/* 방장 권한 넘기기 */}
-                  {(selectedRoom?.hostUserId === userData.userId) && (menu.userId !== userData.userId) && (
-                    <p onClick={async () => {
-                      try {
-                        await fetch(`/api/chat/rooms/${selectedRoom.id}/transfer`, {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            fromUserId: userData.userId,
-                            toUserId: menu.userId
-                          })
-                        });
-                      } catch (err) {
-                        toast.error('방장 넘기기에 실패했습니다.');
-                      }
-                      setMenu(null);
-                    }}>
-                      방장 넘기기
-                    </p>
-                  )}
-
-                  {/* 채팅방 나가기 */}
-                  {(menu.userId === userData.userId) && (selectedRoom?.hostUserId !== userData.userId) && (
-                    <p
-                      className="chatCardDelete"
-                      onClick={async (e) => {
-                        e.stopPropagation();
-
-                        const ok = await confirmToast("정말 이 방에서 나가시겠습니까?");
-                        if (!ok) return;
-
-                        try {
-                          await fetch(
-                            // item 대신 selectedRoom을 사용
-                            `/api/chat/rooms/${selectedRoom.id}/leave?userId=${userData.userId}`,
-                            { method: "DELETE" }
-                          );
-                          setChatList(prev => prev.filter(r => r.chatRoom.id !== selectedRoom.id));
-                          setSelectedRoom(null);
-                          setMessages([]);
-                          toast.success("성공적으로 나가졌습니다!");
-                        } catch (err) {
-                          console.error("방 나가기 실패:", err);
-                          toast.error("방 나가기 실패");
-                        }
-                        setMenu(null);
-                        closeMembers();
-                      }}
-                    >
-                      방 나가기
-                    </p>
-                  )}
-
-                  {/* 방 삭제 */}
-                  {(selectedRoom?.hostUserId === userData.userId) && (chatUserList.length === 1) && (
-                    <p
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteRoom(selectedRoom.id, userData.userId);
-                        setMenu(null);
-                        closeMembers();
-                      }}
-                    >
-                      방 삭제
-                    </p>
-                  )}
-
-                  {/* 친구 추가 기능 */}
-                  {/* 자기 자신에게는 친구 추가 메뉴가 보이지 않도록 수정 */}
-                  {(menu.userId !== userData.userId) && (
-                    <p onClick={async () => {
-                      // 훅에서 반환된 함수 호출
-                      const requesterId = userData.userId;
-                      const addresseeId = menu.userId;
-                      const result = await sendRequest(requesterId, addresseeId);
-                      if (result.success) {
-                        toast.success(result.message);
-                      }
-                      else {
-                        toast.error(result.message);
-                      }
-                      setMenu(null);
-                    }}>
-                      친구 추가
-                    </p>
-                  )}
-
-                  {/* 여기는 추후에 추가 */}
-                  {(menu.userId !== userData.userId) && (
-                    <p onClick={async () => {
-                      // 훅에서 반환된 함수 호출
-                      const requesterId = userData.userId;
-                      const blockedId = menu.userId;
-                      const result = await sendBlockRequest(requesterId, blockedId);
-                      if (result.success) {
-                        toast.success(result.message);
-                      }
-                      else {
-                        toast.error(result.message);
-                      }
-                      setMenu(null);
-                    }}>
-                      차단 하기
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
-          </DropdownPortal>
-        )}
       </div>
 
       {/* 참여자 패널(채팅창과 채팅목록 사이에 위치) */}
@@ -1063,7 +924,7 @@ function ChatListPage({
                       const eff = getEffectiveStatus(u);
                       const isPending = u.joinStatus === 'PENDING';
                       return (
-                        <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'away-' + u.userId}>
+                        <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'online-' + u.userId}>
                           <span className={`membersName ${isPending ? 'membersName--pending' : ''}`}>
                             {u.userId}
                             {isPending && ' (대기중)'}
@@ -1158,7 +1019,7 @@ function ChatListPage({
                 );
               })()}
             </div>
-          ) : (    // toggle이 false일 때 음성채팅 UI
+          ) : (  // toggle이 false일 때 음성채팅 UI
             <div className="membersOverlayGrouped">
               <div className="voice-chat-container" style={{ padding: '16px' }}>
                 {/* 음성채팅 UI */}
@@ -1167,8 +1028,173 @@ function ChatListPage({
           )}
         </div>
       </div>
+
+      {/* 드롭 다운을 최상단에 위치 */}
+      {menu && (
+        <DropdownPortal x={menu.x} y={menu.y} onClose={() => setMenu(null)}>
+          <div className="dropdownMenu">
+            <p onClick={() => {
+              onOpenProfile?.(menu.userId);
+              setMenu(null);
+            }}> 프로필 보기</p>
+
+            <p onClick={() => {
+              console.log('간단 스펙 보기', menu.userId);
+              setSendToModalGameName(menu.gameName);
+              setHistoryUserId(menu.userId);
+              setUserHistoryOpen(true)
+              setMenu(null);
+            }}>
+              간단 스펙 보기
+            </p>
+
+            {pendingUsers.find(u => u.userId === menu.userId) ? null : (
+              <>
+                {/* 강퇴 */}
+                {(selectedRoom?.hostUserId === userData.userId) && (menu.userId !== userData.userId) && (
+                  <p onClick={async () => {
+                    try {
+                      await fetch(`/api/chat/rooms/${selectedRoom.id}/kick`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          targetUserId: menu.userId,
+                          requesterUserId: userData.userId
+                        })
+                      });
+                      toast.success('강퇴 성공:', menu.userId);
+                    } catch (err) {
+                      toast.error('강퇴 실패:', err);
+                    }
+                    setMenu(null);
+                  }}>
+                    강퇴하기
+                  </p>
+                )}
+
+                {/* 방장 권한 넘기기 */}
+                {(selectedRoom?.hostUserId === userData.userId) && (menu.userId !== userData.userId) && (
+                  <p onClick={async () => {
+                    try {
+                      await fetch(`/api/chat/rooms/${selectedRoom.id}/transfer`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          fromUserId: userData.userId,
+                          toUserId: menu.userId
+                        })
+                      });
+                    } catch (err) {
+                      toast.error('방장 넘기기에 실패했습니다.');
+                    }
+                    setMenu(null);
+                  }}>
+                    방장 넘기기
+                  </p>
+                )}
+
+                {/* 채팅방 나가기 */}
+                {(menu.userId === userData.userId) && (selectedRoom?.hostUserId !== userData.userId) && (
+                  <p
+                    className="chatCardDelete"
+                    onClick={async (e) => {
+                      e.stopPropagation();
+
+                      const ok = await confirmToast("정말 이 방에서 나가시겠습니까?");
+                      if (!ok) return;
+
+                      try {
+                        await fetch(
+                          // item 대신 selectedRoom을 사용
+                          `/api/chat/rooms/${selectedRoom.id}/leave?userId=${userData.userId}`,
+                          { method: "DELETE" }
+                        );
+                        setChatList(prev => prev.filter(r => r.chatRoom.id !== selectedRoom.id));
+                        setSelectedRoom(null);
+                        setMessages([]);
+                        toast.success("성공적으로 나가졌습니다!");
+                      } catch (err) {
+                        console.error("방 나가기 실패:", err);
+                        toast.error("방 나가기 실패");
+                      }
+                      setMenu(null);
+                      closeMembers();
+                    }}
+                  >
+                    방 나가기
+                  </p>
+                )}
+
+                {/* 방 삭제 */}
+                {(selectedRoom?.hostUserId === userData.userId) && (chatUserList.length === 1) && (
+                  <p
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteRoom(selectedRoom.id, userData.userId);
+                      setMenu(null);
+                      closeMembers();
+                    }}
+                  >
+                    방 삭제
+                  </p>
+                )}
+
+                {/* 친구 추가 기능 */}
+                {/* 자기 자신에게는 친구 추가 메뉴가 보이지 않도록 수정 */}
+                {(menu.userId !== userData.userId) && (
+                  <p onClick={async () => {
+                    // 훅에서 반환된 함수 호출
+                    const requesterId = userData.userId;
+                    const addresseeId = menu.userId;
+                    const result = await sendRequest(requesterId, addresseeId);
+                    if (result.success) {
+                      toast.success(result.message);
+                    }
+                    else {
+                      toast.error(result.message);
+                    }
+                    setMenu(null);
+                  }}>
+                    친구 추가
+                  </p>
+                )}
+
+                {/* 여기는 추후에 추가 */}
+                {(menu.userId !== userData.userId) && (
+                    <p onClick={async () => {
+                      // 훅에서 반환된 함수 호출
+                      const requesterId = userData.userId;
+                      const blockedId = menu.userId;
+                      const result = await sendBlockRequest(requesterId, blockedId);
+                      if (result.success) {
+                        toast.success(result.message);
+                      }
+                      else {
+                        toast.error(result.message);
+                      }
+                      setMenu(null);
+                    }}>
+                      차단 하기
+                    </p>
+                )}
+                
+                {/* 신고하기 */}
+                {(menu.userId !== userData.userId) && (
+                  <p onClick={() => {
+                    setReportedUser(menu.userId); // 신고할 유저 ID 설정
+                    setIsReportModalOpen(true);   // 열고
+                    setMenu(null);                // 닫아
+                  }}>
+                    신고하기
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        </DropdownPortal>
+      )}
     </>
   )
 }
 
-export default ChatListPage
+export default ChatListPage;

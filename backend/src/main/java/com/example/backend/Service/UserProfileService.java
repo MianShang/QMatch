@@ -50,17 +50,7 @@ public class UserProfileService {
         //
         userRepository.save(user);
 
-        // 응답 반환
-        return new UserResponseDto(
-                user.getUserId(),
-                user.getUserName(),
-                user.getUserEmail(),
-                user.getUserProfile(),
-                user.getUserTags(),
-                user.getUserStatusMessage(),
-                user.getUserIntro(),
-                null // joinStatus는 프로필 관련 서비스에서는 null
-        );
+        return UserResponseDto.from(user);
     }
 
     //내 소개 저장 및 수정
@@ -72,16 +62,17 @@ public class UserProfileService {
         userRepository.save(user);
 
         // 응답 반환
-        return new UserResponseDto(
-                user.getUserId(),
-                user.getUserName(),
-                user.getUserEmail(),
-                user.getUserProfile(),
-                user.getUserTags(),
-                user.getUserStatusMessage(),
-                user.getUserIntro(),
-                null // joinStatus는 프로필 관련 서비스에서는 null
-        );
+//        return new UserResponseDto(
+//                user.getUserId(),
+//                user.getUserName(),
+//                user.getUserEmail(),
+//                user.getUserProfile(),
+//                user.getUserTags(),
+//                user.getUserStatusMessage(),
+//                user.getUserIntro(),
+//                null // joinStatus는 프로필 관련 서비스에서는 null
+//        );
+        return UserResponseDto.from(user);
     }
 
     //내 소개 조회
@@ -89,16 +80,7 @@ public class UserProfileService {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(()-> new RuntimeException("그런 유저는 없어"));
 
-        return new UserResponseDto(
-                user.getUserId(),
-                user.getUserName(),
-                user.getUserEmail(),
-                user.getUserProfile(),
-                user.getUserTags(),
-                user.getUserStatusMessage(),
-                user.getUserIntro(),
-                null // joinStatus는 프로필 관련 서비스에서는 null
-        );
+        return UserResponseDto.from(user);
     }
 
     //상태 메시지
@@ -109,16 +91,8 @@ public class UserProfileService {
         user.setUserStatusMessage(statusMessage);
         userRepository.save(user);
 
-        return new UserResponseDto(
-                user.getUserId(),
-                user.getUserName(),
-                user.getUserEmail(),
-                user.getUserProfile(),
-                user.getUserTags(),
-                user.getUserStatusMessage(),
-                user.getUserIntro(),
-                null // joinStatus는 프로필 관련 서비스에서는 null
-        );
+        return UserResponseDto.from(user);
+
     }
 
     //상태메시지 조회
@@ -126,16 +100,8 @@ public class UserProfileService {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(()-> new RuntimeException("그런 유저는 없어"));
 
-        return new UserResponseDto(
-                user.getUserId(),
-                user.getUserName(),
-                user.getUserEmail(),
-                user.getUserProfile(),
-                user.getUserTags(),
-                user.getUserStatusMessage(),
-                user.getUserIntro(),
-                null // joinStatus는 프로필 관련 서비스에서는 null
-        );
+
+        return UserResponseDto.from(user);
     }
 
     //태그
@@ -147,16 +113,7 @@ public class UserProfileService {
         user.getUserTags().add(userTag);
         userRepository.save(user);
 
-        return new UserResponseDto(
-                user.getUserId(),
-                user.getUserName(),
-                user.getUserEmail(),
-                user.getUserProfile(),
-                user.getUserTags(),
-                user.getUserStatusMessage(),
-                user.getUserIntro(),
-                null // joinStatus는 프로필 관련 서비스에서는 null
-        );
+        return UserResponseDto.from(user);
     }
 
     //태그 조회
@@ -164,16 +121,7 @@ public class UserProfileService {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(()-> new RuntimeException("그런 유저는 없어"));
 
-        return new UserResponseDto(
-                user.getUserId(),
-                user.getUserName(),
-                user.getUserEmail(),
-                user.getUserProfile(),
-                user.getUserTags(),
-                user.getUserStatusMessage(),
-                user.getUserIntro(),
-                null // joinStatus는 프로필 관련 서비스에서는 null
-        );
+        return UserResponseDto.from(user);
     }
 
 

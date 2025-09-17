@@ -12,6 +12,7 @@ public class MapleDto {
     private String guildName;
     private String imageUrl;
     private List<Equipment> equipment;
+    private String combatPower;   // 전투력
 
     @Data
     public static class Equipment {

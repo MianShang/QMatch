@@ -9,12 +9,30 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class MapleService {
 
     private final WebClient mapleWebClient;
+
+    // 장비 분류 매핑 (영문 슬롯 → 한글)
+    private static final Map<String, String> EQUIP_TYPE_MAP = Map.ofEntries(
+            Map.entry("cap", "모자"),
+            Map.entry("faceAccessory", "얼굴장식"),
+            Map.entry("eyeAccessory", "눈장식"),
+            Map.entry("earrings", "귀고리"),
+            Map.entry("coat", "상의"),
+            Map.entry("longcoat", "한벌옷"),
+            Map.entry("pants", "하의"),
+            Map.entry("shoes", "신발"),
+            Map.entry("glove", "장갑"),
+            Map.entry("cape", "망토"),
+            Map.entry("weapon", "무기"),
+            Map.entry("subweapon", "보조무기"),
+            Map.entry("emblem", "엠블렘")
+    );
 
     public MapleDto getCharacterInfo(String name) {
         String date = LocalDate.now().minusDays(1).toString();
@@ -53,6 +71,27 @@ public class MapleService {
                 .bodyToMono(CharacterEquipmentResponse.class)
                 .block();
 
+        // 4. 전투력 조회
+        CharacterStatResponse stat = mapleWebClient.get()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/maplestory/v1/character/stat")
+                        .queryParam("ocid", ocid)
+                        .queryParam("date", date)
+                        .build())
+                .retrieve()
+                .bodyToMono(CharacterStatResponse.class)
+                .block();
+
+        String combatPower = null;
+        if (stat != null && stat.getFinalStat() != null) {
+            combatPower = stat.getFinalStat().stream()
+                    .filter(cs -> "전투력".equals(cs.getStatName()))
+                    .findFirst()
+                    .map(CharacterStatResponse.FinalStat::getStatValue)
+                    .orElse(null);
+        }
+
+        // 🟡 DTO 생성
         MapleDto dto = new MapleDto();
         dto.setCharacterName(basic.getCharacterName());
         dto.setWorldName(basic.getWorldName());
@@ -61,11 +100,12 @@ public class MapleService {
         dto.setGuildName(basic.getCharacterGuildName());
         dto.setImageUrl(basic.getCharacterImage());
         dto.setEquipment(equip.toEquipmentList());
+        dto.setCombatPower(combatPower);
 
         return dto;
     }
 
-    // ---------------- Response ----------------
+    // ---------------- Response DTO ----------------
     @lombok.Data
     static class OcidResponse {
         private String ocid;
@@ -85,6 +125,20 @@ public class MapleService {
         private String characterGuildName;
         @JsonProperty("character_image")
         private String characterImage;
+    }
+
+    @lombok.Data
+    static class CharacterStatResponse {
+        @JsonProperty("final_stat")
+        private List<FinalStat> finalStat;
+
+        @lombok.Data
+        static class FinalStat {
+            @JsonProperty("stat_name")
+            private String statName;
+            @JsonProperty("stat_value")
+            private String statValue;
+        }
     }
 
     @lombok.Data
@@ -132,8 +186,6 @@ public class MapleService {
             private TotalOption baseOption;
             @JsonProperty("item_add_option")
             private TotalOption addOption;
-            @JsonProperty("item_exceptional_option")
-            private TotalOption enchantOption;
             @JsonProperty("item_starforce_option")
             private TotalOption starforceOption;
         }
@@ -158,16 +210,20 @@ public class MapleService {
             return itemEquipment.stream().map(i -> {
                 MapleDto.Equipment e = new MapleDto.Equipment();
                 e.setName(i.getItemName());
-                e.setType(i.getItemEquipmentSlot());
+
+                // 한글 매핑
+                String slot = i.getItemEquipmentSlot();
+                e.setType(EQUIP_TYPE_MAP.getOrDefault(slot, slot));
+
                 e.setStarforce(i.getStarforce());
                 e.setScrollUpgrade(i.getScrollUpgrade());
                 e.setIconUrl(i.getItemIcon());
 
-                // ⭐ 잠재옵션 등급 전달
+                // ⭐ 잠재옵션 등급
                 e.setPotentialGrade(i.getPotentialGrade());
                 e.setAdditionalPotentialGrade(i.getAddPotentialGrade());
 
-                // ⭐ 잠재옵션 내용 전달
+                // ⭐ 잠재옵션
                 List<String> potential = new ArrayList<>();
                 if (i.getPotential1() != null) potential.add(i.getPotential1());
                 if (i.getPotential2() != null) potential.add(i.getPotential2());
@@ -194,6 +250,7 @@ public class MapleService {
                     e.setBossDamage(i.getTotalOption().getBossDamage());
                 }
 
+                // 세부 스탯 (enchant 직접 계산)
                 List<MapleDto.Equipment.OptionDetail> optionDetails = new ArrayList<>();
                 optionDetails.add(buildOptionDetail("STR", i));
                 optionDetails.add(buildOptionDetail("DEX", i));
@@ -212,11 +269,20 @@ public class MapleService {
 
         private MapleDto.Equipment.OptionDetail buildOptionDetail(String stat, Item i) {
             MapleDto.Equipment.OptionDetail d = new MapleDto.Equipment.OptionDetail();
+
+            int base = getValue(i.getBaseOption(), stat);
+            int add = getValue(i.getAddOption(), stat);
+            int starforce = getValue(i.getStarforceOption(), stat);
+            int total = getValue(i.getTotalOption(), stat);
+
+            int enchant = total - (base + add + starforce);
+
             d.setStatName(stat);
-            d.setBase(getValue(i.getBaseOption(), stat));
-            d.setAdd(getValue(i.getAddOption(), stat));
-            d.setEnchant(getValue(i.getEnchantOption(), stat));
-            d.setStarforce(getValue(i.getStarforceOption(), stat));
+            d.setBase(base);
+            d.setAdd(add);
+            d.setStarforce(starforce);
+            d.setEnchant(enchant);
+
             return d;
         }
 
@@ -238,7 +304,8 @@ public class MapleService {
 
         private int parse(String val) {
             try {
-                return val == null ? 0 : Integer.parseInt(val);
+                if (val == null) return 0;
+                return Integer.parseInt(val.replace("+", "").trim());
             } catch (NumberFormatException e) {
                 return 0;
             }

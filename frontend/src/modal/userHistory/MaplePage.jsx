@@ -8,7 +8,7 @@ function MaplePage({ mapleStats }) {
     return <p style={{ color: "#aaa" }}>메이플 정보가 없습니다.</p>;
   }
 
-  const { characterName, worldName, level, job, guildName, imageUrl, equipment } = mapleStats;
+  const { characterName, worldName, level, job, guildName, imageUrl, equipment, combatPower } = mapleStats;
 
   const statColors = {
     total: "#00FFFF",
@@ -18,32 +18,48 @@ function MaplePage({ mapleStats }) {
     starforce: "#FFD700"
   };
 
-  // 등급별 색상 클래스
+  // 등급별 색상 클래스 매핑
   function getPotentialClass(grade) {
     if (!grade) return "";
-    const g = grade.toLowerCase(); // 소문자로 통일
-    if (g.includes("레전드리") || g.includes("legendary")) return "potential-legendary";
-    if (g.includes("유니크")   || g.includes("unique"))    return "potential-unique";
-    if (g.includes("에픽")     || g.includes("epic"))      return "potential-epic";
-    if (g.includes("레어")     || g.includes("rare"))      return "potential-rare";
+    const g = grade.toLowerCase();
+    if (grade.includes("레전드리") || g.includes("legendary")) return "potential-legendary";
+    if (grade.includes("유니크")   || g.includes("unique"))    return "potential-unique";
+    if (grade.includes("에픽")     || g.includes("epic"))      return "potential-epic";
+    if (grade.includes("레어")     || g.includes("rare"))      return "potential-rare";
     return "";
   }
 
-  // ⭐ 별 (줄마다 15개, 5개씩 묶고 그룹 간 간격은 CSS로)
+  // 전투력 포맷 (억/만 단위)
+  function formatCombatPower(value) {
+    if (!value) return "N/A";
+    const num = parseInt(value, 10);
+    if (isNaN(num)) return value;
+
+    const eok = Math.floor(num / 100000000);             // 억 단위
+    const man = Math.floor((num % 100000000) / 10000);   // 만 단위
+    const rest = num % 10000;                            // 나머지
+
+    let result = "";
+    if (eok > 0) result += `${eok}억 `;
+    if (man > 0) result += `${man}만 `;
+    if (rest > 0 || result === "") result += rest;
+
+    return result.trim();
+  }
+
+  // 별 (줄마다 15개, 5개씩 묶고 그룹 간 간격은 CSS로)
   function renderStars(count) {
     if (!count || count <= 0) return null;
 
-    const GROUP_SIZE = 5;     // 5개 별 = 1그룹
-    const ROW_GROUPS = 3;     // 한 줄에 3그룹 = 15개
+    const GROUP_SIZE = 5;
+    const ROW_GROUPS = 3;
 
-    // 5개 단위 그룹 만들기
     const groups = [];
     const fullGroups = Math.floor(count / GROUP_SIZE);
     const remainder  = count % GROUP_SIZE;
     for (let i = 0; i < fullGroups; i++) groups.push("★".repeat(GROUP_SIZE));
     if (remainder) groups.push("★".repeat(remainder));
 
-    // 3그룹(=15개)씩 줄 나누기
     const rows = [];
     for (let i = 0; i < groups.length; i += ROW_GROUPS) {
       rows.push(groups.slice(i, i + ROW_GROUPS));
@@ -89,16 +105,13 @@ function MaplePage({ mapleStats }) {
     );
   }
 
-  function renderPotential(options, grade) {
-  if (!options || options.length === 0) return null;
-  if (!grade) return options.map((opt, i) => <p key={i}>{opt}</p>); // 등급이 없으면 흰색 기본 출력
-
-  const gradeClass = getPotentialClass(grade);
-  return options.map((opt, i) => (
-    <p key={i} className={gradeClass}>{opt}</p>
-  ));
-}
-
+  // 잠재옵션 렌더링 (옵션은 항상 흰색)
+  function renderPotential(options) {
+    if (!options || options.length === 0) return null;
+    return options.map((opt, i) => (
+      <p key={i} style={{ color: "#FFFFFF" }}>{opt}</p>
+    ));
+  }
 
   return (
     <div className="maple-box">
@@ -112,6 +125,7 @@ function MaplePage({ mapleStats }) {
           <p>레벨: {level}</p>
           <p>직업: {job}</p>
           <p>길드: {guildName || "없음"}</p>
+          <p>전투력: {formatCombatPower(combatPower)}</p>
         </div>
       </div>
 
@@ -159,16 +173,24 @@ function MaplePage({ mapleStats }) {
                       {item.potential?.length > 0 && (
                         <>
                           <hr />
-                          <p><strong>잠재옵션</strong></p>
-                          {renderPotential(item.potential, item.potentialGrade)}
+                          <p>
+                            <strong className={getPotentialClass(item.potentialGrade)}>
+                              잠재옵션
+                            </strong>
+                          </p>
+                          {renderPotential(item.potential)}
                         </>
                       )}
 
                       {item.additionalPotential?.length > 0 && (
                         <>
                           <hr />
-                          <p><strong>에디셔널 잠재옵션</strong></p>
-                          {renderPotential(item.additionalPotential, item.additionalPotentialGrade)}
+                          <p>
+                            <strong className={getPotentialClass(item.additionalPotentialGrade)}>
+                              에디셔널 잠재옵션
+                            </strong>
+                          </p>
+                          {renderPotential(item.additionalPotential)}
                         </>
                       )}
                     </div>

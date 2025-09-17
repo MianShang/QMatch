@@ -49,6 +49,10 @@ export default defineConfig(({ mode }) => {
       '/lostark' : {
         target: BACKEND_URL,
         changeOrigin: true,
+      },
+      '/maple' : {
+        target: BACKEND_URL,
+        changeOrigin: true,
       }
 
 

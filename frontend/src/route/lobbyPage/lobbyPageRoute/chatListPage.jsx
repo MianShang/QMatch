@@ -17,9 +17,13 @@ import { useFriendRequest } from '../../../hooks/friends/useFriendRequest.js';
 import { useChatListGet } from '../../../hooks/chatList/useChatListGet.js'
 import { blockUser } from '../../../hooks/friends/userBlock.js';
 
+<<<<<<< HEAD
 // Modal
 import UserHistoryModal from '../../../modal/userHistory/UserHistoryModal.jsx'
 import ReportModal from '../../../modal/ReportModal/ReportModal.jsx';
+=======
+// Modal 제거 - lobbyPage.jsx로 이동
+>>>>>>> feature/Css
 
 //포털
 import DropdownPortal from './dropDownPotal.jsx'
@@ -42,16 +46,20 @@ function ChatListPage({
   showMembersOnly = false, // 참여자 패널만 표시하는 플래그
   membersToggle = true, // 참여자/음성채팅 토글 상태
   setMembersToggle = () => { }, // 참여자/음성채팅 토글 상태 변경 함수
-  setHasUnreadMessages // 안 읽은 메시지 상태 업데이트 함수
+  setHasUnreadMessages, // 안 읽은 메시지 상태 업데이트 함수
+  // UserHistoryModal 관련 props
+  isUserHistoryOpen,
+  setIsUserHistoryOpen,
+  historyUserId,
+  setHistoryUserId,
+  sendToModalGameName,
+  setSendToModalGameName
 }) {
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   // State 보관함 해체
   const { userData } = useContext(LogContext);
 
   // State
-  const [sendToModalGameName, setSendToModalGameName] = useState(null);
-  const [isUserHistoryOpen, setUserHistoryOpen] = useState(false);
-  const [historyUserId, setHistoryUserId] = useState(null);
 
   const [chatListExtend, setChatListExtend] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
@@ -726,7 +734,6 @@ function ChatListPage({
           />
         )}
 
-
         {/* 상단: 선택한 채팅방 카드 */}
         {selectedRoom && (
           <div
@@ -958,8 +965,7 @@ function ChatListPage({
                           <div
                             className="MoreButtonStyle"
                             onClick={(e) => openMenu(e, u.userId)}
-                          >
-                            …
+                          >···
                           </div>
                         </div>
                       );
@@ -983,8 +989,7 @@ function ChatListPage({
                           <div
                             className="MoreButtonStyle"
                             onClick={(e) => openMenu(e, u.userId)}
-                          >
-                            …
+                          >···                            
                           </div>
                         </div>
                       );

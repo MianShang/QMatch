@@ -8,13 +8,35 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 9999;
+  z-index: 99999;
   backdrop-filter: blur(4px);
   animation: fadeIn 0.3s ease-out forwards;
 }
 
 [data-theme="light"] .modalOverlay {
   background: rgba(0, 0, 0, 0.5);
+}
+
+/* 핑크모드와 블루모드에서 모달 오버레이 조정 */
+[data-theme="pink"] .modalOverlay,
+[data-theme="blue"] .modalOverlay {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* 핑크모드와 블루모드에서 모달창 둥글둥글 효과 제거 */
+[data-theme="pink"] .userHistoryModal .modalContent,
+[data-theme="blue"] .userHistoryModal .modalContent {
+  border-radius: 12px !important;
+}
+
+[data-theme="pink"] .modalHeader,
+[data-theme="blue"] .modalHeader {
+  border-radius: 0 !important;
+}
+
+[data-theme="pink"] .modalInContent,
+[data-theme="blue"] .modalInContent {
+  border-radius: 0 !important;
 }
 
 .userHistoryModal .modalContent {

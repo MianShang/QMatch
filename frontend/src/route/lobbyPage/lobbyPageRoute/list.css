@@ -9,7 +9,7 @@
   padding: 0;
   background: var(--discord-bg-primary);
   position: relative;
-  z-index: 999; /* 최상단으로 이동 */
+  z-index: 1; /* 모달보다 낮게 설정 */
   /* transition 제거 - 채팅목록 레이아웃은 애니메이션 없음 */
 }
 
@@ -197,7 +197,7 @@
 /* ================================Discord 선택된 카드============================= */
 
 .selectCardStyle{
-  background: var(--discord-bg-modifier-selected);
+  background: var(--discord-bg-modifier-active);
   color: var(--discord-text-normal);
   border-radius: 0;
   box-shadow: none;
@@ -224,7 +224,6 @@
   align-items: center;
   font-size: 16px; 
   font-weight: 500;
-  margin-bottom: 8px;
 }
 
 /* ================================Discord 확장 가능한 콘텐츠============================= */
@@ -316,7 +315,7 @@
   overflow: hidden;
   background: var(--discord-bg-secondary);
   transition: width 0.3s ease-in-out, transform 0.3s ease-in-out;
-  z-index: 1; /* 채팅목록 레이아웃 아래로 완전히 숨김 */
+  z-index: 0; /* 토글보다 낮게 설정 */
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
   pointer-events: none;
   border-radius: 0;
@@ -417,6 +416,11 @@
   width: 3px;
   background: var(--discord-accent);
   border-radius: 0 2px 2px 0;
+}
+
+/* 핑크모드에서 참여자 패널 토글 버튼 왼쪽 선 제거 */
+[data-theme="pink"] .membersDrawerHeader .toggleSwitch.activeBorder::after {
+  display: none !important;
 }
 
 .membersDrawerInline.open .membersListScroll {

@@ -2,6 +2,7 @@ import { useRef, useState, useEffect, useContext, memo } from 'react'
 import { Routes, Route, Link, useNavigate } from 'react-router-dom'
 import { Client } from '@stomp/stompjs';
 import axios from 'axios';
+import { FaSearch } from 'react-icons/fa';
 import './lobbyPage.css'
 
 // 컴포넌트 import
@@ -10,6 +11,7 @@ import FriendListPage from './lobbyPageRoute/friendListPage.jsx';
 import MyProfile from '../../feature/profile/myProfileModal.jsx';
 import VoiceChat from './lobbyPageRoute/VoiceChat.jsx';
 import VoiceChatModal from '../../modal/voiceChatSetting/VoiceChatModal.jsx';
+import UserHistoryModal from '../../modal/userHistory/UserHistoryModal.jsx';
 // JoinRequestModal 제거 - 기존 UI에 통합
 
 // 로그인 체크용 Context API import
@@ -37,6 +39,11 @@ function LobbyPage() {
 
   // 상태 패널 열림 여부
   const [isStatusPanelOpen, setIsStatusPanelOpen] = useState(false);
+
+  // 사용자 전적 모달 상태
+  const [isUserHistoryOpen, setIsUserHistoryOpen] = useState(false);
+  const [historyUserId, setHistoryUserId] = useState(null);
+  const [sendToModalGameName, setSendToModalGameName] = useState('');
 
   // 사이드바 프로필 이미지 클릭시 중앙 div는 사라지게 - 기본값 true(중앙 div 표시)
   const [showMidBar, setShowMidBar] = useState(true);
@@ -87,7 +94,7 @@ function LobbyPage() {
 
   // 참여자 패널 상태
   const [isMembersPanelOpen, setIsMembersPanelOpen] = useState(false);
-  
+
   // 커스텀 훅 가져오기
   // --UseEffect
   useLoginCheck(isLogIn);                                         // 로그인 체크 훅
@@ -119,13 +126,18 @@ function LobbyPage() {
       container.scrollTop = container.scrollHeight;
     }
   }, [messages]);
-  
-  
+
+  //프로필 정보 DB에서 불러오기
+  useEffect(() => {
+    if (!userData?.userId) return;
+    axios.get("/api/profile/user/info", { params: { userId: userData.userId } })
+      .then(res => setUserData(res.data))
+      .catch(err => console.error("유저 정보 불러오기 실패:", err));
+  }, [userData?.userId, setUserData]);
 
   useEffect(() => {
-    
     const s = location.state;
-    
+
     if (!s?.roomId) return;
 
     setSelectedRoom(undefined);
@@ -134,42 +146,42 @@ function LobbyPage() {
 
     (async () => {
       try {
-          const id = encodeURIComponent(s.roomId);
-          const { data } = await axios.get(`/api/chat/rooms/${id}`);
-        
-          // 서버에서 상세 방 정보를 가져와 state 업데이트
+        const id = encodeURIComponent(s.roomId);
+        const { data } = await axios.get(`/api/chat/rooms/${id}`);
+
+        // 서버에서 상세 방 정보를 가져와 state 업데이트
         console.log('서버에서 받은 방 정보:', data);
-          setSelectedRoom({
-            id: data.id,
-            name: data.name ?? s.chatName,
-            gameName: data.gameName ?? s.gameName,
-            tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
+        setSelectedRoom({
+          id: data.id,
+          name: data.name ?? s.chatName,
+          gameName: data.gameName ?? s.gameName,
+          tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
           currentUsers: (typeof data.currentUsers === 'number') ? data.currentUsers : s.currentUsers,
           maxUsers: (typeof data.maxUsers === 'number') ? data.maxUsers : s.maxUsers,
           hostUserId: data.hostUserId, // 방장 ID 추가
-          });
-        } catch (e) {
-          setSelectedRoom({
-            id: s.roomId,
-            name: s.chatName,
-            gameName: s.gameName,
-            tagNames: s.tagNames ?? [],
+        });
+      } catch (e) {
+        setSelectedRoom({
+          id: s.roomId,
+          name: s.chatName,
+          gameName: s.gameName,
+          tagNames: s.tagNames ?? [],
           currentUsers: s.currentUsers,
           maxUsers: s.maxUsers,
           hostUserId: s.hostUserId, // chatList에서 hostUserId 가져오기
-          });
-        } finally {
-          setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
+        });
+      } finally {
+        setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
 
         // 채팅방 이동 시 메시지 로딩 및 읽음 처리
         console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId);
         getChatList(s.roomId, setMessages);
         setRead({ id: s.roomId });
-        }
-      })();
-    }, [location.key]);
+      }
+    })();
+  }, [location.key]);
 
-        // userData가 로드될 때까지 로딩
+  // userData가 로드될 때까지 로딩
   if (!userData) {
     return <div>userData 로딩중</div>;
   }
@@ -200,10 +212,10 @@ function LobbyPage() {
                   selectedRoom={selectedRoom}
                   setSelectedRoom={setSelectedRoom}
                   onOpenProfile={(targetUserId) => { setProfileUserId(targetUserId); setShowProfileModal(true); }}
-                  currentUserStatus={userStatus} 
+                  currentUserStatus={userStatus}
                   globalStomp={globalStomp}
                   refreshTick={listRefreshTick}
-                  voiceSpeakers={voiceSpeakers} 
+                  voiceSpeakers={voiceSpeakers}
                   onJoinVoice={(roomId) => {
                     setVoiceChatRoomId(roomId)
                     // ref를 통해 VoiceChat 컴포넌트의 joinChannel 함수를 호출
@@ -211,19 +223,26 @@ function LobbyPage() {
                       voiceChatRef.current.joinChannel(roomId);
                     }
                   }}
+                  // UserHistoryModal 관련 props
+                  isUserHistoryOpen={isUserHistoryOpen}
+                  setIsUserHistoryOpen={setIsUserHistoryOpen}
+                  historyUserId={historyUserId}
+                  setHistoryUserId={setHistoryUserId}
+                  sendToModalGameName={sendToModalGameName}
+                  setSendToModalGameName={setSendToModalGameName}
                   onLeaveVoice={() => {
                     if (voiceChatRef.current) {
                       voiceChatRef.current.leaveChannel();
                     }
                   }}
-                  onToggleMute={() => { 
+                  onToggleMute={() => {
                     if (voiceChatRef.current) {
                       voiceChatRef.current.toggleMute();
                     }
                   }}
                   localMuted={localMuted}
-                  joinedVoice={joinedVoice} 
-                  voiceChatRoomId={voiceChatRoomId} 
+                  joinedVoice={joinedVoice}
+                  voiceChatRoomId={voiceChatRoomId}
                   onMembersPanelToggle={setIsMembersPanelOpen}
                   setHasUnreadMessages={setHasUnreadMessages}
                 />
@@ -339,37 +358,45 @@ function LobbyPage() {
               </div>
             )}
 
-          <div className='contentStyle chatSize' style={{ textAlign: "left" }}>
-            <div ref={messageContainerRef} className='scroll-container chatDivStyle'>
+            <div className='contentStyle chatSize' style={{ textAlign: "left" }}>
+              <div ref={messageContainerRef} className={`scroll-container chatDivStyle ${selectedRoom ? 'chat-room-selected' : ''}`}>
                 {selectedRoom ? (
-              <MessageList
-                messages={messages}
-                userData={userData} />
+                  <MessageList
+                    messages={messages}
+                    userData={userData} />
                 ) : (
                   <div className="empty-chat-container">
                     <div className="empty-chat-logo">
-                      <img src="/qmatchLogo.png" alt="QMatch" className="qmatch-logo-image" />
+                      <img
+                        src={
+                          theme === 'dark' ? "/qmatchLogoBlue.png" :
+                            theme === 'pink' ? "/qmatchLogoPink.png" :
+                              "/qmatchLogo.png"
+                        }
+                        alt="QMatch"
+                        className="qmatch-logo-image"
+                      />
                     </div>
                     <p className="empty-chat-text">채팅방을 선택하여 대화를 시작하세요</p>
                   </div>
                 )}
-            </div>
+              </div>
 
               {selectedRoom && (
-            <div className="inputSize">
-              <input
-                className='chatInputStyle'
-                type="text"
+                <div className={`inputSize ${selectedRoom ? 'chat-room-selected' : ''}`}>
+                  <input
+                    className='chatInputStyle'
+                    type="text"
                     placeholder="메시지를 입력하세요..."
-                value={input}
-                onChange={(e) => { setInput(e.target.value); }}
-                onKeyDown={(e) => { if (e.key === 'Enter') { sendMessage(); } }} />
+                    value={input}
+                    onChange={(e) => { setInput(e.target.value); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter') { sendMessage(); } }} />
 
-              <button className='chatButtonStyle'
+                  <button className='chatButtonStyle'
                     onClick={() => { sendMessage(); }}>
                     ➤
                   </button>
-            </div>
+                </div>
               )}
             </div>
 
@@ -381,9 +408,9 @@ function LobbyPage() {
               </div>
               <Link to="/search">
                 <div className='searchSize'>
-                  <img src="/SearchIcon.png" className='imgPos' alt="검색"></img>
-              </div>
-            </Link>
+                  <FaSearch className='search-icon-react' />
+                </div>
+              </Link>
             </div>
           </div>
         </div>
@@ -401,22 +428,31 @@ function LobbyPage() {
       {/*음성설정 모달*/}
       {showVoiceChatModal &&
         <VoiceChatModal viewUserId={profileUserId}
-        userData={userData}
-        setUserData={setUserData}
-        onClose={() => setShowVoiceChatModal(false)}
-      />}
+          userData={userData}
+          setUserData={setUserData}
+          onClose={() => setShowVoiceChatModal(false)}
+        />}
 
       {/* VoiceChat 컴포넌트를 lobbyPage에 렌더링 */}
-          <VoiceChat
-              channelName={voiceChatRoomId}
-              uid={userData.userId}
-              onSpeakers={setVoiceSpeakers}
-              onLocalMuteChange={setLocalMuted}
-              onJoinChange={setJoinedVoice}
-              ref={voiceChatRef}
-          />
+      <VoiceChat
+        channelName={voiceChatRoomId}
+        uid={userData.userId}
+        onSpeakers={setVoiceSpeakers}
+        onLocalMuteChange={setLocalMuted}
+        onJoinChange={setJoinedVoice}
+        ref={voiceChatRef}
+      />
 
       {/* 입장 신청 관리 모달 제거 - 기존 UI에 통합 */}
+
+      {/* 사용자 전적 모달 */}
+      {isUserHistoryOpen && (
+        <UserHistoryModal
+          sendToModalGameName={sendToModalGameName}
+          setUserHistoryOpen={setIsUserHistoryOpen}
+          historyUserId={historyUserId}
+        />
+      )}
     </>
   )
 }

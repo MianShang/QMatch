@@ -184,7 +184,7 @@
 
 .chatListSize {
   margin-top: 0;
-  height: calc(100% - 60px);
+  height: calc(100% - 75px);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -261,8 +261,7 @@
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background: var(--discord-bg-tertiary);
-  border-bottom: 1px solid var(--discord-bg-quaternary);
+  background: transparent;
 }
 
 .chatCreate button {
@@ -291,34 +290,31 @@
 }
 
 .bottomSize{
-    margin-top: 0;
-    height: 60px;
+    height: 75px;
     background: var(--discord-bg-primary);
-    border-top: 1px solid var(--discord-bg-tertiary);
     display: flex;
     align-items: center;
-    padding: 0 16px;
 }
 
 .searchAdSize{
     height: 100%;
-    width: calc(100% - 60px);
-    background: transparent;
-    box-shadow: none;
-    border: none;
+    width: calc(100% - 75px);
+    background: #111418;
+    flex-shrink: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
-    color: var(--discord-text-muted);
-    font-size: 14px;
+    padding-left: 20px;
+    color: var(--discord-text-normal);
+    border: 1px solid var(--discord-bg-tertiary);
+    border-right: none;
 }
 
 .noticeSize{
-    height: 60px;
-    width: 60px;
-    margin-left: 12px;
+    height: 75px;
+    width: 75px;
+    margin-left: 0;
     background: var(--discord-bg-secondary);
-    border-top: 1px solid var(--discord-bg-tertiary);
+    border: 1px solid var(--discord-bg-tertiary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -326,7 +322,96 @@
     transition: all 0.2s ease;
 }
 
+/* 홈 아이콘 스타일 */
+.home-icon {
+    font-size: 24px;
+    color: var(--discord-text-muted);
+    transition: all 0.2s ease;
+}
+
+/* 다크모드에서 홈 아이콘 */
+[data-theme="dark"] .home-icon {
+    color: var(--discord-text-normal);
+}
+
+/* 화이트모드에서 홈 아이콘 */
+[data-theme="light"] .home-icon {
+    color: var(--discord-text-normal);
+}
+
+/* 핑크모드에서 홈 아이콘 */
+[data-theme="pink"] .home-icon {
+    color: var(--discord-text-normal);
+}
+
+/* 블루모드에서 홈 아이콘 */
+[data-theme="blue"] .home-icon {
+    color: var(--discord-text-normal);
+}
+
+/* 호버 효과 */
+.noticeSize:hover .home-icon {
+    color: var(--discord-accent);
+    transform: scale(1.1);
+}
+
 .noticeSize:hover {
+    background: var(--discord-bg-modifier-hover);
+}
+
+/* 화이트모드에서 하단바 스타일 조정 */
+[data-theme="light"] .searchAdSize {
+    background: var(--discord-bg-primary);
+    border: 1px solid var(--discord-bg-quaternary);
+    border-right: none;
+    color: var(--discord-text-normal);
+}
+
+/* 핑크모드에서 하단바 스타일 조정 */
+[data-theme="pink"] .searchAdSize {
+    background: var(--discord-bg-primary);
+    border: 1px solid var(--discord-bg-tertiary);
+    border-right: none;
+    color: var(--discord-text-normal);
+}
+
+/* 블루모드에서 하단바 스타일 조정 */
+[data-theme="blue"] .searchAdSize {
+    background: var(--discord-bg-primary);
+    border: 1px solid var(--discord-bg-tertiary);
+    border-right: none;
+    color: var(--discord-text-normal);
+}
+
+[data-theme="light"] .noticeSize {
+    background: var(--discord-bg-primary);
+    border: 1px solid var(--discord-bg-quaternary);
+    border-left: none;
+}
+
+[data-theme="light"] .noticeSize:hover {
+    background: var(--discord-bg-modifier-hover);
+}
+
+/* 핑크모드에서 홈 버튼 스타일 */
+[data-theme="pink"] .noticeSize {
+    background: var(--discord-bg-primary);
+    border: 1px solid var(--discord-bg-tertiary);
+    border-left: none;
+}
+
+[data-theme="pink"] .noticeSize:hover {
+    background: var(--discord-bg-modifier-hover);
+}
+
+/* 블루모드에서 홈 버튼 스타일 */
+[data-theme="blue"] .noticeSize {
+    background: var(--discord-bg-primary);
+    border: 1px solid var(--discord-bg-tertiary);
+    border-left: none;
+}
+
+[data-theme="blue"] .noticeSize:hover {
     background: var(--discord-bg-modifier-hover);
 }
 

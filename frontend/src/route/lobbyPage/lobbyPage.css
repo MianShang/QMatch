@@ -25,6 +25,12 @@
     box-shadow: var(--discord-elevation-low);
 }
 
+/* 핑크테마와 블루테마에서 채팅방 헤더와 채팅내역 사이 간격 제거 */
+[data-theme="pink"] .chatRoomHeader,
+[data-theme="blue"] .chatRoomHeader {
+    margin-bottom: 0;
+}
+
 .chatRoomInfo {
     flex: 1;
 }
@@ -162,7 +168,7 @@
 
 /* 토글버튼 하단의 div 사이즈 */
 .listSize{
-    margin-top: 10px;
+    margin-top: 0;
     height: calc(100% - 50px);
     flex-grow: 1; /* 남은 공간을 채우도록 설정 */
 }
@@ -180,12 +186,13 @@
 
 /* 좌측 바 사이즈 */
 .leftBarSize{
+    position:relative;
     width: 240px;
     height: 100vh;
-    background: var(--discord-bg-primary);
-    border-right: 1px solid var(--discord-bg-tertiary);
+    background: var(--discord-bg-tertiary);
     display: flex;
     flex-direction: column;
+    z-index: 999;
 }
 
 /* 채팅창 사이즈 */
@@ -208,7 +215,6 @@
     align-items: center;
     padding-left: 20px;
     color: var(--discord-text-normal);
-    border: 1px solid var(--discord-bg-tertiary);
 }
 
 /* 하단 검색창 버튼 div 사이즈 */
@@ -222,8 +228,6 @@
     align-items: center;
     justify-content: center;
     background: #111418;
-    border: 1px solid var(--discord-bg-tertiary);
-    border-left: none;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -236,14 +240,11 @@
 /* 화이트모드에서 하단바 스타일 조정 */
 [data-theme="light"] .adSize {
     background: var(--discord-bg-primary);
-    border: 1px solid var(--discord-bg-quaternary);
     color: var(--discord-text-normal);
 }
 
 [data-theme="light"] .searchSize {
     background: var(--discord-bg-primary);
-    border: 1px solid var(--discord-bg-quaternary);
-    border-left: none;
 }
 
 [data-theme="light"] .searchSize:hover {
@@ -256,6 +257,9 @@
     border-bottom: 1px solid var(--discord-bg-tertiary);
     height: 50px;
     min-height: 50px;
+    position: relative;
+    z-index: 1002;
+    background: var(--discord-bg-primary);
 }
 
 /* ================================Discord 토글 스타일============================= */
@@ -275,11 +279,13 @@
     font-size: 16px;
     font-weight: 500;
     position: relative;
+    z-index: 1000;
 }
 
 .toggleSwitch:hover {
     background: var(--discord-bg-modifier-hover);
     color: var(--discord-text-normal);
+    z-index: 1000;
 }
 
 /* 토글 버튼 활성시 그래픽 */
@@ -287,6 +293,7 @@
     color: var(--discord-text-normal);
     background: var(--discord-bg-modifier-hover);
     border-bottom: 2px solid var(--discord-accent);
+    z-index: 1000;
 }
 
 /* 토글 텍스트 스타일 */
@@ -317,6 +324,8 @@
     background: var(--discord-bg-tertiary);
     border-top: 1px solid var(--discord-bg-primary);
     box-shadow: var(--discord-elevation-low);
+    position: relative;
+    z-index: 1002;
 }
 
 /* 테마 전환 버튼 */
@@ -371,15 +380,16 @@
 
 /* 핑크 테마 특별 효과 */
 [data-theme="pink"] .theme-toggle-button {
-  background: linear-gradient(45deg, #ff4da6, #e91e63);
-  color: white;
+  background: linear-gradient(45deg, #ffb3d9, #f8bbd9);
+  color: #e91e63;
   animation: pinkPulse 2s ease-in-out infinite;
 }
 
 [data-theme="pink"] .theme-toggle-button:hover {
-  background: linear-gradient(45deg, #ff66b3, #c2185b);
+  background: linear-gradient(45deg, #ffcce6, #fce4ec);
+  color: #ad1457;
   transform: scale(1.15) rotate(5deg);
-  box-shadow: 0 8px 25px rgba(233, 30, 99, 0.4);
+  box-shadow: 0 8px 25px rgba(233, 30, 99, 0.2);
 }
 
 @keyframes pinkPulse {
@@ -521,7 +531,6 @@
     width: 300px;
     height: 100vh;
     background: var(--discord-bg-secondary);
-    border-left: 1px solid var(--discord-bg-tertiary);
     display: flex;
     flex-direction: column;
     flex-shrink: 0;
@@ -632,8 +641,7 @@
     width: 300px;
     height: 100vh;
     background: var(--discord-bg-secondary);
-    z-index: 999;
-    border-left: 1px solid var(--discord-bg-tertiary);
+    z-index: 998;
     transform: translateX(100%); /* 초기 상태: 화면 밖으로 숨김 */
     transition: transform 0.3s ease-in-out; /* 부드러운 슬라이드 애니메이션 */
 }
@@ -799,9 +807,8 @@
 
 /* 하단 광고바 사이즈 */
 .adSize{
-    height: 60px;
+    height: 75px;
     background: var(--discord-bg-secondary);
-    border-top: 1px solid var(--discord-bg-tertiary);
     display: flex;
     align-items: center;
     justify-content: space-between; /* 양쪽 끝으로 정렬 */
@@ -814,10 +821,9 @@
 
 /* 하단 검색창 버튼 div 사이즈 */
 .searchSize{
-    height: 60px;
-    width: 60px;
+    height: 75px;
+    width: 75px;
     background: var(--discord-bg-secondary);
-    border-top: 1px solid var(--discord-bg-tertiary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -830,18 +836,44 @@
     background: var(--discord-bg-modifier-hover);
 }
 
-/* 하단 검색창 버튼 div 내부 이미지 포지션 */
-.imgPos{
-    width: 24px;
-    height: 24px;
-    filter: var(--icon-filter, invert(1));
-    opacity: 0.7;
+
+/* React Icons 검색 아이콘 */
+.search-icon-react {
+    font-size: 24px;
+    color: var(--discord-text-muted);
+    transition: all 0.2s ease;
 }
 
-/* 화이트모드에서 아이콘 더 진하게 */
-[data-theme="light"] .imgPos {
-    filter: invert(0) !important;
-    opacity: 0.9;
+/* 다크모드에서 검색 아이콘 */
+[data-theme="dark"] .search-icon-react {
+    color: var(--discord-text-normal);
+}
+
+/* 화이트모드에서 검색 아이콘 */
+[data-theme="light"] .search-icon-react {
+    color: var(--discord-text-normal);
+}
+
+/* 핑크모드에서 검색 아이콘 */
+[data-theme="pink"] .search-icon-react {
+    color: var(--discord-text-normal);
+}
+
+/* 블루모드에서 검색 아이콘 */
+[data-theme="blue"] .search-icon-react {
+    color: var(--discord-text-normal);
+}
+
+/* React Icons 호버 효과 */
+.searchSize:hover .search-icon-react {
+    color: var(--discord-accent);
+    transform: scale(1.1);
+}
+
+/* 핑크 테마에서 React Icons 전환 효과 제거 */
+[data-theme="pink"] .search-icon-react {
+    transition: color 0.2s ease, transform 0.2s ease !important;
+    border-radius: 0 !important;
 }
 
 /* 채팅창 사이즈 */
@@ -862,7 +894,7 @@
     width: 100%;
     overflow-y: auto;
     padding: 16px;
-    background: var(--discord-bg-tertiary);
+    background: transparent; /* 기본적으로 투명 */
     min-height: 0; /* flex 축소 허용 */
     height: calc(100% - 80px); /* 입력창 높이 제외 */
     transition: width 0.3s ease; /* 부드러운 전환 효과 */
@@ -871,6 +903,11 @@
 /* 참여자 패널이 열릴 때 채팅 영역 너비 조정 */
 .chatDivStyle.with-members-panel {
     width: calc(100% - 300px); /* 참여자 패널 너비(300px)만큼 줄임 */
+}
+
+/* 채팅방이 선택되었을 때만 채팅 영역 배경색 표시 */
+.chatDivStyle.chat-room-selected {
+    background: var(--discord-bg-tertiary);
 }
 
 .chatContentStyle{
@@ -938,7 +975,7 @@
     display: flex;
     align-items: center;
     padding: 16px;
-    background: var(--discord-bg-tertiary);
+    background: transparent; /* 기본적으로 투명 */
     border-top: 1px solid var(--discord-bg-primary);
     height: 80px; /* 고정 높이 설정 */
     min-height: 80px; /* 최소 높이 보장 */
@@ -949,6 +986,11 @@
 /* 참여자 패널이 열릴 때 입력창 너비 조정 */
 .inputSize.with-members-panel {
     width: calc(100% - 300px); /* 참여자 패널 너비(300px)만큼 줄임 */
+}
+
+/* 채팅방이 선택되었을 때만 입력창 배경색 표시 */
+.inputSize.chat-room-selected {
+    background: var(--discord-bg-tertiary);
 }
 
 .chatInputStyle {
@@ -1014,7 +1056,7 @@
     position: fixed;
     top: 0;
     right: 0;
-    z-index: 1000;
+    z-index: 999;
 }
 
 /* 참여자 패널 토글 버튼 */
@@ -1043,6 +1085,14 @@
     color: var(--discord-text-normal);
     background: var(--discord-bg-modifier-hover);
     border-bottom: 2px solid var(--discord-accent);
+}
+
+/* 핑크모드에서 참여자 패널 토글 버튼 왼쪽 선 제거 */
+[data-theme="pink"] .members-toggle-switch {
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-radius: 0 !important;
 }
 
 /* ================================음성채팅 컨트롤============================= */
@@ -1399,13 +1449,14 @@
     align-items: center;
     justify-content: center;
     margin-bottom: 24px;
-    opacity: 0.3;
+    opacity: 0.8;
 }
 
 .qmatch-logo-image {
     height: 80px;
     width: auto;
     object-fit: contain;
+    opacity: 1;
     filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
     animation: logoGlow 2s ease-in-out infinite alternate;
 }

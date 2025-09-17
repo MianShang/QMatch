@@ -20,6 +20,10 @@ import { blockUser } from '../../../hooks/friends/userBlock.js';
 //포털
 import DropdownPortal from './dropDownPotal.jsx'
 
+// 모달 컴포넌트
+import UserHistoryModal from '../../../modal/userHistory/UserHistoryModal.jsx'
+import ReportModal from '../../../modal/ReportModal/ReportModal.jsx'
+
 function ChatListPage({
   selectedRoom,
   setSelectedRoom,
@@ -713,7 +717,7 @@ function ChatListPage({
         {isUserHistoryOpen && (
           <UserHistoryModal
             sendToModalGameName={sendToModalGameName}
-            setUserHistoryOpen={setUserHistoryOpen}
+            setUserHistoryOpen={setIsUserHistoryOpen}
             historyUserId={historyUserId}
           />
         )}
@@ -1039,7 +1043,7 @@ function ChatListPage({
               console.log('간단 스펙 보기', menu.userId);
               setSendToModalGameName(menu.gameName);
               setHistoryUserId(menu.userId);
-              setUserHistoryOpen(true)
+              setIsUserHistoryOpen(true)
               setMenu(null);
             }}>
               간단 스펙 보기

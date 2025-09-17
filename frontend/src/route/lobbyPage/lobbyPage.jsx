@@ -12,6 +12,9 @@ import VoiceChat from './lobbyPageRoute/VoiceChat.jsx';
 import VoiceChatModal from '../../modal/voiceChatSetting/VoiceChatModal.jsx';
 // JoinRequestModal 제거 - 기존 UI에 통합
 
+//리액트 아이콘
+import { MdOutlineConstruction } from "react-icons/md";
+
 // 로그인 체크용 Context API import
 import { LogContext } from '../../App.jsx'
 
@@ -233,7 +236,7 @@ function LobbyPage() {
             {/* 하단 버튼 영역 */}
             <div className="bottom-buttons-container">
             {userData?.authorities?.some(auth => auth.authority === 'ROLE_ADMIN') && (
-                  <span><Link to="/admin">관리자 페이지</Link></span>
+                  <button><Link to="/admin"><MdOutlineConstruction style={{fontSize: "28px", padding: "0px"}} /></Link></button>
                 )}
               {/* 프로필 이미지 버튼 */}
               <div className="profile-button-wrapper">

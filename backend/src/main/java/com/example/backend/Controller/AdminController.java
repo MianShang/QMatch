@@ -1,6 +1,7 @@
 package com.example.backend.Controller;
 
 import com.example.backend.Dto.Request.ReportStatusRequestDto;
+import com.example.backend.Dto.Request.SuspensionRequestDto;
 import com.example.backend.Dto.Response.ReportResponseDto;
 import com.example.backend.Dto.Response.UserResponseDto;
 import com.example.backend.Service.AdminService;
@@ -17,6 +18,7 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+
 
     // 회원 목록
     @GetMapping("/users")
@@ -35,9 +37,9 @@ public class AdminController {
     // 임시 정지
     @PostMapping("/users/{userId}/suspend")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> suspendUser(@PathVariable String userId, @RequestBody ReportStatusRequestDto request) {
-        adminService.suspendUser(request.getReportId(),userId);
-        return ResponseEntity.ok(userId + " 3일 정지");
+    public ResponseEntity<String> suspendUser(@PathVariable String userId, @RequestBody SuspensionRequestDto request) {
+        adminService.suspendUser(request.getReportId(),userId, request.getDays());
+        return ResponseEntity.ok(userId + "님이" + request.getDays() + " 일간 정지되었습니다.");
     }
 
     // 영구 정지

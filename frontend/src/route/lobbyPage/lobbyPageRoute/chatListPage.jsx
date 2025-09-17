@@ -17,14 +17,6 @@ import { useFriendRequest } from '../../../hooks/friends/useFriendRequest.js';
 import { useChatListGet } from '../../../hooks/chatList/useChatListGet.js'
 import { blockUser } from '../../../hooks/friends/userBlock.js';
 
-<<<<<<< HEAD
-// Modal
-import UserHistoryModal from '../../../modal/userHistory/UserHistoryModal.jsx'
-import ReportModal from '../../../modal/ReportModal/ReportModal.jsx';
-=======
-// Modal 제거 - lobbyPage.jsx로 이동
->>>>>>> feature/Css
-
 //포털
 import DropdownPortal from './dropDownPotal.jsx'
 

@@ -42,12 +42,12 @@ public class AdminService {
 
     // 우선 3일 정지만
     @Transactional
-    public void suspendUser(Long reportId,String userId) {
+    public void suspendUser(Long reportId,String userId,  int days) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다: " + userId));
 
         user.setStatus(AccountStatus.SUSPENDED);
-        user.setSuspensionEndDate(LocalDateTime.now().plusDays(3)); // 현재 시간으로부터 3일 뒤로 만료일 설정
+        user.setSuspensionEndDate(LocalDateTime.now().plusDays(days)); // 현재 시간으로부터 3일 뒤로 만료일 설정
 
         // 상태 변경
         Report report = reportRepository.findById(reportId)

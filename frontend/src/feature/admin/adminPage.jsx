@@ -4,14 +4,22 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import './adminPage.css';
 
+
 // 신고 상세내역 import
 import ReportDetailModal from '../../modal/ReportModal/ReportDetailModal.jsx'
+// 몇 일 정지 먹일래? import
+import SuspensionModal from '../../modal/ReportModal/SuspensionModal.jsx'
 
 function AdminPage() {
+
 
     //현재 유저 및 신고 유저 상태  
     const [users, setUsers] = useState([]);
     const [reports, setReports] = useState([]); 
+
+    //정지 날짜 모달 상태와 유저 상태
+    const [isSuspendModalOpen, setIsSuspendModalOpen] = useState(false);
+    const [targetUser, setTargetUser] = useState(null);
 
     //나가기(뒤로가기)
     const navigate = useNavigate();
@@ -20,11 +28,21 @@ function AdminPage() {
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [selectedReport, setSelectedReport] = useState(null);
 
+    
+
     //상세내역 모달 열닫
     const handleOpenDetailModal = (report) => {
         setSelectedReport(report);
         setIsDetailModalOpen(true);
     };
+
+    //정지 모달 열닫
+    const handleOpenSuspendModal = (reportId, user) => {
+        setTargetUser({ ...user, reportId });
+        setIsSuspendModalOpen(true);
+    };
+
+    
 
     //토스트
     const confirmToast = (message, onConfirm) => {
@@ -71,18 +89,24 @@ function AdminPage() {
             });
     };
 
-    // 임시 정지
-    const handleSuspend = (reportId, userId) => {
-        confirmToast(`정말로 ${userId}님을 3일간 정지하시겠습니까?`, async () => {
-            try {
-                const response = await axios.post(`/api/admin/users/${userId}/suspend`, { reportId: reportId }, { withCredentials: true });
-                toast.success(response.data);
-                fetchData();
-            } catch (error) {
-                toast.error("임시 정지 처리 중 오류가 발생했습니다.");
-            }
-        });
+    //정지 선택
+    const suspendUserRequest = async (userId, duration) => {
+        try {
+            const response = await axios.post(
+                `/api/admin/users/${userId}/suspend`,
+                {
+                    reportId: targetUser.reportId,
+                    days: parseInt(duration)
+                },
+                { withCredentials: true }
+            );
+            toast.success(response.data);
+            fetchData();
+        } catch (error) {
+            toast.error("임시 정지 처리 중 오류가 발생했습니다.");
+        }
     };
+
     // 영구 정지
     const handleBan = (reportId, userId) => {
         confirmToast(`정말로 ${userId}님을 영구 정지하시겠습니까?`, async () => {
@@ -116,7 +140,7 @@ function AdminPage() {
         <div className="admin-page-container">
             <div className="admin-header">
                 <h1>관리자 페이지</h1>
-                <button onClick={() => navigate(-1)} className="back-button">
+                <button  onClick={() => navigate(-1)} className="button-color">
                     나가기
                 </button>
             </div>
@@ -143,10 +167,10 @@ function AdminPage() {
                                     <td>{user.userName}</td>
                                     <td>{user.userEmail}</td>
                                     <td>{user.status}</td> 
-                                    <td><button>상세 보기</button></td>
+                                    <td><button className="button-color">상세 보기</button></td>
                                     <td>
                                         {user.status !== '활성 상태' && (
-                                            <button onClick={() => handleActivate(user.userId)}>해제</button>
+                                            <button className = "button-color" onClick={() => handleActivate(user.userId)}>해제</button>
                                         )}
                                     </td>
                                 </tr>
@@ -180,10 +204,9 @@ function AdminPage() {
                                     <td>{report.reportedUserId}</td>
                                     <td>{report.reason}</td>
                                     <td>{report.status}</td>
-                                    <td><button onClick={() => handleOpenDetailModal(report)}>상세보기</button></td>
+                                    <td><button className="button-color" onClick={() => handleOpenDetailModal(report)}>상세보기</button></td>
                                     <td>
-                                                <button onClick={() => handleSuspend(report.id, report.reportedUserId)}>임시 정지</button>
-                                                <button onClick={() => handleBan(report.id, report.reportedUserId)}>영구 정지</button> 
+                                        <button className="button-color" onClick={() => handleOpenSuspendModal(report.id, { userId: report.reportedUserId })}>정지</button> 
                                     </td>
                                 </tr>
                             ))}
@@ -196,6 +219,15 @@ function AdminPage() {
                 <ReportDetailModal
                     report={selectedReport}
                     onClose={() => setIsDetailModalOpen(false)}
+                />
+            )}
+
+            {isSuspendModalOpen && (
+
+                <SuspensionModal
+                    user={targetUser}
+                    onClose={() => setIsSuspendModalOpen(false)}
+                    onConfirm={suspendUserRequest}
                 />
             )}
         </div>

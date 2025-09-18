@@ -2,14 +2,17 @@ package com.example.backend.Entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 public class FriendShipChatRoom {
 
     @Id
@@ -21,7 +24,15 @@ public class FriendShipChatRoom {
     @JoinColumn(name = "friendship_id", nullable = false)
     private FriendShip friendship;
 
+
+    @OneToMany(mappedBy = "friendShipChatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FriendShipChatMessage> messages;
+
     //채팅방 생성 시간
     @CreatedDate
     private LocalDateTime createdAt;
+
+    public FriendShipChatRoom(FriendShip friendship) {
+        this.friendship = friendship;
+    }
 }

@@ -14,4 +14,5 @@ public class ChatListResponseDto {
     private String name;
     private String message;
     private Date chatDate;
+    private String userName;
 }

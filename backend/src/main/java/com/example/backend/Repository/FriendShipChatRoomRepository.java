@@ -9,5 +9,5 @@ import java.util.Optional;
 public interface FriendShipChatRoomRepository extends JpaRepository<FriendShipChatRoom, Integer> {
     
     //friendShip Id로 ChatRoom검색
-    Optional<FriendShipChatRoom> findByFriendShipId(long friendShipId);
+    Optional<FriendShipChatRoom> findByfriendship_Id(long friendShipId);
 }

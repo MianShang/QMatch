@@ -2,8 +2,10 @@ package com.example.backend.Service;
 
 import com.example.backend.Dto.Response.FriendShipResponseDto;
 import com.example.backend.Entity.FriendShip;
+import com.example.backend.Entity.FriendShipChatRoom;
 import com.example.backend.Entity.User;
 import com.example.backend.Entity.UserStatus;
+import com.example.backend.Repository.FriendShipChatRoomRepository;
 import com.example.backend.Repository.FriendShipRepository;
 import com.example.backend.Repository.UserRepository;
 import com.example.backend.enums.FriendShipStatus;
@@ -29,6 +31,7 @@ public class FriendShipService {
     private final UserRepository userRepository;
     private final SimpMessagingTemplate simpMessagingTemplate;
     private final UserStatusRepository userStatusRepository;
+    private final FriendShipChatRoomRepository friendShipChatRoomRepository;
 
     //친구 요청 보낼때
     @Transactional
@@ -267,7 +270,12 @@ public class FriendShipService {
     {
         User user = userRepository.findByUserId(userId).orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         User requester = userRepository.findByUserId(requesterId).orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        friendshipRepository.deleteFriendship(requester, user);
+        // 2. 두 유저 간의 친구 관계를 찾습니다.
+
+        FriendShip friendship = friendshipRepository.findByBothUsers(user.getId(), requester.getId())
+                .orElseThrow(() -> new IllegalArgumentException("친구 관계를 찾을 수 없습니다."));
+
+        friendshipRepository.delete(friendship);
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override

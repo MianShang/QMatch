@@ -10,9 +10,10 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-public class FriendShipChatMessege {
+public class FriendShipChatMessage {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)

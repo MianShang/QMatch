@@ -141,7 +141,7 @@ function LobbyPage() {
       setSelectedRoom(null);
       // 메시지 로딩 및 읽음 처리
       getChatList(chatRoom.id, setFriendMessages);
-      setRead({ id: chatRoom.id });
+      //setRead({ id: chatRoom.id });
 
     } catch (error) {
       console.error('채팅방 로드 실패:', error);
@@ -392,7 +392,6 @@ function LobbyPage() {
           setInput={setInput}
           sendMessage={sendMessage}
           messageContainerRef={messageContainerRef}
-          isMembersPanelOpen={isMembersPanelOpen}
         />
 
         <div style={{ display: "flex" }}>
@@ -400,6 +399,7 @@ function LobbyPage() {
                 <span style={{ color: 'var(--discord-text-muted)', fontSize: '14px' }}>
                   QMatch - 게임 팀원 모집 플랫폼
                 </span>
+                <img src="../김용빈산악회2.png" alt=""  style={{position:'flex' ,width:'220px', height:'75px' }}/>
               </div>
               <Link to="/search">
                 <div className='searchSize'>

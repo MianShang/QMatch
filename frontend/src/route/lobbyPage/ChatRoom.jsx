@@ -1,6 +1,4 @@
 import MessageList from "./MessageList";
-import './lobbyPage.css'
-
 
 function ChatRoom({
     userData,
@@ -12,7 +10,6 @@ function ChatRoom({
     setInput,
     sendMessage,
     messageContainerRef,
-    isMembersPanelOpen
 }) {
     return (
             <div className="chatSize">

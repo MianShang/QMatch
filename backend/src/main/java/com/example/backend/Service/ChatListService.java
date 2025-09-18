@@ -78,6 +78,7 @@ public class ChatListService {
             chatListResponseDto.setName(chatList1.getUser().getUserId());
             chatListResponseDto.setChatDate(chatList1.getChatDate());
             chatListResponseDto.setUserName(chatList1.getUserName());
+            chatListResponseDto.setChatDate(chatList1.getChatDate());
 
             // List add
             chatListResponseDtoList.add(chatListResponseDto);

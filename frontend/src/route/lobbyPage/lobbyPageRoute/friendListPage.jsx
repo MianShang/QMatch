@@ -6,7 +6,7 @@ import { FriendInventory } from './friendInventory.jsx';
 import { FaXmark } from "react-icons/fa6";
 import { useFriendDelete } from '../../../hooks/friends/useFriendDelete.js';
 
-function FriendListPage() {
+function FriendListPage({ onOpenChatRoom }) {
   const { friends, statusByUser, userData } = useContext(LogContext);
   const [bottomToggle, setBottomToggle] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -54,7 +54,10 @@ function FriendListPage() {
             <div
               key={friend.userId}
               className={selected === friend.userId ? 'selectCardStyle' : 'chatCard'}
-              onClick={() => setSelected(friend.userId)}
+              onClick={() => {
+                setSelected(friend.userId);
+                onOpenChatRoom(friend.userId);
+              }}
             >
               <div className="chatCardHeader">
                 <div className="profile-image-container">
@@ -72,7 +75,7 @@ function FriendListPage() {
                 <FaXmark
                   size={25}
                   color="red"
-                  onClick={()=>deleteFriend(friend.userId,userData.userId)}
+                  onClick={() => deleteFriend(friend.userId, userData.userId)}
                   className='CheckBox'
                 />
               </div>

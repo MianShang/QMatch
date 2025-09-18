@@ -37,6 +37,9 @@ public class FriendShip {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @OneToOne(mappedBy = "friendship", cascade = CascadeType.ALL, orphanRemoval = true)
+    private FriendShipChatRoom chatRoom;
+
     @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime updatedAt;
@@ -45,5 +48,6 @@ public class FriendShip {
         this.requester = requester;
         this.addressee = addressee;
         this.status = status;
+        this.chatRoom = new FriendShipChatRoom(this);
     }
 }

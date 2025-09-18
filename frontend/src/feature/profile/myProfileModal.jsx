@@ -208,7 +208,7 @@ function MyProfile({ viewUserId, onClose }) {
             </div>
 
             <div className="profile-user-info">
-              <h2 className="profile-username">{profileData?.userId}</h2>
+              <h2 className="profile-username">{profileData?.userName}</h2>
               
               <div className="profile-status-section">
                 {isMe && !editStatus && (

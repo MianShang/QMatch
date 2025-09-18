@@ -35,9 +35,22 @@ public class GameTagInitializer implements CommandLineRunner {
         insertIfNotExists("maplestory", "메르세데스", "class");
         insertIfNotExists("maplestory", "아란", "class");
 
-        insertIfNotExists("lostark", "바드",  "class");
-        insertIfNotExists("lostark", "버서커", "class");
-        insertIfNotExists("lostark", "서머너", "class");
+        insertIfNotExists("lostark", "사멸",  "포지션");
+        insertIfNotExists("lostark", "타대", "포지션");
+        insertIfNotExists("lostark", "서포터", "포지션");
+        insertIfNotExists("lostark", "발탄", "군단장 레이드");
+        insertIfNotExists("lostark", "비아키스", "군단장 레이드");
+        insertIfNotExists("lostark", "쿠크 세이튼", "군단장 레이드");
+        insertIfNotExists("lostark", "아브렐슈드", "군단장 레이드");
+        insertIfNotExists("lostark", "일리아칸", "군단장 레이드");
+        insertIfNotExists("lostark", "카멘", "군단장 레이드");
+        insertIfNotExists("lostark", "서막 : 에키드나", "카제로스 레이드");
+        insertIfNotExists("lostark", "1막 : 에기르", "카제로스 레이드");
+        insertIfNotExists("lostark", "2막 : 아브렐슈드", "카제로스 레이드");
+        insertIfNotExists("lostark", "3막 : 모르둠", "카제로스 레이드");
+        insertIfNotExists("lostark", "4막 : 아르모체", "카제로스 레이드");
+        insertIfNotExists("lostark", "종막 : 카제로스", "카제로스 레이드");
+        insertIfNotExists("lostark", "베히모스", "에픽 레이드");
 
         insertIfNotExists("dnf", "거너", "class");
 

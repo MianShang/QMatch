@@ -929,7 +929,7 @@ function ChatListPage({
                       return (
                         <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'online-' + u.userId}>
                           <span className={`membersName ${isPending ? 'membersName--pending' : ''}`}>
-                            {u.userId}
+                            {u.userName}
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
                           </span>
@@ -953,7 +953,7 @@ function ChatListPage({
                       return (
                         <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'away-' + u.userId}>
                           <span className={`membersName ${isPending ? 'membersName--pending' : ''}`}>
-                            {u.userId}
+                            {u.userName}
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
                           </span>
@@ -977,7 +977,7 @@ function ChatListPage({
                       return (
                         <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'off-' + u.userId}>
                           <span className={`membersName membersName--offline ${isPending ? 'membersName--pending' : ''}`}>
-                            {u.userId}
+                            {u.userName}
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
                           </span>

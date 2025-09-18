@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect, useContext, memo } from 'react'
-import { Routes, Route, Link, useNavigate } from 'react-router-dom'
-import { Client } from '@stomp/stompjs';
+import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios';
 import { FaSearch } from 'react-icons/fa';
 import './lobbyPage.css'
@@ -11,6 +10,8 @@ import FriendListPage from './lobbyPageRoute/friendListPage.jsx';
 import MyProfile from '../../feature/profile/myProfileModal.jsx';
 import VoiceChat from './lobbyPageRoute/VoiceChat.jsx';
 import VoiceChatModal from '../../modal/voiceChatSetting/VoiceChatModal.jsx';
+import ChatRoom from './ChatRoom.jsx';
+
 import UserHistoryModal from '../../modal/userHistory/UserHistoryModal.jsx';
 // JoinRequestModal 제거 - 기존 UI에 통합
 
@@ -67,6 +68,8 @@ function LobbyPage() {
   const [messages, setMessages] = useState([]);      // 보낼 메세지
   const [client, setClient] = useState(null);      // client 연결 여부 State
   const [input, setInput] = useState('');      // input 입력 Sate      
+  const [selectedFriendRoom, setSelectedFriendRoom] = useState(null); //친구 선택 채팅방
+  const [friendMessages, setFriendMessages] = useState([]); // 친구 1:1 채팅 메시지
 
   // State 보관함 해체
   const { isLogIn, setIsLogIn, userData, setUserData, setHasUnreadMessages, theme, toggleTheme } = useContext(LogContext)
@@ -123,6 +126,29 @@ function LobbyPage() {
   // 스크롤 하단 자동 이동 Effect
   const messageContainerRef = useRef(null);
 
+  //친구 1:! 채팅방 열기 함수
+    const onOpenChatRoom = async (friendId) => {
+        try {
+            // 채팅 탭으로 전환
+            handleToggleChange(true);
+            
+            // friendsId로 채팅방 ID를 찾거나 생성하는 백엔드 API 호출
+            const response = await axios.get(`/api/friends/chatroom/${friendId}/${userData.userId}`);
+            const chatRoom = response.data; // 서버에서 채팅방 정보 반환
+            
+            // 상태 업데이트
+            setSelectedFriendRoom(chatRoom);
+            setSelectedRoom(null); 
+            // 메시지 로딩 및 읽음 처리
+            getChatList(chatRoom.id, setFriendMessages);
+            setRead({ id: chatRoom.id });
+            
+        } catch (error) {
+            console.error('채팅방 로드 실패:', error);
+            // 에러 처리 로직 (예: 에러 메시지 토스트)
+        }
+    };
+
   useEffect(() => {
     const container = messageContainerRef.current;
     if (container) {
@@ -132,10 +158,20 @@ function LobbyPage() {
 
   //프로필 정보 DB에서 불러오기
   useEffect(() => {
+    // userData.userId가 없으면 아무 작업도 하지 않음
     if (!userData?.userId) return;
+  
     axios.get("/api/profile/user/info", { params: { userId: userData.userId } })
-      .then(res => setUserData(res.data))
+      .then(res => {
+        setUserData(prevUserData => ({
+          ...prevUserData, //기존 데이터를 모두 복사
+          ...res.data,     //새로 받은 데이터로 덮어쓰기
+          //authorities 만큼은 무조건 기존 값으로 다시 덮어쓰기
+          authorities: prevUserData.authorities 
+        }));
+      })
       .catch(err => console.error("유저 정보 불러오기 실패:", err));
+
   }, [userData?.userId, setUserData]);
 
   useEffect(() => {
@@ -193,7 +229,7 @@ function LobbyPage() {
   return (
     <>
       <div className='fullscreen'>
-        {/* 중앙 친구/채팅 바 */}
+        {/* 좌측 친구/채팅 바 */}
         {showMidBar &&
           <div className='leftBarSize'>
             <div className="toggle-container">
@@ -249,7 +285,10 @@ function LobbyPage() {
                   onMembersPanelToggle={setIsMembersPanelOpen}
                   setHasUnreadMessages={setHasUnreadMessages}
                 />
-                : <FriendListPage userId={userData.userId} />}
+                : <FriendListPage 
+                userId={userData.userId}
+                onOpenChatRoom={onOpenChatRoom} // 함수 전달
+                 />}
             </div>
 
             {/* 하단 버튼 영역 */}
@@ -342,81 +381,18 @@ function LobbyPage() {
 
 
         {/*우측 채팅방 */}
-        <div className={`rightBarSize ${isMembersPanelOpen ? 'with-members-panel' : ''}`}>
-          <div className='chatSize'>
-            {/* 채팅방 헤더 */}
-            {selectedRoom && (
-              <div className='chatRoomHeader'>
-                <div className='chatRoomInfo'>
-                  <h3 className='chatRoomTitle'>{selectedRoom.name}</h3>
-                  <div className='chatRoomMeta'>
-                    <span className='gameName'>{selectedRoom.gameName}</span>
-                    <span className='userCount'>{selectedRoom.currentUsers}/{selectedRoom.maxUsers}</span>
-                  </div>
-                </div>
-                {/* 방장 표시 */}
-                {selectedRoom.hostUserId === userData?.userId && (
-                  <span className='hostBadge'>방장</span>
-                )}
-              </div>
-            )}
-
-            <div className='contentStyle chatSize' style={{ textAlign: "left" }}>
-              <div ref={messageContainerRef} className={`scroll-container chatDivStyle ${selectedRoom ? 'chat-room-selected' : ''}`}>
-                {selectedRoom ? (
-                  <MessageList
-                    messages={messages}
-                    userData={userData} />
-                ) : (
-                  <div className="empty-chat-container">
-                    <div className="empty-chat-logo">
-                      <img
-                        src={
-                          theme === 'dark' ? "/qmatchLogoBlue.png" :
-                            theme === 'pink' ? "/qmatchLogoPink.png" :
-                              "/qmatchLogo.png"
-                        }
-                        alt="QMatch"
-                        className="qmatch-logo-image"
-                      />
-                    </div>
-                    <p className="empty-chat-text">채팅방을 선택하여 대화를 시작하세요</p>
-                  </div>
-                )}
-              </div>
-
-              {selectedRoom && (
-                <div className={`inputSize ${selectedRoom ? 'chat-room-selected' : ''}`}>
-                  <input
-                    className='chatInputStyle'
-                    type="text"
-                    placeholder="메시지를 입력하세요..."
-                    value={input}
-                    onChange={(e) => { setInput(e.target.value); }}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { sendMessage(); } }} />
-
-                  <button className='chatButtonStyle'
-                    onClick={() => { sendMessage(); }}>
-                    ➤
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div style={{ display: "flex" }}>
-              <div className='adSize'>
-                <span style={{ color: 'var(--discord-text-muted)', fontSize: '14px' }}>
-                  QMatch - 게임 팀원 모집 플랫폼
-                </span>
-              </div>
-              <Link to="/search">
-                <div className='searchSize'>
-                  <FaSearch className='search-icon-react' />
-                </div>
-              </Link>
-            </div>
-          </div>
-        </div>
+        <ChatRoom
+          userData={userData}
+          selectedRoom={selectedRoom}
+          selectedFriendRoom={selectedFriendRoom}
+          messages={messages}
+          friendMessages={friendMessages}
+          input={input}
+          setInput={setInput}
+          sendMessage={sendMessage}
+          messageContainerRef={messageContainerRef}
+          isMembersPanelOpen={isMembersPanelOpen}
+        />
       </div>
 
       {/*프로필 모달 */}
@@ -462,22 +438,3 @@ function LobbyPage() {
 
 export default LobbyPage
 
-const MessageList = memo(({ messages, userData }) => {
-  return (
-    <div className='chatContentStyle'>
-      {
-        messages.map((msg, i) => (
-          <div key={i}
-            className={`message-wrapper ${msg.name == userData?.userId ? 'myChatStyle' : 'otherChatStyle'}`}>
-
-            {msg.name !== userData?.userId && (
-              <div className="message-author">{msg.name}</div>
-            )}
-
-            <div className='chatStyle'>{msg.message}</div>
-          </div>
-        ))
-      }
-    </div>
-  );
-});

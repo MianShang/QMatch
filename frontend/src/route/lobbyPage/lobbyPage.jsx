@@ -127,27 +127,27 @@ function LobbyPage() {
   const messageContainerRef = useRef(null);
 
   //친구 1:! 채팅방 열기 함수
-    const onOpenChatRoom = async (friendId) => {
-        try {
-            // 채팅 탭으로 전환
-            handleToggleChange(true);
-            
-            // friendsId로 채팅방 ID를 찾거나 생성하는 백엔드 API 호출
-            const response = await axios.get(`/api/friends/chatroom/${friendId}/${userData.userId}`);
-            const chatRoom = response.data; // 서버에서 채팅방 정보 반환
-            
-            // 상태 업데이트
-            setSelectedFriendRoom(chatRoom);
-            setSelectedRoom(null); 
-            // 메시지 로딩 및 읽음 처리
-            getChatList(chatRoom.id, setFriendMessages);
-            setRead({ id: chatRoom.id });
-            
-        } catch (error) {
-            console.error('채팅방 로드 실패:', error);
-            // 에러 처리 로직 (예: 에러 메시지 토스트)
-        }
-    };
+  const onOpenChatRoom = async (friendId) => {
+    try {
+      // 채팅 탭으로 전환
+      handleToggleChange(true);
+
+      // friendsId로 채팅방 ID를 찾거나 생성하는 백엔드 API 호출
+      const response = await axios.get(`/api/friends/chatroom/${friendId}/${userData.userId}`);
+      const chatRoom = response.data; // 서버에서 채팅방 정보 반환
+
+      // 상태 업데이트
+      setSelectedFriendRoom(chatRoom);
+      setSelectedRoom(null);
+      // 메시지 로딩 및 읽음 처리
+      getChatList(chatRoom.id, setFriendMessages);
+      setRead({ id: chatRoom.id });
+
+    } catch (error) {
+      console.error('채팅방 로드 실패:', error);
+      // 에러 처리 로직 (예: 에러 메시지 토스트)
+    }
+  };
 
   useEffect(() => {
     const container = messageContainerRef.current;
@@ -160,14 +160,14 @@ function LobbyPage() {
   useEffect(() => {
     // userData.userId가 없으면 아무 작업도 하지 않음
     if (!userData?.userId) return;
-  
+
     axios.get("/api/profile/user/info", { params: { userId: userData.userId } })
       .then(res => {
         setUserData(prevUserData => ({
           ...prevUserData, //기존 데이터를 모두 복사
           ...res.data,     //새로 받은 데이터로 덮어쓰기
           //authorities 만큼은 무조건 기존 값으로 다시 덮어쓰기
-          authorities: prevUserData.authorities 
+          authorities: prevUserData.authorities
         }));
       })
       .catch(err => console.error("유저 정보 불러오기 실패:", err));
@@ -285,17 +285,17 @@ function LobbyPage() {
                   onMembersPanelToggle={setIsMembersPanelOpen}
                   setHasUnreadMessages={setHasUnreadMessages}
                 />
-                : <FriendListPage 
-                userId={userData.userId}
-                onOpenChatRoom={onOpenChatRoom} // 함수 전달
-                 />}
+                : <FriendListPage
+                  userId={userData.userId}
+                  onOpenChatRoom={onOpenChatRoom} // 함수 전달
+                />}
             </div>
 
             {/* 하단 버튼 영역 */}
             <div className="bottom-buttons-container">
-            {userData?.authorities?.some(auth => auth.authority === 'ROLE_ADMIN') && (
-                  <button><Link to="/admin"><MdOutlineConstruction style={{fontSize: "28px", padding: "0px"}} /></Link></button>
-                )}
+              {userData?.authorities?.some(auth => auth.authority === 'ROLE_ADMIN') && (
+                <button><Link to="/admin"><MdOutlineConstruction style={{ fontSize: "28px", padding: "0px" }} /></Link></button>
+              )}
               {/* 프로필 이미지 버튼 */}
               <div className="profile-button-wrapper">
                 <img
@@ -381,6 +381,7 @@ function LobbyPage() {
 
 
         {/*우측 채팅방 */}
+        <div className={`rightBarSize ${isMembersPanelOpen ? "with-members-panel" : ""}`}>
         <ChatRoom
           userData={userData}
           selectedRoom={selectedRoom}
@@ -393,8 +394,22 @@ function LobbyPage() {
           messageContainerRef={messageContainerRef}
           isMembersPanelOpen={isMembersPanelOpen}
         />
-      </div>
 
+        <div style={{ display: "flex" }}>
+              <div className='adSize'>
+                <span style={{ color: 'var(--discord-text-muted)', fontSize: '14px' }}>
+                  QMatch - 게임 팀원 모집 플랫폼
+                </span>
+              </div>
+              <Link to="/search">
+                <div className='searchSize'>
+                  <img src="/SearchIcon.png" className='imgPos' alt="검색"></img>
+              </div>
+            </Link>
+            </div>
+          </div>
+        </div>
+      
       {/*프로필 모달 */}
       {showProfileModal &&
         <MyProfile viewUserId={profileUserId} // 클릭한 유저 아이디

@@ -1,4 +1,6 @@
 import MessageList from "./MessageList";
+import './lobbyPage.css'
+
 
 function ChatRoom({
     userData,
@@ -13,7 +15,6 @@ function ChatRoom({
     isMembersPanelOpen
 }) {
     return (
-        <div className={`rightBarSize ${isMembersPanelOpen ? "with-members-panel" : ""}`}>
             <div className="chatSize">
                 {/* 다대다 채팅방 헤더 */}
                 {selectedRoom && (
@@ -68,7 +69,6 @@ function ChatRoom({
                     </div>
                 )}
             </div>
-        </div>
     );
 }
 

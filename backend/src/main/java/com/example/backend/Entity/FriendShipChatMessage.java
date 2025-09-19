@@ -21,8 +21,8 @@ public class FriendShipChatMessage {
     private FriendShipChatRoom friendShipChatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "sender_id")
-    private User sender;
+    @JoinColumn(name = "user_id")
+    private User user;
 
     @Lob
     private String content;

@@ -1,6 +1,7 @@
 import { useState, useContext, useEffect, useRef } from 'react';
 import './list.css';
 import { toast } from 'react-toastify';
+import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 
 // 전역 유저 State 데이터 가져오기용 Context API import
@@ -52,6 +53,7 @@ function ChatListPage({
   setSendToModalGameName
 }) {
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
+  const navigate = useNavigate();
   // State 보관함 해체
   const { userData } = useContext(LogContext);
 
@@ -860,10 +862,21 @@ function ChatListPage({
                   onClick={() => {
                     setSendToModalGameName(item.chatRoom.gameName);
                     setChatListExtend(false);
-                    setSelectedRoom(item.chatRoom);
-                    getChatList(item.chatRoom.id, setMessages);
-                    setRead(item.chatRoom);
-                    setUnreadCounts(prev => ({ ...prev, [item.chatRoom.id]: 0 }));
+                    setUnreadCounts((prev) => ({ ...prev, [item.chatRoom.id]: 0 }));
+
+                    // 다대다 채팅방 이동
+                    navigate("/lobby", {
+                      state: {
+                        type: "multi",
+                        roomId: item.chatRoom.id,
+                        chatName: item.chatRoom.name,
+                        gameName: item.chatRoom.gameName,
+                        tagNames: item.chatRoom.tagNames,
+                        currentUsers: item.chatRoom.currentUsers,
+                        maxUsers: item.chatRoom.maxUsers,
+                        hostUserId: item.chatRoom.hostUserId,
+                      },
+                    });
 
                     // 패널 토글: 열려있으면 닫고, 닫혀있으면 열기
                     if (isMembersOpen) {
@@ -985,7 +998,7 @@ function ChatListPage({
                           <div
                             className="MoreButtonStyle"
                             onClick={(e) => openMenu(e, u.userId)}
-                          >···                            
+                          >···
                           </div>
                         </div>
                       );
@@ -1162,23 +1175,23 @@ function ChatListPage({
 
                 {/* 여기는 추후에 추가 */}
                 {(menu.userId !== userData.userId) && (
-                    <p onClick={async () => {
-                      // 훅에서 반환된 함수 호출
-                      const requesterId = userData.userId;
-                      const blockedId = menu.userId;
-                      const result = await sendBlockRequest(requesterId, blockedId);
-                      if (result.success) {
-                        toast.success(result.message);
-                      }
-                      else {
-                        toast.error(result.message);
-                      }
-                      setMenu(null);
-                    }}>
-                      차단 하기
-                    </p>
+                  <p onClick={async () => {
+                    // 훅에서 반환된 함수 호출
+                    const requesterId = userData.userId;
+                    const blockedId = menu.userId;
+                    const result = await sendBlockRequest(requesterId, blockedId);
+                    if (result.success) {
+                      toast.success(result.message);
+                    }
+                    else {
+                      toast.error(result.message);
+                    }
+                    setMenu(null);
+                  }}>
+                    차단 하기
+                  </p>
                 )}
-                
+
                 {/* 신고하기 */}
                 {(menu.userId !== userData.userId) && (
                   <p onClick={() => {

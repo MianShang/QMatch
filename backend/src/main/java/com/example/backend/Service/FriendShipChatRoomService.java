@@ -19,6 +19,7 @@ public class FriendShipChatRoomService {
     private final UserRepository userRepository;
     private final FriendShipRepository friendShipRepository;
 
+
     public Long getCreateChatRoom(String requesterId, String userId)
     {
         User user = userRepository.findByUserId(userId).orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -28,7 +29,7 @@ public class FriendShipChatRoomService {
 
         Long friendShipId = friendship.orElseThrow(()->new IllegalArgumentException("친구 관계를 찾을 수 없음")).getId();
 
-        Optional<FriendShipChatRoom> chatRoom = friendShipChatRoomRepository.findByfriendship_Id(friendShipId);
+        Optional<FriendShipChatRoom> chatRoom = friendShipChatRoomRepository.findByFriendship_Id(friendShipId);
 
         if(chatRoom.isPresent())
         {

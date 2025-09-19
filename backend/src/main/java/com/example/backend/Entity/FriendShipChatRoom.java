@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.data.annotation.CreatedDate;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -29,7 +29,7 @@ public class FriendShipChatRoom {
     private List<FriendShipChatMessage> messages;
 
     //채팅방 생성 시간
-    @CreatedDate
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     public FriendShipChatRoom(FriendShip friendship) {

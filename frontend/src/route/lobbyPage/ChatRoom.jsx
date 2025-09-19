@@ -9,8 +9,17 @@ function ChatRoom({
     input,
     setInput,
     sendMessage,
+    sendFriendMessage,
     messageContainerRef,
 }) {
+    const handleSend = () => {
+        if (selectedRoom) {
+            sendMessage();
+        } else if (selectedFriendRoom) {
+            sendFriendMessage();
+        }
+    };
+
     return (
             <div className="chatSize">
                 {/* 다대다 채팅방 헤더 */}
@@ -57,10 +66,10 @@ function ChatRoom({
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => {
-                                if (e.key === "Enter") sendMessage();
+                                if (e.key === "Enter") handleSend;
                             }}
                         />
-                        <button className="chatButtonStyle" onClick={sendMessage}>
+                        <button className="chatButtonStyle" onClick={handleSend}>
                             ➤
                         </button>
                     </div>

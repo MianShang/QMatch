@@ -6,8 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
 
-public interface FriendShipChatRoomRepository extends JpaRepository<FriendShipChatRoom, Integer> {
+public interface FriendShipChatRoomRepository extends JpaRepository<FriendShipChatRoom, Long> {
     
     //friendShip Id로 ChatRoom검색
-    Optional<FriendShipChatRoom> findByfriendship_Id(long friendShipId);
+    Optional<FriendShipChatRoom> findByFriendship_Id(long friendShipId);
 }

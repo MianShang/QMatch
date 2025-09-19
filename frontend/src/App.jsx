@@ -271,6 +271,7 @@ function App() {
               : <Navigate to="/" replace />
             }
           />
+          <Route path="/lobby" element={<LobbyPage />} />
         </Routes>
         
       </LogContext.Provider>

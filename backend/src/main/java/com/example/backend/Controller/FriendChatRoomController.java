@@ -1,5 +1,6 @@
 package com.example.backend.Controller;
 
+import com.example.backend.Dto.Response.FriendChatRoomResponseDto;
 import com.example.backend.Service.FriendShipChatRoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +19,9 @@ public class FriendChatRoomController {
     
     //채팅방 ID 가져오기
     @GetMapping("{friendId}/{userId}")
-    public Long getChatRoomId(@PathVariable String friendId, @PathVariable String userId) {
-        return friendShipChatRoomService.getCreateChatRoom(friendId, userId);
+    public FriendChatRoomResponseDto getChatRoomId(@PathVariable String friendId, @PathVariable String userId) {
+        long roomId = friendShipChatRoomService.getCreateChatRoom(friendId, userId);
+        return new FriendChatRoomResponseDto(roomId);
     }
     
     

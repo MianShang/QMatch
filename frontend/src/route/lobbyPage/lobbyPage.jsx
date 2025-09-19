@@ -1,7 +1,6 @@
 import { useRef, useState, useEffect, useContext, memo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios';
-import { FaSearch } from 'react-icons/fa';
 import './lobbyPage.css'
 
 // 컴포넌트 import
@@ -30,6 +29,7 @@ import { useLocation } from 'react-router-dom';
 import { useGlobalStomp } from '../../hooks/stomp/useGlobalStomp.js';
 import { useChatListGet } from '../../hooks/chatList/useChatListGet.js';
 import { useSetReadUnReadChat } from '../../hooks/chatNotice/useSetReadUnReadChat.js';
+import { useFriendChatListGet } from '../../hooks/chatList/useFriendChatListGet.js';
 
 // 상태 체크 훅 import 추가
 import useUserStatusReporter from '../../hooks/status/useUserStatusReporter.js';
@@ -126,28 +126,30 @@ function LobbyPage() {
   // 스크롤 하단 자동 이동 Effect
   const messageContainerRef = useRef(null);
 
-  //친구 1:! 채팅방 열기 함수
-  const onOpenChatRoom = async (friendId) => {
-    try {
-      // 채팅 탭으로 전환
-      handleToggleChange(true);
+  // //친구 1:1 채팅방 열기 함수
+  // const onOpenChatRoom = async (friendId) => {
+  //   try {
+  //     // 채팅 탭으로 전환
+  //     handleToggleChange(true);
 
-      // friendsId로 채팅방 ID를 찾거나 생성하는 백엔드 API 호출
-      const response = await axios.get(`/api/friends/chatroom/${friendId}/${userData.userId}`);
-      const chatRoom = response.data; // 서버에서 채팅방 정보 반환
+  //     // friendsId로 채팅방 ID를 찾거나 생성하는 백엔드 API 호출
+  //     const response = await axios.get(`/api/friends/chatroom/${friendId}/${userData.userId}`);
+  //     const chatRoom = response.data; // 서버에서 채팅방 정보 반환
+  //     console.log('채팅방 정보:', chatRoom);
 
-      // 상태 업데이트
-      setSelectedFriendRoom(chatRoom);
-      setSelectedRoom(null);
-      // 메시지 로딩 및 읽음 처리
-      getChatList(chatRoom.id, setFriendMessages);
-      //setRead({ id: chatRoom.id });
+  //     // 상태 업데이트
+  //     setSelectedFriendRoom(chatRoom);
+  //     setSelectedRoom(null);
+  //     // 메시지 로딩 및 읽음 처리
+  //     useFriendChatListGet(chatRoom.roomId, setFriendMessages);
+  //     setMessages([]);
+  //     //setRead({ id: chatRoom.id });
 
-    } catch (error) {
-      console.error('채팅방 로드 실패:', error);
-      // 에러 처리 로직 (예: 에러 메시지 토스트)
-    }
-  };
+  //   } catch (error) {
+  //     console.error('채팅방 로드 실패:', error);
+  //     // 에러 처리 로직 (예: 에러 메시지 토스트)
+  //   }
+  // };
 
   useEffect(() => {
     const container = messageContainerRef.current;
@@ -177,47 +179,71 @@ function LobbyPage() {
   useEffect(() => {
     const s = location.state;
 
-    if (!s?.roomId) return;
+    if (!s) return;
 
-    setSelectedRoom(undefined);
-    setMessages([]);
-    setShowMidBar(true);
+    if (s.type === 'multi' && s.roomId) {
+      setSelectedFriendRoom(null);
+      setFriendMessages([]);
+      setSelectedRoom(undefined);
+      setMessages([]);
+      setShowMidBar(true);
 
-    (async () => {
-      try {
-        const id = encodeURIComponent(s.roomId);
-        const { data } = await axios.get(`/api/chat/rooms/${id}`);
+      (async () => {
+        try {
+          const id = encodeURIComponent(s.roomId);
+          const { data } = await axios.get(`/api/chat/rooms/${id}`);
 
-        // 서버에서 상세 방 정보를 가져와 state 업데이트
-        console.log('서버에서 받은 방 정보:', data);
-        setSelectedRoom({
-          id: data.id,
-          name: data.name ?? s.chatName,
-          gameName: data.gameName ?? s.gameName,
-          tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
-          currentUsers: (typeof data.currentUsers === 'number') ? data.currentUsers : s.currentUsers,
-          maxUsers: (typeof data.maxUsers === 'number') ? data.maxUsers : s.maxUsers,
-          hostUserId: data.hostUserId, // 방장 ID 추가
-        });
-      } catch (e) {
-        setSelectedRoom({
-          id: s.roomId,
-          name: s.chatName,
-          gameName: s.gameName,
-          tagNames: s.tagNames ?? [],
-          currentUsers: s.currentUsers,
-          maxUsers: s.maxUsers,
-          hostUserId: s.hostUserId, // chatList에서 hostUserId 가져오기
-        });
-      } finally {
-        setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
+          // 서버에서 상세 방 정보를 가져와 state 업데이트
+          console.log('서버에서 받은 방 정보:', data);
+          setSelectedRoom({
+            id: data.id,
+            name: data.name ?? s.chatName,
+            gameName: data.gameName ?? s.gameName,
+            tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
+            currentUsers: (typeof data.currentUsers === 'number') ? data.currentUsers : s.currentUsers,
+            maxUsers: (typeof data.maxUsers === 'number') ? data.maxUsers : s.maxUsers,
+            hostUserId: data.hostUserId, // 방장 ID 추가
+          });
+        } catch (e) {
+          setSelectedRoom({
+            id: s.roomId,
+            name: s.chatName,
+            gameName: s.gameName,
+            tagNames: s.tagNames ?? [],
+            currentUsers: s.currentUsers,
+            maxUsers: s.maxUsers,
+            hostUserId: s.hostUserId, // chatList에서 hostUserId 가져오기
+          });
+        } finally {
+          setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
 
-        // 채팅방 이동 시 메시지 로딩 및 읽음 처리
-        console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId);
-        getChatList(s.roomId, setMessages);
-        setRead({ id: s.roomId });
-      }
-    })();
+          // 채팅방 이동 시 메시지 로딩 및 읽음 처리
+          console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId);
+          getChatList(s.roomId, setMessages);
+          setRead({ id: s.roomId });
+        }
+      })();
+    }
+
+    if (s.type === 'friend' && s.friendId) {
+      setSelectedRoom(null);
+      setMessages([]);
+      setShowMidBar(true);
+
+      (async () => {
+        try {
+          // 친구 채팅방 생성/조회
+          const response = await axios.get(`/api/friends/chatroom/${s.friendId}/${userData.userId}`);
+          const chatRoom = response.data;
+          console.log('1:1 채팅방 정보:', chatRoom);
+          setSelectedFriendRoom({ roomId: chatRoom.roomId, friendId: s.friendId });
+          useFriendChatListGet(chatRoom.roomId, setFriendMessages);
+        } catch (err) {
+          console.error('1:1 채팅 로드 실패:', err);
+        }
+      })();
+    }
+
   }, [location.key]);
 
   // userData가 로드될 때까지 로딩
@@ -287,7 +313,6 @@ function LobbyPage() {
                 />
                 : <FriendListPage
                   userId={userData.userId}
-                  onOpenChatRoom={onOpenChatRoom} // 함수 전달
                 />}
             </div>
 
@@ -382,34 +407,35 @@ function LobbyPage() {
 
         {/*우측 채팅방 */}
         <div className={`rightBarSize ${isMembersPanelOpen ? "with-members-panel" : ""}`}>
-        <ChatRoom
-          userData={userData}
-          selectedRoom={selectedRoom}
-          selectedFriendRoom={selectedFriendRoom}
-          messages={messages}
-          friendMessages={friendMessages}
-          input={input}
-          setInput={setInput}
-          sendMessage={sendMessage}
-          messageContainerRef={messageContainerRef}
-        />
+          <ChatRoom
+            userData={userData}
+            selectedRoom={selectedRoom}
+            selectedFriendRoom={selectedFriendRoom}
+            messages={messages}
+            friendMessages={friendMessages}
+            input={input}
+            setInput={setInput}
+            sendMessage={sendMessage}
+            messageContainerRef={messageContainerRef}
+            //sendFriendMessage={sendFriendMessage}
+          />
 
-        <div style={{ display: "flex" }}>
-              <div className='adSize'>
-                <span style={{ color: 'var(--discord-text-muted)', fontSize: '14px' }}>
-                  QMatch - 게임 팀원 모집 플랫폼
-                </span>
-                <img src="../김용빈산악회2.png" alt=""  style={{position:'flex' ,width:'220px', height:'75px' }}/>
-              </div>
-              <Link to="/search">
-                <div className='searchSize'>
-                  <img src="/SearchIcon.png" className='imgPos' alt="검색"></img>
+          <div style={{ display: "flex" }}>
+            <div className='adSize'>
+              <span style={{ color: 'var(--discord-text-muted)', fontSize: '14px' }}>
+                QMatch - 게임 팀원 모집 플랫폼
+              </span>
+              <img src="../김용빈산악회2.png" alt="" style={{ position: 'flex', width: '220px', height: '75px' }} />
+            </div>
+            <Link to="/search">
+              <div className='searchSize'>
+                <img src="/SearchIcon.png" className='imgPos' alt="검색"></img>
               </div>
             </Link>
-            </div>
           </div>
         </div>
-      
+      </div>
+
       {/*프로필 모달 */}
       {showProfileModal &&
         <MyProfile viewUserId={profileUserId} // 클릭한 유저 아이디

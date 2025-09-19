@@ -5,13 +5,15 @@ import { LogContext } from '../../../App.jsx';
 import { FriendInventory } from './friendInventory.jsx';
 import { FaXmark } from "react-icons/fa6";
 import { useFriendDelete } from '../../../hooks/friends/useFriendDelete.js';
+import { useNavigate } from "react-router-dom";
 
-function FriendListPage({ onOpenChatRoom }) {
+function FriendListPage() {
   const { friends, statusByUser, userData } = useContext(LogContext);
   const [bottomToggle, setBottomToggle] = useState(null);
   const [selected, setSelected] = useState(null);
   const containerRef = useRef(null);
   const { deleteFriend } = useFriendDelete();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // 외부 클릭 감지 함수
@@ -56,7 +58,13 @@ function FriendListPage({ onOpenChatRoom }) {
               className={selected === friend.userId ? 'selectCardStyle' : 'chatCard'}
               onClick={() => {
                 setSelected(friend.userId);
-                onOpenChatRoom(friend.userId);
+                navigate("/lobby", {
+                  state: {
+                    type: "friend",
+                    friendId: friend.userId,
+                    friendName: friend.userName,
+                  },
+                });
               }}
             >
               <div className="chatCardHeader">

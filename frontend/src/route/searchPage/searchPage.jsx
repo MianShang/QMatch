@@ -39,6 +39,11 @@ function SearchPage() {
   // 본인이 구독한 채팅방 목록 가져오기
   useChatGetRooms(userData, setSubscribedRooms);
 
+  // 디버깅용: subscribedRooms 상태 변화 확인
+  useEffect(() => {
+    console.log('subscribedRooms 업데이트:', subscribedRooms);
+  }, [subscribedRooms]);
+
   // 게임 아이콘 설정 함수
   function setGameIcon(gameName) {
     switch (gameName) {
@@ -143,6 +148,23 @@ function SearchPage() {
       checked ? (prev.includes(id) ? prev : [...prev, id]) // 중복 방지
               : prev.filter(x => x !== id)
     );
+  }
+
+  // 구독한 채팅방을 제외하고 필터링하는 함수
+  function getFilteredRooms() {
+    if (!subscribedRooms || subscribedRooms.length === 0) {
+      return rooms; // 구독한 방이 없으면 모든 방 반환
+    }
+    
+    // subscribedRooms는 { chatRoom: { id: ... } } 구조
+    const subscribedRoomIds = subscribedRooms.map(room => room.chatRoom.id);
+    console.log('구독한 방 IDs:', subscribedRoomIds);
+    console.log('검색된 방들:', rooms.map(r => r.id));
+    
+    const filtered = rooms.filter(room => !subscribedRoomIds.includes(room.id));
+    console.log('필터링된 방들:', filtered.map(r => r.id));
+    
+    return filtered;
   }
 
 
@@ -359,7 +381,7 @@ function SearchPage() {
           <div className='contentStyle chatListSize'>
             <div className='chatListScroll'>
               {
-                rooms.map((room) => (
+                getFilteredRooms().map((room) => (
                   <div className='chatRoomList'
                     key={room.id}
                     onClick={() => { setSelectedRoom(room); setJoinOpen(true); }}>

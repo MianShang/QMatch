@@ -309,6 +309,12 @@ function ChatListPage({
 
       // 인원수 증가
       updateChatRoomUserCount(selectedRoom.id, 1);
+      
+      // selectedRoom의 인원수도 업데이트
+      setSelectedRoom(prev => prev ? {
+        ...prev,
+        currentUsers: prev.currentUsers + 1
+      } : null);
 
       // 멤버 목록에 즉시 추가
       setChatUserList(prev => {
@@ -529,6 +535,12 @@ function ChatListPage({
           setChatUserList(prev => prev.filter(u => u.userId !== payload?.targetUserId));
           // 인원수 감소
           updateChatRoomUserCount(payload.roomId, -1);
+          
+          // selectedRoom의 인원수도 업데이트
+          setSelectedRoom(prev => prev && prev.id === payload.roomId ? {
+            ...prev,
+            currentUsers: Math.max(0, prev.currentUsers - 1)
+          } : prev);
         }
       } catch (e) {
         toast.error('kick payload parse error', e);
@@ -556,6 +568,12 @@ function ChatListPage({
         setChatUserList(prev => prev.filter(u => u.userId !== payload.userId));
         // 인원수 감소
         updateChatRoomUserCount(payload.roomId, -1);
+        
+        // selectedRoom의 인원수도 업데이트
+        setSelectedRoom(prev => prev && prev.id === payload.roomId ? {
+          ...prev,
+          currentUsers: Math.max(0, prev.currentUsers - 1)
+        } : prev);
       } else {
         // 내가 나간 경우 → chatList에서도 제거
         setChatList(prev => prev.filter(r =>
@@ -1063,6 +1081,17 @@ function ChatListPage({
                           requesterUserId: userData.userId
                         })
                       });
+                      
+                      // 즉시 UI 업데이트
+                      setChatUserList(prev => prev.filter(u => u.userId !== menu.userId));
+                      updateChatRoomUserCount(selectedRoom.id, -1);
+                      
+                      // selectedRoom의 인원수도 업데이트
+                      setSelectedRoom(prev => prev ? {
+                        ...prev,
+                        currentUsers: Math.max(0, prev.currentUsers - 1)
+                      } : null);
+                      
                       toast.success('강퇴 성공:', menu.userId);
                     } catch (err) {
                       toast.error('강퇴 실패:', err);
@@ -1085,6 +1114,14 @@ function ChatListPage({
                           toUserId: menu.userId
                         })
                       });
+                      
+                      // 즉시 UI 업데이트
+                      setSelectedRoom(prev => prev ? ({
+                        ...prev,
+                        hostUserId: menu.userId
+                      }) : null);
+                      
+                      toast.success('방장을 넘겼습니다.');
                     } catch (err) {
                       toast.error('방장 넘기기에 실패했습니다.');
                     }
@@ -1110,9 +1147,13 @@ function ChatListPage({
                           `/api/chat/rooms/${selectedRoom.id}/leave?userId=${userData.userId}`,
                           { method: "DELETE" }
                         );
+                        
+                        // 즉시 UI 업데이트
                         setChatList(prev => prev.filter(r => r.chatRoom.id !== selectedRoom.id));
                         setSelectedRoom(null);
                         setMessages([]);
+                        setIsMembersOpen(false);
+                        
                         toast.success("성공적으로 나가졌습니다!");
                       } catch (err) {
                         console.error("방 나가기 실패:", err);

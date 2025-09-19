@@ -149,6 +149,15 @@ function LobbyPage() {
     }
   };
 
+  // 채팅방 설정 업데이트 핸들러
+  const handleRoomUpdated = (updatedRoom) => {
+    console.log('방 설정이 업데이트되었습니다:', updatedRoom);
+    // selectedRoom 상태 업데이트
+    setSelectedRoom(prev => prev ? { ...prev, ...updatedRoom } : null);
+    // 채팅방 목록도 새로고침
+    setListRefreshTick(t => t + 1);
+  };
+
   useEffect(() => {
     const container = messageContainerRef.current;
     if (container) {
@@ -260,6 +269,42 @@ function LobbyPage() {
       }
     })();
   }, [location.key]);
+
+  // 방 설정 업데이트 이벤트 구독
+  useEffect(() => {
+    if (!globalStomp || !selectedRoom?.id) return;
+
+    const subscriptionId = `room-updated-${selectedRoom.id}`;
+
+    // 방 설정 업데이트 이벤트 구독
+    globalStomp.subscribe(`/topic/chat/${selectedRoom.id}/room-updated`, (frame) => {
+      try {
+        const payload = JSON.parse(frame.body);
+        console.log('방 설정 업데이트 알림 수신:', payload);
+        
+        // 방 정보 새로고침
+        fetch(`/api/chat/rooms/${selectedRoom.id}`)
+          .then(res => res.json())
+          .then(roomData => {
+            setSelectedRoom(prev => prev ? {
+              ...prev,
+              name: roomData.name,
+              gameName: roomData.gameName,
+              tagNames: roomData.tagNames,
+              maxUsers: roomData.maxUsers,
+              joinType: roomData.joinType
+            } : null);
+          })
+          .catch(err => console.error('방 정보 새로고침 실패:', err));
+      } catch (e) {
+        console.warn('방 설정 업데이트 알림 parse error', e);
+      }
+    }, { id: subscriptionId });
+
+    return () => {
+      globalStomp.unsubscribe(subscriptionId);
+    };
+  }, [selectedRoom?.id, globalStomp]);
 
   // userData가 로드될 때까지 로딩
   if (!userData) {
@@ -433,6 +478,7 @@ function LobbyPage() {
           setInput={setInput}
           sendMessage={sendMessage}
           messageContainerRef={messageContainerRef}
+          onRoomUpdated={handleRoomUpdated}
         />
 
         <div style={{ display: "flex" }}>

@@ -433,6 +433,102 @@ public class ChatController {
         ));
     }
 
+    // 방 설정 업데이트
+    @PutMapping("/rooms/{roomId}")
+    @Transactional
+    public ResponseEntity<?> updateRoom(
+            @PathVariable String roomId,
+            @RequestBody Map<String, Object> body
+    ) {
+        try {
+            String requesterUserId = (String) body.get("requesterUserId");
+            String chatName = (String) body.get("chatName");
+            String gameName = (String) body.get("gameName");
+            Integer maxUsers = (Integer) body.get("maxUsers");
+            String joinType = (String) body.get("joinType");
+            List<?> tagIdsRaw = (List<?>) body.get("tags");
+
+            if (requesterUserId == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "requesterUserId is required"));
+            }
+
+            ChatRoom room = chatRoomRepository.findById(roomId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."));
+
+            // 방장 권한 확인
+            if (room.getOwner() == null || !room.getOwner().getUserId().equals(requesterUserId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "방장만 방 설정을 변경할 수 있습니다."));
+            }
+
+            // 방 이름 업데이트
+            if (chatName != null && !chatName.trim().isEmpty()) {
+                room.setName(chatName.trim());
+            }
+
+            // 게임명 업데이트
+            if (gameName != null && !gameName.trim().isEmpty()) {
+                room.setGameName(gameName.trim());
+            }
+
+            // 최대 인원 업데이트
+            if (maxUsers != null) {
+                if (maxUsers < 2 || maxUsers > 20) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "방 인원은 2~20명 사이여야 합니다."));
+                }
+                if (maxUsers < room.getCurrentUsers()) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "현재 인원보다 적게 설정할 수 없습니다."));
+                }
+                room.setMaxUsers(maxUsers);
+            }
+
+            // 입장 방식 업데이트
+            if (joinType != null && (joinType.equals("free") || joinType.equals("approval"))) {
+                room.setJoinType(joinType);
+            }
+
+            // 태그 업데이트
+            if (tagIdsRaw != null) {
+                // 기존 태그 삭제
+                chatRoomTagRepository.deleteByChatRoom_Id(roomId);
+                
+                // 새 태그 추가 - Integer나 Long 모두 처리 가능하도록
+                for (Object tagIdObj : tagIdsRaw) {
+                    Long tagId;
+                    if (tagIdObj instanceof Integer) {
+                        tagId = ((Integer) tagIdObj).longValue();
+                    } else if (tagIdObj instanceof Long) {
+                        tagId = (Long) tagIdObj;
+                    } else {
+                        tagId = Long.valueOf(tagIdObj.toString());
+                    }
+                    
+                    GameTag gameTag = gameTagRepository.findById(tagId)
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "태그를 찾을 수 없습니다: " + tagId));
+                    
+                    ChatRoomTag chatRoomTag = new ChatRoomTag();
+                    chatRoomTag.setChatRoom(room);
+                    chatRoomTag.setGameTag(gameTag);
+                    chatRoomTagRepository.save(chatRoomTag);
+                }
+            }
+
+            chatRoomRepository.save(room);
+
+            // 방 전체에 설정 변경 알림
+            simpMessagingTemplate.convertAndSend(
+                    "/topic/chat/" + roomId + "/room-updated",
+                    Map.of("roomId", roomId, "message", "방 설정이 변경되었습니다.")
+            );
+
+            return ResponseEntity.ok(Map.of("success", true, "message", "방 설정이 업데이트되었습니다."));
+        } catch (Exception e) {
+            System.err.println("방 설정 업데이트 중 에러 발생: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "방 설정 업데이트 중 오류가 발생했습니다: " + e.getMessage()));
+        }
+    }
+
     // 방장 변경
     @PostMapping("/rooms/{roomId}/transfer")
     @Transactional

@@ -35,6 +35,28 @@
     flex: 1;
 }
 
+.chatRoomActions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.roomSettingsBtn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+    color: var(--discord-text-muted);
+}
+
+.roomSettingsBtn:hover {
+    background-color: var(--discord-bg-tertiary);
+    color: var(--discord-text-normal);
+}
+
 .chatRoomTitle {
     margin: 0 0 8px 0;
     font-size: 18px;

@@ -43,6 +43,7 @@ public class ChatController {
     private final UserChatRoomRepository userChatRoomRepository;
     private final GameTagRepository gameTagRepository;
     private final UserRepository userRepository;
+    private final ChatIsReadRepository chatIsReadRepository;
 
     // 실시간 채팅방 접속 유저 목록 (roomId -> Set of userIds)
 //    private final Map<String, Set<String>> activeUsersByRoom = new ConcurrentHashMap<>();
@@ -271,30 +272,51 @@ public class ChatController {
     @Transactional
     public ResponseEntity<?> deleteRoom(@PathVariable String roomId,
                                         @RequestParam String requesterUserId) {
+        try {
+            System.out.println("방 삭제 요청 - roomId: " + roomId + ", requesterUserId: " + requesterUserId);
+            
+            ChatRoom room = chatRoomRepository.findById(roomId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."));
 
-        ChatRoom room = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."));
+            System.out.println("방 정보 - name: " + room.getName() + ", currentUsers: " + room.getCurrentUsers() + ", owner: " + (room.getOwner() != null ? room.getOwner().getUserId() : "null"));
 
-        // 방장이 맞는지 확인
-        if (room.getOwner() == null || !room.getOwner().getUserId().equals(requesterUserId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "방장만 방을 삭제할 수 있습니다."));
+            // 방장이 맞는지 확인
+            if (room.getOwner() == null || !room.getOwner().getUserId().equals(requesterUserId)) {
+                System.out.println("방장 권한 없음 - room owner: " + (room.getOwner() != null ? room.getOwner().getUserId() : "null") + ", requester: " + requesterUserId);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "방장만 방을 삭제할 수 있습니다."));
+            }
+
+            // 인원이 방장 혼자인지 확인
+            if (room.getCurrentUsers() > 1) {
+                System.out.println("다른 인원이 있음 - currentUsers: " + room.getCurrentUsers());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        Map.of("error", "아직 다른 인원이 있습니다. 방장은 혼자일 때만 삭제할 수 있습니다.")
+                );
+            }
+
+            System.out.println("ChatList 삭제 시작");
+            // 채팅방과 연결된 ChatList 먼저 삭제
+            chatListRepository.deleteByChatRoom_Id(roomId);
+            
+            System.out.println("ChatIsRead 삭제 시작");
+            // 채팅방과 연결된 ChatIsRead 삭제
+            chatIsReadRepository.deleteByChatRoomId(room);
+            
+            System.out.println("UserChatRoom 삭제 시작");
+            // 채팅방과 연결된 UserChatRoom 관계 삭제
+            userChatRoomRepository.deleteByChatRoom_Id(roomId);
+            
+            System.out.println("ChatRoom 삭제 시작");
+            chatRoomRepository.delete(room);
+
+            System.out.println("방 삭제 완료");
+            return ResponseEntity.ok(Map.of("success", true, "message", "방이 삭제되었습니다."));
+        } catch (Exception e) {
+            System.err.println("방 삭제 중 에러 발생: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "방 삭제 중 오류가 발생했습니다: " + e.getMessage()));
         }
-
-        // 인원이 방장 혼자인지 확인
-        if (room.getCurrentUsers() > 1) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    Map.of("error", "아직 다른 인원이 있습니다. 방장은 혼자일 때만 삭제할 수 있습니다.")
-            );
-        }
-
-        // 채팅방과 연결된 ChatList 먼저 삭제
-        chatListRepository.deleteByChatRoom_Id(roomId);
-        
-        // 채팅방과 연결된 UserChatRoom 관계 삭제
-        userChatRoomRepository.deleteByChatRoom_Id(roomId);
-        chatRoomRepository.delete(room);
-
-        return ResponseEntity.ok(Map.of("success", true, "message", "방이 삭제되었습니다."));
     }
 
     // 방에서 특정 유저 강퇴

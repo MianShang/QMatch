@@ -187,6 +187,22 @@ function App() {
           
           if (data.type === 'join-approved') {
             toast.success(data.message);
+            
+            // 승인된 멤버가 자동으로 채팅방에 입장하도록 처리
+            if (data.roomId) {
+              console.log('승인 알림 수신 - 채팅방으로 이동:', data);
+              
+              // 채팅방으로 이동
+              navigate('/', { 
+                state: { 
+                  roomId: data.roomId,
+                  chatName: data.roomName,
+                  gameName: data.gameName,
+                  tagNames: data.tagNames || [],
+                  joinType: 'approval' // 승인된 방
+                }
+              });
+            }
           } else if (data.type === 'join-rejected') {
             toast.error(data.message);
           }

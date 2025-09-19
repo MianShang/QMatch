@@ -411,6 +411,11 @@ public class ChatController {
         userChatRoomRepository.save(ucr);
         chatRoomRepository.save(room);
 
+        // 실시간 접속 맵에 멤버 추가 (자유 입장 멤버 즉시 입장)
+        RealTimeUserManagement.activeUsersByRoom
+                .putIfAbsent(roomId, java.util.concurrent.ConcurrentHashMap.newKeySet());
+        RealTimeUserManagement.activeUsersByRoom.get(roomId).add(userId);
+
         // 채팅방 전체에 새 멤버 입장 알림
         simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId + "/member-joined",
                 Map.of(

@@ -11,7 +11,7 @@ function JoinRoomModal({ open, onClose, room, onJoin }) {
     if (joiningRef.current) return;
     joiningRef.current = true;
     try {
-      await onJoin({ roomId: room.id ?? room.roomId, chatName, gameName, tagNames });
+      await onJoin({ roomId: room.id ?? room.roomId, chatName, gameName, tagNames, joinType });
       onClose?.();
     } finally {
       joiningRef.current = false;
@@ -40,6 +40,7 @@ function JoinRoomModal({ open, onClose, room, onJoin }) {
   const gameName = detail?.gameName || room.gameName || room.game || '-';
   const currentUsers = (typeof detail?.currentUsers === 'number') ? detail.currentUsers : room.currentUsers;
   const maxUsers = (typeof detail?.maxUsers === 'number') ? detail.maxUsers : room.maxUsers;
+  const joinType = detail?.joinType || room.joinType || 'approval';
 
   // 우선 상세(tagNames) > props(room.tags) > 빈 배열
   const tagNames = useMemo(() => {
@@ -74,6 +75,13 @@ function JoinRoomModal({ open, onClose, room, onJoin }) {
           </div>
 
           <div className="formGroup">
+            <label>입장 방식</label>
+            <div className="infoText">
+              {joinType === 'free' ? '자유 입장' : '방장 승인'}
+            </div>
+          </div>
+
+          <div className="formGroup">
             <label>게임</label>
             <div className="infoText">{gameName}</div>
           </div>
@@ -104,7 +112,11 @@ function JoinRoomModal({ open, onClose, room, onJoin }) {
             onClick={handleJoin}        
             disabled={joiningRef.current || (typeof currentUsers === 'number' && typeof maxUsers === 'number' && currentUsers >= maxUsers)}
             >
-          {joiningRef.current ? '신청 중…' : ((typeof currentUsers === 'number' && typeof maxUsers === 'number' && currentUsers >= maxUsers) ? '입장 불가' : '입장 신청')}
+          {joiningRef.current 
+            ? '신청 중…' 
+            : ((typeof currentUsers === 'number' && typeof maxUsers === 'number' && currentUsers >= maxUsers) 
+              ? '입장 불가' 
+              : (joinType === 'free' ? '입장하기' : '입장 신청'))}
           </button>
         </div>
       </div>

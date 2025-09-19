@@ -947,7 +947,7 @@ function ChatListPage({
                     <div className="onlineMembersSectionHeader">온라인 — {online.length}</div>
                     {online.map(u => {
                       const eff = getEffectiveStatus(u);
-                      const isPending = u.joinStatus === 'PENDING';
+                      const isPending = u.joinStatus === 'PENDING' && selectedRoom?.joinType !== 'free';
                       return (
                         <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'online-' + u.userId}>
                           <span className={`membersName ${isPending ? 'membersName--pending' : ''}`}>
@@ -971,7 +971,7 @@ function ChatListPage({
                     </div>
                     {away.map(u => {
                       const eff = getEffectiveStatus(u);
-                      const isPending = u.joinStatus === 'PENDING';
+                      const isPending = u.joinStatus === 'PENDING' && selectedRoom?.joinType !== 'free';
                       return (
                         <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'away-' + u.userId}>
                           <span className={`membersName ${isPending ? 'membersName--pending' : ''}`}>
@@ -995,7 +995,7 @@ function ChatListPage({
                     </div>
                     {offline.map(u => {
                       const eff = getEffectiveStatus(u);
-                      const isPending = u.joinStatus === 'PENDING';
+                      const isPending = u.joinStatus === 'PENDING' && selectedRoom?.joinType !== 'free';
                       return (
                         <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'off-' + u.userId}>
                           <span className={`membersName membersName--offline ${isPending ? 'membersName--pending' : ''}`}>
@@ -1012,10 +1012,12 @@ function ChatListPage({
                         </div>
                       );
                     })}
-                    <div className="PendingApproval" style={{ marginTop: 10 }}>
-                      수락 대기 중
-                    </div>
-                    {Array.isArray(pendingUsers) && pendingUsers.map(u => (
+                    {selectedRoom?.joinType !== 'free' && (
+                      <>
+                        <div className="PendingApproval" style={{ marginTop: 10 }}>
+                          수락 대기 중
+                        </div>
+                        {Array.isArray(pendingUsers) && pendingUsers.map(u => (
                       <div className="membersRow" key={'pending-' + u.userId}>
                         <span className="membersName membersName--offline">
                           {u.userId}
@@ -1037,6 +1039,8 @@ function ChatListPage({
                         </div>
                       </div>
                     ))}
+                      </>
+                    )}
 
                   </>
                 );

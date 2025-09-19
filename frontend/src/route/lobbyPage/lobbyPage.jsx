@@ -198,6 +198,7 @@ function LobbyPage() {
           currentUsers: (typeof data.currentUsers === 'number') ? data.currentUsers : s.currentUsers,
           maxUsers: (typeof data.maxUsers === 'number') ? data.maxUsers : s.maxUsers,
           hostUserId: data.hostUserId, // 방장 ID 추가
+          joinType: data.joinType ?? s.joinType ?? 'approval', // 입장 방식 추가
         });
       } catch (e) {
         setSelectedRoom({
@@ -208,14 +209,36 @@ function LobbyPage() {
           currentUsers: s.currentUsers,
           maxUsers: s.maxUsers,
           hostUserId: s.hostUserId, // chatList에서 hostUserId 가져오기
+          joinType: s.joinType ?? 'approval', // 입장 방식 추가
         });
       } finally {
         setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
 
-        // 채팅방 이동 시 메시지 로딩 및 읽음 처리
-        console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId);
-        getChatList(s.roomId, setMessages);
-        setRead({ id: s.roomId });
+        // 방장은 모든 방에서 자동으로 입장 (자유 입장 방과 방장 승인 방 모두)
+        if (s.joinType === 'free') {
+          // 자유 입장 API 호출
+          axios.post(`/api/chat/rooms/${s.roomId}/join`, {
+            userId: userData.userId
+          }).then(() => {
+            console.log('자유 입장 성공');
+            // 채팅방 이동 시 메시지 로딩 및 읽음 처리
+            console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId);
+            getChatList(s.roomId, setMessages);
+            setRead({ id: s.roomId });
+            
+            // 자유 입장 성공 - WebSocket 이벤트로 멤버 목록이 자동 업데이트됨
+          }).catch(err => {
+            console.error('자유 입장 실패:', err);
+            // 실패해도 메시지는 로딩
+            getChatList(s.roomId, setMessages);
+            setRead({ id: s.roomId });
+          });
+        } else {
+          // 방장 승인 방인 경우 - 방장은 이미 방 생성 시 자동으로 입장됨
+          console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId);
+          getChatList(s.roomId, setMessages);
+          setRead({ id: s.roomId });
+        }
       }
     })();
   }, [location.key]);

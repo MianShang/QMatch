@@ -228,6 +228,63 @@
   color: white;
 }
 
+/* 입장 방식 선택 컨테이너 */
+.joinTypeContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* 입장 방식 옵션 */
+.joinTypeOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--discord-bg-tertiary);
+  border-radius: var(--discord-radius-small);
+  background: var(--discord-bg-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0;
+}
+
+.joinTypeOption:hover {
+  border-color: var(--discord-accent);
+  background: var(--discord-bg-modifier-hover);
+}
+
+.joinTypeOption input[type="radio"] {
+  margin: 0;
+  margin-top: 2px;
+  accent-color: var(--discord-accent);
+}
+
+.joinTypeOption span {
+  font-weight: 500;
+  color: var(--discord-text-normal);
+  font-size: 0.95rem;
+}
+
+.joinTypeOption small {
+  display: block;
+  color: var(--discord-text-muted);
+  font-size: 0.8rem;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+/* 선택된 입장 방식 */
+.joinTypeOption:has(input:checked) {
+  border-color: var(--discord-accent);
+  background: rgba(114, 137, 218, 0.1);
+}
+
+.joinTypeOption:has(input:checked) span {
+  color: var(--discord-accent);
+}
+
 /* 에러 메시지 */
 .errorMsg {
   color: var(--discord-text-danger);

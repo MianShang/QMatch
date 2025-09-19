@@ -199,14 +199,25 @@ public class ChatController {
         room.setOwner(creator);
         room.setMaxUsers(chatRoomData.getMaxUsers());
         room.setCurrentUsers(1);
+        room.setJoinType(chatRoomData.getJoinType()); // 입장 방식 설정
 
         // (3) 저장
         ChatRoom savedRoom = chatRoomRepository.save(room);
 
         // (4) 참여자 관리용 엔티티도 저장 (방장 HOST, 자동 승인)
         UserChatRoom ucr = new UserChatRoom(creator, savedRoom, Role.HOST);
-        ucr.setStatus(  ChatRoomUserStatus.ACCEPTED); // 방장은 자동으로 승인됨
+        ucr.setStatus(ChatRoomUserStatus.ACCEPTED); // 방장은 자동으로 승인됨
         userChatRoomRepository.save(ucr);
+
+        // (4-1) 방장 입장 알림 전송 (자유 입장 방과 방장 승인 방 모두)
+        simpMessagingTemplate.convertAndSend("/topic/chat/" + savedRoom.getId() + "/member-joined",
+                Map.of(
+                        "type", "member-joined",
+                        "userId", creator.getUserId(),
+                        "userName", creator.getUserName(),
+                        "roomId", savedRoom.getId(),
+                        "timestamp", System.currentTimeMillis()
+                ));
 
         // (5) 태그 연결
         if (tagIds != null && !tagIds.isEmpty()) {
@@ -354,6 +365,14 @@ public class ChatController {
             return ResponseEntity.status(409).body(Map.of("error", "already joined"));
         }
 
+        // 자유 입장 방인지 확인
+        if (!"free".equals(room.getJoinType())) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "error", "This room requires host approval",
+                    "joinType", room.getJoinType()
+            ));
+        }
+
         // 인원 제한 체크 (현재 인원이 최대 인원보다 크거나 같으면 입장 불가)
         if (room.getCurrentUsers() >= room.getMaxUsers()) {
             return ResponseEntity.status(403).body(Map.of(
@@ -363,15 +382,22 @@ public class ChatController {
             ));
         }
 
-        // 새로 참여 엔티티 저장
+        // 새로 참여 엔티티 저장 (자유 입장이므로 ACCEPTED 상태로)
         UserChatRoom ucr = new UserChatRoom(user, room, Role.MEMBER);
+        ucr.setStatus(ChatRoomUserStatus.ACCEPTED);
         room.setCurrentUsers(room.getCurrentUsers() + 1);
         userChatRoomRepository.save(ucr);
+        chatRoomRepository.save(room);
 
-        simpMessagingTemplate.convertAndSend(
-                "/topic/chat/" + roomId + "/join",
-                Map.of("userId", userId, "roomId", roomId)
-        );
+        // 채팅방 전체에 새 멤버 입장 알림
+        simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId + "/member-joined",
+                Map.of(
+                        "type", "member-joined",
+                        "userId", userId,
+                        "userName", user.getUserName(),
+                        "roomId", roomId,
+                        "timestamp", System.currentTimeMillis()
+                ));
 
         return ResponseEntity.ok(Map.of(
                 "message", "joined successfully",

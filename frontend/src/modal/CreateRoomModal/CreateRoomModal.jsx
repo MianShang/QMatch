@@ -10,6 +10,7 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
   const { userData } = useContext(LogContext);
   const [errorMsg, setErrorMsg] = useState('');         // 커스텀 에러 메시지
   const [maxUsers, setMaxUsers] = useState(5);         // 방 생성 시 기본값
+  const [joinType, setJoinType] = useState('approval'); // 입장 방식: 'approval' (방장 승인) 또는 'free' (자유 입장)
 
   // 모달 닫기 핸들러
   const handleClose = () => {
@@ -63,7 +64,8 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
       gameName,
       tags: tagIds,                    // 숫자 배열
       creatorUserId: userData.userId,   
-      maxUsers
+      maxUsers,
+      joinType                         // 입장 방식 추가
     };
 
     console.log("📦 createRoom payload:", payload);
@@ -88,7 +90,15 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
 
       const data = await res.json();
       console.log("방 생성 완료:", data);
+      
+      // 방장은 모든 방에서 자동으로 입장 (자유 입장 방과 방장 승인 방 모두)
       onRoomCreated?.(data);
+      
+      // 방장이 자동으로 입장하도록 바로 채팅방으로 이동
+      if (window.location.pathname !== '/') {
+        window.location.href = '/';
+      }
+      
       handleClose();
     } catch (err) {
       console.error(err);
@@ -144,6 +154,35 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
             {(maxUsers < 2 || maxUsers > 20) && (
               <p style={{ color: "red" }}>방 인원은 2~20명 사이여야 합니다.</p>
             )}
+          </div>
+
+          {/* 입장 방식 선택 */}
+          <div className="formGroup">
+            <label>입장 방식</label>
+            <div className="joinTypeContainer">
+              <label className="joinTypeOption">
+                <input
+                  type="radio"
+                  name="joinType"
+                  value="approval"
+                  checked={joinType === 'approval'}
+                  onChange={(e) => setJoinType(e.target.value)}
+                />
+                <span>방장 승인</span>
+                <small>방장이 승인해야 입장 가능</small>
+              </label>
+              <label className="joinTypeOption">
+                <input
+                  type="radio"
+                  name="joinType"
+                  value="free"
+                  checked={joinType === 'free'}
+                  onChange={(e) => setJoinType(e.target.value)}
+                />
+                <span>자유 입장</span>
+                <small>누구나 자유롭게 입장 가능</small>
+              </label>
+            </div>
           </div>
 
           {/* 태그 선택 */}

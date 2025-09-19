@@ -78,7 +78,7 @@ function SearchPage() {
 
   // 방 입장 모달에서 "입장 신청" 버튼 클릭 시 실행
   async function handleJoinRoom(payload) {
-    const { roomId, chatName, gameName, tagNames } = payload || {};
+    const { roomId, chatName, gameName, tagNames, joinType } = payload || {};
     
     if (!roomId) {
       console.error('room id 없음:', payload);
@@ -88,16 +88,40 @@ function SearchPage() {
     }
 
     try {
-      // 입장 신청 API 호출
-      const response = await axios.post(`/api/chat/rooms/${roomId}/join-request`, {
-        userId: userData.userId
-      });
+      // 자유 입장 방인지 확인
+      if (joinType === 'free') {
+        // 자유 입장 API 호출
+        const response = await axios.post(`/api/chat/rooms/${roomId}/join`, {
+          userId: userData.userId
+        });
 
-      if (response.data.status === 'PENDING') {
-        // 입장 신청 성공 - 토스트 메시지 표시
-        toast.info('입장 신청이 전송되었습니다. 방장의 승인을 기다려주세요.');
-        setJoinOpen(false);
-        setSelectedRoom(null);
+        if (response.status === 200) {
+          // 자유 입장 성공 - 바로 채팅방으로 이동
+          toast.success('채팅방에 입장했습니다!');
+          navigate('/', { 
+            state: { 
+              roomId: roomId,
+              chatName: chatName,
+              gameName: gameName,
+              tagNames: tagNames || [],
+              joinType: joinType
+            }
+          });
+          setJoinOpen(false);
+          setSelectedRoom(null);
+        }
+      } else {
+        // 방장 승인 방 - 입장 신청 API 호출
+        const response = await axios.post(`/api/chat/rooms/${roomId}/join-request`, {
+          userId: userData.userId
+        });
+
+        if (response.data.status === 'PENDING') {
+          // 입장 신청 성공 - 토스트 메시지 표시
+          toast.info('입장 신청이 전송되었습니다. 방장의 승인을 기다려주세요.');
+          setJoinOpen(false);
+          setSelectedRoom(null);
+        }
       }
     } catch (err) {
       const status = err?.response?.status;
@@ -105,8 +129,10 @@ function SearchPage() {
         toast.warning('이미 입장 신청을 했습니다.');
       } else if (status === 404) {
         toast.error('채팅방을 찾을 수 없습니다.');
+      } else if (status === 403) {
+        toast.error('채팅방이 가득 찼습니다.');
       } else {
-        toast.error('입장 신청에 실패했습니다. 다시 시도해주세요.');
+        toast.error('입장에 실패했습니다. 다시 시도해주세요.');
       }
       return; // 실패 시 모달 안 닫음
     }
@@ -224,6 +250,19 @@ function SearchPage() {
           setOpenModal={setOpenModal}
           onRoomCreated={(newRoom) => {
             setRooms(prev => [...prev, newRoom]);
+            // 방장은 모든 방에서 자동으로 입장 (자유 입장 방과 방장 승인 방 모두)
+            navigate('/', { 
+              state: { 
+                roomId: newRoom.id,
+                chatName: newRoom.chatName || newRoom.name,
+                gameName: newRoom.gameName,
+                tagNames: newRoom.tagNames || [],
+                currentUsers: newRoom.currentUsers,
+                maxUsers: newRoom.maxUsers,
+                hostUserId: newRoom.hostUserId,
+                joinType: newRoom.joinType
+              }
+            });
           }}
         />
       )}

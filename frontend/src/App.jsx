@@ -187,17 +187,6 @@ function App() {
           
           if (data.type === 'join-approved') {
             toast.success(data.message);
-            // 승인된 경우 채팅방으로 이동
-            if (window.location.pathname === '/search') {
-              navigate('/', { 
-                state: { 
-                  roomId: data.roomId, 
-                  chatName: data.roomName,
-                  gameName: data.gameName || '',
-                  tagNames: data.tagNames || []
-                } 
-              });
-            }
           } else if (data.type === 'join-rejected') {
             toast.error(data.message);
           }

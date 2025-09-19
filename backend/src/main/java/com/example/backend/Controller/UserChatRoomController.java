@@ -256,7 +256,7 @@ public class UserChatRoomController {
                                     .filter(Objects::nonNull)
                                     .distinct()
                                     .toList(),
-                            "message", "성공적으로 입장하였습니다",
+                            "message", "입장이 승인되었습니다!",
                             "timestamp", System.currentTimeMillis()
                     ));
             

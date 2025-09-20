@@ -22,6 +22,7 @@ import { LogContext } from '../../App.jsx'
 
 // Custom hook import
 import { useChatSubscriber } from '../../hooks/chat/useChatSubscriber.js'
+import { useFriendChatSubscriber } from '../../hooks/chat/useFriendChatSubscriber.js';
 import { useChatSender } from '../../hooks/chat/useChatSender.js'
 import { useLoginCheck } from '../../hooks/login/useLoginCheck.js';
 import { useLogout } from '../../hooks/login/useLogout.js';
@@ -30,6 +31,7 @@ import { useGlobalStomp } from '../../hooks/stomp/useGlobalStomp.js';
 import { useChatListGet } from '../../hooks/chatList/useChatListGet.js';
 import { useSetReadUnReadChat } from '../../hooks/chatNotice/useSetReadUnReadChat.js';
 import { useFriendChatListGet } from '../../hooks/chatList/useFriendChatListGet.js';
+import { useFriendChatSender } from '../../hooks/chat/useFriendChatSender.js';
 
 // 상태 체크 훅 import 추가
 import useUserStatusReporter from '../../hooks/status/useUserStatusReporter.js';
@@ -105,10 +107,12 @@ function LobbyPage() {
   // --UseEffect
   useLoginCheck(isLogIn);                                         // 로그인 체크 훅
   useChatSubscriber(selectedRoom, setMessages, setClient, userData, globalStomp);    // 채팅방 구독 훅
+  useFriendChatSubscriber(selectedFriendRoom, setFriendMessages, globalStomp, setClient);   // 친구 1:1 채팅방 구독 훅
 
   // -- Function
   const logoutFunc = useLogout();                                          // 로그아웃 훅
   const sendMessage = useChatSender(client, selectedRoom, userData, input, setInput);   // 메세지 전송 훅 
+  const sendFriendMessage = useFriendChatSender(client ,selectedFriendRoom, userData, input, setInput);
 
   const location = useLocation();                                      // 방 입장 시 전달된 state 확인
   const [listRefreshTick, setListRefreshTick] = useState(0);      // 방 목록 강제 리렌더링 트리거
@@ -125,38 +129,13 @@ function LobbyPage() {
 
   // 스크롤 하단 자동 이동 Effect
   const messageContainerRef = useRef(null);
-
-  // //친구 1:1 채팅방 열기 함수
-  // const onOpenChatRoom = async (friendId) => {
-  //   try {
-  //     // 채팅 탭으로 전환
-  //     handleToggleChange(true);
-
-  //     // friendsId로 채팅방 ID를 찾거나 생성하는 백엔드 API 호출
-  //     const response = await axios.get(`/api/friends/chatroom/${friendId}/${userData.userId}`);
-  //     const chatRoom = response.data; // 서버에서 채팅방 정보 반환
-  //     console.log('채팅방 정보:', chatRoom);
-
-  //     // 상태 업데이트
-  //     setSelectedFriendRoom(chatRoom);
-  //     setSelectedRoom(null);
-  //     // 메시지 로딩 및 읽음 처리
-  //     useFriendChatListGet(chatRoom.roomId, setFriendMessages);
-  //     setMessages([]);
-  //     //setRead({ id: chatRoom.id });
-
-  //   } catch (error) {
-  //     console.error('채팅방 로드 실패:', error);
-  //     // 에러 처리 로직 (예: 에러 메시지 토스트)
-  //   }
-  // };
-
-  // 채팅방 설정 업데이트 핸들러
+  
+  //채팅방 설정 업데이트 핸들러
   const handleRoomUpdated = (updatedRoom) => {
     console.log('방 설정이 업데이트되었습니다:', updatedRoom);
-    // selectedRoom 상태 업데이트
+    //selectedRoom 상태 업데이트
     setSelectedRoom(prev => prev ? { ...prev, ...updatedRoom } : null);
-    // 채팅방 목록도 새로고침
+    //채팅방 목록도 새로고침
     setListRefreshTick(t => t + 1);
   };
 
@@ -165,7 +144,7 @@ function LobbyPage() {
     if (container) {
       container.scrollTop = container.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, friendMessages]);
 
   //프로필 정보 DB에서 불러오기
   useEffect(() => {
@@ -189,9 +168,6 @@ function LobbyPage() {
     const s = location.state;
 
     if (!s) return;
-
-    // 디버깅을 위한 로그 추가
-    console.log('location.state 값:', s);
 
     if (s.type === 'multi' && s.roomId) {
       setSelectedFriendRoom(null);
@@ -295,6 +271,7 @@ function LobbyPage() {
           const response = await axios.get(`/api/friends/chatroom/${s.friendId}/${userData.userId}`);
           const chatRoom = response.data;
           console.log('1:1 채팅방 정보:', chatRoom);
+          // 친구 채팅방 상세 업데이트
           setSelectedFriendRoom({ roomId: chatRoom.roomId, friendId: s.friendId });
           useFriendChatListGet(chatRoom.roomId, setFriendMessages);
         } catch (err) {
@@ -513,6 +490,7 @@ function LobbyPage() {
           sendMessage={sendMessage}
           messageContainerRef={messageContainerRef}
           onRoomUpdated={handleRoomUpdated}
+          sendFriendMessage={sendFriendMessage}
         />
 
           <div style={{ display: "flex" }}>

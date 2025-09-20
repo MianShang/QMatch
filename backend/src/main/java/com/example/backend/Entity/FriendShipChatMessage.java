@@ -25,7 +25,7 @@ public class FriendShipChatMessage {
     private User user;
 
     @Lob
-    private String content;
+    private String message;
 
     @Column(nullable = false)
     private LocalDateTime sendTime;

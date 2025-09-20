@@ -33,15 +33,17 @@ export function useChatSubscriber(selectedRoom, setMessages, setClient, userData
     // 클라이언트 인스턴스 설정 (기존 코드와의 호환성을 위해)
     setClient(globalStomp.getClient());
 
-    return () => {
-      // 퇴장 시 서버에 알림 전송
-      if (globalStomp.isConnected()) {
-        globalStomp.publish('/app/disconnect', {
-          userId: userData.userId,
-          roomId: selectedRoom.id,
-        });
-      }
+    // 퇴장 시 서버에 알림 전송 (현재 이부분 때문에 input 입력시 백엔드 로고 무한증식 버그가 있음)
+    // 방나가기 로직이 ChatList페이지에 따로 있음으로 임시 삭제 추후 채팅방 전체 나가기 알림시 이용 가능할 것으로 보임
+      // if (globalStomp.isConnected()) {
+      //   globalStomp.publish('/app/disconnect', {
+      //     userId: userData.userId,
+      //     roomId: selectedRoom.id,
+      //   });
+      // }
 
+    return () => {
+    
       // 구독 해제
       globalStomp.unsubscribe(subscriptionId);
     };

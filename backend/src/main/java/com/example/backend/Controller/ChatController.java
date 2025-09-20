@@ -104,23 +104,23 @@ public class ChatController {
     }
 
     // STOMP WebSocket 연결해제 시 유저 삭제
-    @MessageMapping("/disconnect")
-    public void handleManualDisconnect(@Payload Map<String, String> payload) {
-
-        String userId = payload.get("userId");
-        String roomId = payload.get("roomId");
-
-        if (userId != null && roomId != null) {
-
-            // HashMap에서 삭제
-            RealTimeUserManagement.activeUsersByRoom.getOrDefault(roomId, new HashSet<>()).remove(userId);
-
-            System.out.println("🔴 유저 퇴장: " + userId + "  방 ID : " + roomId);
-
-            System.out.println("실시간 해당 채팅방 유저 목록");
-            System.out.println(RealTimeUserManagement.activeUsersByRoom.getOrDefault(roomId, Set.of()));
-        }
-    }
+//    @MessageMapping("/disconnect")
+//    public void handleManualDisconnect(@Payload Map<String, String> payload) {
+//
+//        String userId = payload.get("userId");
+//        String roomId = payload.get("roomId");
+//
+//        if (userId != null && roomId != null) {
+//
+//            // HashMap에서 삭제
+//            RealTimeUserManagement.activeUsersByRoom.getOrDefault(roomId, new HashSet<>()).remove(userId);
+//
+//            System.out.println("🔴 유저 퇴장: " + userId + "  방 ID : " + roomId);
+//
+//            System.out.println("실시간 해당 채팅방 유저 목록");
+//            System.out.println(RealTimeUserManagement.activeUsersByRoom.getOrDefault(roomId, Set.of()));
+//        }
+//    }
 
     // STOMP WebSocket 연결 종료 시 유저 제거
     @EventListener

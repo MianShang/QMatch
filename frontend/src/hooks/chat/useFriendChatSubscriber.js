@@ -2,17 +2,20 @@ import { useEffect } from "react";
 
 
 /**
- * @param {object} client - STOMP 클라이언트
+ * @param {object} globalStomp - STOMP 클라이언트
  * @param {object} selectedFriendRoom - 현재 선택된 친구 채팅방 { roomId, friendId }
  * @param {function} setFriendMessages - 메시지 상태 업데이트 함수
+ * @param {Function} setClient    - STOMP 클라이언트 인스턴스를 설정하는 함수
  */
 
-export function useFriendChatSubscriber(client, selectedFriendRoom, setFriendMessages) {
+export function useFriendChatSubscriber(selectedFriendRoom, setFriendMessages,globalStomp, setClient) {
     useEffect(() => {
-        if (!client || !selectedFriendRoom) return;
+        if (!selectedFriendRoom || !globalStomp) return;
+
+        const subscriptionId = `friend-message-${selectedFriendRoom.roomId}`;
 
         // 구독 설정
-        const subscribe = client.subscribe(
+        globalStomp.subscribe(
             `/topic/friends/chat/${selectedFriendRoom.roomId}`,
             (msg) => {
                 try {
@@ -21,11 +24,14 @@ export function useFriendChatSubscriber(client, selectedFriendRoom, setFriendMes
                 } catch (error) {
                     console.error('친구 채팅 메시지 오류:', error);
                 }
-            });
+            },
+            { id: subscriptionId }
+        );
+
+        setClient(globalStomp.getClient());
 
         return () => {
-            subscribe.unsubscribe();
-            console.log('친구 채팅 구독 해제');
+            globalStomp.unsubscribe(subscriptionId);
         };
-    }, [client, selectedFriendRoom, setFriendMessages])
+    }, [globalStomp, selectedFriendRoom, setFriendMessages, setClient])
 }

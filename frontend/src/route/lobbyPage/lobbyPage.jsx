@@ -107,7 +107,7 @@ function LobbyPage() {
   // --UseEffect
   useLoginCheck(isLogIn);                                         // 로그인 체크 훅
   useChatSubscriber(selectedRoom, setMessages, setClient, userData, globalStomp);    // 채팅방 구독 훅
-  useFriendChatSubscriber(client, selectedFriendRoom, setFriendMessages);    // 친구 1:1 채팅방 구독 훅
+  useFriendChatSubscriber(selectedFriendRoom, setFriendMessages, globalStomp, setClient);   // 친구 1:1 채팅방 구독 훅
 
   // -- Function
   const logoutFunc = useLogout();                                          // 로그아웃 훅

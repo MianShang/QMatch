@@ -23,9 +23,11 @@ public class FriendChatMessageController {
     private final FriendShipChatMessageService friendShipChatMessageService;
     private final SimpMessagingTemplate messagingTemplate;
 
+    //메시지 가져오기
     @GetMapping("{roomId}/messages")
     public List<FriendChatMessageResponseDto> getMessages(@PathVariable Long roomId)
     {
+        System.out.println("🟢 친구 메시지 가져오기" );
         return friendShipChatMessageService.getMessages(roomId);
     }
 

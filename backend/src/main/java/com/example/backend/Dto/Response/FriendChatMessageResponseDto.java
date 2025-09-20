@@ -11,8 +11,9 @@ public class FriendChatMessageResponseDto {
 
     private Long id;
     private Long chatroomId;
-    private LocalDateTime sendtime;
-    private String content;
-    private Long userid;
+    private LocalDateTime chatDate;
+    private String message;
+    private String name;
+    private String userName;
 
 }

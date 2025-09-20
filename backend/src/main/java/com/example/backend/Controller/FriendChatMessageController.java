@@ -1,9 +1,13 @@
 package com.example.backend.Controller;
 
+import com.example.backend.Dto.Request.FriendChatMessageRequestDto;
 import com.example.backend.Dto.Response.FriendChatMessageResponseDto;
-import com.example.backend.Entity.FriendShipChatMessage;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import com.example.backend.Service.FriendShipChatMessageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,6 +21,7 @@ import java.util.List;
 public class FriendChatMessageController {
 
     private final FriendShipChatMessageService friendShipChatMessageService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @GetMapping("{roomId}/messages")
     public List<FriendChatMessageResponseDto> getMessages(@PathVariable Long roomId)
@@ -24,4 +29,12 @@ public class FriendChatMessageController {
         return friendShipChatMessageService.getMessages(roomId);
     }
 
+    @MessageMapping("/friends/chat/{roomId}")
+    public void sendMessage(@DestinationVariable Long roomId, @Payload FriendChatMessageRequestDto message) {
+        // 1) DB 저장
+        FriendChatMessageResponseDto saved = friendShipChatMessageService.saveMessage(roomId, message);
+
+        // 2) 구독자(두 명)에게 브로드캐스트
+        messagingTemplate.convertAndSend("/topic/friends/chat/" + roomId, saved);
+    }
 }

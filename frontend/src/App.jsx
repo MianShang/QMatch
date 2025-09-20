@@ -195,11 +195,13 @@ function App() {
               // 채팅방으로 이동
               navigate('/', { 
                 state: { 
+                  type: 'multi', // 다대다 채팅방 타입 추가
                   roomId: data.roomId,
                   chatName: data.roomName,
                   gameName: data.gameName,
                   tagNames: data.tagNames || [],
-                  joinType: 'approval' // 승인된 방
+                  joinType: 'approval', // 승인된 방
+                  alreadyJoined: true // 이미 가입된 상태임을 표시
                 }
               });
             }

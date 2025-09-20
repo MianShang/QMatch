@@ -190,6 +190,9 @@ function LobbyPage() {
 
     if (!s) return;
 
+    // 디버깅을 위한 로그 추가
+    console.log('location.state 값:', s);
+
     if (s.type === 'multi' && s.roomId) {
       setSelectedFriendRoom(null);
       setFriendMessages([]);
@@ -198,9 +201,11 @@ function LobbyPage() {
       setShowMidBar(true);
 
       (async () => {
+        let roomData = null;
         try {
           const id = encodeURIComponent(s.roomId);
           const { data } = await axios.get(`/api/chat/rooms/${id}`);
+          roomData = data;
 
         // 서버에서 상세 방 정보를 가져와 state 업데이트
         console.log('서버에서 받은 방 정보:', data);
@@ -230,9 +235,18 @@ function LobbyPage() {
 
         // WebSocket 연결 확인 후 방장 입장 처리
         const processHostEntry = () => {
-          // 방장은 모든 방에서 자동으로 입장 (자유 입장 방과 방장 승인 방 모두)
-          if (s.joinType === 'free') {
-            // 자유 입장 API 호출
+          // 서버에서 받은 방 정보의 joinType 사용
+          const roomJoinType = roomData?.joinType ?? s.joinType ?? 'approval';
+          
+          // 승인된 사용자이거나 이미 가입된 사용자이거나 방장 승인 방인 경우 - join API 호출하지 않음
+          // 임시로 승인된 사용자는 무조건 join API 호출하지 않음
+          if (s.alreadyJoined || s.joinType === 'approval' || roomJoinType !== 'free' || s.type === 'multi') {
+            console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId, 'joinType:', roomJoinType, 'alreadyJoined:', s.alreadyJoined, 's.joinType:', s.joinType, 's.type:', s.type);
+            getChatList(s.roomId, setMessages);
+            setRead({ id: s.roomId });
+          } else {
+            // 자유 입장 방인 경우에만 join API 호출
+            console.log('자유 입장 API 호출: roomId:', s.roomId, 'joinType:', roomJoinType);
             axios.post(`/api/chat/rooms/${s.roomId}/join`, {
               userId: userData.userId
             }).then(() => {
@@ -249,11 +263,6 @@ function LobbyPage() {
               getChatList(s.roomId, setMessages);
               setRead({ id: s.roomId });
             });
-          } else {
-            // 방장 승인 방인 경우 - 방장은 이미 방 생성 시 자동으로 입장됨
-            console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId);
-            getChatList(s.roomId, setMessages);
-            setRead({ id: s.roomId });
           }
         };
 

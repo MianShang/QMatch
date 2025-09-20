@@ -100,6 +100,7 @@ function SearchPage() {
           toast.success('채팅방에 입장했습니다!');
           navigate('/', { 
             state: { 
+              type: 'multi', // 다대다 채팅방 타입 추가
               roomId: roomId,
               chatName: chatName,
               gameName: gameName,
@@ -229,6 +230,7 @@ function SearchPage() {
     if (alreadyJoinedRoom) {
       navigate('/', { 
         state: { 
+          type: 'multi', // 다대다 채팅방 타입 추가
           roomId: alreadyJoinedRoom.id,
           chatName: alreadyJoinedRoom.chatName || alreadyJoinedRoom.name,
           gameName: alreadyJoinedRoom.gameName,
@@ -253,6 +255,7 @@ function SearchPage() {
             // 방장은 모든 방에서 자동으로 입장 (자유 입장 방과 방장 승인 방 모두)
             navigate('/', { 
               state: { 
+                type: 'multi', // 다대다 채팅방 타입 추가
                 roomId: newRoom.id,
                 chatName: newRoom.chatName || newRoom.name,
                 gameName: newRoom.gameName,

@@ -221,28 +221,30 @@ function ChatListPage({
     return () => { window.removeEventListener('resize', onResize); clearInterval(id); };
   }, [isMembersOpen]);
 
-  // 채팅방 인원수 업데이트 함수
+  // 채팅방 인원수 업데이트 함수 (chatList만 업데이트, selectedRoom은 별도 처리)
   const updateChatRoomUserCount = (roomId, change) => {
-    setChatList(prev => prev.map(chat => {
-      if (chat.chatRoom.id === roomId) {
-        return {
-          ...chat,
-          chatRoom: {
-            ...chat.chatRoom,
-            currentUsers: chat.chatRoom.currentUsers + change
-          }
-        };
-      }
-      return chat;
-    }));
-
-    // selectedRoom도 업데이트
-    if (selectedRoom?.id === roomId) {
-      setSelectedRoom(prev => prev ? {
-        ...prev,
-        currentUsers: prev.currentUsers + change
-      } : null);
-    }
+    console.log('updateChatRoomUserCount 호출 - roomId:', roomId, 'change:', change);
+    console.log('현재 chatList 구조:', chatList);
+    
+    setChatList(prev => {
+      console.log('업데이트 전 chatList:', prev);
+      const updated = prev.map(chat => {
+        console.log('비교 중 - chat.chatRoom.id:', chat.chatRoom?.id, 'vs roomId:', roomId);
+        if (chat.chatRoom?.id === roomId) {
+          console.log('chatList 업데이트 - 이전 인원수:', chat.chatRoom.currentUsers, '→ 새로운 인원수:', chat.chatRoom.currentUsers + change);
+          return {
+            ...chat,
+            chatRoom: {
+              ...chat.chatRoom,
+              currentUsers: Math.max(0, chat.chatRoom.currentUsers + change)
+            }
+          };
+        }
+        return chat;
+      });
+      console.log('업데이트 후 chatList:', updated);
+      return updated;
+    });
   };
 
   // 입장 대기자 불러오기
@@ -309,8 +311,11 @@ function ChatListPage({
       setPendingUsers(prev => prev.filter(req => req.userId !== applicantId));
       console.log('입장 승인 완료:', applicantId);
 
-      // 인원수 증가
-      updateChatRoomUserCount(selectedRoom.id, 1);
+      // 인원수 증가 (WebSocket 이벤트와 중복 방지를 위해 selectedRoom만 업데이트)
+      setSelectedRoom(prev => prev ? {
+        ...prev,
+        currentUsers: prev.currentUsers + 1
+      } : null);
 
       // 멤버 목록에 즉시 추가
       setChatUserList(prev => {
@@ -529,8 +534,8 @@ function ChatListPage({
         } else {
           // 다른 사람 추방 시 참여자 목록 갱신
           setChatUserList(prev => prev.filter(u => u.userId !== payload?.targetUserId));
-          // 인원수 감소
-          updateChatRoomUserCount(payload.roomId, -1);
+          // 강퇴는 방 나가기 이벤트와 중복되므로 여기서는 인원수 업데이트하지 않음
+          // (방 나가기 이벤트에서 처리됨)
         }
       } catch (e) {
         toast.error('kick payload parse error', e);
@@ -546,6 +551,14 @@ function ChatListPage({
           if (prev.find(u => u.userId === payload.userId)) return prev;
           return [...prev, { userId: payload.userId, status: '온라인' }];
         });
+        
+        // selectedRoom도 함께 업데이트 (현재 보고 있는 방이면)
+        if (selectedRoom?.id === payload.roomId) {
+          setSelectedRoom(prev => prev ? {
+            ...prev,
+            currentUsers: prev.currentUsers + 1
+          } : null);
+        }
       }
     }, { id: `join-${roomId}` });
 
@@ -556,8 +569,17 @@ function ChatListPage({
         // 다른 사람이 나간 경우 → 참여자 목록만 갱신
         toast.info(`${payload.userId} 님이 방에서 나갔습니다.`);
         setChatUserList(prev => prev.filter(u => u.userId !== payload.userId));
-        // 인원수 감소
+        // chatList의 인원수만 업데이트 (방 나간 사용자는 이미 즉시 업데이트에서 처리됨)
+        console.log('방 나가기 WebSocket 이벤트 - chatList 인원수 감소');
         updateChatRoomUserCount(payload.roomId, -1);
+        
+        // selectedRoom도 함께 업데이트 (현재 보고 있는 방이면)
+        if (selectedRoom?.id === payload.roomId) {
+          setSelectedRoom(prev => prev ? {
+            ...prev,
+            currentUsers: Math.max(0, prev.currentUsers - 1)
+          } : null);
+        }
       } else {
         // 내가 나간 경우 → chatList에서도 제거
         setChatList(prev => prev.filter(r =>
@@ -938,7 +960,7 @@ function ChatListPage({
                     <div className="onlineMembersSectionHeader">온라인 — {online.length}</div>
                     {online.map(u => {
                       const eff = getEffectiveStatus(u);
-                      const isPending = u.joinStatus === 'PENDING';
+                      const isPending = u.joinStatus === 'PENDING' && selectedRoom?.joinType !== 'free';
                       return (
                         <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'online-' + u.userId}>
                           <span className={`membersName ${isPending ? 'membersName--pending' : ''}`}>
@@ -962,7 +984,7 @@ function ChatListPage({
                     </div>
                     {away.map(u => {
                       const eff = getEffectiveStatus(u);
-                      const isPending = u.joinStatus === 'PENDING';
+                      const isPending = u.joinStatus === 'PENDING' && selectedRoom?.joinType !== 'free';
                       return (
                         <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'away-' + u.userId}>
                           <span className={`membersName ${isPending ? 'membersName--pending' : ''}`}>
@@ -986,7 +1008,7 @@ function ChatListPage({
                     </div>
                     {offline.map(u => {
                       const eff = getEffectiveStatus(u);
-                      const isPending = u.joinStatus === 'PENDING';
+                      const isPending = u.joinStatus === 'PENDING' && selectedRoom?.joinType !== 'free';
                       return (
                         <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'off-' + u.userId}>
                           <span className={`membersName membersName--offline ${isPending ? 'membersName--pending' : ''}`}>
@@ -1003,10 +1025,12 @@ function ChatListPage({
                         </div>
                       );
                     })}
-                    <div className="PendingApproval" style={{ marginTop: 10 }}>
-                      수락 대기 중
-                    </div>
-                    {Array.isArray(pendingUsers) && pendingUsers.map(u => (
+                    {selectedRoom?.joinType !== 'free' && (
+                      <>
+                        <div className="PendingApproval" style={{ marginTop: 10 }}>
+                          수락 대기 중
+                        </div>
+                        {Array.isArray(pendingUsers) && pendingUsers.map(u => (
                       <div className="membersRow" key={'pending-' + u.userId}>
                         <span className="membersName membersName--offline">
                           {u.userId}
@@ -1028,6 +1052,8 @@ function ChatListPage({
                         </div>
                       </div>
                     ))}
+                      </>
+                    )}
 
                   </>
                 );
@@ -1076,6 +1102,16 @@ function ChatListPage({
                           requesterUserId: userData.userId
                         })
                       });
+                      
+                      // 즉시 UI 업데이트 (WebSocket 이벤트와 중복 방지를 위해 selectedRoom만 업데이트)
+                      setChatUserList(prev => prev.filter(u => u.userId !== menu.userId));
+                      
+                      // selectedRoom의 인원수만 즉시 업데이트 (WebSocket 이벤트에서는 중복 업데이트 방지)
+                      setSelectedRoom(prev => prev ? {
+                        ...prev,
+                        currentUsers: Math.max(0, prev.currentUsers - 1)
+                      } : null);
+                      
                       toast.success('강퇴 성공:', menu.userId);
                     } catch (err) {
                       toast.error('강퇴 실패:', err);
@@ -1098,6 +1134,14 @@ function ChatListPage({
                           toUserId: menu.userId
                         })
                       });
+                      
+                      // 즉시 UI 업데이트
+                      setSelectedRoom(prev => prev ? ({
+                        ...prev,
+                        hostUserId: menu.userId
+                      }) : null);
+                      
+                      toast.success('방장을 넘겼습니다.');
                     } catch (err) {
                       toast.error('방장 넘기기에 실패했습니다.');
                     }
@@ -1123,9 +1167,13 @@ function ChatListPage({
                           `/api/chat/rooms/${selectedRoom.id}/leave?userId=${userData.userId}`,
                           { method: "DELETE" }
                         );
+                        
+                        // 즉시 UI 업데이트
                         setChatList(prev => prev.filter(r => r.chatRoom.id !== selectedRoom.id));
                         setSelectedRoom(null);
                         setMessages([]);
+                        setIsMembersOpen(false);
+                        
                         toast.success("성공적으로 나가졌습니다!");
                       } catch (err) {
                         console.error("방 나가기 실패:", err);

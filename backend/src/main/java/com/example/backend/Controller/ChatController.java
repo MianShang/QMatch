@@ -43,6 +43,7 @@ public class ChatController {
     private final UserChatRoomRepository userChatRoomRepository;
     private final GameTagRepository gameTagRepository;
     private final UserRepository userRepository;
+    private final ChatIsReadRepository chatIsReadRepository;
 
     // 실시간 채팅방 접속 유저 목록 (roomId -> Set of userIds)
 //    private final Map<String, Set<String>> activeUsersByRoom = new ConcurrentHashMap<>();
@@ -199,14 +200,25 @@ public class ChatController {
         room.setOwner(creator);
         room.setMaxUsers(chatRoomData.getMaxUsers());
         room.setCurrentUsers(1);
+        room.setJoinType(chatRoomData.getJoinType()); // 입장 방식 설정
 
         // (3) 저장
         ChatRoom savedRoom = chatRoomRepository.save(room);
 
         // (4) 참여자 관리용 엔티티도 저장 (방장 HOST, 자동 승인)
         UserChatRoom ucr = new UserChatRoom(creator, savedRoom, Role.HOST);
-        ucr.setStatus(  ChatRoomUserStatus.ACCEPTED); // 방장은 자동으로 승인됨
+        ucr.setStatus(ChatRoomUserStatus.ACCEPTED); // 방장은 자동으로 승인됨
         userChatRoomRepository.save(ucr);
+
+        // (4-1) 방장 입장 알림 전송 (자유 입장 방과 방장 승인 방 모두)
+        simpMessagingTemplate.convertAndSend("/topic/chat/" + savedRoom.getId() + "/member-joined",
+                Map.of(
+                        "type", "member-joined",
+                        "userId", creator.getUserId(),
+                        "userName", creator.getUserName(),
+                        "roomId", savedRoom.getId(),
+                        "timestamp", System.currentTimeMillis()
+                ));
 
         // (5) 태그 연결
         if (tagIds != null && !tagIds.isEmpty()) {
@@ -260,30 +272,51 @@ public class ChatController {
     @Transactional
     public ResponseEntity<?> deleteRoom(@PathVariable String roomId,
                                         @RequestParam String requesterUserId) {
+        try {
+            System.out.println("방 삭제 요청 - roomId: " + roomId + ", requesterUserId: " + requesterUserId);
+            
+            ChatRoom room = chatRoomRepository.findById(roomId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."));
 
-        ChatRoom room = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."));
+            System.out.println("방 정보 - name: " + room.getName() + ", currentUsers: " + room.getCurrentUsers() + ", owner: " + (room.getOwner() != null ? room.getOwner().getUserId() : "null"));
 
-        // 방장이 맞는지 확인
-        if (room.getOwner() == null || !room.getOwner().getUserId().equals(requesterUserId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "방장만 방을 삭제할 수 있습니다."));
+            // 방장이 맞는지 확인
+            if (room.getOwner() == null || !room.getOwner().getUserId().equals(requesterUserId)) {
+                System.out.println("방장 권한 없음 - room owner: " + (room.getOwner() != null ? room.getOwner().getUserId() : "null") + ", requester: " + requesterUserId);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "방장만 방을 삭제할 수 있습니다."));
+            }
+
+            // 인원이 방장 혼자인지 확인
+            if (room.getCurrentUsers() > 1) {
+                System.out.println("다른 인원이 있음 - currentUsers: " + room.getCurrentUsers());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+                        Map.of("error", "아직 다른 인원이 있습니다. 방장은 혼자일 때만 삭제할 수 있습니다.")
+                );
+            }
+
+            System.out.println("ChatList 삭제 시작");
+            // 채팅방과 연결된 ChatList 먼저 삭제
+            chatListRepository.deleteByChatRoom_Id(roomId);
+            
+            System.out.println("ChatIsRead 삭제 시작");
+            // 채팅방과 연결된 ChatIsRead 삭제
+            chatIsReadRepository.deleteByChatRoomId(room);
+            
+            System.out.println("UserChatRoom 삭제 시작");
+            // 채팅방과 연결된 UserChatRoom 관계 삭제
+            userChatRoomRepository.deleteByChatRoom_Id(roomId);
+            
+            System.out.println("ChatRoom 삭제 시작");
+            chatRoomRepository.delete(room);
+
+            System.out.println("방 삭제 완료");
+            return ResponseEntity.ok(Map.of("success", true, "message", "방이 삭제되었습니다."));
+        } catch (Exception e) {
+            System.err.println("방 삭제 중 에러 발생: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "방 삭제 중 오류가 발생했습니다: " + e.getMessage()));
         }
-
-        // 인원이 방장 혼자인지 확인
-        if (room.getCurrentUsers() > 1) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
-                    Map.of("error", "아직 다른 인원이 있습니다. 방장은 혼자일 때만 삭제할 수 있습니다.")
-            );
-        }
-
-        // 채팅방과 연결된 ChatList 먼저 삭제
-        chatListRepository.deleteByChatRoom_Id(roomId);
-        
-        // 채팅방과 연결된 UserChatRoom 관계 삭제
-        userChatRoomRepository.deleteByChatRoom_Id(roomId);
-        chatRoomRepository.delete(room);
-
-        return ResponseEntity.ok(Map.of("success", true, "message", "방이 삭제되었습니다."));
     }
 
     // 방에서 특정 유저 강퇴
@@ -354,6 +387,14 @@ public class ChatController {
             return ResponseEntity.status(409).body(Map.of("error", "already joined"));
         }
 
+        // 자유 입장 방인지 확인
+        if (!"free".equals(room.getJoinType())) {
+            return ResponseEntity.status(403).body(Map.of(
+                    "error", "This room requires host approval",
+                    "joinType", room.getJoinType()
+            ));
+        }
+
         // 인원 제한 체크 (현재 인원이 최대 인원보다 크거나 같으면 입장 불가)
         if (room.getCurrentUsers() >= room.getMaxUsers()) {
             return ResponseEntity.status(403).body(Map.of(
@@ -363,21 +404,129 @@ public class ChatController {
             ));
         }
 
-        // 새로 참여 엔티티 저장
+        // 새로 참여 엔티티 저장 (자유 입장이므로 ACCEPTED 상태로)
         UserChatRoom ucr = new UserChatRoom(user, room, Role.MEMBER);
+        ucr.setStatus(ChatRoomUserStatus.ACCEPTED);
         room.setCurrentUsers(room.getCurrentUsers() + 1);
         userChatRoomRepository.save(ucr);
+        chatRoomRepository.save(room);
 
-        simpMessagingTemplate.convertAndSend(
-                "/topic/chat/" + roomId + "/join",
-                Map.of("userId", userId, "roomId", roomId)
-        );
+        // 실시간 접속 맵에 멤버 추가 (자유 입장 멤버 즉시 입장)
+        RealTimeUserManagement.activeUsersByRoom
+                .putIfAbsent(roomId, java.util.concurrent.ConcurrentHashMap.newKeySet());
+        RealTimeUserManagement.activeUsersByRoom.get(roomId).add(userId);
+
+        // 채팅방 전체에 새 멤버 입장 알림
+        simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId + "/member-joined",
+                Map.of(
+                        "type", "member-joined",
+                        "userId", userId,
+                        "userName", user.getUserName(),
+                        "roomId", roomId,
+                        "timestamp", System.currentTimeMillis()
+                ));
 
         return ResponseEntity.ok(Map.of(
                 "message", "joined successfully",
                 "roomId", roomId,
                 "userId", userId
         ));
+    }
+
+    // 방 설정 업데이트
+    @PutMapping("/rooms/{roomId}")
+    @Transactional
+    public ResponseEntity<?> updateRoom(
+            @PathVariable String roomId,
+            @RequestBody Map<String, Object> body
+    ) {
+        try {
+            String requesterUserId = (String) body.get("requesterUserId");
+            String chatName = (String) body.get("chatName");
+            String gameName = (String) body.get("gameName");
+            Integer maxUsers = (Integer) body.get("maxUsers");
+            String joinType = (String) body.get("joinType");
+            List<?> tagIdsRaw = (List<?>) body.get("tags");
+
+            if (requesterUserId == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "requesterUserId is required"));
+            }
+
+            ChatRoom room = chatRoomRepository.findById(roomId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."));
+
+            // 방장 권한 확인
+            if (room.getOwner() == null || !room.getOwner().getUserId().equals(requesterUserId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "방장만 방 설정을 변경할 수 있습니다."));
+            }
+
+            // 방 이름 업데이트
+            if (chatName != null && !chatName.trim().isEmpty()) {
+                room.setName(chatName.trim());
+            }
+
+            // 게임명 업데이트
+            if (gameName != null && !gameName.trim().isEmpty()) {
+                room.setGameName(gameName.trim());
+            }
+
+            // 최대 인원 업데이트
+            if (maxUsers != null) {
+                if (maxUsers < 2 || maxUsers > 20) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "방 인원은 2~20명 사이여야 합니다."));
+                }
+                if (maxUsers < room.getCurrentUsers()) {
+                    return ResponseEntity.badRequest().body(Map.of("error", "현재 인원보다 적게 설정할 수 없습니다."));
+                }
+                room.setMaxUsers(maxUsers);
+            }
+
+            // 입장 방식 업데이트
+            if (joinType != null && (joinType.equals("free") || joinType.equals("approval"))) {
+                room.setJoinType(joinType);
+            }
+
+            // 태그 업데이트
+            if (tagIdsRaw != null) {
+                // 기존 태그 삭제
+                chatRoomTagRepository.deleteByChatRoom_Id(roomId);
+                
+                // 새 태그 추가 - Integer나 Long 모두 처리 가능하도록
+                for (Object tagIdObj : tagIdsRaw) {
+                    Long tagId;
+                    if (tagIdObj instanceof Integer) {
+                        tagId = ((Integer) tagIdObj).longValue();
+                    } else if (tagIdObj instanceof Long) {
+                        tagId = (Long) tagIdObj;
+                    } else {
+                        tagId = Long.valueOf(tagIdObj.toString());
+                    }
+                    
+                    GameTag gameTag = gameTagRepository.findById(tagId)
+                            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "태그를 찾을 수 없습니다: " + tagId));
+                    
+                    ChatRoomTag chatRoomTag = new ChatRoomTag();
+                    chatRoomTag.setChatRoom(room);
+                    chatRoomTag.setGameTag(gameTag);
+                    chatRoomTagRepository.save(chatRoomTag);
+                }
+            }
+
+            chatRoomRepository.save(room);
+
+            // 방 전체에 설정 변경 알림
+            simpMessagingTemplate.convertAndSend(
+                    "/topic/chat/" + roomId + "/room-updated",
+                    Map.of("roomId", roomId, "message", "방 설정이 변경되었습니다.")
+            );
+
+            return ResponseEntity.ok(Map.of("success", true, "message", "방 설정이 업데이트되었습니다."));
+        } catch (Exception e) {
+            System.err.println("방 설정 업데이트 중 에러 발생: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "방 설정 업데이트 중 오류가 발생했습니다: " + e.getMessage()));
+        }
     }
 
     // 방장 변경

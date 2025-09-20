@@ -24,6 +24,9 @@ public class ChatRoom {
     @Column(nullable = false)
     private int currentUsers; // 기본값 1 (방장)
 
+    @Column(nullable = false)
+    private String joinType = "approval"; // 입장 방식: "approval" (방장 승인) 또는 "free" (자유 입장)
+
     // 방장 정보 (User와 연관관계)
     @ManyToOne
     private User owner;

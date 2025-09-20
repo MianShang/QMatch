@@ -1,4 +1,6 @@
 import MessageList from "./MessageList";
+import RoomSettingsModal from "../../modal/RoomSettingsModal/RoomSettingsModal";
+import { useState } from "react";
 
 function ChatRoom({
     userData,
@@ -11,7 +13,11 @@ function ChatRoom({
     sendMessage,
     sendFriendMessage,
     messageContainerRef,
+    onRoomUpdated,
 }) {
+
+    const [showRoomSettings, setShowRoomSettings] = useState(false);
+
     const handleSend = () => {
         if (selectedRoom) {
             sendMessage();
@@ -19,7 +25,7 @@ function ChatRoom({
             sendFriendMessage();
         }
     };
-
+    
     return (
             <div className="chatSize">
                 {/* 다대다 채팅방 헤더 */}
@@ -34,9 +40,20 @@ function ChatRoom({
                                 </span>
                             </div>
                         </div>
-                        {selectedRoom.hostUserId === userData?.userId && (
-                            <span className="hostBadge">방장</span>
-                        )}
+                        <div className="chatRoomActions">
+                            {selectedRoom.hostUserId === userData?.userId && (
+                                <span className="hostBadge">방장</span>
+                            )}
+                            {selectedRoom.hostUserId === userData?.userId && (
+                                <button 
+                                    className="roomSettingsBtn"
+                                    onClick={() => setShowRoomSettings(true)}
+                                    title="방 설정"
+                                >
+                                    ⚙️
+                                </button>
+                            )}
+                        </div>
                     </div>
                 )}
 
@@ -74,6 +91,14 @@ function ChatRoom({
                         </button>
                     </div>
                 )}
+
+                {/* 방 설정 모달 */}
+                <RoomSettingsModal
+                    open={showRoomSettings}
+                    onClose={() => setShowRoomSettings(false)}
+                    room={selectedRoom}
+                    onRoomUpdated={onRoomUpdated}
+                />
             </div>
     );
 }

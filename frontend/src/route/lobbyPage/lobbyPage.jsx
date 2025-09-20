@@ -151,6 +151,15 @@ function LobbyPage() {
   //   }
   // };
 
+  // 채팅방 설정 업데이트 핸들러
+  const handleRoomUpdated = (updatedRoom) => {
+    console.log('방 설정이 업데이트되었습니다:', updatedRoom);
+    // selectedRoom 상태 업데이트
+    setSelectedRoom(prev => prev ? { ...prev, ...updatedRoom } : null);
+    // 채팅방 목록도 새로고침
+    setListRefreshTick(t => t + 1);
+  };
+
   useEffect(() => {
     const container = messageContainerRef.current;
     if (container) {
@@ -193,39 +202,80 @@ function LobbyPage() {
           const id = encodeURIComponent(s.roomId);
           const { data } = await axios.get(`/api/chat/rooms/${id}`);
 
-          // 서버에서 상세 방 정보를 가져와 state 업데이트
-          console.log('서버에서 받은 방 정보:', data);
-          setSelectedRoom({
-            id: data.id,
-            name: data.name ?? s.chatName,
-            gameName: data.gameName ?? s.gameName,
-            tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
-            currentUsers: (typeof data.currentUsers === 'number') ? data.currentUsers : s.currentUsers,
-            maxUsers: (typeof data.maxUsers === 'number') ? data.maxUsers : s.maxUsers,
-            hostUserId: data.hostUserId, // 방장 ID 추가
-          });
-        } catch (e) {
-          setSelectedRoom({
-            id: s.roomId,
-            name: s.chatName,
-            gameName: s.gameName,
-            tagNames: s.tagNames ?? [],
-            currentUsers: s.currentUsers,
-            maxUsers: s.maxUsers,
-            hostUserId: s.hostUserId, // chatList에서 hostUserId 가져오기
-          });
-        } finally {
-          setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
+        // 서버에서 상세 방 정보를 가져와 state 업데이트
+        console.log('서버에서 받은 방 정보:', data);
+        setSelectedRoom({
+          id: data.id,
+          name: data.name ?? s.chatName,
+          gameName: data.gameName ?? s.gameName,
+          tagNames: Array.isArray(data.tagNames) ? data.tagNames : (s.tagNames ?? []),
+          currentUsers: (typeof data.currentUsers === 'number') ? data.currentUsers : s.currentUsers,
+          maxUsers: (typeof data.maxUsers === 'number') ? data.maxUsers : s.maxUsers,
+          hostUserId: data.hostUserId, // 방장 ID 추가
+          joinType: data.joinType ?? s.joinType ?? 'approval', // 입장 방식 추가
+        });
+      } catch (e) {
+        setSelectedRoom({
+          id: s.roomId,
+          name: s.chatName,
+          gameName: s.gameName,
+          tagNames: s.tagNames ?? [],
+          currentUsers: s.currentUsers,
+          maxUsers: s.maxUsers,
+          hostUserId: s.hostUserId, // chatList에서 hostUserId 가져오기
+          joinType: s.joinType ?? 'approval', // 입장 방식 추가
+        });
+      } finally {
+        setListRefreshTick(t => t + 1);  // 방 리스트를 새로고침하도록 트리거
 
-          // 채팅방 이동 시 메시지 로딩 및 읽음 처리
-          console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId);
-          getChatList(s.roomId, setMessages);
-          setRead({ id: s.roomId });
+        // WebSocket 연결 확인 후 방장 입장 처리
+        const processHostEntry = () => {
+          // 방장은 모든 방에서 자동으로 입장 (자유 입장 방과 방장 승인 방 모두)
+          if (s.joinType === 'free') {
+            // 자유 입장 API 호출
+            axios.post(`/api/chat/rooms/${s.roomId}/join`, {
+              userId: userData.userId
+            }).then(() => {
+              console.log('자유 입장 성공');
+              // 채팅방 이동 시 메시지 로딩 및 읽음 처리
+              console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId);
+              getChatList(s.roomId, setMessages);
+              setRead({ id: s.roomId });
+              
+              // 자유 입장 성공 - WebSocket 이벤트로 멤버 목록이 자동 업데이트됨
+            }).catch(err => {
+              console.error('자유 입장 실패:', err);
+              // 실패해도 메시지는 로딩
+              getChatList(s.roomId, setMessages);
+              setRead({ id: s.roomId });
+            });
+          } else {
+            // 방장 승인 방인 경우 - 방장은 이미 방 생성 시 자동으로 입장됨
+            console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId);
+            getChatList(s.roomId, setMessages);
+            setRead({ id: s.roomId });
+          }
+        };
+
+        // WebSocket 연결 확인 후 처리
+        if (globalStomp && globalStomp.isConnected()) {
+          processHostEntry();
+        } else {
+          // WebSocket 연결 대기
+          const checkConnection = () => {
+            if (globalStomp && globalStomp.isConnected()) {
+              processHostEntry();
+            } else {
+              setTimeout(checkConnection, 100);
+            }
+          };
+          checkConnection();
         }
-      })();
-    }
+      }
+    })();
+  }
 
-    if (s.type === 'friend' && s.friendId) {
+  if (s.type === 'friend' && s.friendId) {
       setSelectedRoom(null);
       setMessages([]);
       setShowMidBar(true);
@@ -243,8 +293,43 @@ function LobbyPage() {
         }
       })();
     }
-
   }, [location.key]);
+
+  // 방 설정 업데이트 이벤트 구독
+  useEffect(() => {
+    if (!globalStomp || !selectedRoom?.id) return;
+
+    const subscriptionId = `room-updated-${selectedRoom.id}`;
+
+    // 방 설정 업데이트 이벤트 구독
+    globalStomp.subscribe(`/topic/chat/${selectedRoom.id}/room-updated`, (frame) => {
+      try {
+        const payload = JSON.parse(frame.body);
+        console.log('방 설정 업데이트 알림 수신:', payload);
+        
+        // 방 정보 새로고침
+        fetch(`/api/chat/rooms/${selectedRoom.id}`)
+          .then(res => res.json())
+          .then(roomData => {
+            setSelectedRoom(prev => prev ? {
+              ...prev,
+              name: roomData.name,
+              gameName: roomData.gameName,
+              tagNames: roomData.tagNames,
+              maxUsers: roomData.maxUsers,
+              joinType: roomData.joinType
+            } : null);
+          })
+          .catch(err => console.error('방 정보 새로고침 실패:', err));
+      } catch (e) {
+        console.warn('방 설정 업데이트 알림 parse error', e);
+      }
+    }, { id: subscriptionId });
+
+    return () => {
+      globalStomp.unsubscribe(subscriptionId);
+    };
+  }, [selectedRoom?.id, globalStomp]);
 
   // userData가 로드될 때까지 로딩
   if (!userData) {
@@ -407,18 +492,19 @@ function LobbyPage() {
 
         {/*우측 채팅방 */}
         <div className={`rightBarSize ${isMembersPanelOpen ? "with-members-panel" : ""}`}>
-          <ChatRoom
-            userData={userData}
-            selectedRoom={selectedRoom}
-            selectedFriendRoom={selectedFriendRoom}
-            messages={messages}
-            friendMessages={friendMessages}
-            input={input}
-            setInput={setInput}
-            sendMessage={sendMessage}
-            messageContainerRef={messageContainerRef}
-            //sendFriendMessage={sendFriendMessage}
-          />
+
+        <ChatRoom
+          userData={userData}
+          selectedRoom={selectedRoom}
+          selectedFriendRoom={selectedFriendRoom}
+          messages={messages}
+          friendMessages={friendMessages}
+          input={input}
+          setInput={setInput}
+          sendMessage={sendMessage}
+          messageContainerRef={messageContainerRef}
+          onRoomUpdated={handleRoomUpdated}
+        />
 
           <div style={{ display: "flex" }}>
             <div className='adSize'>

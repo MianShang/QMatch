@@ -10,18 +10,20 @@ export function useChatGetUserList(setChatUserList){
 
     // 채팅방의 유저 목록을 가져오는 함수
     function getChatUserList(roomId){
+        console.log('getChatUserList 호출됨, roomId:', roomId);
 
-        axios.get('api/get/user/chatlist', {
+        axios.get('/api/get/user/chatlist', {
             // Context에 저장된 roomId로 get 요청
             params: { 
                 roomId: roomId
             }
         })
         .then((res) => {
-            console.log(res.data)
+            console.log('멤버 목록 API 응답:', res.data);
+            console.log('멤버 수:', res.data.length);
             setChatUserList(res.data);
         })
-    .catch((err) => console.error('방 아이디 보내기 실패', err));
+        .catch((err) => console.error('멤버 목록 가져오기 실패', err));
   }
    return getChatUserList;
 } 

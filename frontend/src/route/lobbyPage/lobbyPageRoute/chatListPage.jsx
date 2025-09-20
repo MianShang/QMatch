@@ -311,11 +311,7 @@ function ChatListPage({
       setPendingUsers(prev => prev.filter(req => req.userId !== applicantId));
       console.log('입장 승인 완료:', applicantId);
 
-      // 인원수 증가 (WebSocket 이벤트와 중복 방지를 위해 selectedRoom만 업데이트)
-      setSelectedRoom(prev => prev ? {
-        ...prev,
-        currentUsers: prev.currentUsers + 1
-      } : null);
+      // 인원수는 WebSocket 이벤트에서 자동으로 업데이트되므로 여기서는 제거
 
       // 멤버 목록에 즉시 추가
       setChatUserList(prev => {
@@ -422,6 +418,7 @@ function ChatListPage({
       try {
         const payload = JSON.parse(frame.body);
         console.log('새 멤버 입장:', payload);
+        console.log('selectedRoom.id:', selectedRoom?.id, 'payload.roomId:', payload.roomId);
 
         // 모든 채팅방 멤버에게 토스트 알림 표시
         toast.success(`${payload.userName}님이 입장했습니다!`);
@@ -431,7 +428,25 @@ function ChatListPage({
 
         // 멤버 목록 새로고침 (모든 사용자)
         if (selectedRoom?.id) {
+          console.log('멤버 목록 새로고침 호출:', selectedRoom.id);
           getChatUserList(selectedRoom.id);
+          
+          // 다른 이벤트와의 충돌을 방지하기 위해 약간의 지연 후 다시 새로고침
+          setTimeout(() => {
+            console.log('지연된 멤버 목록 새로고침 호출:', selectedRoom.id);
+            getChatUserList(selectedRoom.id);
+          }, 500);
+        }
+
+        // selectedRoom의 currentUsers도 업데이트
+        if (selectedRoom?.id === payload.roomId) {
+          console.log('currentUsers 업데이트:', selectedRoom?.id, '===', payload.roomId);
+          setSelectedRoom(prev => prev ? {
+            ...prev,
+            currentUsers: prev.currentUsers + 1
+          } : null);
+        } else {
+          console.log('currentUsers 업데이트 안됨:', selectedRoom?.id, '!==', payload.roomId);
         }
       } catch (e) {
         console.warn('member-joined parse error', e);
@@ -547,10 +562,15 @@ function ChatListPage({
       const payload = JSON.parse(frame.body);
       if (payload.userId !== userData.userId) {
         toast.info(`${payload.userId} 님이 방에 입장했습니다.`);
-        setChatUserList(prev => {
-          if (prev.find(u => u.userId === payload.userId)) return prev;
-          return [...prev, { userId: payload.userId, status: '온라인' }];
-        });
+        
+        // 멤버 목록 새로고침 (더 정확한 데이터를 위해)
+        getChatUserList(roomId);
+        
+        // 다른 이벤트와의 충돌을 방지하기 위해 약간의 지연 후 다시 새로고침
+        setTimeout(() => {
+          console.log('join 이벤트 지연된 멤버 목록 새로고침:', roomId);
+          getChatUserList(roomId);
+        }, 500);
         
         // selectedRoom도 함께 업데이트 (현재 보고 있는 방이면)
         if (selectedRoom?.id === payload.roomId) {
@@ -618,7 +638,9 @@ function ChatListPage({
       const payload = JSON.parse(frame.body);
       toast.success(payload.message);
       setPendingUsers(prev => prev.filter(p => p.userId !== payload.userId));
-      setChatUserList(prev => [...prev, { userId: payload.userId, status: '온라인' }]);
+      
+      // 멤버 목록 새로고침 (더 정확한 데이터를 위해)
+      getChatUserList(roomId);
 
       // 승인된 사용자가 현재 사용자라면 메시지 불러오기
       if (payload.userId === userData.userId) {
@@ -636,6 +658,9 @@ function ChatListPage({
             })
             .catch(err => console.error('채팅방 정보 가져오기 실패:', err));
         }
+      } else {
+        // 다른 사용자가 승인된 경우 - currentUsers는 member-joined 이벤트에서 처리됨
+        console.log('다른 사용자 승인됨:', payload.userId);
       }
     }, { id: `accept-${roomId}` });
 
@@ -651,6 +676,9 @@ function ChatListPage({
         // 읽음 처리
         setRead({ id: payload.roomId });
 
+        // 멤버 목록 새로고침
+        getChatUserList(payload.roomId);
+
         // 해당 채팅방을 선택된 방으로 설정
         if (!selectedRoom || selectedRoom.id !== payload.roomId) {
           // 채팅방 정보를 가져와서 selectedRoom 설정
@@ -660,6 +688,9 @@ function ChatListPage({
               setSelectedRoom(roomData);
             })
             .catch(err => console.error('채팅방 정보 가져오기 실패:', err));
+        } else {
+          // 현재 선택된 방 - currentUsers는 member-joined 이벤트에서 처리됨
+          console.log('개인 수락 알림 - 현재 선택된 방:', payload.roomId);
         }
       }
     }, { id: 'personal-accept' });

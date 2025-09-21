@@ -4,9 +4,11 @@ import com.example.backend.Dto.Request.FriendChatMessageRequestDto;
 import com.example.backend.Dto.Response.FriendChatMessageResponseDto;
 import com.example.backend.Entity.FriendShipChatMessage;
 import com.example.backend.Entity.FriendShipChatRoom;
+import com.example.backend.Entity.FriendShipChatUnRead;
 import com.example.backend.Entity.User;
 import com.example.backend.Repository.FriendShipChatMessageRepository;
 import com.example.backend.Repository.FriendShipChatRoomRepository;
+import com.example.backend.Repository.FriendShipChatUnReadRepository;
 import com.example.backend.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ public class FriendShipChatMessageService {
 
     private final FriendShipChatMessageRepository friendShipChatMessageRepository;
     private final FriendShipChatRoomRepository friendShipChatRoomRepository;
+    private final FriendShipChatUnReadRepository friendShipChatUnReadRepository;
     private final UserRepository userRepository;
 
 
@@ -54,8 +57,16 @@ public class FriendShipChatMessageService {
         entitySave.setUser(user);
         entitySave.setMessage(message.getMessage());
         entitySave.setSendTime(LocalDateTime.now());
-
         FriendShipChatMessage saved = friendShipChatMessageRepository.save(entitySave);
+
+        FriendShipChatUnRead unReadSave = new FriendShipChatUnRead();
+        unReadSave.setFriendShipChatRoom(room);
+        unReadSave.setMessage(saved);
+        unReadSave.setSendId(user.getUserId());
+        unReadSave.setReceiveId(message.getReceiveId());
+        friendShipChatUnReadRepository.save(unReadSave);
+
+
 
         FriendChatMessageResponseDto dto = new FriendChatMessageResponseDto();
         dto.setId(saved.getId());

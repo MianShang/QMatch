@@ -1,4 +1,3 @@
-import axios  from "axios";
 
 export function useFriendChatSender(client ,selectedFriendRoom, userData, input, setInput)
 {
@@ -11,6 +10,7 @@ export function useFriendChatSender(client ,selectedFriendRoom, userData, input,
         {
             sendId : userData.userId,
             message : input,
+            receiveId : selectedFriendRoom.friendId,
         };
         console.log("보낼 메시지:", message);
         client.publish({

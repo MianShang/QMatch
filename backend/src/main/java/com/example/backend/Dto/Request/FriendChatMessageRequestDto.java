@@ -9,4 +9,5 @@ import lombok.Setter;
 public class FriendChatMessageRequestDto {
     private String sendId;
     private String message;
+    private String receiveId;
 }

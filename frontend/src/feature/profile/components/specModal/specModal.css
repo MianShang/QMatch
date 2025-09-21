@@ -1,0 +1,342 @@
+/* Discord 스타일 스펙 모달 */
+
+.spec-modal-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    background: var(--discord-bg-primary);
+    border-radius: var(--discord-radius);
+    padding: 24px;
+    border: 1px solid var(--discord-bg-tertiary);
+    box-shadow: var(--discord-elevation-medium);
+}
+
+.spec-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--discord-bg-tertiary);
+}
+
+.spec-modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--discord-text-normal);
+}
+
+.spec-modal-subtitle {
+    font-size: 14px;
+    margin: 4px 0 0 0;
+    color: var(--discord-text-muted);
+}
+
+.spec-close-button {
+    background: var(--discord-bg-quaternary);
+    color: var(--discord-text-normal);
+    border: none;
+    padding: 8px 12px;
+    border-radius: var(--discord-radius-small);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.spec-close-button:hover {
+    background: var(--discord-bg-modifier-hover);
+    color: var(--discord-text-normal);
+}
+
+.spec-close-button:active {
+    background: var(--discord-bg-modifier-active);
+}
+
+.spec-content-box {
+    background: var(--discord-bg-secondary);
+    border-radius: var(--discord-radius);
+    padding: 20px;
+    color: var(--discord-text-normal);
+    font-size: 14px;
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.spec-modal-panel {
+    width: 400px;
+    max-width: 90vw;
+    background: var(--discord-bg-primary);
+    color: var(--discord-text-normal);
+    padding: 24px;
+    border: 1px solid var(--discord-bg-tertiary);
+    border-radius: var(--discord-radius);
+    box-shadow: var(--discord-elevation-high);
+    animation: slideInFromRight 0.3s ease-out forwards;
+    position: static;
+    height: auto;
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Discord 스타일 게임별 스펙 섹션 */
+.game-spec-section {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: var(--discord-bg-secondary);
+    border-radius: var(--discord-radius);
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.game-spec-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--discord-text-normal);
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.game-spec-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+}
+
+.game-spec-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.spec-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--discord-bg-tertiary);
+}
+
+.spec-item:last-child {
+    border-bottom: none;
+}
+
+.spec-label {
+    font-size: 14px;
+    color: var(--discord-text-muted);
+    font-weight: 500;
+}
+
+.spec-value {
+    font-size: 14px;
+    color: var(--discord-text-normal);
+    font-weight: 600;
+}
+
+.spec-value.positive {
+    color: var(--discord-text-positive);
+}
+
+.spec-value.negative {
+    color: var(--discord-text-danger);
+}
+
+.spec-value.warning {
+    color: var(--discord-text-warning);
+}
+
+/* Discord 스타일 통계 차트 */
+.spec-chart {
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--discord-bg-tertiary);
+    border-radius: var(--discord-radius-small);
+    border: 1px solid var(--discord-bg-quaternary);
+}
+
+.chart-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--discord-text-normal);
+    margin: 0 0 12px 0;
+}
+
+.chart-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.chart-label {
+    font-size: 12px;
+    color: var(--discord-text-muted);
+    min-width: 80px;
+}
+
+.chart-progress {
+    flex: 1;
+    height: 8px;
+    background: var(--discord-bg-quaternary);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.chart-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--discord-accent), var(--discord-accent-hover));
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.chart-value {
+    font-size: 12px;
+    color: var(--discord-text-normal);
+    font-weight: 500;
+    min-width: 40px;
+    text-align: right;
+}
+
+/* Discord 스타일 랭크 표시 */
+.rank-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--discord-bg-tertiary);
+    border-radius: var(--discord-radius-small);
+    border: 1px solid var(--discord-bg-quaternary);
+}
+
+.rank-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.rank-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.rank-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--discord-text-normal);
+    margin: 0;
+}
+
+.rank-points {
+    font-size: 12px;
+    color: var(--discord-text-muted);
+    margin: 0;
+}
+
+/* Discord 스타일 액션 버튼 */
+.spec-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--discord-bg-tertiary);
+}
+
+.spec-action-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: var(--discord-radius-small);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.spec-action-button.primary {
+    background: var(--discord-accent);
+    color: white;
+}
+
+.spec-action-button.primary:hover {
+    background: var(--discord-accent-hover);
+}
+
+.spec-action-button.secondary {
+    background: var(--discord-bg-quaternary);
+    color: var(--discord-text-normal);
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.spec-action-button.secondary:hover {
+    background: var(--discord-bg-modifier-hover);
+    border-color: var(--discord-bg-modifier-active);
+}
+
+/* Discord 스타일 반응형 디자인 */
+@media (max-width: 768px) {
+    .spec-modal-panel {
+        width: 95vw;
+        padding: 20px;
+    }
+    
+    .spec-modal-container {
+        padding: 20px;
+    }
+    
+    .chart-bar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .chart-label {
+        min-width: auto;
+    }
+    
+    .spec-actions {
+        flex-direction: column;
+    }
+    
+    .spec-action-button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .spec-modal-panel {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        padding: 16px;
+    }
+    
+    .spec-modal-container {
+        padding: 16px;
+        gap: 16px;
+    }
+    
+    .rank-display {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .spec-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}

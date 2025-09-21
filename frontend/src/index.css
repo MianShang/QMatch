@@ -1,8 +1,739 @@
-/* index.css */
+/* Discord 스타일 CSS */
+:root {
+  /* Discord 색상 팔레트 */
+  --discord-bg-primary: #36393f;
+  --discord-bg-secondary: #2f3136;
+  --discord-bg-tertiary: #202225;
+  --discord-bg-quaternary: #40444b;
+  --discord-bg-modifier-hover: #4f545c;
+  --discord-bg-modifier-active: #5f6369;
+  --discord-bg-modifier-selected: #7289da;
+  
+  --discord-text-normal: #dcddde;
+  --discord-text-muted: #72767d;
+  --discord-text-link: #00b0f4;
+  --discord-text-positive: #43b581;
+  --discord-text-warning: #faa61a;
+  --discord-text-danger: #f04747;
+  
+  --discord-interactive-normal: #b9bbbe;
+  --discord-interactive-hover: #dcddde;
+  --discord-interactive-active: #fff;
+  --discord-interactive-muted: #4f545c;
+  
+  --discord-accent: #7289da;
+  --discord-accent-hover: #677bc4;
+  --discord-accent-active: #5b6eae;
+  
+  --discord-elevation-low: 0 1px 0 rgba(4,4,5,0.2), 0 1.5px 0 rgba(6,6,7,0.05), 0 2px 0 rgba(4,4,5,0.05);
+  --discord-elevation-medium: 0 4px 4px rgba(0,0,0,0.16), 0 8px 16px rgba(0,0,0,0.24);
+  --discord-elevation-high: 0 8px 16px rgba(0,0,0,0.24), 0 16px 32px rgba(0,0,0,0.24);
+  
+  --discord-radius: 8px;
+  --discord-radius-small: 4px;
+  --discord-radius-large: 12px;
+  
+  /* 아이콘 필터 */
+  --icon-filter: invert(1);
+}
+
+/* 라이트모드 변수 */
+[data-theme="light"] {
+  /* 라이트모드 배경색 */
+  --discord-bg-primary: #ffffff;
+  --discord-bg-secondary: #f8f9fa;
+  --discord-bg-tertiary: #e3e5e8;
+  --discord-bg-quaternary: #d1d9e0;
+  --discord-bg-modifier-hover: #e8eaed;
+  --discord-bg-modifier-active: #dadce0;
+  --discord-bg-modifier-selected: #e3f2fd;
+  
+  /* 라이트모드 텍스트색 */
+  --discord-text-normal: #2e3338;
+  --discord-text-muted: #747f8d;
+  --discord-text-link: #0066cc;
+  --discord-text-positive: #00a86b;
+  --discord-text-warning: #f39c12;
+  --discord-text-danger: #e74c3c;
+  
+  /* 라이트모드 인터랙티브 */
+  --discord-interactive-normal: #4f5660;
+  --discord-interactive-hover: #2e3338;
+  --discord-interactive-active: #000000;
+  --discord-interactive-muted: #b9bbbe;
+  
+  /* 라이트모드 액센트 (동일) */
+  --discord-accent: #7289da;
+  --discord-accent-hover: #677bc4;
+  --discord-accent-active: #5b6eae;
+  
+  /* 라이트모드 그림자 */
+  --discord-elevation-low: 0 1px 0 rgba(0,0,0,0.1), 0 1.5px 0 rgba(0,0,0,0.05), 0 2px 0 rgba(0,0,0,0.05);
+  --discord-elevation-medium: 0 4px 4px rgba(0,0,0,0.1), 0 8px 16px rgba(0,0,0,0.15);
+  --discord-elevation-high: 0 8px 16px rgba(0,0,0,0.15), 0 16px 32px rgba(0,0,0,0.15);
+  --discord-elevation-stroke: 0 0 0 1px rgba(0,0,0,0.1);
+  --discord-elevation-border: 0 0 0 1px rgba(0,0,0,0.2);
+  
+  /* 라이트모드 아이콘 필터 */
+  --icon-filter: invert(0);
+}
+
+/* 핑크 테마 변수 */
+[data-theme="pink"] {
+  /* 핑크 테마 배경색 - 뽀용뽀용 말랑말랑 */
+  --discord-bg-primary: #ffeef7;
+  --discord-bg-secondary: #ffd6ec;
+  --discord-bg-tertiary: #ffb3d9;
+  --discord-bg-quaternary: #ff99cc;
+  --discord-bg-modifier-hover: #ff80bf;
+  --discord-bg-modifier-active: #ff66b3;
+  --discord-bg-modifier-selected: #ff4da6;
+  
+  /* 핑크 테마 텍스트색 */
+  --discord-text-normal: #8b1538;
+  --discord-text-muted: #b84d6b;
+  --discord-text-link: #e91e63;
+  --discord-text-positive: #4caf50;
+  --discord-text-warning: #ff9800;
+  --discord-text-danger: #f44336;
+  
+  /* 핑크 테마 인터랙티브 */
+  --discord-interactive-normal: #ad1457;
+  --discord-interactive-hover: #8b1538;
+  --discord-interactive-active: #6a0f2a;
+  --discord-interactive-muted: #e91e63;
+  
+  /* 핑크 테마 액센트 */
+  --discord-accent: #e91e63;
+  --discord-accent-hover: #c2185b;
+  --discord-accent-active: #ad1457;
+  
+  /* 핑크 테마 그림자 - 부드럽고 말랑말랑 */
+  --discord-elevation-low: 0 2px 4px rgba(233, 30, 99, 0.1), 0 4px 8px rgba(233, 30, 99, 0.05);
+  --discord-elevation-medium: 0 4px 8px rgba(233, 30, 99, 0.15), 0 8px 16px rgba(233, 30, 99, 0.1);
+  --discord-elevation-high: 0 8px 16px rgba(233, 30, 99, 0.2), 0 16px 32px rgba(233, 30, 99, 0.15);
+  --discord-elevation-stroke: 0 0 0 1px rgba(233, 30, 99, 0.1);
+  --discord-elevation-border: 0 0 0 1px rgba(233, 30, 99, 0.2);
+  
+  /* 핑크 테마 아이콘 필터 */
+  --icon-filter: invert(0.2) sepia(1) saturate(5) hue-rotate(300deg);
+}
+
+/* 블루 테마 변수 */
+[data-theme="blue"] {
+  /* 블루 테마 배경색 - 시원하고 깔끔한 느낌 */
+  --discord-bg-primary: #e3f2fd;
+  --discord-bg-secondary: #bbdefb;
+  --discord-bg-tertiary: #90caf9;
+  --discord-bg-quaternary: #64b5f6;
+  --discord-bg-modifier-hover: #42a5f5;
+  --discord-bg-modifier-active: #2196f3;
+  --discord-bg-modifier-selected: #1976d2;
+  
+  /* 블루 테마 텍스트색 */
+  --discord-text-normal: #0d47a1;
+  --discord-text-muted: #1565c0;
+  --discord-text-link: #1976d2;
+  --discord-text-positive: #4caf50;
+  --discord-text-warning: #ff9800;
+  --discord-text-danger: #f44336;
+  
+  /* 블루 테마 인터랙티브 */
+  --discord-interactive-normal: #1976d2;
+  --discord-interactive-hover: #0d47a1;
+  --discord-interactive-active: #0a3d91;
+  --discord-interactive-muted: #42a5f5;
+  
+  /* 블루 테마 액센트 */
+  --discord-accent: #2196f3;
+  --discord-accent-hover: #1976d2;
+  --discord-accent-active: #1565c0;
+  
+  /* 블루 테마 그림자 - 시원하고 깔끔한 */
+  --discord-elevation-low: 0 2px 4px rgba(33, 150, 243, 0.1), 0 4px 8px rgba(33, 150, 243, 0.05);
+  --discord-elevation-medium: 0 4px 8px rgba(33, 150, 243, 0.15), 0 8px 16px rgba(33, 150, 243, 0.1);
+  --discord-elevation-high: 0 8px 16px rgba(33, 150, 243, 0.2), 0 16px 32px rgba(33, 150, 243, 0.15);
+  --discord-elevation-stroke: 0 0 0 1px rgba(33, 150, 243, 0.1);
+  --discord-elevation-border: 0 0 0 1px rgba(33, 150, 243, 0.2);
+  
+  /* 블루 테마 아이콘 필터 */
+  --icon-filter: invert(0.3) sepia(1) saturate(3) hue-rotate(200deg);
+}
+
+/* 블루 테마 특별 애니메이션 */
+[data-theme="blue"] * {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 핑크 테마 특별 애니메이션 - 푸딩같은 느낌 */
+[data-theme="pink"] * {
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  border-radius: 12px !important;
+}
+
+/* 핑크 테마 기본 요소들 둥글둥글하게 */
+[data-theme="pink"] .chatCard,
+[data-theme="pink"] .chatListStyle,
+[data-theme="pink"] .contentStyle,
+[data-theme="pink"] .LogComponentStyle,
+[data-theme="pink"] .LogChangeButtonStyle,
+[data-theme="pink"] .theme-toggle-button,
+[data-theme="pink"] .profile-button,
+[data-theme="pink"] .bottom-button,
+[data-theme="pink"] input,
+[data-theme="pink"] textarea,
+[data-theme="pink"] button {
+  border-radius: 16px !important;
+}
+
+/* 핑크 테마 작은 요소들 더 둥글게 */
+[data-theme="pink"] .status-indicator,
+[data-theme="pink"] .gameName,
+[data-theme="pink"] .hostBadge,
+[data-theme="pink"] .chatCardBadge,
+[data-theme="pink"] .CheckBox {
+  border-radius: 20px !important;
+}
+
+/* 푸딩같은 말랑말랑 호버 효과 */
+[data-theme="pink"] .chatCard:hover,
+[data-theme="pink"] .chatListStyle:hover,
+[data-theme="pink"] button:hover {
+  transform: translateY(-3px);
+  box-shadow: 
+    0 12px 30px rgba(233, 30, 99, 0.25),
+    0 4px 15px rgba(255, 182, 193, 0.3);
+  filter: brightness(1.05);
+}
+
+/* 푸딩같은 버튼 특별 효과 */
+[data-theme="pink"] button {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    0 4px 15px rgba(233, 30, 99, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="pink"] button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s ease;
+  border-radius: inherit;
+}
+
+[data-theme="pink"] button:hover::before {
+  left: 100%;
+}
+
+[data-theme="pink"] button:active {
+  transform: scale(0.98) translateY(1px);
+  box-shadow: 
+    0 2px 8px rgba(233, 30, 99, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* 푸딩같은 스크롤바 */
+[data-theme="pink"] ::-webkit-scrollbar {
+  width: 12px;
+}
+
+[data-theme="pink"] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #ff99cc, #ff4da6);
+  border-radius: 20px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+  box-shadow: inset 0 0 5px rgba(255, 182, 193, 0.3);
+}
+
+[data-theme="pink"] ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #ff80bf, #e91e63);
+  background-clip: content-box;
+  transform: scale(1.1);
+  box-shadow: inset 0 0 8px rgba(255, 182, 193, 0.5);
+}
+
+[data-theme="pink"] ::-webkit-scrollbar-track {
+  background: rgba(255, 182, 193, 0.1);
+  border-radius: 20px;
+}
+
+/* 푸딩같은 그라데이션 배경 */
+[data-theme="pink"] .fullscreen {
+  background: var(--discord-bg-tertiary);
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="pink"] .fullscreen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(ellipse at 20% 80%, rgba(255, 182, 193, 0.4) 0%, transparent 60%),
+    radial-gradient(ellipse at 80% 20%, rgba(255, 192, 203, 0.4) 0%, transparent 60%),
+    radial-gradient(ellipse at 40% 40%, rgba(255, 218, 233, 0.3) 0%, transparent 60%),
+    radial-gradient(ellipse at 60% 60%, rgba(255, 182, 193, 0.2) 0%, transparent 50%);
+  pointer-events: none;
+  animation: puddingFloat 8s ease-in-out infinite;
+}
+
+@keyframes puddingFloat {
+  0%, 100% { 
+    transform: translateY(0px) rotate(0deg) scale(1); 
+    opacity: 0.8;
+  }
+  25% { 
+    transform: translateY(-5px) rotate(0.5deg) scale(1.02); 
+    opacity: 0.9;
+  }
+  50% { 
+    transform: translateY(-8px) rotate(1deg) scale(1.05); 
+    opacity: 1;
+  }
+  75% { 
+    transform: translateY(-5px) rotate(0.5deg) scale(1.02); 
+    opacity: 0.9;
+  }
+}
+
+/* 푸딩같은 카드 특별 효과 */
+[data-theme="pink"] .contentStyle {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(15px);
+  border: 2px solid rgba(255, 182, 193, 0.4);
+  box-shadow: 
+    0 12px 40px rgba(233, 30, 99, 0.15),
+    0 4px 20px rgba(255, 182, 193, 0.2),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(255, 182, 193, 0.2);
+  position: relative;
+}
+
+[data-theme="pink"] .contentStyle::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.1) 0%, 
+    transparent 50%, 
+    rgba(255, 182, 193, 0.05) 100%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* 푸딩같은 입력창 특별 효과 */
+[data-theme="pink"] input,
+[data-theme="pink"] textarea {
+  background: rgba(255, 182, 193, 0.8) !important;
+  border: 2px solid rgba(255, 99, 150, 0.4) !important;
+  color: #8b1538 !important;
+  box-shadow: 
+    inset 0 2px 4px rgba(255, 182, 193, 0.2),
+    0 2px 8px rgba(233, 30, 99, 0.1);
+  transition: all 0.3s ease;
+}
+
+[data-theme="pink"] input::placeholder,
+[data-theme="pink"] textarea::placeholder {
+  color: #b84d6b !important;
+  opacity: 0.8;
+}
+
+[data-theme="pink"] input:focus,
+[data-theme="pink"] textarea:focus {
+  box-shadow: 
+    0 0 0 3px rgba(233, 30, 99, 0.3),
+    0 0 25px rgba(233, 30, 99, 0.15),
+    inset 0 2px 4px rgba(255, 182, 193, 0.3);
+  transform: scale(1.02);
+  border-color: rgba(233, 30, 99, 0.6) !important;
+  background: rgba(255, 182, 193, 0.9) !important;
+  color: #8b1538 !important;
+}
+
+/* 핑크 모드 로그인/회원가입 버튼 특별 효과 */
+[data-theme="pink"] .LogChangeButtonStyle {
+  background: linear-gradient(135deg, #ffb3d9, #ff99cc) !important;
+  color: #8b1538 !important;
+  border: 2px solid rgba(255, 99, 150, 0.3) !important;
+  box-shadow: 
+    0 4px 15px rgba(233, 30, 99, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+[data-theme="pink"] .LogChangeButtonStyle:hover {
+  background: linear-gradient(135deg, #ff99cc, #ff80bf) !important;
+  transform: translateY(-3px) scale(1.03) !important;
+  box-shadow: 
+    0 8px 25px rgba(233, 30, 99, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  border-color: rgba(233, 30, 99, 0.5) !important;
+}
+
+[data-theme="pink"] .LogChangeButtonStyle h2 {
+  color: #8b1538 !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* 푸딩같은 활성 상태 특별 효과 */
+[data-theme="pink"] .activeBorder,
+[data-theme="pink"] .bottomActiveBorder {
+  background: linear-gradient(135deg, #ff4da6, #e91e63, #ff66b3);
+  box-shadow: 
+    0 0 25px rgba(233, 30, 99, 0.5),
+    0 4px 15px rgba(255, 182, 193, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -1px 0 rgba(233, 30, 99, 0.2);
+  animation: puddingGlow 3s ease-in-out infinite alternate;
+  position: relative;
+}
+
+[data-theme="pink"] .activeBorder::before,
+[data-theme="pink"] .bottomActiveBorder::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.2) 0%, 
+    transparent 50%, 
+    rgba(255, 182, 193, 0.1) 100%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+@keyframes puddingGlow {
+  from { 
+    box-shadow: 
+      0 0 25px rgba(233, 30, 99, 0.5),
+      0 4px 15px rgba(255, 182, 193, 0.3),
+      inset 0 2px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(233, 30, 99, 0.2);
+    transform: scale(1);
+  }
+  to { 
+    box-shadow: 
+      0 0 35px rgba(233, 30, 99, 0.7),
+      0 6px 20px rgba(255, 182, 193, 0.4),
+      inset 0 2px 0 rgba(255, 255, 255, 0.5),
+      inset 0 -1px 0 rgba(233, 30, 99, 0.3);
+    transform: scale(1.02);
+  }
+}
+
+/* 푸딩같은 채팅방 헤더 */
+[data-theme="pink"] .chatRoomHeader {
+  background: linear-gradient(135deg, #ffd6ec, #ffb3d9);
+  border: 2px solid rgba(255, 182, 193, 0.3);
+  box-shadow: 
+    0 8px 25px rgba(233, 30, 99, 0.15),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4);
+  position: relative;
+}
+
+[data-theme="pink"] .chatRoomHeader::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.2) 0%, 
+    transparent 50%, 
+    rgba(255, 182, 193, 0.1) 100%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+[data-theme="pink"] .chatRoomTitle {
+  color: #8b1538;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="pink"] .gameName {
+  background: linear-gradient(135deg, #ff4da6, #e91e63);
+  box-shadow: 
+    0 4px 15px rgba(233, 30, 99, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="pink"] .userCount {
+  color: #6a0f2a;
+  font-weight: 500;
+}
+
+[data-theme="pink"] .hostBadge {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #8b1538;
+  box-shadow: 
+    0 4px 15px rgba(255, 215, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+/* 블루 테마 특별 효과 */
+[data-theme="blue"] .chatCard:hover,
+[data-theme="blue"] .chatListStyle:hover,
+[data-theme="blue"] button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(33, 150, 243, 0.2);
+}
+
+/* 블루 모드 로그인/회원가입 버튼 특별 효과 */
+[data-theme="blue"] .LogChangeButtonStyle {
+  background: linear-gradient(135deg, #bbdefb, #90caf9) !important;
+  color: #0d47a1 !important;
+  border: 2px solid rgba(33, 150, 243, 0.3) !important;
+  box-shadow: 
+    0 4px 15px rgba(33, 150, 243, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+[data-theme="blue"] .LogChangeButtonStyle:hover {
+  background: linear-gradient(135deg, #90caf9, #64b5f6) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 
+    0 8px 25px rgba(33, 150, 243, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
+  border-color: rgba(33, 150, 243, 0.5) !important;
+}
+
+[data-theme="blue"] .LogChangeButtonStyle h2 {
+  color: #0d47a1 !important;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* 블루 테마 버튼 특별 효과 */
+[data-theme="blue"] button {
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="blue"] button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+[data-theme="blue"] button:hover::before {
+  left: 100%;
+}
+
+/* 블루 테마 스크롤바 */
+[data-theme="blue"] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, #64b5f6, #2196f3);
+  border-radius: 10px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+[data-theme="blue"] ::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, #42a5f5, #1976d2);
+  background-clip: content-box;
+}
+
+/* 블루 테마 특별 그라데이션 배경 */
+[data-theme="blue"] .fullscreen {
+  background: var(--discord-bg-tertiary);
+  position: relative;
+}
+
+[data-theme="blue"] .fullscreen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(33, 150, 243, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(25, 118, 210, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(66, 165, 245, 0.05) 0%, transparent 50%);
+  pointer-events: none;
+  animation: blueFloat 8s ease-in-out infinite;
+}
+
+@keyframes blueFloat {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-5px) rotate(-1deg); }
+}
+
+/* 블루 테마 카드 특별 효과 */
+[data-theme="blue"] .contentStyle {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(33, 150, 243, 0.2);
+  box-shadow: 
+    0 8px 32px rgba(33, 150, 243, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* 블루 테마 입력창 특별 효과 */
+[data-theme="blue"] input:focus,
+[data-theme="blue"] textarea:focus {
+  box-shadow: 
+    0 0 0 2px rgba(33, 150, 243, 0.3),
+    0 0 20px rgba(33, 150, 243, 0.1);
+  transform: scale(1.02);
+}
+
+/* 블루 테마 활성 상태 특별 효과 */
+[data-theme="blue"] .activeBorder,
+[data-theme="blue"] .bottomActiveBorder {
+  background: linear-gradient(45deg, #2196f3, #1976d2);
+  box-shadow: 
+    0 0 20px rgba(33, 150, 243, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  animation: blueGlow 3s ease-in-out infinite alternate;
+}
+
+@keyframes blueGlow {
+  from { box-shadow: 0 0 20px rgba(33, 150, 243, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2); }
+  to { box-shadow: 0 0 30px rgba(33, 150, 243, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3); }
+}
+
+/* 시원한 블루 채팅방 헤더 */
+[data-theme="blue"] .chatRoomHeader {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+  border: 2px solid rgba(33, 150, 243, 0.2);
+  box-shadow: 
+    0 8px 25px rgba(33, 150, 243, 0.15),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4);
+  position: relative;
+}
+
+[data-theme="blue"] .chatRoomHeader::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.3) 0%, 
+    transparent 50%, 
+    rgba(33, 150, 243, 0.05) 100%);
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+[data-theme="blue"] .chatRoomTitle {
+  color: #0d47a1;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="blue"] .gameName {
+  background: linear-gradient(135deg, #2196f3, #1976d2);
+  box-shadow: 
+    0 4px 15px rgba(33, 150, 243, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+[data-theme="blue"] .userCount {
+  color: #1565c0;
+  font-weight: 500;
+}
+
+[data-theme="blue"] .hostBadge {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  color: #0d47a1;
+  box-shadow: 
+    0 4px 15px rgba(255, 215, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
 :root, html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  background-color: rgb(0, 0, 0);
-  overflow: hidden; /* 원하지 않는 스크롤 방지 */
+  background-color: var(--discord-bg-tertiary);
+  color: var(--discord-text-normal);
+  font-family: 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.375;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 스크롤바 스타일 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--discord-bg-quaternary);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--discord-bg-modifier-hover);
+  background-clip: content-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* 모든 버튼, 링크, 입력창 등에 부드러운 전환 효과를 추가합니다 */
+* {
+  transition: all 0.2s ease-in-out;
+  box-sizing: border-box;
+}
+
+/* 기본 버튼 스타일 */
+button {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  background: none;
+  cursor: pointer;
+  outline: none;
+}
+
+/* 기본 입력 스타일 */
+input, textarea {
+  font-family: inherit;
+  font-size: inherit;
+  border: none;
+  outline: none;
+  background: none;
+}
+
+/* 기본 링크 스타일 */
+a {
+  color: var(--discord-text-link);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }

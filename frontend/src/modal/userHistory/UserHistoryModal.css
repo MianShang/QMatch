@@ -4,27 +4,57 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
-
+  z-index: 99999;
+  backdrop-filter: blur(4px);
   animation: fadeIn 0.3s ease-out forwards;
 }
 
-.modalContent {
-  background: white;
-  padding: 10px;
-  border-radius: 12px;
-  width: 500px;
-  height: 500px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+[data-theme="light"] .modalOverlay {
+  background: rgba(0, 0, 0, 0.5);
+}
 
-  /* 등장 애니메이션 */
+/* 핑크모드와 블루모드에서 모달 오버레이 조정 */
+[data-theme="pink"] .modalOverlay,
+[data-theme="blue"] .modalOverlay {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* 핑크모드와 블루모드에서 모달창 둥글둥글 효과 제거 */
+[data-theme="pink"] .userHistoryModal .modalContent,
+[data-theme="blue"] .userHistoryModal .modalContent {
+  border-radius: 12px !important;
+}
+
+[data-theme="pink"] .modalHeader,
+[data-theme="blue"] .modalHeader {
+  border-radius: 0 !important;
+}
+
+[data-theme="pink"] .modalInContent,
+[data-theme="blue"] .modalInContent {
+  border-radius: 0 !important;
+}
+
+.userHistoryModal .modalContent {
+  background: var(--discord-bg-primary);
+  padding: 0;
+  border-radius: 12px;
+  width: 800px !important;
+  max-width: 95vw;
+  height: 500px !important;
+  max-height: 95vh;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--discord-bg-tertiary);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   transform: scale(0.8);
   opacity: 0;
-  animation: popIn 0.15s ease-out forwards;
+  animation: popIn 0.3s ease-out forwards;
 }
 
 /* 닫는 애니메이션 (축소 + 사라짐) */
@@ -71,20 +101,84 @@
   cursor: pointer;
 }
 
-.modalHeader{
+.modalHeader {
     display: flex;
-    align-items: center; /* ✅ 세로(상하) 중앙 정렬 */
-    justify-content: space-between; /* 좌우 정렬 */
-    height: 50px;
-    padding-left: 10px;
-    padding-right: 10px;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    padding: 0 20px;
+    background: var(--discord-bg-secondary);
+    border-bottom: 1px solid var(--discord-bg-tertiary);
+    flex-shrink: 0;
 }
 
-.modalInContent{
-    border: 1px solid;
-    border-radius: 7px;
-    background-color: black;
-    color: white;
-    height: calc(100% - 50px);
+.modalHeader h3 {
+    color: var(--discord-text-normal);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
 
+.modalHeader .chatCardImage {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.modalHeader > div:last-child {
+    color: var(--discord-text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.modalHeader > div:last-child:hover {
+    background: var(--discord-bg-modifier-hover);
+    color: var(--discord-text-normal);
+}
+
+.modalInContent {
+  background: var(--discord-bg-primary);
+  color: var(--discord-text-normal);
+  flex: 1;
+  overflow-y: auto;
+  padding: 0;
+}
+
+/* Discord 스타일 스크롤바 */
+.modalInContent::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modalInContent::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modalInContent::-webkit-scrollbar-thumb {
+    background: var(--discord-bg-quaternary);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+
+.modalInContent::-webkit-scrollbar-thumb:hover {
+    background: var(--discord-bg-modifier-hover);
+    background-clip: content-box;
+}
+
+/* Firefox용 */
+.modalInContent {
+    scrollbar-width: thin;
+    scrollbar-color: var(--discord-bg-quaternary) transparent;
 }

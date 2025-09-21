@@ -27,4 +27,6 @@ public class ChatList {
     @ManyToOne
     @JoinColumn(name="user_id")
     private User user;                  // 메세지 전송자
+    
+    private String userName;            //메세지 전송자 이름
 }

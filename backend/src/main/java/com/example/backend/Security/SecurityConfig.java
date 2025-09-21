@@ -3,6 +3,7 @@ package com.example.backend.Security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -12,6 +13,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
 @Configuration
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Bean
@@ -29,7 +31,7 @@ public class SecurityConfig {
         config.addAllowedOrigin("http://localhost");      // Electron 앱 기본 주소 (개발용)
 
         // 필요하다면 전체 허용도 가능 (단, 보안 위험 높음)
-        // config.addAllowedOriginPattern("*");
+        config.addAllowedOriginPattern("*"); // 개발 단계에서 허용
 
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");

@@ -1,8 +1,10 @@
 package com.example.backend.Security;
 
 
+import com.example.backend.Entity.AccountStatus;
 import com.example.backend.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -11,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +34,27 @@ public class MyUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("ㄲㅈ");
         }
 
+        // 영구 정지 상태 조회
+        // BANNED : 영정
+        if (user.getStatus() == AccountStatus.BANNED) {
+            throw new DisabledException("이 계정은 영구적으로 정지되었습니다.");
+        }
+
+        // 임시 정지 상태 조회
+        // SUSPENDED : 임시 정지
+        // ACTIVE : 정지 풀림 상태
+        if (user.getStatus() == AccountStatus.SUSPENDED) {
+            // 정지 만료일에 따라 로그인 불가
+            if (user.getSuspensionEndDate() != null && user.getSuspensionEndDate().isAfter(LocalDateTime.now())) {
+                throw new DisabledException("이 계정은 " + user.getSuspensionEndDate() + "까지 이용이 정지되었습니다.");
+            } else {
+
+                user.setStatus(AccountStatus.ACTIVE);
+                user.setSuspensionEndDate(null);
+                userRepository.save(user);
+            }
+        }
+
         // 권한 부여 위한 리스트
         List<GrantedAuthority> authorities = new ArrayList<>();
 
@@ -44,13 +68,18 @@ public class MyUserDetailsService implements UserDetailsService {
 
         // 유저 ID를 포함한 커스텀 유저 정보 객체
         var customUserDetail = new CustomUserDetails(user.getUserName(),
-                                                        user.getUserPw(),
-                                                        authorities);
+                user.getUserPw(),
+                authorities);
 
         // 커스텀 객체에 유저 Id Get()
         customUserDetail.userId = user.getUserId();
         customUserDetail.userEmail = user.getUserEmail();
         customUserDetail.userProfile = user.getUserProfile();
+        customUserDetail.userTags = user.getUserTags();
+        customUserDetail.userIntro = user.getUserIntro();
+        customUserDetail.userStatusMessage = user.getUserStatusMessage();
+        customUserDetail.status = user.getStatus();
+
 
         // 커스텀 유저 정보 객체 반환
         return customUserDetail;
@@ -68,9 +97,13 @@ public class MyUserDetailsService implements UserDetailsService {
     // 기본값으로 유저 이름, 비밀번호, 권한 3가지 외
     // 유저Id, 유저 이메일, 유저 프로필을 추가하여 반환한다. 
     public class CustomUserDetails extends User {
-        public String userId;       
+        public String userId;
         public String userEmail;
         public String userProfile;
+        public List<String>userTags;
+        public String userIntro;
+        public String userStatusMessage;
+        public AccountStatus status;
 
         public CustomUserDetails(String username,
                                  String password,

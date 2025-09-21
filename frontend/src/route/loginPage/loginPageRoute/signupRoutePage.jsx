@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import './routePage.css'
 
 
-function SignUpRoutePage() {
+function SignUpRoutePage({ onSuccess }) {
+
+  const navigate = useNavigate();
 
   // 유저 State
   // 유저 프로필 이미지는 추후 추가 예정
@@ -31,6 +36,8 @@ function SignUpRoutePage() {
     axios.post('/api/user/join', user)
       .then(response => {
         console.log(response.data);
+        toast.success("회원가입이 성공적으로 완료되었습니다!");
+        onSuccess?.(); 
       })
       .catch(error => {
         console.error(error);
@@ -40,7 +47,6 @@ function SignUpRoutePage() {
   return (
     <div className='fullscreen LogRoutePageStyle'>
         <form className="login-form" onSubmit={ userJoin }>
-        <h1>회원가입</h1>
 
         <input type="text" id="userId" placeholder="아이디" required
             value={user.userId} onChange={handleChange}/>

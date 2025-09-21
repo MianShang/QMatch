@@ -9,5 +9,5 @@ public class UserChatRoomDto {
     private String userId;
     private String roomId;
     private String gameName;
-
+    private String status;
 }

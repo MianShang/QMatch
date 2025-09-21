@@ -1,0 +1,378 @@
+/* Discord 스타일 음성 채팅 */
+
+.voice-control-panel {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-left: auto;
+}
+
+.voice-control-panel button {
+  font-size: 12px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: var(--discord-radius-small);
+  background: var(--discord-bg-quaternary);
+  color: var(--discord-text-normal);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 60px;
+  font-weight: 500;
+}
+
+.voice-control-panel button:hover {
+  background: var(--discord-bg-modifier-hover);
+  color: var(--discord-text-normal);
+}
+
+.voice-control-panel button:active {
+  background: var(--discord-bg-modifier-active);
+}
+
+.voice-in {
+  display: flex;
+  margin-right: auto;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Discord 스타일 음성 인디케이터 */
+:root{
+  --talk-size: 32px;
+  --talk-color: var(--discord-accent);
+  --talk-dim: var(--discord-text-muted);
+  --wave-width: 2px;
+  --pulse-dur: 1100ms;
+}
+
+.talkSpeakerArc{
+  display: inline-flex;
+  width: var(--talk-size);
+  height: var(--talk-size);
+  margin-left: 8px;
+  vertical-align: middle;
+  border-radius: 50%;
+  background: var(--discord-bg-quaternary);
+  padding: 4px;
+  transition: all 0.2s ease;
+}
+
+.talkSpeakerArc:hover {
+  background: var(--discord-bg-modifier-hover);
+}
+
+.talkSpeakerArc .icon{ 
+  width: 100%; 
+  height: 100%; 
+}
+
+/* 스피커 본체 */
+.talkSpeakerArc .spk{
+  fill: var(--talk-dim);
+  transition: fill 0.2s ease;
+}
+
+.talkSpeakerArc.on .spk{ 
+  fill: var(--talk-color); 
+}
+
+/* 반원 파동 */
+.talkSpeakerArc .wave{
+  fill: none;
+  stroke: var(--talk-color);
+  stroke-width: var(--wave-width);
+  stroke-linecap: round;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* 말하는 중일 때만 웅웅거리기 */
+.talkSpeakerArc.on .wave{
+  opacity: 0.4;
+  animation: arcPulse var(--pulse-dur) infinite ease-out;
+}
+
+.talkSpeakerArc.on .w2{ 
+  animation-delay: 0.14s; 
+  opacity: 0.6; 
+}
+
+.talkSpeakerArc.on .w3{ 
+  animation-delay: 0.28s; 
+  opacity: 0.8; 
+}
+
+@keyframes arcPulse{
+  0%   { 
+    transform: scale(0.92); 
+    opacity: 0.3; 
+  }
+  50%  { 
+    transform: scale(1.00); 
+    opacity: 1;   
+  }
+  100% { 
+    transform: scale(1.06); 
+    opacity: 0.3; 
+  }
+}
+
+/* 사용자 모션 감소 설정 배려 */
+@media (prefers-reduced-motion: reduce){
+  .talkSpeakerArc.on .wave{ 
+    animation: none; 
+    opacity: 0.6; 
+  }
+}
+
+/* Discord 스타일 음성 상태 표시 */
+.voice-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  background: var(--discord-bg-quaternary);
+  border-radius: var(--discord-radius-small);
+  font-size: 12px;
+  color: var(--discord-text-muted);
+  transition: all 0.2s ease;
+}
+
+.voice-status.connected {
+  background: var(--discord-text-positive);
+  color: white;
+}
+
+.voice-status.speaking {
+  background: var(--discord-accent);
+  color: white;
+}
+
+.voice-status.muted {
+  background: var(--discord-text-danger);
+  color: white;
+}
+
+/* Discord 스타일 음성 컨트롤 버튼 */
+.voice-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--discord-bg-quaternary);
+  color: var(--discord-text-normal);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 16px;
+}
+
+.voice-btn:hover {
+  background: var(--discord-bg-modifier-hover);
+  transform: scale(1.05);
+}
+
+.voice-btn:active {
+  transform: scale(0.95);
+}
+
+.voice-btn.muted {
+  background: var(--discord-text-danger);
+  color: white;
+}
+
+.voice-btn.muted:hover {
+  background: var(--discord-text-danger);
+  opacity: 0.8;
+}
+
+.voice-btn.speaking {
+  background: var(--discord-accent);
+  color: white;
+}
+
+.voice-btn.speaking:hover {
+  background: var(--discord-accent-hover);
+}
+
+/* Discord 스타일 음성 참여자 목록 */
+.voice-participants {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px;
+  background: var(--discord-bg-secondary);
+  border-radius: var(--discord-radius);
+  margin-top: 8px;
+}
+
+.voice-participant {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--discord-bg-quaternary);
+  border-radius: 16px;
+  font-size: 14px;
+  color: var(--discord-text-normal);
+  transition: all 0.2s ease;
+}
+
+.voice-participant:hover {
+  background: var(--discord-bg-modifier-hover);
+}
+
+.voice-participant.speaking {
+  background: var(--discord-accent);
+  color: white;
+}
+
+.voice-participant.muted {
+  opacity: 0.6;
+}
+
+/* Discord 스타일 음성 설정 모달 */
+.voice-settings-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--discord-bg-primary);
+  border-radius: var(--discord-radius);
+  padding: 24px;
+  box-shadow: var(--discord-elevation-high);
+  z-index: 1000;
+  min-width: 400px;
+  max-width: 500px;
+}
+
+.voice-settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--discord-bg-tertiary);
+}
+
+.voice-settings-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--discord-text-normal);
+  margin: 0;
+}
+
+.voice-settings-close {
+  background: none;
+  border: none;
+  color: var(--discord-text-muted);
+  cursor: pointer;
+  font-size: 24px;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.voice-settings-close:hover {
+  background: var(--discord-bg-modifier-hover);
+  color: var(--discord-text-normal);
+}
+
+.voice-settings-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.voice-settings-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.voice-settings-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--discord-text-normal);
+}
+
+.voice-settings-input {
+  padding: 8px 12px;
+  border: 1px solid var(--discord-bg-tertiary);
+  border-radius: var(--discord-radius-small);
+  background: var(--discord-bg-secondary);
+  color: var(--discord-text-normal);
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.voice-settings-input:focus {
+  border-color: var(--discord-accent);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.2);
+}
+
+.voice-settings-slider {
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--discord-bg-tertiary);
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.voice-settings-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--discord-accent);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.voice-settings-slider::-webkit-slider-thumb:hover {
+  background: var(--discord-accent-hover);
+  transform: scale(1.1);
+}
+
+.voice-settings-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--discord-bg-tertiary);
+}
+
+.voice-settings-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--discord-radius-small);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.voice-settings-btn.primary {
+  background: var(--discord-accent);
+  color: white;
+}
+
+.voice-settings-btn.primary:hover {
+  background: var(--discord-accent-hover);
+}
+
+.voice-settings-btn.secondary {
+  background: var(--discord-bg-quaternary);
+  color: var(--discord-text-normal);
+}
+
+.voice-settings-btn.secondary:hover {
+  background: var(--discord-bg-modifier-hover);
+}

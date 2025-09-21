@@ -1,0 +1,126 @@
+/* friendListPage */
+
+.inventoryOverlay {
+  position: absolute;
+  z-index: 2;
+  height: calc(100% + 10px);
+  width: 100%;
+  background: var(--discord-bg-primary);
+}
+
+/* 프로필 이미지와 상태 아이콘을 감싸는 컨테이너 */
+.profile-image-container {
+  position: relative;
+  width: 45px; 
+  height: 45px; 
+}
+
+.profile-image-container .chatCardImage {
+  width: 100%; 
+  height: 100%; 
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* 상태 아이콘 스타일 */
+.status-icon {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--discord-bg-primary);
+  box-sizing: border-box;
+  box-shadow: 0 0 0 1px var(--discord-bg-tertiary);
+}
+
+.status-icon.online {
+  background-color: #43b581; /* Discord Green */
+}
+
+.status-icon.away {
+  background-color: #faa61a; /* Discord Orange */
+}
+
+.status-icon.offline {
+  background-color: #747f8d; /* Discord Gray */
+}
+
+
+/* 하단 차단,추가 목록 */
+.bottomToggleSwitch{
+    width: 145px;
+    height: 40px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--discord-text-muted);
+    z-index: 2;
+    font-size: 16px;
+    font-weight: 500;
+    
+}
+
+/* 토글 버튼 활성시 그래픽 */
+.bottomActiveBorder {
+    color: var(--discord-text-normal);
+    background: var(--discord-bg-modifier-hover);
+    border-bottom: 2px solid var(--discord-accent);
+}
+
+.bottomContentStyle{
+    background: var(--discord-bg-primary);
+    text-align: center;
+}
+
+.bottomToggleSwitch:hover {
+    color: var(--discord-text-normal);
+}
+
+.chatCardDelete
+{
+  background-color: transparent;
+}
+
+/* 글자 넘어갔을때 ... 표시 */
+.ellipsis
+{
+  width: 110px;
+  white-space: nowrap;        /* 줄바꿈 X */
+  overflow: hidden;           /* 넘친 글자 숨기기 */
+  text-overflow: ellipsis;
+}
+
+/* Discord 스타일 버튼 아이콘 */
+.CheckBox {
+  padding: 6px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.CheckBox:hover {
+  background: var(--discord-bg-modifier-hover);
+  transform: scale(1.1);
+}
+
+.CheckBox:active {
+  transform: scale(0.95);
+}
+
+/* 수락 버튼 특별 스타일 */
+.CheckBox[color="#32CD32"]:hover {
+  background: rgba(50, 205, 50, 0.1);
+  color: #32CD32;
+}
+
+/* 거부/삭제 버튼 특별 스타일 */
+.CheckBox[color="red"]:hover {
+  background: rgba(255, 0, 0, 0.1);
+  color: #ff4757;
+}

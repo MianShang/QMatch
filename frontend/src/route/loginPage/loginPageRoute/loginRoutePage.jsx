@@ -1,5 +1,7 @@
 import { useState, useEffect, useContext } from 'react'
 import { Routes, Route, Link, useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import './routePage.css'
 
@@ -63,10 +65,15 @@ function LogInRoutePage() {
       // 로그인 여부 Context API TRUE
       setIsLogIn(true);
 
+      toast.success("로그인 성공!");
+
       // 로그인 성공시 로비 컴포넌트로('/')
       navigate('/');
     })
     .catch((err) => {
+
+      toast.error("로그인 실패");
+
       console.error(err);
     });
   }
@@ -76,10 +83,6 @@ function LogInRoutePage() {
     <div className="LogRoutePageStyle fullscreen">
 
       <form className="login-form" onSubmit={handleSubmit}>
-        {/* 상단 로그인 문구 */}
-        <div>
-            <h1>로그인 </h1>
-        </div>
 
         <input type="text" name="username" placeholder='ID' required
             value={credentials.username} onChange={handleChange} />

@@ -45,6 +45,8 @@ public class ChatListService {
         chatList.setChatContent(chatListRequestDto.getChatContent());
         chatList.setChatRoom(chatRoom.get());
         chatList.setUser(user.get());
+        chatList.setUserName(user.get().getUserName());
+
 
         // DB 저장
         chatListRepository.save(chatList);
@@ -74,6 +76,8 @@ public class ChatListService {
 
             chatListResponseDto.setMessage(chatList1.getChatContent());
             chatListResponseDto.setName(chatList1.getUser().getUserId());
+            chatListResponseDto.setChatDate(chatList1.getChatDate());
+            chatListResponseDto.setUserName(chatList1.getUserName());
             chatListResponseDto.setChatDate(chatList1.getChatDate());
 
             // List add

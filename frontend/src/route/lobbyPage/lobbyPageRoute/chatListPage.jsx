@@ -55,7 +55,7 @@ function ChatListPage({
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   const navigate = useNavigate();
   // State 보관함 해체
-  const { userData } = useContext(LogContext);
+  const { userData, isRunning } = useContext(LogContext);
 
   // State
 
@@ -225,7 +225,7 @@ function ChatListPage({
   const updateChatRoomUserCount = (roomId, change) => {
     console.log('updateChatRoomUserCount 호출 - roomId:', roomId, 'change:', change);
     console.log('현재 chatList 구조:', chatList);
-    
+
     setChatList(prev => {
       console.log('업데이트 전 chatList:', prev);
       const updated = prev.map(chat => {
@@ -430,7 +430,7 @@ function ChatListPage({
         if (selectedRoom?.id) {
           console.log('멤버 목록 새로고침 호출:', selectedRoom.id);
           getChatUserList(selectedRoom.id);
-          
+
           // 다른 이벤트와의 충돌을 방지하기 위해 약간의 지연 후 다시 새로고침
           setTimeout(() => {
             console.log('지연된 멤버 목록 새로고침 호출:', selectedRoom.id);
@@ -562,16 +562,16 @@ function ChatListPage({
       const payload = JSON.parse(frame.body);
       if (payload.userId !== userData.userId) {
         toast.info(`${payload.userId} 님이 방에 입장했습니다.`);
-        
+
         // 멤버 목록 새로고침 (더 정확한 데이터를 위해)
         getChatUserList(roomId);
-        
+
         // 다른 이벤트와의 충돌을 방지하기 위해 약간의 지연 후 다시 새로고침
         setTimeout(() => {
           console.log('join 이벤트 지연된 멤버 목록 새로고침:', roomId);
           getChatUserList(roomId);
         }, 500);
-        
+
         // selectedRoom도 함께 업데이트 (현재 보고 있는 방이면)
         if (selectedRoom?.id === payload.roomId) {
           setSelectedRoom(prev => prev ? {
@@ -592,7 +592,7 @@ function ChatListPage({
         // chatList의 인원수만 업데이트 (방 나간 사용자는 이미 즉시 업데이트에서 처리됨)
         console.log('방 나가기 WebSocket 이벤트 - chatList 인원수 감소');
         updateChatRoomUserCount(payload.roomId, -1);
-        
+
         // selectedRoom도 함께 업데이트 (현재 보고 있는 방이면)
         if (selectedRoom?.id === payload.roomId) {
           setSelectedRoom(prev => prev ? {
@@ -638,7 +638,7 @@ function ChatListPage({
       const payload = JSON.parse(frame.body);
       toast.success(payload.message);
       setPendingUsers(prev => prev.filter(p => p.userId !== payload.userId));
-      
+
       // 멤버 목록 새로고침 (더 정확한 데이터를 위해)
       getChatUserList(roomId);
 
@@ -998,6 +998,14 @@ function ChatListPage({
                             {u.userName}
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
+                            {/* 실행 중인 게임 표시 */}
+                            {isRunning.filter(g => g.running)
+                              .map(g => (
+                                <span key={g.exe} className="membersGame" style={{marginLeft:"15px", fontSize:"12px"}}>
+                                  {g.label} 플레이중
+                                </span>
+                              ))}
+
                           </span>
                           {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
                           <div
@@ -1022,6 +1030,13 @@ function ChatListPage({
                             {u.userName}
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
+                            {/* 실행 중인 게임 표시 */}
+                            {isRunning.filter(g => g.running)
+                              .map(g => (
+                                <span key={g.exe} className="membersGame" style={{marginLeft:"15px", fontSize:"12px"}}>
+                                  {g.label} 플레이중
+                                </span>
+                              ))}
                           </span>
                           {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
                           <div
@@ -1062,27 +1077,27 @@ function ChatListPage({
                           수락 대기 중
                         </div>
                         {Array.isArray(pendingUsers) && pendingUsers.map(u => (
-                      <div className="membersRow" key={'pending-' + u.userId}>
-                        <span className="membersName membersName--offline">
-                          {u.userId}
-                          <span className="membersDot">⚪</span>
-                        </span>
+                          <div className="membersRow" key={'pending-' + u.userId}>
+                            <span className="membersName membersName--offline">
+                              {u.userId}
+                              <span className="membersDot">⚪</span>
+                            </span>
 
-                        {/* 방장만 수락/거절 버튼 표시 */}
-                        {(selectedRoom?.hostUserId === userData.userId) && (
-                          <div className="pending-actions">
-                            <button onClick={() => handleAccept(u.userId)}>수락</button>
-                            <button onClick={() => handleReject(u.userId)}>거절</button>
+                            {/* 방장만 수락/거절 버튼 표시 */}
+                            {(selectedRoom?.hostUserId === userData.userId) && (
+                              <div className="pending-actions">
+                                <button onClick={() => handleAccept(u.userId)}>수락</button>
+                                <button onClick={() => handleReject(u.userId)}>거절</button>
+                              </div>
+                            )}
+                            <div
+                              className="MoreButtonStyle"
+                              onClick={(e) => openMenu(e, u.userId)}
+                            >
+                              …
+                            </div>
                           </div>
-                        )}
-                        <div
-                          className="MoreButtonStyle"
-                          onClick={(e) => openMenu(e, u.userId)}
-                        >
-                          …
-                        </div>
-                      </div>
-                    ))}
+                        ))}
                       </>
                     )}
 
@@ -1133,16 +1148,16 @@ function ChatListPage({
                           requesterUserId: userData.userId
                         })
                       });
-                      
+
                       // 즉시 UI 업데이트 (WebSocket 이벤트와 중복 방지를 위해 selectedRoom만 업데이트)
                       setChatUserList(prev => prev.filter(u => u.userId !== menu.userId));
-                      
+
                       // selectedRoom의 인원수만 즉시 업데이트 (WebSocket 이벤트에서는 중복 업데이트 방지)
                       setSelectedRoom(prev => prev ? {
                         ...prev,
                         currentUsers: Math.max(0, prev.currentUsers - 1)
                       } : null);
-                      
+
                       toast.success('강퇴 성공:', menu.userId);
                     } catch (err) {
                       toast.error('강퇴 실패:', err);
@@ -1165,13 +1180,13 @@ function ChatListPage({
                           toUserId: menu.userId
                         })
                       });
-                      
+
                       // 즉시 UI 업데이트
                       setSelectedRoom(prev => prev ? ({
                         ...prev,
                         hostUserId: menu.userId
                       }) : null);
-                      
+
                       toast.success('방장을 넘겼습니다.');
                     } catch (err) {
                       toast.error('방장 넘기기에 실패했습니다.');
@@ -1198,13 +1213,13 @@ function ChatListPage({
                           `/api/chat/rooms/${selectedRoom.id}/leave?userId=${userData.userId}`,
                           { method: "DELETE" }
                         );
-                        
+
                         // 즉시 UI 업데이트
                         setChatList(prev => prev.filter(r => r.chatRoom.id !== selectedRoom.id));
                         setSelectedRoom(null);
                         setMessages([]);
                         setIsMembersOpen(false);
-                        
+
                         toast.success("성공적으로 나가졌습니다!");
                       } catch (err) {
                         console.error("방 나가기 실패:", err);

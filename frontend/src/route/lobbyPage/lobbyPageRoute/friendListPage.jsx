@@ -8,7 +8,7 @@ import { useFriendDelete } from '../../../hooks/friends/useFriendDelete.js';
 import { useNavigate } from "react-router-dom";
 
 function FriendListPage() {
-  const { friends, statusByUser, userData } = useContext(LogContext);
+  const { friends, statusByUser, userData, isRunning } = useContext(LogContext);
   const [bottomToggle, setBottomToggle] = useState(null);
   const [selected, setSelected] = useState(null);
   const containerRef = useRef(null);

@@ -7,7 +7,7 @@ import SockJS from 'sockjs-client';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 
-{/* 컴포넌트 import */}
+{/* 컴포넌트 import */ }
 import LobbyPage from './route/lobbyPage/lobbyPage.jsx';
 import SearchPage from './route/searchPage/searchPage.jsx';
 import LoginPage from './route/loginPage/loginPage.jsx';
@@ -22,22 +22,28 @@ export const LogContext = createContext();
 function App() {
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   const navigate = useNavigate();
-  
+
   // 로딩 State
   const [isLoading, setIsLoading] = useState(true);
   // 전역 로그인 여부 State
   const [isLogIn, setIsLogIn] = useState(false);
   // 전역 유저 데이터 State
   const [userData, setUserData] = useState(null);
-  const [friends,setFriends] = useState([]);
+  const [friends, setFriends] = useState([]);
   const [statusByUser, setStatusByUser] = useState([]);
   const [friendInventoryUpdate, setFriendInventoryUpdate] = useState(null);
-  
-   // 실시간 프로세스 목록 담을 State
+
+  // 실시간 프로세스 목록 담을 State
   const [processes, setProcesses] = useState([]);
 
-  // 메모장 실행중인지에 대한 여부 배열 state로 나중에 모든 게임들 넣으면 됨
-  const isNotepadRunning = processes.some(proc => proc.name?.toLowerCase() === 'notepad.exe');
+  // 프로세스 추척할 게임 목록
+  const gameTarget = [
+    { exe: "leagueclientux.exe", label: "리그 오브 레전드" },
+    { exe: "maplestory.exe", label: "메이플스토리" },
+    { exe: "lostark.exe", label: "로스트아크" },];
+
+  // 게임 실행 여부 담을 State
+  const [isRunning, setIsRunning] = useState({});
 
   // 안 읽은 메시지 상태
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
@@ -75,10 +81,24 @@ function App() {
 
     // 최초 1회 호출 및 1초마다 갱신
     fetchProcesses();
-    const interval = setInterval(fetchProcesses, 1000);
+    const interval = setInterval(fetchProcesses, 10000);
 
     return () => clearInterval(interval); // 언마운트 시 clear
   }, []);
+
+  useEffect(() => {
+    const results = gameTarget.map(game => ({
+      exe: game.exe,
+      label: game.label,
+      running: processes.some(proc => proc.name?.toLowerCase() === game.exe)
+    }));
+
+    setIsRunning(results);
+
+    results.forEach(g => {
+      console.log(`${g.label} (${g.exe}) 실행 여부: ${g.running}`);
+    });
+  }, [processes]);
 
   // 새로고침 or 첫 로딩시 자동 실행
   useEffect(() => {
@@ -89,10 +109,10 @@ function App() {
       try {
         // 세션 유효성 검사 API
         await axios.get('/api/check-login', { withCredentials: true });
-        
+
         // 세션이 유효할 시 유저 정보를 가져온다
         const userDataResponse = await axios.get('/api/user/get-data', { withCredentials: true });
-        
+
         if (isMounted) {
           // 전역으로 관리할 유저 데이터 State Set
           setUserData(userDataResponse.data);
@@ -120,16 +140,16 @@ function App() {
     // 10분마다 반복 실행, 유저 데이터 Set 을 제외하면 로직은 위 코드와 동일하다
     // 서버에 세션은 사라졌지만 웹 조작을 통한 악성유저 방지
     const interval = setInterval(() => {
-        if (isMounted && isLogIn) { 
-          axios.get('/api/check-login', { withCredentials: true })
-            .catch(() => {
-              // 세션 만료 시 자동으로 로그아웃 처리
-              if (isMounted) {
-                  setIsLogIn(false);
-                  setUserData(null);
-              }
-            });
-        }
+      if (isMounted && isLogIn) {
+        axios.get('/api/check-login', { withCredentials: true })
+          .catch(() => {
+            // 세션 만료 시 자동으로 로그아웃 처리
+            if (isMounted) {
+              setIsLogIn(false);
+              setUserData(null);
+            }
+          });
+      }
     }, 10 * 60 * 1000); // 10분마다 반복
 
     // 언마운트 시 반복 중지
@@ -148,29 +168,28 @@ function App() {
     isLoading,
     friends,
     statusByUser,
-
-    friendInventoryUpdate, 
+    friendInventoryUpdate,
     setFriendInventoryUpdate,
-    
     hasUnreadMessages,
     setHasUnreadMessages,
     theme,
-    toggleTheme
-  }), [isLogIn, userData, isLoading, friends, statusByUser,friendInventoryUpdate, setFriendInventoryUpdate, hasUnreadMessages, theme]);
+    toggleTheme,
+    isRunning
+  }), [isLogIn, userData, isLoading, friends, statusByUser, friendInventoryUpdate, setFriendInventoryUpdate, hasUnreadMessages, theme, isRunning]);
 
   //친구 목록 가져오기
-    useEffect(() => {
-        if (!userData?.userId) return;
-        const fetchFriends = async () => {
-            try {
-                const response = await axios.get(`/api/friends/list?userId=${userData.userId}`);
-                setFriends(response.data);
-            } catch (error) {
-                console.error("친구 목록 불러오기 실패:", error);
-            }
-        };
-        fetchFriends();
-    }, [userData?.userId]);
+  useEffect(() => {
+    if (!userData?.userId) return;
+    const fetchFriends = async () => {
+      try {
+        const response = await axios.get(`/api/friends/list?userId=${userData.userId}`);
+        setFriends(response.data);
+      } catch (error) {
+        console.error("친구 목록 불러오기 실패:", error);
+      }
+    };
+    fetchFriends();
+  }, [userData?.userId]);
 
   //전역 Stomp
   useEffect(() => {
@@ -186,40 +205,40 @@ function App() {
 
       //친구 요청구독
       stomp.subscribe(`/topic/friends/${userData.userId}`, (frame) => {
-      try {
-            const payload = JSON.parse(frame.body);
-              toast.info(payload.message || "새로운 친구 요청이 도착했습니다.");
-            } catch (e) {
-                console.error("친구추가 요청 에러", e);
-            }
+        try {
+          const payload = JSON.parse(frame.body);
+          toast.info(payload.message || "새로운 친구 요청이 도착했습니다.");
+        } catch (e) {
+          console.error("친구추가 요청 에러", e);
+        }
       });
-    
-        //친구 상태구독
+
+      //친구 상태구독
       stomp.subscribe(`/topic/friends/status`, (frame) => {
-          try {
-            const payload = JSON.parse(frame.body);
-            setStatusByUser(prev => ({ ...prev, [payload.userId]: payload.status }));
-          }
-           catch (e) {
-              console.error("친구상태 업데이트 에러", e);
-          }
+        try {
+          const payload = JSON.parse(frame.body);
+          setStatusByUser(prev => ({ ...prev, [payload.userId]: payload.status }));
+        }
+        catch (e) {
+          console.error("친구상태 업데이트 에러", e);
+        }
       });
 
       // 채팅방 입장 응답 구독
       stomp.subscribe(`/topic/user/${userData.userId}/join-response`, (message) => {
         try {
           const data = JSON.parse(message.body);
-          
+
           if (data.type === 'join-approved') {
             toast.success(data.message);
-            
+
             // 승인된 멤버가 자동으로 채팅방에 입장하도록 처리
             if (data.roomId) {
               console.log('승인 알림 수신 - 채팅방으로 이동:', data);
-              
+
               // 채팅방으로 이동
-              navigate('/', { 
-                state: { 
+              navigate('/', {
+                state: {
                   type: 'multi', // 다대다 채팅방 타입 추가
                   roomId: data.roomId,
                   chatName: data.roomName,
@@ -240,31 +259,30 @@ function App() {
 
       //친구 요청/차단 목록 업데이트
       stomp.subscribe(`/topic/friends/inventory/${userData.userId}`, (frame) => {
-          try {
-            const payload = JSON.parse(frame.body);
-            setFriendInventoryUpdate(payload);
+        try {
+          const payload = JSON.parse(frame.body);
+          setFriendInventoryUpdate(payload);
 
-            axios.get(`/api/friends/list?userId=${userData.userId}`)
-         .then(res => setFriends(res.data))
-         .catch(err => console.error("친구 목록 갱신 실패:", err));
-          }
-           catch (e) {
-              console.error("친구요청/차단 목록 업데이트 에러", e);
-          }
+          axios.get(`/api/friends/list?userId=${userData.userId}`)
+            .then(res => setFriends(res.data))
+            .catch(err => console.error("친구 목록 갱신 실패:", err));
+        }
+        catch (e) {
+          console.error("친구요청/차단 목록 업데이트 에러", e);
+        }
       });
     };
 
     stomp.activate();
 
-        return ()=>
-          {
-            stomp.deactivate();
-          };
+    return () => {
+      stomp.deactivate();
+    };
 
-      }, [userData?.userId]
+  }, [userData?.userId]
   );
 
-    
+
   // 렌더링 숨기고 로딩창 표시 
   if (isLoading) {
     return (
@@ -282,30 +300,30 @@ function App() {
       <LogContext.Provider value={contextValue}>
         <Routes>
           {/* 초기 url 진입점인 "/" 비로그인시 "/login"로 자동연계 되게 할 예정*/}
-          <Route 
-            path="/" 
+          <Route
+            path="/"
             // 로그인 되어 있으면 로비 페이지로(/), 아니면 로그인 페이지로(/login) 이동
-            element={isLogIn ? <LobbyPage /> : <Navigate to="/login" replace />} 
+            element={isLogIn ? <LobbyPage /> : <Navigate to="/login" replace />}
           />
           <Route path="/search" element={<SearchPage />} />
-          <Route 
-            path="/login" 
+          <Route
+            path="/login"
             // 로그인 안되어 있으면 로그인 페이지로, 되어있으면 로비 페이지로 이동
-            element={!isLogIn ? <LoginPage /> : <Navigate to="/" replace />} 
+            element={!isLogIn ? <LoginPage /> : <Navigate to="/" replace />}
           />
           <Route path="/signup" element={<SignUpRoutePage />} />
-          <Route 
+          <Route
             path="/admin"
             // 3. 로그인 상태이고, 유저 역할이 'ADMIN'일 때만 페이지를 보여줍니다.
             element={
               isLogIn && userData?.authorities?.some(auth => auth.authority === 'ROLE_ADMIN')
-              ? <AdminPage />
-              : <Navigate to="/" replace />
+                ? <AdminPage />
+                : <Navigate to="/" replace />
             }
           />
           <Route path="/lobby" element={<LobbyPage />} />
         </Routes>
-        
+
       </LogContext.Provider>
       <ToastContainer
         position="top-right"

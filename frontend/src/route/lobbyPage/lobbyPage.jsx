@@ -74,7 +74,7 @@ function LobbyPage() {
   const [friendMessages, setFriendMessages] = useState([]); // 친구 1:1 채팅 메시지
 
   // State 보관함 해체
-  const { isLogIn, setIsLogIn, userData, setUserData, setHasUnreadMessages, theme, toggleTheme } = useContext(LogContext)
+  const { isLogIn, setIsLogIn, userData, setUserData, setHasUnreadMessages, theme, toggleTheme} = useContext(LogContext)
 
   // 전역 STOMP 클라이언트 초기화
   const globalStomp = useGlobalStomp(userData);

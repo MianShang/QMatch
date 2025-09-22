@@ -26,6 +26,7 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Date;
 
 
 @RestController // REST API도 처리
@@ -55,7 +56,7 @@ public class ChatController {
     // 구독된 채팅방에 메세지 보내는 API
     @MessageMapping("/chat/{roomId}")
     @SendTo("/topic/chat/{roomId}")
-    public Map<String, String> sendMessage(@DestinationVariable String roomId, @Payload Map<String, String> payload) {
+    public Map<String, Object> sendMessage(@DestinationVariable String roomId, @Payload Map<String, String> payload) {
 
         String name = payload.get("name");
         String message = payload.get("message");
@@ -78,8 +79,16 @@ public class ChatController {
             }
         }
 
-        // 메세지로 유저 ID, 메세지 내용 보냄
-        return Map.of("name", name, "message", message);
+        // 현재 시간 추가
+        Date currentTime = new Date();
+
+        // 메세지로 유저 ID, 메세지 내용, 시간 보냄
+        Map<String, Object> response = new HashMap<>();
+        response.put("name", name);
+        response.put("message", message);
+        response.put("chatDate", currentTime);
+
+        return response;
     }
 
     // STOMP WebSocket 연결 시 유저 등록
@@ -274,7 +283,7 @@ public class ChatController {
                                         @RequestParam String requesterUserId) {
         try {
             System.out.println("방 삭제 요청 - roomId: " + roomId + ", requesterUserId: " + requesterUserId);
-            
+
             ChatRoom room = chatRoomRepository.findById(roomId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."));
 
@@ -297,15 +306,15 @@ public class ChatController {
             System.out.println("ChatList 삭제 시작");
             // 채팅방과 연결된 ChatList 먼저 삭제
             chatListRepository.deleteByChatRoom_Id(roomId);
-            
+
             System.out.println("ChatIsRead 삭제 시작");
             // 채팅방과 연결된 ChatIsRead 삭제
             chatIsReadRepository.deleteByChatRoomId(room);
-            
+
             System.out.println("UserChatRoom 삭제 시작");
             // 채팅방과 연결된 UserChatRoom 관계 삭제
             userChatRoomRepository.deleteByChatRoom_Id(roomId);
-            
+
             System.out.println("ChatRoom 삭제 시작");
             chatRoomRepository.delete(room);
 
@@ -490,7 +499,7 @@ public class ChatController {
             if (tagIdsRaw != null) {
                 // 기존 태그 삭제
                 chatRoomTagRepository.deleteByChatRoom_Id(roomId);
-                
+
                 // 새 태그 추가 - Integer나 Long 모두 처리 가능하도록
                 for (Object tagIdObj : tagIdsRaw) {
                     Long tagId;
@@ -501,10 +510,10 @@ public class ChatController {
                     } else {
                         tagId = Long.valueOf(tagIdObj.toString());
                     }
-                    
+
                     GameTag gameTag = gameTagRepository.findById(tagId)
                             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "태그를 찾을 수 없습니다: " + tagId));
-                    
+
                     ChatRoomTag chatRoomTag = new ChatRoomTag();
                     chatRoomTag.setChatRoom(room);
                     chatRoomTag.setGameTag(gameTag);

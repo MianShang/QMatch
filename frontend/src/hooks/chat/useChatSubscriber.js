@@ -21,8 +21,13 @@ export function useChatSubscriber(selectedRoom, setMessages, setClient, userData
       `/topic/chat/${selectedRoom.id}`,
       (msg) => {
         try {
+          const messageData = JSON.parse(msg.body);
+          // 시간 정보가 없으면 현재 시간 추가
+          if (!messageData.chatDate) {
+            messageData.chatDate = new Date().toISOString();
+          }
           // Message State Set
-          setMessages(prev => [...prev, JSON.parse(msg.body)]);
+          setMessages(prev => [...prev, messageData]);
         } catch (error) {
           console.error('채팅 메시지 처리 오류:', error);
         }

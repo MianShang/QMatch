@@ -1171,8 +1171,6 @@ function ChatListPage({
                         ...prev,
                         hostUserId: menu.userId
                       }) : null);
-                      
-                      toast.success('방장을 넘겼습니다.');
                     } catch (err) {
                       toast.error('방장 넘기기에 실패했습니다.');
                     }

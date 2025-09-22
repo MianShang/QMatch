@@ -365,12 +365,6 @@ function MyProfile({ viewUserId, onClose }) {
               <p>정말 로그아웃 하시겠습니까?</p>
               <div className="logout-confirm-buttons">
                 <button 
-                  className="cancel-btn" 
-                  onClick={() => setShowLogoutConfirm(false)}
-                >
-                  취소
-                </button>
-                <button 
                   className="confirm-btn" 
                   onClick={() => {
                     logoutFunc(setIsLogIn);
@@ -378,6 +372,12 @@ function MyProfile({ viewUserId, onClose }) {
                   }}
                 >
                   로그아웃
+                </button>
+                <button 
+                  className="cancel-btn" 
+                  onClick={() => setShowLogoutConfirm(false)}
+                >
+                  취소
                 </button>
               </div>
             </div>

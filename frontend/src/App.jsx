@@ -284,7 +284,7 @@ function App() {
       </LogContext.Provider>
       <ToastContainer
         position="top-right"
-        autoClose={1000}   // 3초 뒤 자동 닫힘
+        autoClose={3000}   // 3초 뒤 자동 닫힘
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick

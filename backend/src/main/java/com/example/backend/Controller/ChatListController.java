@@ -44,7 +44,7 @@ public class ChatListController {
     @GetMapping("/api/user/request/userchatlist")
     public ResponseEntity<List<ChatListResponseDto>> getUserChatList(@RequestParam String roomId) {
 
-        List<ChatListResponseDto> chatListResponseDtos = chatListService.getChatList(roomId);
+        List<ChatListResponseDto> chatListResponseDtos= chatListService.getChatList(roomId);
 
         return ResponseEntity.ok(chatListResponseDtos);
     }

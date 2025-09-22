@@ -9,6 +9,9 @@ import './adminPage.css';
 import ReportDetailModal from '../../modal/ReportModal/ReportDetailModal.jsx'
 // 몇 일 정지 먹일래? import
 import SuspensionModal from '../../modal/ReportModal/SuspensionModal.jsx'
+// 상세 내용 임포트 
+import DetailInfoModal from '../../modal/ReportModal/DetailInfoModal.jsx'
+
 
 function AdminPage() {
 
@@ -27,6 +30,11 @@ function AdminPage() {
     //상세내역 모달 상태 추가
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     const [selectedReport, setSelectedReport] = useState(null);
+
+    //회원들의 기록을 보관하는 모달창 
+    const [isDetailInfoModalOpen, setIsDetailInfoModalOpen] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+
 
     
 
@@ -65,6 +73,26 @@ function AdminPage() {
                 position: "top-center" 
             }
         );
+    };
+
+    //회원 상세정보 기록 모달 열닫
+    const handleOpenDetailInfoModal = async (user) => {
+        try {
+            toast.info(`${user.userId}님의 상세 정보를 불러오는 중...`);
+
+            // 1. userId로 백엔드에 상세 정보를 요청합니다.
+            const response = await axios.get(`/api/admin/users/${user.userId}`, { withCredentials: true });
+            
+            // 2. 응답받은 상세 데이터를 state에 저장합니다.
+            setSelectedUser(response.data);
+            
+            // 3. 데이터가 준비되면 모달을 엽니다.
+            setIsDetailInfoModalOpen(true);
+
+        } catch (error) {
+            console.error("회원 상세 정보 조회 실패:", error);
+            toast.error("상세 정보를 불러오는 데 실패했습니다.");
+        }
     };
 
     const fetchData = () => {
@@ -165,9 +193,9 @@ function AdminPage() {
                                 <tr key={user.userId}>
                                     <td>{user.userId}</td>
                                     <td>{user.userName}</td>
-                                    <td>{user.userEmail}</td>
+                                    <td>{user.userEmail}</td>   
                                     <td>{user.status}</td> 
-                                    <td><button className="button-color">상세 보기</button></td>
+                                    <td><button className="button-color" onClick={() => handleOpenDetailInfoModal(user)}>상세보기</button></td>
                                     <td>
                                         {user.status !== '활성 상태' && (
                                             <button className = "button-color" onClick={() => handleActivate(user.userId)}>해제</button>
@@ -192,7 +220,6 @@ function AdminPage() {
                                 <th>피신고자</th>
                                 <th>신고 사유</th>
                                 <th>처리 상태</th>
-                                <th>상세</th>
                                 <th>조치</th>
                             </tr>
                         </thead>
@@ -204,7 +231,6 @@ function AdminPage() {
                                     <td>{report.reportedUserId}</td>
                                     <td>{report.reason}</td>
                                     <td>{report.status}</td>
-                                    <td><button className="button-color" onClick={() => handleOpenDetailModal(report)}>상세보기</button></td>
                                     <td>
                                         <button className="button-color" onClick={() => handleOpenSuspendModal(report.id, { userId: report.reportedUserId })}>정지</button> 
                                     </td>
@@ -215,6 +241,7 @@ function AdminPage() {
                 </div>
             </div>
 
+            
             {isDetailModalOpen && selectedReport && (
                 <ReportDetailModal
                     report={selectedReport}
@@ -230,6 +257,14 @@ function AdminPage() {
                     onConfirm={suspendUserRequest}
                 />
             )}
+
+            {isDetailInfoModalOpen && selectedUser && (
+                <DetailInfoModal
+                    user={selectedUser}
+                    onClose={() => setIsDetailInfoModalOpen(false)}
+                />
+            )}
+
         </div>
     );
 }

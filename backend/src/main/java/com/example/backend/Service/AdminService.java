@@ -1,13 +1,14 @@
 package com.example.backend.Service;
 
+import com.example.backend.Dto.Response.AdminUserDetailResponseDto;
+import com.example.backend.Dto.Response.ChatRoomInfo;
 import com.example.backend.Dto.Response.ReportResponseDto;
 import com.example.backend.Dto.Response.UserResponseDto;
-import com.example.backend.Entity.AccountStatus;
-import com.example.backend.Entity.Report;
-import com.example.backend.Entity.ReportStatus;
-import com.example.backend.Entity.User;
+import com.example.backend.Entity.*;
 import com.example.backend.Repository.ReportRepository;
+import com.example.backend.Repository.UserChatRoomRepository;
 import com.example.backend.Repository.UserRepository;
+import com.example.backend.enums.ChatRoomUserStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class AdminService {
 
     private final UserRepository userRepository;
     private final ReportRepository reportRepository;
+    private final UserChatRoomRepository userChatRoomRepository;
 
     // 회원 목록 조회
     public List<UserResponseDto> getAllUsers() {
@@ -30,6 +32,26 @@ public class AdminService {
         return users.stream()
                 .map(UserResponseDto::from)
                 .collect(Collectors.toList());
+    }
+
+    // 회원 상세 정보 조회
+    @Transactional(readOnly = true)
+    public AdminUserDetailResponseDto getUserDetail(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다: " + userId));
+
+        // UserChatRoomService 재사용
+        List<UserChatRoom> userChatRooms = userChatRoomRepository.findByUser_UserId(userId);
+
+        // 받아온 UserChatRoom 목록을 ChatRoomInfo DTO 목록으로 변환
+        List<ChatRoomInfo> chatRoomInfos = userChatRooms.stream()
+                .map(userChatRoom -> ChatRoomInfo.builder()
+                        .roomId(userChatRoom.getChatRoom().getId())
+                        .roomName(userChatRoom.getChatRoom().getName())
+                        .build())
+                .collect(Collectors.toList());
+
+        return AdminUserDetailResponseDto.from(user, chatRoomInfos);
     }
 
     // 신고 내역 조회

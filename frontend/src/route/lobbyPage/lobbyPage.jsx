@@ -132,11 +132,22 @@ function LobbyPage() {
 
   //프로필 정보 DB에서 불러오기
   useEffect(() => {
+    // userData.userId가 없으면 아무 작업도 하지 않음
     if (!userData?.userId) return;
+  
     axios.get("/api/profile/user/info", { params: { userId: userData.userId } })
-      .then(res => setUserData(res.data))
+      .then(res => {
+        setUserData(prevUserData => ({
+          ...prevUserData, //기존 데이터를 모두 복사
+          ...res.data,     //새로 받은 데이터로 덮어쓰기
+          //authorities 만큼은 무조건 기존 값으로 다시 덮어쓰기
+          authorities: prevUserData.authorities 
+        }));
+      })
       .catch(err => console.error("유저 정보 불러오기 실패:", err));
-  }, [userData?.userId, setUserData]);
+  
+  // 의존성 배열에서 setUserData를 제거하여 무한 루프 가능성을 차단합니다.
+  }, [userData?.userId]); 
 
   useEffect(() => {
     const s = location.state;

@@ -242,6 +242,7 @@ function App() {
       </div>
     );
   }
+  console.log("권한 확인 직전 userData:", userData);
 
   // 로딩이 끝나면 실제 앱 화면을 렌더링
   return (

@@ -35,7 +35,7 @@ function SuspensionModal({ user, onClose, onConfirm }) {
                             <option value="14">14일</option>
                             <option value="30">30일</option>
                             <option value="365">365일 (1년)</option>
-                            <option value="99999">영구정지</option>
+                            <option value="9999">영구정지</option>
                         </select>
                     </div>
                     <div className="suspension-modal-footer">

@@ -1,6 +1,7 @@
 package com.example.backend.Repository;
 
 import com.example.backend.Entity.ChatRoom;
+import com.example.backend.Entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -15,6 +16,8 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, String> {
     List<ChatRoom> findByGameAndTagIdsIn(@Param("tagIds")List<Long> tagIds, @Param("gametag")String gametag);
 
     List<ChatRoom> findByGameName(String gameName);
+
+
 
     @Query("""
   SELECT DISTINCT r

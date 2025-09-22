@@ -53,3 +53,31 @@ body, html, #root {
 input, textarea {
   user-select: text;
 }
+
+/* 토스트 메시지 커스텀 스타일 */
+.Toastify__close-button {
+  position: absolute !important;
+  right: 8px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background: none !important;
+  border: none !important;
+  color: var(--discord-text-normal) !important;
+  font-size: 16px !important;
+  cursor: pointer !important;
+  padding: 4px !important;
+  opacity: 0.7 !important;
+  transition: opacity 0.2s ease !important;
+}
+
+.Toastify__close-button:hover {
+  opacity: 1 !important;
+}
+
+.Toastify__toast {
+  background: var(--discord-bg-primary) !important;
+  border: 1px solid var(--discord-bg-tertiary) !important;
+  border-radius: var(--discord-radius) !important;
+  color: var(--discord-text-normal) !important;
+  box-shadow: var(--discord-elevation-medium) !important;
+}

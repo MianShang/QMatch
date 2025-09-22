@@ -3,13 +3,13 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999;
+  z-index: 9999;
   backdrop-filter: blur(4px);
 }
 
@@ -143,10 +143,11 @@
 
 /* 하단 버튼 영역 */
 .footerArea {
-  margin-top: 25px;
+  margin-top: 20px;
   display: flex;
   justify-content: flex-end;
-  padding: 0 5px;
+  padding: 16px 20px;
+  background: transparent;
 }
 
 /* 방 만들기 버튼 */

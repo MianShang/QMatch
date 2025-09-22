@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import './ReportModal.css'; // 모달 전용 CSS 파일
@@ -49,7 +50,7 @@ function ReportModal({ onClose, reporterId, reportedUserId }) {
         }
     };
 
-    return (
+    return createPortal(
         <div className="report-modal-backdrop" onClick={onClose}>
             <div className="report-modal-content" onClick={e => e.stopPropagation()}>
                 <div className="report-modal-header">
@@ -86,7 +87,8 @@ function ReportModal({ onClose, reporterId, reportedUserId }) {
                     </div>
                 </form>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
 

@@ -18,12 +18,12 @@ public class AgoraTokenService {
         RtcTokenBuilder builder = new RtcTokenBuilder();
 
         return builder.buildTokenWithUserAccount(
-                appId,                  // ✅ Agora 앱 ID
-                appCertificate,         // ✅ Agora 앱 인증키
-                channelName,            // ✅ 채널 이름 (ex. room_abc123)
-                uid,                    // ✅ 사용자 고유 식별자 (문자열)
-                RtcTokenBuilder.Role.Role_Publisher, // ✅ 권한 (호스트)
-                expireTimestamp         // ✅ 만료 시간 (1시간 후)
+                appId,                  // Agora 앱 ID
+                appCertificate,         // Agora 앱 인증키
+                channelName,            // 채널 이름 (ex. room_abc123)
+                uid,                    // 사용자 고유 식별자 (문자열)
+                RtcTokenBuilder.Role.Role_Publisher, // 권한 (호스트)
+                expireTimestamp         // 만료 시간 (1시간 후)
         );
     }
 

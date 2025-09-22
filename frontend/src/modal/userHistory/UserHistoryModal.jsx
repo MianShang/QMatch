@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import axios from 'axios';
 import './UserHistoryModal.css';
 import LOLPage from './LOLPage';
@@ -168,7 +169,7 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
 
   }, [historyUserId, sendToModalGameName]);
 
-  return (
+  return createPortal(
     <div className="modalOverlay userHistoryModal" onClick={handleOverlayClick}>
       <div className={`modalContent ${isClosing ? 'pop-out' : ''}`} onClick={handleContentClick}>
 
@@ -215,7 +216,8 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

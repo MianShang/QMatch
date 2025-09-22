@@ -8,7 +8,7 @@ import ChatListPage from './lobbyPageRoute/chatListPage.jsx';
 import FriendListPage from './lobbyPageRoute/friendListPage.jsx';
 import MyProfile from '../../feature/profile/myProfileModal.jsx';
 import VoiceChat from './lobbyPageRoute/VoiceChat.jsx';
-import VoiceChatModal from '../../modal/voiceChatSetting/VoiceChatModal.jsx';
+import VoiceChatModal from '../../modal/VoiceChatSettingsModal/VoiceChatSettingsModal.jsx';
 import ChatRoom from './ChatRoom.jsx';
 
 import UserHistoryModal from '../../modal/userHistory/UserHistoryModal.jsx';
@@ -16,6 +16,7 @@ import UserHistoryModal from '../../modal/userHistory/UserHistoryModal.jsx';
 
 //리액트 아이콘
 import { MdOutlineConstruction } from "react-icons/md";
+import { IoSearch } from "react-icons/io5";
 
 // 로그인 체크용 Context API import
 import { LogContext } from '../../App.jsx'
@@ -89,8 +90,10 @@ function LobbyPage() {
   // }
 
   // voiceChat
+  const [activeVoiceChannel, setActiveVoiceChannel] = useState(null);
   const [voiceChatRoomId, setVoiceChatRoomId] = useState(null);
   const [voiceSpeakers, setVoiceSpeakers] = useState({});
+  const [voiceParticipants, setVoiceParticipants] = useState([]);
   const [localMuted, setLocalMuted] = useState(false);
   const [joinedVoice, setJoinedVoice] = useState(false);
   const voiceChatRef = useRef(null);
@@ -351,21 +354,16 @@ function LobbyPage() {
                   currentUserStatus={userStatus}
                   globalStomp={globalStomp}
                   refreshTick={listRefreshTick}
+
+                  // VoiceChat 관련 props
                   voiceSpeakers={voiceSpeakers}
+                  voiceParticipants={voiceParticipants}
                   onJoinVoice={(roomId) => {
                     setVoiceChatRoomId(roomId)
-                    // ref를 통해 VoiceChat 컴포넌트의 joinChannel 함수를 호출
                     if (voiceChatRef.current) {
                       voiceChatRef.current.joinChannel(roomId);
                     }
                   }}
-                  // UserHistoryModal 관련 props
-                  isUserHistoryOpen={isUserHistoryOpen}
-                  setIsUserHistoryOpen={setIsUserHistoryOpen}
-                  historyUserId={historyUserId}
-                  setHistoryUserId={setHistoryUserId}
-                  sendToModalGameName={sendToModalGameName}
-                  setSendToModalGameName={setSendToModalGameName}
                   onLeaveVoice={() => {
                     if (voiceChatRef.current) {
                       voiceChatRef.current.leaveChannel();
@@ -379,6 +377,17 @@ function LobbyPage() {
                   localMuted={localMuted}
                   joinedVoice={joinedVoice}
                   voiceChatRoomId={voiceChatRoomId}
+                  userData={userData}
+                  setActiveVoiceChannel={setActiveVoiceChannel}
+
+                  // UserHistoryModal 관련 props
+                  isUserHistoryOpen={isUserHistoryOpen}
+                  setIsUserHistoryOpen={setIsUserHistoryOpen}
+                  historyUserId={historyUserId}
+                  setHistoryUserId={setHistoryUserId}
+                  sendToModalGameName={sendToModalGameName}
+                  setSendToModalGameName={setSendToModalGameName}
+                  
                   onMembersPanelToggle={setIsMembersPanelOpen}
                   setHasUnreadMessages={setHasUnreadMessages}
                 />
@@ -502,7 +511,7 @@ function LobbyPage() {
             </div>
             <Link to="/search">
               <div className='searchSize'>
-                <img src="/SearchIcon.png" className='imgPos' alt="검색"></img>
+                <IoSearch className='search-icon-react' />
               </div>
             </Link>
           </div>
@@ -528,11 +537,11 @@ function LobbyPage() {
 
       {/* VoiceChat 컴포넌트를 lobbyPage에 렌더링 */}
       <VoiceChat
-        channelName={voiceChatRoomId}
         uid={userData.userId}
         onSpeakers={setVoiceSpeakers}
         onLocalMuteChange={setLocalMuted}
         onJoinChange={setJoinedVoice}
+        onParticipantsChange={setVoiceParticipants}
         ref={voiceChatRef}
       />
 

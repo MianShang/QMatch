@@ -1,0 +1,291 @@
+/* 음성 채널 생성 모달 */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.modalContent {
+  background: transparent;
+  border-radius: 0;
+  padding: 0 !important;
+  box-shadow: none;
+  min-width: 400px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: modalSlideIn 0.2s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--discord-bg-tertiary);
+  background: var(--discord-bg-secondary)!important;
+}
+
+.modalHeader h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--discord-text-normal);
+  margin: 0;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--discord-text-muted);
+  cursor: pointer;
+  font-size: 20px;
+  padding: 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  background: var(--discord-bg-modifier-hover);
+  color: var(--discord-text-normal);
+}
+
+.modalInContent {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--discord-bg-tertiary);
+}
+
+.modalInContent:last-of-type {
+  border-bottom: none;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formGroup label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--discord-text-normal);
+}
+
+.modalInput {
+  padding: 10px 14px;
+  border: 1px solid var(--discord-bg-tertiary);
+  border-radius: var(--discord-radius-small);
+  background: var(--discord-bg-secondary);
+  color: var(--discord-text-normal);
+  font-size: 14px;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.modalInput:focus {
+  border-color: var(--discord-accent);
+  box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.2);
+}
+
+.modalInput::placeholder {
+  color: var(--discord-text-muted);
+}
+
+
+/* 커스텀 드롭다운 */
+.customDropdown {
+  position: relative;
+  width: 100%;
+  z-index: 9999;
+}
+
+.dropdownTrigger {
+  padding: 10px 40px 10px 14px;
+  border: 1px solid var(--discord-bg-tertiary);
+  border-radius: var(--discord-radius-small);
+  background: var(--discord-bg-secondary);
+  color: var(--discord-text-normal);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.2s ease;
+}
+
+.dropdownTrigger:hover {
+  border-color: var(--discord-bg-modifier-hover);
+}
+
+.dropdownArrow {
+  transition: transform 0.2s ease;
+  font-size: 12px;
+  color: var(--discord-text-muted);
+}
+
+.dropdownArrow.open {
+  transform: rotate(180deg);
+}
+
+.dropdownMenu {
+  position: fixed;
+  background: var(--discord-bg-secondary);
+  border: 1px solid var(--discord-bg-tertiary);
+  border-radius: var(--discord-radius-small);
+  box-shadow: var(--discord-elevation-high);
+  z-index: 10000;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+
+.dropdownOption {
+  padding: 8px 16px;
+  font-size: 14px;
+  color: var(--discord-text-normal);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.dropdownOption:hover {
+  background: var(--discord-bg-modifier-hover);
+}
+
+.dropdownOption.selected {
+  background: var(--discord-accent);
+  color: white;
+}
+
+/* 커스텀 드롭다운 스크롤바 */
+.dropdownMenu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdownMenu::-webkit-scrollbar-track {
+  background: var(--discord-bg-tertiary);
+  border-radius: 3px;
+}
+
+.dropdownMenu::-webkit-scrollbar-thumb {
+  background: var(--discord-bg-quaternary);
+  border-radius: 3px;
+}
+
+.dropdownMenu::-webkit-scrollbar-thumb:hover {
+  background: var(--discord-text-muted);
+}
+
+.modalFooter {
+  padding: 16px 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  background: transparent;
+}
+
+.createBtn {
+  background: var(--discord-accent);
+  color: white;
+  border: none;
+  border-radius: var(--discord-radius-small);
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.createBtn:hover {
+  background: var(--discord-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.createBtn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.createBtn:disabled {
+  background: var(--discord-bg-tertiary);
+  color: var(--discord-text-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* 음성 채널 만들기 버튼 (voiceChat.css에서 옮김) */
+.create-channel-button {
+  margin: 8px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.create-channel-button button {
+  background: var(--discord-accent);
+  color: white;
+  border: none;
+  border-radius: var(--discord-radius-small);
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  min-width: 140px;
+}
+
+.create-channel-button button:hover {
+  background: var(--discord-accent-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.create-channel-button button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.create-channel-button button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.3);
+}
+
+/* 반응형 디자인 */
+@media (max-width: 480px) {
+  .modalContent {
+    min-width: 320px;
+    width: 95%;
+  }
+  
+  .modalHeader,
+  .modalInContent,
+  .modalFooter {
+    padding: 16px 20px;
+  }
+}

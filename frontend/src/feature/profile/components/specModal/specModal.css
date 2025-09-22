@@ -1,5 +1,19 @@
 /* Discord 스타일 스펙 모달 */
 
+.spec-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
 .spec-modal-container {
     display: flex;
     flex-direction: column;
@@ -65,17 +79,24 @@
 }
 
 .spec-modal-panel {
-    width: 400px;
-    max-width: 90vw;
-    background: var(--discord-bg-primary);
-    color: var(--discord-text-normal);
-    padding: 24px;
-    border: 1px solid var(--discord-bg-tertiary);
-    border-radius: var(--discord-radius);
-    box-shadow: var(--discord-elevation-high);
-    animation: slideInFromRight 0.3s ease-out forwards;
-    position: static;
-    height: auto;
+    position: relative !important;
+    width: 400px !important;
+    max-width: 90vw !important;
+    background: var(--discord-bg-primary) !important;
+    color: var(--discord-text-normal) !important;
+    padding: 24px !important;
+    border: 1px solid var(--discord-bg-tertiary) !important;
+    border-radius: var(--discord-radius) !important;
+    box-shadow: var(--discord-elevation-high) !important;
+    animation: slideInFromRight 0.3s ease-out forwards !important;
+    z-index: 9999 !important;
+    height: auto !important;
+    margin: 0 !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
 }
 
 @keyframes slideInFromRight {
@@ -289,8 +310,8 @@
 /* Discord 스타일 반응형 디자인 */
 @media (max-width: 768px) {
     .spec-modal-panel {
-        width: 95vw;
-        padding: 20px;
+        width: 95vw !important;
+        padding: 20px !important;
     }
     
     .spec-modal-container {
@@ -318,10 +339,10 @@
 
 @media (max-width: 480px) {
     .spec-modal-panel {
-        width: 100vw;
-        height: 100vh;
-        border-radius: 0;
-        padding: 16px;
+        width: 100vw !important;
+        height: 100vh !important;
+        border-radius: 0 !important;
+        padding: 16px !important;
     }
     
     .spec-modal-container {

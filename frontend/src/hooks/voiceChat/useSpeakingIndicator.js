@@ -52,14 +52,6 @@ export function useSpeakingIndicator(client, options = {}) {
         next[v.uid] = { level, speaking, lastAbove };
       });
 
-      // 오래된 사용자 정리(선택)
-      Object.keys(next).forEach((uid) => {
-        // 10초간 이벤트 없으면 제거 (옵션)
-        if (now - (next[uid]?.lastAbove || 0) > 10000 && !next[uid]?.speaking && next[uid]?.level < 3) {
-          delete next[uid];
-        }
-      });
-
       setSpeakers(next);
     };
 

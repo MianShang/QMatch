@@ -636,10 +636,11 @@
   border-radius: var(--discord-radius);
   width: 200px;
   box-shadow: var(--discord-elevation-high);
-  overflow: hidden;
+  overflow-y: auto;
   opacity: 0;
   transform: translateY(-6px);
   animation: dropdownIn 0.12s ease forwards;
+  max-height: 300px; /* 최대 높이 제한 */
 }
 
 .dropdownMenu p {
@@ -660,6 +661,25 @@
 .dropdownMenu p:hover { 
   background: var(--discord-bg-modifier-hover); 
   color: var(--discord-text-normal); 
+}
+
+/* 드롭다운 메뉴 스크롤바 스타일 */
+.dropdownMenu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdownMenu::-webkit-scrollbar-track {
+  background: var(--discord-bg-tertiary);
+  border-radius: 3px;
+}
+
+.dropdownMenu::-webkit-scrollbar-thumb {
+  background: var(--discord-bg-quaternary);
+  border-radius: 3px;
+}
+
+.dropdownMenu::-webkit-scrollbar-thumb:hover {
+  background: var(--discord-text-muted);
 }
 
 @keyframes dropdownIn {
@@ -811,4 +831,12 @@
 .membersIconBtn:active {
     transform: translateY(0);
     background: var(--discord-bg-modifier-active);
+}
+
+
+
+
+.voice-channel-item.joined {
+  background-color: #ffe0f0;
+  border: 2px solid #ff66aa;
 }

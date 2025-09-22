@@ -39,6 +39,11 @@ function SearchPage() {
   // 본인이 구독한 채팅방 목록 가져오기
   useChatGetRooms(userData, setSubscribedRooms);
 
+  // 디버깅용: subscribedRooms 상태 변화 확인
+  useEffect(() => {
+    console.log('subscribedRooms 업데이트:', subscribedRooms);
+  }, [subscribedRooms]);
+
   // 게임 아이콘 설정 함수
   function setGameIcon(gameName) {
     switch (gameName) {
@@ -73,7 +78,7 @@ function SearchPage() {
 
   // 방 입장 모달에서 "입장 신청" 버튼 클릭 시 실행
   async function handleJoinRoom(payload) {
-    const { roomId, chatName, gameName, tagNames } = payload || {};
+    const { roomId, chatName, gameName, tagNames, joinType } = payload || {};
     
     if (!roomId) {
       console.error('room id 없음:', payload);
@@ -83,16 +88,41 @@ function SearchPage() {
     }
 
     try {
-      // 입장 신청 API 호출
-      const response = await axios.post(`/api/chat/rooms/${roomId}/join-request`, {
-        userId: userData.userId
-      });
+      // 자유 입장 방인지 확인
+      if (joinType === 'free') {
+        // 자유 입장 API 호출
+        const response = await axios.post(`/api/chat/rooms/${roomId}/join`, {
+          userId: userData.userId
+        });
 
-      if (response.data.status === 'PENDING') {
-        // 입장 신청 성공 - 토스트 메시지 표시
-        toast.info('입장 신청이 전송되었습니다. 방장의 승인을 기다려주세요.');
-        setJoinOpen(false);
-        setSelectedRoom(null);
+        if (response.status === 200) {
+          // 자유 입장 성공 - 바로 채팅방으로 이동
+          toast.success('채팅방에 입장했습니다!');
+          navigate('/', { 
+            state: { 
+              type: 'multi', // 다대다 채팅방 타입 추가
+              roomId: roomId,
+              chatName: chatName,
+              gameName: gameName,
+              tagNames: tagNames || [],
+              joinType: joinType
+            }
+          });
+          setJoinOpen(false);
+          setSelectedRoom(null);
+        }
+      } else {
+        // 방장 승인 방 - 입장 신청 API 호출
+        const response = await axios.post(`/api/chat/rooms/${roomId}/join-request`, {
+          userId: userData.userId
+        });
+
+        if (response.data.status === 'PENDING') {
+          // 입장 신청 성공 - 토스트 메시지 표시
+          toast.info('입장 신청이 전송되었습니다. 방장의 승인을 기다려주세요.');
+          setJoinOpen(false);
+          setSelectedRoom(null);
+        }
       }
     } catch (err) {
       const status = err?.response?.status;
@@ -100,8 +130,10 @@ function SearchPage() {
         toast.warning('이미 입장 신청을 했습니다.');
       } else if (status === 404) {
         toast.error('채팅방을 찾을 수 없습니다.');
+      } else if (status === 403) {
+        toast.error('채팅방이 가득 찼습니다.');
       } else {
-        toast.error('입장 신청에 실패했습니다. 다시 시도해주세요.');
+        toast.error('입장에 실패했습니다. 다시 시도해주세요.');
       }
       return; // 실패 시 모달 안 닫음
     }
@@ -145,6 +177,23 @@ function SearchPage() {
     );
   }
 
+  // 구독한 채팅방을 제외하고 필터링하는 함수
+  function getFilteredRooms() {
+    if (!subscribedRooms || subscribedRooms.length === 0) {
+      return rooms; // 구독한 방이 없으면 모든 방 반환
+    }
+    
+    // subscribedRooms는 { chatRoom: { id: ... } } 구조
+    const subscribedRoomIds = subscribedRooms.map(room => room.chatRoom.id);
+    console.log('구독한 방 IDs:', subscribedRoomIds);
+    console.log('검색된 방들:', rooms.map(r => r.id));
+    
+    const filtered = rooms.filter(room => !subscribedRoomIds.includes(room.id));
+    console.log('필터링된 방들:', filtered.map(r => r.id));
+    
+    return filtered;
+  }
+
 
   function chatTagRoom() {  
     if (!groupedTags || Object.keys(groupedTags).length === 0) {
@@ -181,6 +230,7 @@ function SearchPage() {
     if (alreadyJoinedRoom) {
       navigate('/', { 
         state: { 
+          type: 'multi', // 다대다 채팅방 타입 추가
           roomId: alreadyJoinedRoom.id,
           chatName: alreadyJoinedRoom.chatName || alreadyJoinedRoom.name,
           gameName: alreadyJoinedRoom.gameName,
@@ -202,6 +252,20 @@ function SearchPage() {
           setOpenModal={setOpenModal}
           onRoomCreated={(newRoom) => {
             setRooms(prev => [...prev, newRoom]);
+            // 방장은 모든 방에서 자동으로 입장 (자유 입장 방과 방장 승인 방 모두)
+            navigate('/', { 
+              state: { 
+                type: 'multi', // 다대다 채팅방 타입 추가
+                roomId: newRoom.id,
+                chatName: newRoom.chatName || newRoom.name,
+                gameName: newRoom.gameName,
+                tagNames: newRoom.tagNames || [],
+                currentUsers: newRoom.currentUsers,
+                maxUsers: newRoom.maxUsers,
+                hostUserId: newRoom.hostUserId,
+                joinType: newRoom.joinType
+              }
+            });
           }}
         />
       )}
@@ -359,7 +423,7 @@ function SearchPage() {
           <div className='contentStyle chatListSize'>
             <div className='chatListScroll'>
               {
-                rooms.map((room) => (
+                getFilteredRooms().map((room) => (
                   <div className='chatRoomList'
                     key={room.id}
                     onClick={() => { setSelectedRoom(room); setJoinOpen(true); }}>

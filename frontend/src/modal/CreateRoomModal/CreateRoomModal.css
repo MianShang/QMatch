@@ -3,13 +3,13 @@
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.8);
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999;
+  z-index: 9999;
   backdrop-filter: blur(4px);
 }
 
@@ -143,10 +143,11 @@
 
 /* 하단 버튼 영역 */
 .footerArea {
-  margin-top: 25px;
+  margin-top: 20px;
   display: flex;
   justify-content: flex-end;
-  padding: 0 5px;
+  padding: 16px 20px;
+  background: transparent;
 }
 
 /* 방 만들기 버튼 */
@@ -226,6 +227,63 @@
   background: var(--discord-accent);
   border-color: var(--discord-accent);
   color: white;
+}
+
+/* 입장 방식 선택 컨테이너 */
+.joinTypeContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* 입장 방식 옵션 */
+.joinTypeOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--discord-bg-tertiary);
+  border-radius: var(--discord-radius-small);
+  background: var(--discord-bg-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0;
+}
+
+.joinTypeOption:hover {
+  border-color: var(--discord-accent);
+  background: var(--discord-bg-modifier-hover);
+}
+
+.joinTypeOption input[type="radio"] {
+  margin: 0;
+  margin-top: 2px;
+  accent-color: var(--discord-accent);
+}
+
+.joinTypeOption span {
+  font-weight: 500;
+  color: var(--discord-text-normal);
+  font-size: 0.95rem;
+}
+
+.joinTypeOption small {
+  display: block;
+  color: var(--discord-text-muted);
+  font-size: 0.8rem;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+/* 선택된 입장 방식 */
+.joinTypeOption:has(input:checked) {
+  border-color: var(--discord-accent);
+  background: rgba(114, 137, 218, 0.1);
+}
+
+.joinTypeOption:has(input:checked) span {
+  color: var(--discord-accent);
 }
 
 /* 에러 메시지 */

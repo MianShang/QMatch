@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { createPortal } from 'react-dom';
 import InputModal from './components/inputModal.jsx';
 import SpecModal from './components/specModal/specModal.jsx';
 import axios from 'axios';
@@ -208,7 +209,7 @@ function MyProfile({ viewUserId, onClose }) {
             </div>
 
             <div className="profile-user-info">
-              <h2 className="profile-username">{profileData?.userId}</h2>
+              <h2 className="profile-username">{profileData?.userName}</h2>
               
               <div className="profile-status-section">
                 {isMe && !editStatus && (
@@ -345,16 +346,22 @@ function MyProfile({ viewUserId, onClose }) {
       </div>
 
       {/* 오른쪽 전적 모달 패널 */}
-      {selectedGame && showSpecModal && (
-        <div className="spec-modal-panel">
-          <SpecModal
-            game={selectedGame}
-            onClose={() => {
-              setShowSpecModal(false);
-              setSelectedGame(null);
-            }}
-          />
-        </div>
+      {selectedGame && showSpecModal && createPortal(
+        <div className="spec-modal-overlay" onClick={() => {
+          setShowSpecModal(false);
+          setSelectedGame(null);
+        }}>
+          <div className="spec-modal-panel" onClick={(e) => e.stopPropagation()}>
+            <SpecModal
+              game={selectedGame}
+              onClose={() => {
+                setShowSpecModal(false);
+                setSelectedGame(null);
+              }}
+            />
+          </div>
+        </div>,
+        document.body
       )}
 
       {/* 로그아웃 확인 모달 */}

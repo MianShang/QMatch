@@ -14,4 +14,5 @@ public class ChatListRequestDto {
     private String chatContent;     // 채팅 내용
     private String chatRoom;        // 해당 채팅방
     private String userId;          // 메세지 전송 유저
+    private String userName;        // 메세지 전송 유저 이름
 }

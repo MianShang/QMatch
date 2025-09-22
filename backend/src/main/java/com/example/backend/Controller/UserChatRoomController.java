@@ -256,11 +256,16 @@ public class UserChatRoomController {
                                     .filter(Objects::nonNull)
                                     .distinct()
                                     .toList(),
-                            "message", "성공적으로 입장하였습니다",
+                            "message", "입장이 승인되었습니다!",
                             "timestamp", System.currentTimeMillis()
                     ));
             
-            // 8. 채팅방 전체에 새 멤버 입장 알림
+            // 8. 실시간 접속 맵에 멤버 추가 (승인된 멤버 즉시 입장)
+            RealTimeUserManagement.activeUsersByRoom
+                    .putIfAbsent(roomId, java.util.concurrent.ConcurrentHashMap.newKeySet());
+            RealTimeUserManagement.activeUsersByRoom.get(roomId).add(applicantId);
+            
+            // 9. 채팅방 전체에 새 멤버 입장 알림
             simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId + "/member-joined",
                     Map.of(
                             "type", "member-joined",

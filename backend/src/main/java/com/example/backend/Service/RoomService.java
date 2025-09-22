@@ -39,19 +39,47 @@ public class RoomService {
 
         // 방장은 신청 불필요 → 바로 ACCEPTED
         if (chatRoom.getOwner().equals(user)) {
+            // 이미 방장으로 등록되어 있는지 확인
             userChatRoomRepository.findByUserAndChatRoom(user, chatRoom)
                     .ifPresentOrElse(
-                            ucr -> ucr.setStatus(ChatRoomUserStatus.ACCEPTED), // 방장은 즉시 ACCEPTED
+                            ucr -> {
+                                // 이미 등록되어 있으면 상태만 ACCEPTED로 변경
+                                ucr.setStatus(ChatRoomUserStatus.ACCEPTED);
+                                userChatRoomRepository.save(ucr);
+                            },
                             () -> {
+                                // 등록되어 있지 않으면 새로 생성 (이미 방 생성 시 생성되므로 이 경우는 거의 없음)
                                 UserChatRoom ucr = new UserChatRoom(user, chatRoom, Role.HOST);
                                 ucr.setStatus(ChatRoomUserStatus.ACCEPTED);
                                 userChatRoomRepository.save(ucr);
                             }
                     );
-            return false;
+            return false; // 방장은 알림 불필요
         }
 
-        // 일반 멤버는 무조건 PENDING 상태
+        // 자유 입장 방인 경우 자동 승인
+        if ("free".equals(chatRoom.getJoinType())) {
+            userChatRoomRepository.findByUserAndChatRoom(user, chatRoom)
+                    .ifPresentOrElse(
+                            ucr -> {
+                                ucr.setStatus(ChatRoomUserStatus.ACCEPTED);
+                                // 인원수 증가
+                                chatRoom.setCurrentUsers(chatRoom.getCurrentUsers() + 1);
+                                chatRoomRepository.save(chatRoom);
+                            },
+                            () -> {
+                                UserChatRoom ucr = new UserChatRoom(user, chatRoom, Role.MEMBER);
+                                ucr.setStatus(ChatRoomUserStatus.ACCEPTED);
+                                userChatRoomRepository.save(ucr);
+                                // 인원수 증가
+                                chatRoom.setCurrentUsers(chatRoom.getCurrentUsers() + 1);
+                                chatRoomRepository.save(chatRoom);
+                            }
+                    );
+            return false; // 자동 승인되므로 방장에게 알림 불필요
+        }
+
+        // 방장 승인 방인 경우 PENDING 상태
         userChatRoomRepository.findByUserAndChatRoom(user, chatRoom)
                 .ifPresentOrElse(
                         ucr -> ucr.setStatus(ChatRoomUserStatus.PENDING),

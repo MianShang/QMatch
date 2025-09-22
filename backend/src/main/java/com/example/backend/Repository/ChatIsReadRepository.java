@@ -18,6 +18,9 @@ public interface ChatIsReadRepository extends JpaRepository<ChatIsRead, Long> {
 
     int countByUserAndChatRoomIdAndIsReadFalse(User user, ChatRoom chatRoom);
 
+    // 채팅방 ID로 ChatIsRead 삭제
+    void deleteByChatRoomId(ChatRoom chatRoom);
+
 }
 
 

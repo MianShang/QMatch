@@ -5,6 +5,7 @@ import { LogContext } from '../../../App.jsx';
 import { FriendInventory } from './friendInventory.jsx';
 import { FaXmark } from "react-icons/fa6";
 import { useFriendDelete } from '../../../hooks/friends/useFriendDelete.js';
+import { useNavigate } from "react-router-dom";
 
 function FriendListPage() {
   const { friends, statusByUser, userData } = useContext(LogContext);
@@ -12,6 +13,7 @@ function FriendListPage() {
   const [selected, setSelected] = useState(null);
   const containerRef = useRef(null);
   const { deleteFriend } = useFriendDelete();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // 외부 클릭 감지 함수
@@ -54,7 +56,16 @@ function FriendListPage() {
             <div
               key={friend.userId}
               className={selected === friend.userId ? 'selectCardStyle' : 'chatCard'}
-              onClick={() => setSelected(friend.userId)}
+              onClick={() => {
+                setSelected(friend.userId);
+                navigate("/lobby", {
+                  state: {
+                    type: "friend",
+                    friendId: friend.userId,
+                    friendName: friend.userName,
+                  },
+                });
+              }}
             >
               <div className="chatCardHeader">
                 <div className="profile-image-container">
@@ -72,7 +83,7 @@ function FriendListPage() {
                 <FaXmark
                   size={25}
                   color="red"
-                  onClick={()=>deleteFriend(friend.userId,userData.userId)}
+                  onClick={() => deleteFriend(friend.userId, userData.userId)}
                   className='CheckBox'
                 />
               </div>

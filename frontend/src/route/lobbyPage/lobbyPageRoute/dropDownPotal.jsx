@@ -7,11 +7,11 @@ export default function DropdownPortal({ x, y, onClose, children }) {
     const close = () => onClose?.(); //onClose 함수가 있으면 실행
     // ?.은 객체나 함수가 존재할 수도 있고 없을 수도 있는 상황에서, 안전하게 접근하거나 호출할 수 있게 해주는 문법
     document.addEventListener('click', close);   //다른데 클릭하면 닫아
-    window.addEventListener('scroll', close, true); //스크롤 내려도 닫아
+    // window.addEventListener('scroll', close, true); //스크롤 내려도 닫아 - 제거
     window.addEventListener('resize', close); //창 크기 변경해도 닫아
     return () => {
       document.removeEventListener('click', close);   //메모리 누수 방지를 위해 모두 언마운트
-      window.removeEventListener('scroll', close, true);
+      // window.removeEventListener('scroll', close, true); // 제거
       window.removeEventListener('resize', close);
     };
   }, [onClose]); //useEffect 재사용을 위함

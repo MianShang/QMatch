@@ -13,4 +13,5 @@ public class ChatRoomRequestDto {
     private String userId;
     private String creatorUserId;
     private int maxUsers;
+    private String joinType = "approval"; // 입장 방식: "approval" (방장 승인) 또는 "free" (자유 입장)
 }

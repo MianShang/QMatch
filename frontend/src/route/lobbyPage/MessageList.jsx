@@ -19,7 +19,7 @@ const MessageList = memo(({ messages, userData }) => {
               ? new Date(msg.chatDate).toLocaleTimeString([], {
                   hour: "2-digit",
                   minute: "2-digit",
-                  hour12: false, // ✅ 24시간제
+                  hour12: false, // 24시간제
                 })
               : ""}
           </div>

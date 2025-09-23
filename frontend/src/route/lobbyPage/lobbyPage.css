@@ -992,6 +992,48 @@
     color: var(--discord-text-normal);
 }
 
+/* 시스템 메시지 스타일 */
+.system-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 16px 0;
+    padding: 12px;
+    background: linear-gradient(135deg, rgba(88, 101, 242, 0.1), rgba(88, 101, 242, 0.05));
+    border: 1px solid rgba(88, 101, 242, 0.2);
+    border-radius: 12px;
+    position: relative;
+}
+
+.system-message-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--discord-accent);
+}
+
+.system-icon {
+    font-size: 16px;
+}
+
+.system-label {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.system-chat-content {
+    background: rgba(88, 101, 242, 0.1) !important;
+    color: var(--discord-text-normal) !important;
+    border: 1px solid rgba(88, 101, 242, 0.2);
+    text-align: center;
+    font-weight: 500;
+    line-height: 1.6;
+    white-space: pre-line; /* 줄바꿈 지원 */
+}
+
 /* ================================Discord 입력 스타일============================= */
 .inputSize{
     display: flex;

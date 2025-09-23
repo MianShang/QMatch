@@ -2,9 +2,12 @@ package com.example.backend.Controller;
 
 
 import com.example.backend.Dto.Request.ChatRoomRequestDto;
+import com.example.backend.Dto.Request.ChatListRequestDto;
 import com.example.backend.Entity.*;
+import com.example.backend.Constants.ChatConstants;
 import com.example.backend.Repository.*;
 import com.example.backend.Service.ChatRoomService;
+import com.example.backend.Service.ChatListService;
 import com.example.backend.Websocket.RealTimeUserManagement;
 import com.example.backend.enums.ChatRoomUserStatus;
 import jakarta.transaction.Transactional;
@@ -45,6 +48,7 @@ public class ChatController {
     private final GameTagRepository gameTagRepository;
     private final UserRepository userRepository;
     private final ChatIsReadRepository chatIsReadRepository;
+    private final ChatListService chatListService;
 
     // 실시간 채팅방 접속 유저 목록 (roomId -> Set of userIds)
 //    private final Map<String, Set<String>> activeUsersByRoom = new ConcurrentHashMap<>();
@@ -243,10 +247,36 @@ public class ChatController {
             }
         }
 
-        // (6) 중복 save 제거: 이미 저장한 savedRoom 반환
+        // (6) 운영 유의사항 메시지 자동 전송
+        sendWelcomeMessage(savedRoom.getId(), creator);
+        
+        // (7) 중복 save 제거: 이미 저장한 savedRoom 반환
         return savedRoom;
     }
 
+    /**
+     * 채팅방 생성 시 운영 유의사항 메시지를 자동으로 전송하는 메서드
+     */
+    private void sendWelcomeMessage(String roomId, User creator) {
+        try {
+            // 운영 유의사항 메시지를 시스템 메시지로 전송
+            Map<String, Object> welcomePayload = new HashMap<>();
+            welcomePayload.put("name", ChatConstants.SYSTEM_SENDER_NAME);
+            welcomePayload.put("message", ChatConstants.WELCOME_MESSAGE);
+            welcomePayload.put("chatDate", new Date());
+            welcomePayload.put("type", ChatConstants.SYSTEM_MESSAGE_TYPE);
+            
+            // 실시간으로 채팅방에 메시지 전송
+            simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId, welcomePayload);
+            
+            // 메시지를 데이터베이스에 저장 (시스템 메시지로 저장)
+            chatListService.saveSystemMessage(roomId, ChatConstants.WELCOME_MESSAGE);
+            
+        } catch (Exception e) {
+            // 유의사항 메시지 전송 실패는 로그만 남기고 채팅방 생성은 계속 진행
+            System.err.println("운영 유의사항 메시지 전송 실패: " + e.getMessage());
+        }
+    }
 
     @GetMapping("/rooms/{id}")
     public ResponseEntity<?> getRoom(@PathVariable String id) {

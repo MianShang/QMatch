@@ -15,6 +15,7 @@ public class ChatList {
     @GeneratedValue
     private long id;                    // 기본키 컬럼 ID
 
+    @Column(length = 2000)
     private String chatContent;         // 채팅 내용
 
     @CreationTimestamp
@@ -25,8 +26,8 @@ public class ChatList {
     private ChatRoom chatRoom;          // 해당 채팅방
 
     @ManyToOne
-    @JoinColumn(name="user_id")
-    private User user;                  // 메세지 전송자
+    @JoinColumn(name="user_id", nullable = true)
+    private User user;                  // 메세지 전송자 (시스템 메시지의 경우 null)
     
     private String userName;            //메세지 전송자 이름
 }

@@ -148,22 +148,32 @@ function App() {
         const response = await axios.get(`/api/friends/list?userId=${userData.userId}`);
         setFriends(response.data);
         
-        // 각 친구의 안읽은 메시지 개수 조회
+        // 모든 친구의 안읽은 메시지 개수 한 번에 조회
         const unreadCounts = {};
         let hasUnread = false;
         
-        for (const friend of response.data) {
-          try {
-            // 실제 친구 채팅방 ID를 가져옵니다
-            const roomResponse = await axios.get(`/api/friends/chatroom/${friend.userId}/${userData.userId}`);
-            const roomId = roomResponse.data.roomId.toString();
-            const count = await getFriendUnReadChatCount(roomId, userData.userId);
-            unreadCounts[friend.userId] = count;
-            if (count > 0) hasUnread = true;
-          } catch (error) {
-            console.error(`친구 ${friend.userId}의 안읽은 메시지 개수 조회 실패:`, error);
-            unreadCounts[friend.userId] = 0;
+        try {
+          const allUnreadResponse = await axios.get(`/api/friends/chatroom/unread/message/all-count?receiveId=${userData.userId}`);
+          const allUnreadData = allUnreadResponse.data;
+          
+          for (const friend of response.data) {
+            try {
+              const roomResponse = await axios.get(`/api/friends/chatroom/${friend.userId}/${userData.userId}`);
+              const roomId = roomResponse.data.roomId;
+              const count = allUnreadData[roomId] || 0;
+              unreadCounts[friend.userId] = count;
+              if (count > 0) hasUnread = true;
+            } catch (error) {
+              console.error(`친구 ${friend.userId}의 안읽은 메시지 개수 조회 실패:`, error);
+              unreadCounts[friend.userId] = 0;
+            }
           }
+        } catch (error) {
+          console.error("전체 안읽은 메시지 개수 조회 실패:", error);
+          // 에러 시 모든 친구의 안읽은 개수를 0으로 설정
+          response.data.forEach(friend => {
+            unreadCounts[friend.userId] = 0;
+          });
         }
         
         setFriendUnreadCounts(unreadCounts);
@@ -245,22 +255,32 @@ function App() {
             .then(async (res) => {
               setFriends(res.data);
               
-              // 각 친구의 안읽은 메시지 개수 재조회
+              // 모든 친구의 안읽은 메시지 개수 한 번에 재조회
               const unreadCounts = {};
               let hasUnread = false;
               
-              for (const friend of res.data) {
-                try {
-                  // 실제 친구 채팅방 ID를 가져옵니다
-                  const roomResponse = await axios.get(`/api/friends/chatroom/${friend.userId}/${userData.userId}`);
-                  const roomId = roomResponse.data.roomId.toString();
-                  const count = await getFriendUnReadChatCount(roomId, userData.userId);
-                  unreadCounts[friend.userId] = count;
-                  if (count > 0) hasUnread = true;
-                } catch (error) {
-                  console.error(`친구 ${friend.userId}의 안읽은 메시지 개수 조회 실패:`, error);
-                  unreadCounts[friend.userId] = 0;
+              try {
+                const allUnreadResponse = await axios.get(`/api/friends/chatroom/unread/message/all-count?receiveId=${userData.userId}`);
+                const allUnreadData = allUnreadResponse.data;
+                
+                for (const friend of res.data) {
+                  try {
+                    const roomResponse = await axios.get(`/api/friends/chatroom/${friend.userId}/${userData.userId}`);
+                    const roomId = roomResponse.data.roomId;
+                    const count = allUnreadData[roomId] || 0;
+                    unreadCounts[friend.userId] = count;
+                    if (count > 0) hasUnread = true;
+                  } catch (error) {
+                    console.error(`친구 ${friend.userId}의 안읽은 메시지 개수 조회 실패:`, error);
+                    unreadCounts[friend.userId] = 0;
+                  }
                 }
+              } catch (error) {
+                console.error("전체 안읽은 메시지 개수 재조회 실패:", error);
+                // 에러 시 모든 친구의 안읽은 개수를 0으로 설정
+                res.data.forEach(friend => {
+                  unreadCounts[friend.userId] = 0;
+                });
               }
               
               setFriendUnreadCounts(unreadCounts);

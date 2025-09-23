@@ -16,15 +16,8 @@ public class FriendShipChatUnReadService {
     private final FriendShipChatUnReadRepository friendShipChatUnReadRepository;
 
     // 방 수신자 안읽은 메시지 개수
-    public Long getRoomMessageConunt(String roomId, String receiveId){
-        try {
-            // 문자열 roomId를 Long으로 변환
-            Long id = Long.parseLong(roomId);
-            return friendShipChatUnReadRepository.countByFriendShipChatRoom_IdAndReceiveId(id,receiveId);
-        } catch (NumberFormatException e) {
-            // roomId가 숫자가 아닌 경우 0 반환
-            return 0L;
-        }
+    public Long getRoomMessageConunt(Long id, String receiveId){
+        return friendShipChatUnReadRepository.countByFriendShipChatRoom_IdAndReceiveId(id,receiveId);
     }
     
     

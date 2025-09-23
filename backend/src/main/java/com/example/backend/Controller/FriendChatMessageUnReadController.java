@@ -10,24 +10,24 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/friends/chatroom/unread")
-public class FriendChatMessageCountController {
+public class FriendChatMessageUnReadController {
 
     private final FriendShipChatUnReadService friendShipChatUnReadService;
 
     // 방 수신자 안읽은 메시지 개수
-    @GetMapping("message/count")
-    public Long getMessageCount(@RequestParam Long id, @RequestParam String receiveId)
+    @GetMapping("message/count/{roomId}")
+    public Long getMessageCount(@PathVariable String roomId, @RequestParam String receiveId)
     {
-        Long count = friendShipChatUnReadService.getRoomMessageConunt(id, receiveId);
+        Long count = friendShipChatUnReadService.getRoomMessageConunt(roomId, receiveId);
 
         return count;
     }
 
     //방 수신자 안읽은 메시지 삭제
-    @DeleteMapping("/message")
-    public ResponseEntity<Void> deleteMessageCount(@RequestParam Long id, @RequestParam String receiveId)
+    @DeleteMapping("/message/{roomId}")
+    public ResponseEntity<Void> deleteMessageCount(@PathVariable Long roomId,@RequestParam  String receiveId)
     {
-        friendShipChatUnReadService.deleteRoomMessageCouunt(id, receiveId);
+        friendShipChatUnReadService.deleteRoomMessageCount(roomId, receiveId);
 
         return ResponseEntity.ok().build();
     }

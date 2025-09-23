@@ -1,7 +1,9 @@
 package com.example.backend.Repository;
 
 import com.example.backend.Entity.FriendShipChatUnRead;
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -14,6 +16,8 @@ public interface FriendShipChatUnReadRepository extends JpaRepository<FriendShip
     Long countByFriendShipChatRoom_IdAndReceiveId(Long id, String receiveId);
 
     // 방 + 수신자 안읽은 메시지 전체 삭제
+    @Modifying
+    @Transactional
     void deleteByFriendShipChatRoom_IdAndReceiveId(Long id, String receiveId);
 
     //전체 방 안읽은 메시지 수

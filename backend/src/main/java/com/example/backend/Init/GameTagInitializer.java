@@ -31,9 +31,22 @@ public class GameTagInitializer implements CommandLineRunner {
         insertIfNotExists("lol", "챌린저", "tier");
         
 
-        insertIfNotExists("maplestory", "아델", "class");
-        insertIfNotExists("maplestory", "메르세데스", "class");
-        insertIfNotExists("maplestory", "아란", "class");
+        insertIfNotExists("maplestory", "스우", "class");
+        insertIfNotExists("maplestory", "데미안", "class");
+        insertIfNotExists("maplestory", "가엔슬", "class");
+        insertIfNotExists("maplestory", "가엔슬", "class");
+        insertIfNotExists("maplestory", "루시드", "class");
+        insertIfNotExists("maplestory", "윌", "class");
+        insertIfNotExists("maplestory", "더스크", "class");
+        insertIfNotExists("maplestory", "진 힐라", "class");
+        insertIfNotExists("maplestory", "듄켈", "class");
+        insertIfNotExists("maplestory", "검은마법사", "class");
+        insertIfNotExists("maplestory", "세렌", "class");
+        insertIfNotExists("maplestory", "칼로스", "class");
+        insertIfNotExists("maplestory", "최초의 대적자", "class");
+        insertIfNotExists("maplestory", "카링", "class");
+        insertIfNotExists("maplestory", "림보", "class");
+        insertIfNotExists("maplestory", "발드릭스", "class");
 
         insertIfNotExists("lostark", "사멸",  "포지션");
         insertIfNotExists("lostark", "타대", "포지션");

@@ -21,6 +21,8 @@ public class MapleDto {
         private int starforce;    // 스타포스 개수
         private Integer scrollUpgrade; // 강화 수치
         private String iconUrl;
+        private String soulName;   // 소울 이름
+        private String soulOption; // 소울 옵션
 
         // 잠재옵션
         private String potentialGrade;

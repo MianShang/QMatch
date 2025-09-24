@@ -1,159 +1,151 @@
 /* 전체 컨테이너 */
 .maple-box {
-  width: 100%;
+  display: flex;
+  flex-direction: row;
+  padding: 24px;
+  gap: 24px;
+  font-family: "Malgun Gothic", sans-serif;
   height: 100%;
-  background: transparent;
+  overflow-y: hidden;
+}
+
+/* 좌측 캐릭터 */
+.maple-left {
   display: flex;
   flex-direction: column;
-  font-family: "Malgun Gothic", sans-serif;
-  overflow: hidden;
-  padding: 10px;
-  box-sizing: border-box;
-}
-
-/* 서버-캐릭터명 텍스트 */
-.maple-server-info {
-  color: white;
-  text-align: center;
-  font-size: 14px;
-  padding: 5px 0 10px 0;
-  margin: 0;
-}
-
-/* 상단 행 - 캐릭터 이미지 + 기본정보 */
-.maple-top-row {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 10px;
+  align-items: center;
+  padding: 16px;
+  background: #333;
+  border-radius: 8px;
+  border: 1px solid #444;
+  width: 260px;
+  flex-shrink: 0;
+  gap: 1px;
+  overflow: visible;
 }
 
 .maple-image {
-  background-color: #444;
-  border-radius: 8px;
-  padding: 10px;
-  width: 150px;   /* 120 → 180 */
-  height: 150px;
+  width: 160px;
+  height: 160px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .maple-image img {
-  width: auto;
-  height: auto;
-  transform: scale(1.3);
-  transform-origin: center center;
-  border: none;
-
-  pointer-events: none;  /* 마우스 이벤트 차단 */
+  width: 250%;
+  height: 250%;
+  object-fit: contain;
 }
 
 .maple-info {
-  background-color: #444;
-  color: white;
-  padding: 15px;
-  border-radius: 8px;
-  flex: 1;
-  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: center;
+  color: #ddd;
+  width: 100%;
 }
 
 .maple-info h2 {
-  font-size: 18px;
-  margin-bottom: 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px 0;
 }
 
 .maple-info p {
-  margin: 4px 0;
+  margin: 0;
+  line-height: 1.3;
   font-size: 13px;
-  color: #ddd;
 }
 
-/* 장비 섹션 */
+.maple-info .server { color: #FFFFFF; }
+.maple-info .level  { color: #00BFFF; }
+.maple-info .job    { color: #00FF00; }
+.maple-info .guild  { color: #FFA500; }
+.maple-info .combat { color: #cf4aa7; }
+
+/* 우측 장비 */
 .maple-equipment-section {
-  background-color: #333;
+  flex: 1;
+  background: #222;
   border-radius: 8px;
-  padding: 12px;
-  height: auto;
-  max-height: 220px;
+  border: 1px solid #444;
   display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
 .maple-equipment-section h3 {
+  background: #111;
+  color: #fff;
   font-size: 14px;
   font-weight: bold;
-  color: white;
-  margin: 0 0 10px 0;
+  padding: 12px;
+  margin: 0;
+  border-bottom: 1px solid #444;
   text-align: center;
 }
 
-/* 장비 리스트 */
 .maple-equipment-list {
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
   flex: 1;
   overflow-y: auto;
-  min-height: 0;
 }
 
 .maple-equipment-item {
-  background-color: #555;
+  background: #333;
   border-radius: 6px;
-  padding: 5px;
-  margin-bottom: 4px;
-  border-left: 3px solid #777;
+  padding: 10px;
+  border: 1px solid #555;
+  transition: all 0.2s ease;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
+  text-align: center;
+  gap: 6px;
+  min-height: 120px;
+}
+
+.maple-equipment-item:hover {
+  background: #444;
+  border-color: #777;
 }
 
 .maple-equipment-item img {
-  width: 36px;
-  height: 36px;
-  object-fit: contain;
+  width: 40px;
+  height: 40px;
   border-radius: 4px;
-  border: 1px solid #888;
+  border: 1px solid #777;
 }
 
 .maple-equipment-item p {
-  margin: 1px 0;
+  margin: 0;
   font-size: 11px;
-  color: #ddd;
 }
 
 .maple-equipment-item p:first-child {
   font-weight: bold;
-  color: white;
   font-size: 12px;
 }
 
-/* 스크롤바 */
-.maple-equipment-list::-webkit-scrollbar {
-  width: 6px;
-}
-.maple-equipment-list::-webkit-scrollbar-track {
-  background: #444;
-  border-radius: 3px;
-}
-.maple-equipment-list::-webkit-scrollbar-thumb {
-  background: #666;
-  border-radius: 3px;
-}
-.maple-equipment-list::-webkit-scrollbar-thumb:hover {
-  background: #777;
+/* 등급별 색상 */
+.potential-legendary { color: #00FF00; }
+.potential-unique    { color: #FFD700; }
+.potential-epic      { color: #A020F0; }
+.potential-rare      { color: #00BFFF; }
+
+/* 장비분류 */
+.equip-type {
+  color: #dddddd;
+  font-size: 11px;
 }
 
-/* 장비 없을 때 */
-.maple-equipment-section > p {
-  text-align: center;
-  color: #aaa;
-  font-size: 13px;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ---------------- Tooltip ---------------- */
+/* Tooltip */
 .customTooltip {
   background: rgba(20, 20, 20, 0.95) !important;
   border: 1px solid #888 !important;
@@ -166,49 +158,77 @@
   line-height: 1.5;
 }
 
-.customTooltip strong {
+.tooltip-content strong {
   display: block;
-  font-size: 14px;
-  margin: 6px 0;
+  text-align: center;
+  margin-bottom: 6px;
 }
 
-.customTooltip hr {
-  border: none;
-  border-top: 1px solid #555;
-  margin: 6px 0;
+/* 소울 프리픽스 (상단) */
+.soul-prefix {
+  text-align: center;
+  color: #FFD700;
+  font-weight: bold;
+  margin-bottom: 4px;
 }
 
-/* 스타포스 별 */
+/* 구역 제목 (좌측 정렬) */
+.section-title {
+  text-align: left;
+  font-weight: bold;
+  margin: 4px 0;
+}
+
+/* 잠재/에디셔널 잠재옵션 제목 색상 → 등급 색상 따름 */
+.section-title.potential-legendary { color: #00FF00; }
+.section-title.potential-unique    { color: #FFD700; }
+.section-title.potential-epic      { color: #A020F0; }
+.section-title.potential-rare      { color: #00BFFF; }
+
+/* 소울 적용 문구 → 소울 프리픽스와 동일한 색상 */
+.soul-apply {
+  font-weight: bold;
+  color: #FFD700 !important;
+}
+
+/* 소울 옵션 */
+.soul-option {
+  text-align: left;
+  color: #FFFFFF;
+  margin: 4px 0;
+}
+
+/* 옵션 영역 좌측 정렬 */
+.tooltip-options {
+  text-align: left;
+}
+
+/* 옵션 글씨 굵기 제거 */
+.stat-line,
+.potential-line,
+.tooltip-options p,
+.tooltip-options span {
+  font-weight: normal !important;
+}
+
+/* 스타포스 */
 .stars {
-  display: inline-flex;        /* 컨테이너 자체는 인라인처럼 차지 */
-  flex-direction: column;      /* 줄 단위 세로 배치 */
-  gap: 2px;                    /* 줄 사이 간격 */
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   color: #FFD700;
   font-size: 13px;
   margin-bottom: 4px;
 }
+.star-row { display: flex; gap: 6px; }
+.star-group { letter-spacing: 1px; }
 
-.star-row {
-  display: flex;               /* 한 줄에서 그룹을 가로로 배치 */
-  gap: 6px;                    /* 5개 그룹 사이 간격 (인게임의 살짝 띄움) */
+/* 반응형 */
+@media (max-width: 768px) {
+  .maple-box { flex-direction: column; }
+  .maple-left { width: 100%; }
+  .maple-equipment-list { grid-template-columns: repeat(2, 1fr); }
 }
-
-.star-group {
-  letter-spacing: 1px;         /* 그룹 내부 별 사이 미세 간격 */
-  /* 필요시 고정폭 느낌을 더 주고 싶으면 아래 주석 해제
-  font-family: "Noto Sans Symbols", "Segoe UI Symbol", "Malgun Gothic", sans-serif;
-  */
+@media (max-width: 480px) {
+  .maple-equipment-list { grid-template-columns: 1fr; }
 }
-
-/* 스탯 색상 */
-.stat-total { color: #00FFFF; }
-.stat-base { color: #FFFFFF; }
-.stat-add { color: #00FF00; }
-.stat-enchant { color: #AAAAAA; }
-.stat-starforce { color: #FFD700; }
-
-/* 잠재옵션 등급별 */
-.potential-legendary { color: #00FF00; font-weight: bold; }
-.potential-unique { color: #FFD700; font-weight: bold; }
-.potential-epic { color: #A020F0; font-weight: bold; }
-.potential-rare { color: #00BFFF; font-weight: bold; }

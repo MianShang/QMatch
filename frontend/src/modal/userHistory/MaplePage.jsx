@@ -18,7 +18,6 @@ function MaplePage({ mapleStats }) {
     starforce: "#FFD700"
   };
 
-  // 등급별 색상 클래스 매핑
   function getPotentialClass(grade) {
     if (!grade) return "";
     const g = grade.toLowerCase();
@@ -29,15 +28,30 @@ function MaplePage({ mapleStats }) {
     return "";
   }
 
-  // 전투력 포맷 (억/만 단위)
+  function getGradeRank(grade) {
+    if (!grade) return 999;
+    const g = grade.toLowerCase();
+    if (grade.includes("레전드리") || g.includes("legendary")) return 1;
+    if (grade.includes("유니크")   || g.includes("unique"))    return 2;
+    if (grade.includes("에픽")     || g.includes("epic"))      return 3;
+    if (grade.includes("레어")     || g.includes("rare"))      return 4;
+    return 999;
+  }
+
+  function getHighestGradeClass(potentialGrade, additionalPotentialGrade) {
+    const rank1 = getGradeRank(potentialGrade);
+    const rank2 = getGradeRank(additionalPotentialGrade);
+    return rank1 <= rank2 ? getPotentialClass(potentialGrade) : getPotentialClass(additionalPotentialGrade);
+  }
+
   function formatCombatPower(value) {
     if (!value) return "N/A";
     const num = parseInt(value, 10);
     if (isNaN(num)) return value;
 
-    const eok = Math.floor(num / 100000000);             // 억 단위
-    const man = Math.floor((num % 100000000) / 10000);   // 만 단위
-    const rest = num % 10000;                            // 나머지
+    const eok = Math.floor(num / 100000000);
+    const man = Math.floor((num % 100000000) / 10000);
+    const rest = num % 10000;
 
     let result = "";
     if (eok > 0) result += `${eok}억 `;
@@ -47,10 +61,8 @@ function MaplePage({ mapleStats }) {
     return result.trim();
   }
 
-  // 별 (줄마다 15개, 5개씩 묶고 그룹 간 간격은 CSS로)
   function renderStars(count) {
     if (!count || count <= 0) return null;
-
     const GROUP_SIZE = 5;
     const ROW_GROUPS = 3;
 
@@ -78,7 +90,6 @@ function MaplePage({ mapleStats }) {
     );
   }
 
-  // 스탯 라인
   function renderStatLine(opt) {
     const total = (opt.base || 0) + (opt.add || 0) + (opt.enchant || 0) + (opt.starforce || 0);
     if (total === 0) return null;
@@ -91,7 +102,7 @@ function MaplePage({ mapleStats }) {
       ) : null;
 
     return (
-      <p>
+      <p className="stat-line">
         <span style={{ color: statColors.total }}>
           {opt.statName}: {opt.statName === "올스탯" ? `+${total}%` : `+${total}`}
         </span>{" "}
@@ -105,99 +116,113 @@ function MaplePage({ mapleStats }) {
     );
   }
 
-  // 잠재옵션 렌더링 (옵션은 항상 흰색)
   function renderPotential(options) {
     if (!options || options.length === 0) return null;
     return options.map((opt, i) => (
-      <p key={i} style={{ color: "#FFFFFF" }}>{opt}</p>
+      <p key={i} className="potential-line">{opt}</p>
     ));
   }
 
   return (
     <div className="maple-box">
-      <p className="maple-server-info">{worldName} - {characterName}</p>
-      <div className="maple-top-row">
+      {/* 좌측 캐릭터 */}
+      <div className="maple-left">
         <div className="maple-image">
           <img src={imageUrl} alt="캐릭터" />
         </div>
         <div className="maple-info">
           <h2>{characterName}</h2>
-          <p>레벨: {level}</p>
-          <p>직업: {job}</p>
-          <p>길드: {guildName || "없음"}</p>
-          <p>전투력: {formatCombatPower(combatPower)}</p>
+          <p className="server">서버: {worldName}</p>
+          <p className="level">레벨: {level}</p>
+          <p className="job">직업: {job}</p>
+          <p className="guild">길드: {guildName || "없음"}</p>
+          <p className="combat">전투력: {formatCombatPower(combatPower)}</p>
         </div>
       </div>
 
+      {/* 우측 장비 */}
       <div className="maple-equipment-section">
         <h3>장착 장비 목록</h3>
         <div className="maple-equipment-list">
           {equipment && equipment.length > 0 ? (
-            equipment.map((item, idx) => {          
-              return (
-                <div key={idx} className="maple-equipment-item">
-                  <img src={item.iconUrl} alt={item.name} data-tooltip-id={`equip-${idx}`} />
-                  <div>
-                    <p>{item.name}</p>
-                    <p>장비분류: {item.type}</p>
-                  </div>
+            equipment.map((item, idx) => (
+              <div key={idx} className="maple-equipment-item">
+                <img src={item.iconUrl} alt={item.name} data-tooltip-id={`equip-${idx}`} />
 
-                  <Tooltip id={`equip-${idx}`} place="right" className="customTooltip">
-                    <div>
-                      {renderStars(item.starforce)}
+                <p className={getHighestGradeClass(item.potentialGrade, item.additionalPotentialGrade)}>
+                  {item.name}
+                </p>
 
-                      <strong style={{ color: "#FFFFFF" }}>
-                        {item.name} {item.scrollUpgrade ? `(+${item.scrollUpgrade})` : ""}
-                      </strong>
+                <p className="equip-type">장비분류: {item.type}</p>
 
-                      <p style={{ color: "#aaa", marginBottom: "6px" }}>
-                        장비분류: {item.type}
+                <Tooltip id={`equip-${idx}`} place="right" className="customTooltip">
+                  <div className="tooltip-content">
+                    {renderStars(item.starforce)}
+
+                    {/* 소울 프리픽스 (상단) - '소울 적용' 제거 */}
+                    {item.soulName && (
+                      <p className="soul-prefix">
+                        {item.soulName.replace(" 소울 적용", "")}
                       </p>
+                    )}
 
+                    {/* 아이템 이름 */}
+                    <strong className={getHighestGradeClass(item.potentialGrade, item.additionalPotentialGrade)}>
+                      {item.name} {item.scrollUpgrade ? `(+${item.scrollUpgrade})` : ""}
+                    </strong>
+
+                    {/* 장비 분류 */}
+                    <p className="tooltip-type">장비분류: {item.type}</p>
+
+                    {/* 옵션 */}
+                    <div className="tooltip-options">
                       {item.optionDetails?.map((opt, i) => (
                         <React.Fragment key={i}>{renderStatLine(opt)}</React.Fragment>
                       ))}
-
                       {item.ignoreMonsterArmor && parseInt(item.ignoreMonsterArmor) > 0 && (
-                        <p style={{ color: "#FFFFFF" }}>
-                          몬스터 방어율 무시: {item.ignoreMonsterArmor}%
-                        </p>
+                        <p>몬스터 방어율 무시: {item.ignoreMonsterArmor}%</p>
                       )}
-
                       {item.bossDamage && parseInt(item.bossDamage) > 0 && (
-                        <p style={{ color: "#FFFFFF" }}>
-                          보스 공격 시 데미지: {item.bossDamage}%
-                        </p>
-                      )}
-
-                      {item.potential?.length > 0 && (
-                        <>
-                          <hr />
-                          <p>
-                            <strong className={getPotentialClass(item.potentialGrade)}>
-                              잠재옵션
-                            </strong>
-                          </p>
-                          {renderPotential(item.potential)}
-                        </>
-                      )}
-
-                      {item.additionalPotential?.length > 0 && (
-                        <>
-                          <hr />
-                          <p>
-                            <strong className={getPotentialClass(item.additionalPotentialGrade)}>
-                              에디셔널 잠재옵션
-                            </strong>
-                          </p>
-                          {renderPotential(item.additionalPotential)}
-                        </>
+                        <p>보스 공격 시 데미지: {item.bossDamage}%</p>
                       )}
                     </div>
-                  </Tooltip>
-                </div>
-              );
-            })
+
+                    {/* 잠재옵션 */}
+                    {item.potential?.length > 0 && (
+                      <>
+                        <hr />
+                       <p className={`section-title ${getPotentialClass(item.potentialGrade)}`}>
+                          잠재옵션
+                        </p>
+                        {renderPotential(item.potential)}
+                      </>
+                    )}
+
+                    {/* 에디셔널 잠재옵션 */}
+                    {item.additionalPotential?.length > 0 && (
+                      <>
+                        <hr />
+                        <p className={`section-title ${getPotentialClass(item.additionalPotentialGrade)}`}>
+                          에디셔널 잠재옵션
+                        </p>
+                        {renderPotential(item.additionalPotential)}
+                      </>
+                    )}
+
+                    {/* 소울 적용 문구 */}
+                    {item.soulOption && (
+                      <>
+                        <hr />
+                        <p className= "section-title soul-apply">
+                          {item.soulName}
+                        </p>
+                        <p className="soul-option">{item.soulOption}</p>
+                      </>
+                    )}
+                  </div>
+                </Tooltip>
+              </div>
+            ))
           ) : (
             <p>장비 정보 없음</p>
           )}

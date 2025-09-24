@@ -151,7 +151,7 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
             setUserGameCode(gameData);
             setErrorMessage(null);
           } catch (err2) {
-            console.error('메이플스토리 전적 불러오기 실패', err2);
+            console.error('메이플스토리 정보 불러오기 실패', err2);
             setErrorMessage("메이플스토리 정보를 불러오지 못했습니다.");
           }
         })();

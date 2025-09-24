@@ -3,6 +3,7 @@ package com.example.backend.Service;
 import com.example.backend.Dto.MapleDto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -34,6 +35,11 @@ public class MapleService {
             Map.entry("emblem", "엠블렘")
     );
 
+    /**
+     * 캐릭터 정보 조회 (Caffeine 캐시 적용됨)
+     * 같은 캐릭터 이름으로 요청이 오면 1시간 동안은 Nexon API 안 부르고 캐시된 결과 반환
+     */
+    @Cacheable(value = "mapleCache", key = "#name", unless = "#result == null")
     public MapleDto getCharacterInfo(String name) {
         String date = LocalDate.now().minusDays(1).toString();
 
@@ -158,13 +164,18 @@ public class MapleService {
             @JsonProperty("item_icon")
             private String itemIcon;
 
-            // ⭐ 잠재옵션 등급
+            @JsonProperty("soul_name")
+            private String soulName;
+            @JsonProperty("soul_option")
+            private String soulOption;
+
+            // 잠재옵션 등급
             @JsonProperty("potential_option_grade")
             private String potentialGrade;
             @JsonProperty("additional_potential_option_grade")
             private String addPotentialGrade;
 
-            // ⭐ 잠재옵션 내용
+            // 잠재옵션 내용
             @JsonProperty("potential_option_1")
             private String potential1;
             @JsonProperty("potential_option_2")
@@ -218,12 +229,14 @@ public class MapleService {
                 e.setStarforce(i.getStarforce());
                 e.setScrollUpgrade(i.getScrollUpgrade());
                 e.setIconUrl(i.getItemIcon());
+                e.setSoulName(i.getSoulName());
+                e.setSoulOption(i.getSoulOption());
 
-                // ⭐ 잠재옵션 등급
+                // 잠재옵션 등급
                 e.setPotentialGrade(i.getPotentialGrade());
                 e.setAdditionalPotentialGrade(i.getAddPotentialGrade());
 
-                // ⭐ 잠재옵션
+                // 잠재옵션
                 List<String> potential = new ArrayList<>();
                 if (i.getPotential1() != null) potential.add(i.getPotential1());
                 if (i.getPotential2() != null) potential.add(i.getPotential2());

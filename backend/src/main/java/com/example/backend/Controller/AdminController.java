@@ -2,9 +2,12 @@ package com.example.backend.Controller;
 
 import com.example.backend.Dto.Request.ReportStatusRequestDto;
 import com.example.backend.Dto.Request.SuspensionRequestDto;
+import com.example.backend.Dto.Response.AdminUserDetailResponseDto;
+import com.example.backend.Dto.Response.ChatListResponseDto;
 import com.example.backend.Dto.Response.ReportResponseDto;
 import com.example.backend.Dto.Response.UserResponseDto;
 import com.example.backend.Service.AdminService;
+import com.example.backend.Service.ChatListService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,6 +21,7 @@ import java.util.List;
 public class AdminController {
 
     private final AdminService adminService;
+    private final ChatListService chatListService;
 
 
     // 회원 목록
@@ -25,6 +29,22 @@ public class AdminController {
     @PreAuthorize("hasRole('ADMIN')")
     public List<UserResponseDto> getAllUsers() {
         return adminService.getAllUsers();
+    }
+
+
+    // 유저 상세 정보 조회
+    @GetMapping("/users/{userId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public AdminUserDetailResponseDto getUserDetail(@PathVariable String userId) {
+        return adminService.getUserDetail(userId);
+    }
+
+    // 채팅 로그 조회
+    @GetMapping("/chat-logs/{roomId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<ChatListResponseDto> getChatLogsByRoomId(@PathVariable String roomId) {
+        // 기존 ChatListService의 메서드를 재사용
+        return chatListService.getChatList(roomId);
     }
 
     // 신고 내역
@@ -38,8 +58,17 @@ public class AdminController {
     @PostMapping("/users/{userId}/suspend")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> suspendUser(@PathVariable String userId, @RequestBody SuspensionRequestDto request) {
-        adminService.suspendUser(request.getReportId(),userId, request.getDays());
-        return ResponseEntity.ok(userId + "님이" + request.getDays() + " 일간 정지되었습니다.");
+        adminService.suspendUser(request.getReportId(), userId, request.getDays());
+
+
+        String message;
+        if (request.getDays() >= 9999) {
+            message = userId + "님이 영구정지 되었습니다.";
+        } else {
+            message = userId + "님이 " + request.getDays() + "일간 정지되었습니다.";
+        }
+
+        return ResponseEntity.ok(message);
     }
 
     // 영구 정지

@@ -160,12 +160,14 @@ function LobbyPage() {
           ...prevUserData, //기존 데이터를 모두 복사
           ...res.data,     //새로 받은 데이터로 덮어쓰기
           //authorities 만큼은 무조건 기존 값으로 다시 덮어쓰기
+
           authorities: prevUserData.authorities
         }));
       })
       .catch(err => console.error("유저 정보 불러오기 실패:", err));
 
   }, [userData?.userId, setUserData]);
+
 
   useEffect(() => {
     const s = location.state;

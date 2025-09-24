@@ -1,6 +1,7 @@
 package com.example.backend.Service;
 
 import com.example.backend.Dto.Request.UserChatRoomRequestDto;
+import com.example.backend.Dto.Response.ChatRoomInfo;
 import com.example.backend.Dto.Response.UserResponseDto;
 import com.example.backend.Entity.ChatRoom;
 import com.example.backend.Entity.Role;
@@ -83,5 +84,6 @@ public class UserChatRoomService {
         }
         return userDtos;
     }
+
 
 }

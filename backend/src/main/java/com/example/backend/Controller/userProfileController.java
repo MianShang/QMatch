@@ -87,5 +87,19 @@ public class userProfileController {
         return ResponseEntity.ok(response);
     }
 
+    //닉네임
+    @PostMapping("/usernickname")
+    public ResponseEntity<UserResponseDto> updateUserNickname(@RequestBody Map<String,String> data) {
+        String userId = data.get("userId");
+        String nickName = data.get("nickName");
+        UserResponseDto response = userprofileService.updateUserNickname(userId, nickName);
+        return ResponseEntity.ok(response);
+    }
 
+    @GetMapping("/usernickname")
+    public ResponseEntity<UserResponseDto> getUserNickname(@RequestParam String userId) {
+        UserResponseDto response = userprofileService.getUserNickname(userId);
+        return ResponseEntity.ok(response);
+
+    }
 }

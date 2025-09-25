@@ -69,6 +69,7 @@ public class UserChatRoomController {
                     dto.setChatRoom(ucr.getChatRoom());
                     dto.setRole(ucr.getRole());
                     dto.setStatus(ucr.getStatus());
+                    dto.setUserId(userId);
                     dto.setHostUserId(ucr.getChatRoom().getOwner() != null ? 
                             ucr.getChatRoom().getOwner().getUserId() : null);
                     return dto;

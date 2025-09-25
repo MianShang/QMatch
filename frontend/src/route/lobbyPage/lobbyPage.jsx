@@ -52,6 +52,8 @@ function LobbyPage() {
   const [historyUserId, setHistoryUserId] = useState(null);
   const [sendToModalGameName, setSendToModalGameName] = useState('');
 
+  
+
   // 사이드바 프로필 이미지 클릭시 중앙 div는 사라지게 - 기본값 true(중앙 div 표시)
   const [showMidBar, setShowMidBar] = useState(true);
 

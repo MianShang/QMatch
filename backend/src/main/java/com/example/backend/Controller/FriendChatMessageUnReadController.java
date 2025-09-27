@@ -31,7 +31,9 @@ public class FriendChatMessageUnReadController {
     {
         friendShipChatUnReadService.deleteRoomMessageCount(roomId, receiveId);
 
-        // 친구 목록 초기화를 위한 WebSocket 알림 발송
+        // 개별 친구에게 안읽은 개수 업데이트 알림 발송
+        // 채팅방에서 친구 관계를 조회하여 상대방 친구 ID를 찾아야 함
+        // 현재는 간단히 전체 친구 목록 갱신 알림으로 대체
         messagingTemplate.convertAndSend("/topic/friends/inventory/" + receiveId, 
             Map.of("type", "unread-updated", "message", "안읽은 메시지가 업데이트되었습니다."));
 

@@ -80,6 +80,7 @@ function FriendListPage() {
                   />
                 </div>
                 <span className="chatCardTitle ellipsis">{friend.userName}</span>
+                {/* 안읽은 메시지 카운트 */}
                 {friendUnreadCounts[friend.userId] > 0 && (
                   <span className="unread-badge">
                     {friendUnreadCounts[friend.userId]}

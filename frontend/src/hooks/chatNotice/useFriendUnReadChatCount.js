@@ -9,7 +9,7 @@ import axios from "axios";
 export async function getFriendUnReadChatCount(roomId, userId) {
     if (!roomId || !userId) return 0;
     try {
-        const response = await axios.get(`/api/friends/chatroom/unread/message/count/${roomId}`, {
+        const response = await axios.get(`/api/friends/chatroom/unread/message/all-count/${roomId}`, {
             params: { receiveId: userId },
         });
         return response.data || 0;

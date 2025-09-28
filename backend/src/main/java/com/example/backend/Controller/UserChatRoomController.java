@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -349,6 +350,41 @@ public class UserChatRoomController {
         }
     }
     
+    // 채팅방 접근 권한 확인 API
+    @GetMapping("/api/chat/rooms/{roomId}/check-access")
+    public ResponseEntity<?> checkRoomAccess(
+            @PathVariable String roomId,
+            @RequestParam String userId) {
+        
+        try {
+            // 1. 채팅방 조회
+            ChatRoom room = chatRoomRepository.findById(roomId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다."));
+            
+            // 2. 유저 조회
+            User user = userRepository.findByUserId(userId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "유저를 찾을 수 없습니다."));
+            
+            // 3. 사용자가 해당 채팅방에 ACCEPTED 상태로 참여하고 있는지 확인
+            Optional<UserChatRoom> userChatRoom = userChatRoomRepository.findByUser_UserIdAndChatRoom_IdAndStatus(
+                    userId, roomId, ChatRoomUserStatus.ACCEPTED);
+            boolean hasAccess = userChatRoom.isPresent();
+            
+            return ResponseEntity.ok(Map.of(
+                    "hasAccess", hasAccess,
+                    "roomId", roomId,
+                    "userId", userId
+            ));
+            
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(Map.of("error", e.getReason()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "서버 오류가 발생했습니다."));
+        }
+    }
+
     // 채팅방의 대기 중인 입장 신청 목록 조회 API (방장용)
     @GetMapping("/api/chat/rooms/{roomId}/pending-requests")
     public ResponseEntity<?> getPendingJoinRequests(

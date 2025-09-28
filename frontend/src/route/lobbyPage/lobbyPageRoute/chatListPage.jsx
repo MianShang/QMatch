@@ -108,6 +108,20 @@ function ChatListPage({
   const { sendRequest } = useFriendRequest();
   const { sendBlockRequest } = blockUser();
 
+  // 채팅방 목록 새로고침 함수
+  const refreshChatList = async () => {
+    if (!userData?.userId) return;
+    
+    try {
+      const response = await axios.get('/api/get/user/chatrooms', {
+        params: { userId: userData.userId }
+      });
+      setChatList(response.data);
+    } catch (error) {
+      console.error('채팅방 목록 새로고침 실패:', error);
+    }
+  };
+
   // 아이콘
   function setGameIcon(gameName) {
     switch (gameName) {
@@ -537,7 +551,7 @@ function ChatListPage({
           setIsMembersOpen(false);
           setChatList((prev) =>
             prev.filter((it) =>
-              it.id !== selectedRoom.id && it.chatRoom?.id !== selectedRoom.id
+              it.chatRoom?.id !== payload.roomId
             )
           );
           setUnreadCounts(prev => {
@@ -546,6 +560,11 @@ function ChatListPage({
             return next;
           });
           toast.success('방장에게 의해 방에서 추방되었습니다.');
+          
+          // 채팅방 목록 새로고침 (서버에서 최신 데이터 가져오기)
+          setTimeout(() => {
+            refreshChatList();
+          }, 500);
         } else {
           // 다른 사람 추방 시 참여자 목록 갱신
           setChatUserList(prev => prev.filter(u => u.userId !== payload?.targetUserId));
@@ -912,7 +931,31 @@ function ChatListPage({
                 <div
                   key={item.id}
                   className="chatCard"
-                  onClick={() => {
+                  onClick={async () => {
+                    // 채팅방 입장 전 권한 확인
+                    try {
+                      const response = await axios.get(`/api/chat/rooms/${item.chatRoom.id}/check-access`, {
+                        params: { userId: userData.userId }
+                      });
+                      
+                      if (!response.data.hasAccess) {
+                        toast.error('이 채팅방에 접근할 권한이 없습니다.');
+                        // 권한이 없는 채팅방을 목록에서 제거
+                        setChatList(prev => prev.filter(chat => chat.chatRoom.id !== item.chatRoom.id));
+                        // 읽지 않은 메시지 카운트도 제거
+                        setUnreadCounts(prev => {
+                          const next = { ...prev };
+                          delete next[item.chatRoom.id];
+                          return next;
+                        });
+                        return;
+                      }
+                    } catch (error) {
+                      console.error('채팅방 접근 권한 확인 실패:', error);
+                      toast.error('채팅방 접근 권한을 확인할 수 없습니다.');
+                      return;
+                    }
+
                     setSendToModalGameName(item.chatRoom.gameName);
                     setChatListExtend(false);
                     setUnreadCounts((prev) => ({ ...prev, [item.chatRoom.id]: 0 }));

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useMemo } from 'react';
+import React, { useState, useEffect, createContext, useMemo, useRef } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
@@ -33,8 +33,11 @@ function App() {
   const [friends, setFriends] = useState([]);
   const [statusByUser, setStatusByUser] = useState([]);
   const [friendInventoryUpdate, setFriendInventoryUpdate] = useState(null);
+  const [selectedFriendRoom, setSelectedFriendRoom] = useState(null);
   //친구 메시지 안읽은 카운트
   const [friendUnreadCounts, setFriendUnreadCounts] = useState({});
+  //친구 채팅 최신값 저장 Ref
+  const selectedFriendRoomRef = useRef(null);
 
   // 안 읽은 메시지 상태
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
@@ -137,8 +140,16 @@ function App() {
     hasUnReadFriendMessages,
     setHasUnReadFriendMessages,
     friendUnreadCounts,
-    setFriendUnreadCounts
-  }), [isLogIn, userData, isLoading, friends, statusByUser, friendInventoryUpdate, setFriendInventoryUpdate, hasUnreadMessages, theme, hasUnReadFriendMessages, setHasUnReadFriendMessages, friendUnreadCounts, setFriendUnreadCounts]);
+    setFriendUnreadCounts,
+    selectedFriendRoom,
+    setSelectedFriendRoom
+  }), [isLogIn, userData, isLoading, friends, statusByUser, friendInventoryUpdate, setFriendInventoryUpdate, hasUnreadMessages, theme, hasUnReadFriendMessages, setHasUnReadFriendMessages, friendUnreadCounts, setFriendUnreadCounts, selectedFriendRoom, setSelectedFriendRoom]);
+
+  //친구 최신값 저장 State가 바뀔때 마다 갱신
+  useEffect(() => {
+    selectedFriendRoomRef.current = selectedFriendRoom;
+  }, [selectedFriendRoom]);
+
 
   //친구 목록 가져오기
   useEffect(() => {
@@ -147,37 +158,29 @@ function App() {
       try {
         const response = await axios.get(`/api/friends/list?userId=${userData.userId}`);
         setFriends(response.data);
-        
-        // 모든 친구의 안읽은 메시지 개수 한 번에 조회
+
         const unreadCounts = {};
         let hasUnread = false;
-        
-        try {
-          // 모든 안읽은 메시지 개수를 한 번에 가져오기
-          const allUnreadResponse = await axios.get(`/api/friends/chatroom/unread/message/all-count?receiveId=${userData.userId}`);
-          const allUnreadData = allUnreadResponse.data;
-          
-          // 친구별로 채팅방 ID 조회 및 안읽은 개수 매핑
-          for (const friend of response.data) {
-            try {
-              const roomResponse = await axios.get(`/api/friends/chatroom/${friend.userId}/${userData.userId}`);
-              const roomId = roomResponse.data.roomId;
-              const count = allUnreadData[roomId] || 0;
-              unreadCounts[friend.userId] = count;
-              if (count > 0) hasUnread = true;
-            } catch (error) {
-              console.error(`친구 ${friend.userId}의 안읽은 메시지 개수 조회 실패:`, error);
-              unreadCounts[friend.userId] = 0;
-            }
-          }
-        } catch (error) {
-          console.error("전체 안읽은 메시지 개수 조회 실패:", error);
-          // 에러 시 모든 친구의 안읽은 개수를 0으로 설정
-          response.data.forEach(friend => {
+
+        // 방별로 안읽은 메시지 개수 조회
+        for (const friend of response.data) {
+          try {
+            const roomResponse = await axios.get(`/api/friends/chatroom/${friend.userId}/${userData.userId}`);
+            const roomId = roomResponse.data.roomId;
+
+            const countResponse = await axios.get(`/api/friends/chatroom/${roomId}/unread-count`, {
+              params: { userId: userData.userId },
+            });
+
+            const count = countResponse.data || 0;
+            unreadCounts[friend.userId] = count;
+            if (count > 0) hasUnread = true;
+          } catch (error) {
+            console.error(`친구 ${friend.userId}의 안읽은 메시지 개수 조회 실패:`, error);
             unreadCounts[friend.userId] = 0;
-          });
+          }
         }
-        
+
         setFriendUnreadCounts(unreadCounts);
         setHasUnReadFriendMessages(hasUnread);
       } catch (error) {
@@ -253,46 +256,56 @@ function App() {
           setFriendInventoryUpdate(payload);
 
           // 친구 관계가 변경된 경우 또는 안읽은 메시지가 업데이트된 경우 전체 목록 갱신
-          if (payload.type === 'friend-added' || payload.type === 'friend-removed' || payload.type === 'friend-blocked' || payload.type === 'unread-updated') {
-            axios.get(`/api/friends/list?userId=${userData.userId}`)
+          if (
+            payload.type === 'friend-added' ||
+            payload.type === 'friend-removed' ||
+            payload.type === 'friend-blocked' ||
+            payload.type === 'unread-updated'
+          ) {
+            axios
+              .get(`/api/friends/list?userId=${userData.userId}`)
               .then(async (res) => {
                 setFriends(res.data);
-                
+
                 // 친구 목록이 변경되었으므로 안읽은 개수도 재조회
                 const unreadCounts = {};
                 let hasUnread = false;
-                
-                try {
-                  const allUnreadResponse = await axios.get(`/api/friends/chatroom/unread/message/all-count?receiveId=${userData.userId}`);
-                  const allUnreadData = allUnreadResponse.data;
-                  
-                  for (const friend of res.data) {
-                    try {
-                      const roomResponse = await axios.get(`/api/friends/chatroom/${friend.userId}/${userData.userId}`);
-                      const roomId = roomResponse.data.roomId;
-                      const count = allUnreadData[roomId] || 0;
-                      unreadCounts[friend.userId] = count;
-                      if (count > 0) hasUnread = true;
-                    } catch (error) {
-                      console.error(`친구 ${friend.userId}의 안읽은 메시지 개수 조회 실패:`, error);
-                      unreadCounts[friend.userId] = 0;
-                    }
-                  }
-                } catch (error) {
-                  console.error("전체 안읽은 메시지 개수 재조회 실패:", error);
-                  res.data.forEach(friend => {
+
+                for (const friend of res.data) {
+                  try {
+                    const roomResponse = await axios.get(
+                      `/api/friends/chatroom/${friend.userId}/${userData.userId}`
+                    );
+                    const roomId = roomResponse.data.roomId;
+
+                    const countResponse = await axios.get(
+                      `/api/friends/chatroom/${roomId}/unread-count`,
+                      {
+                        params: { userId: userData.userId },
+                      }
+                    );
+
+                    const count = countResponse.data || 0;
+                    unreadCounts[friend.userId] = count;
+                    if (count > 0) hasUnread = true;
+                  } catch (error) {
+                    console.error(
+                      `친구 ${friend.userId}의 안읽은 메시지 개수 조회 실패:`,
+                      error
+                    );
                     unreadCounts[friend.userId] = 0;
-                  });
+                  }
                 }
-                
+
                 setFriendUnreadCounts(unreadCounts);
                 setHasUnReadFriendMessages(hasUnread);
               })
-              .catch(err => console.error("친구 목록 갱신 실패:", err));
+              .catch((err) => {
+                console.error('친구 목록 갱신 실패:', err);
+              });
           }
-        }
-        catch (e) {
-          console.error("친구요청/차단 목록 업데이트 에러", e);
+        } catch (e) {
+          console.error('친구요청/차단 목록 업데이트 에러', e);
         }
       });
 
@@ -301,7 +314,14 @@ function App() {
         try {
           const data = JSON.parse(frame.body);
           const { friendId, unreadCount } = data;
-          
+
+          // 항상 최신 selectedFriendRoom 확인
+          const currentRoom = selectedFriendRoomRef.current;
+          if (currentRoom?.friendId === friendId) {
+            // 현재 열려 있는 방이면 카운트 무시
+            return;
+          }
+
           // 해당 친구의 안읽은 개수만 업데이트
           setFriendUnreadCounts(prev => {
             const updated = { ...prev, [friendId]: unreadCount };

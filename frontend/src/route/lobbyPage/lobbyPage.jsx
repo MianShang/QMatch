@@ -71,11 +71,10 @@ function LobbyPage() {
   const [messages, setMessages] = useState([]);      // 보낼 메세지
   const [client, setClient] = useState(null);      // client 연결 여부 State
   const [input, setInput] = useState('');      // input 입력 Sate      
-  const [selectedFriendRoom, setSelectedFriendRoom] = useState(null); //친구 선택 채팅방
   const [friendMessages, setFriendMessages] = useState([]); // 친구 1:1 채팅 메시지
 
   // State 보관함 해체
-  const { isLogIn, setIsLogIn, userData, setUserData, setHasUnreadMessages, theme, toggleTheme, setHasUnReadFriendMessages } = useContext(LogContext)
+  const { isLogIn, setIsLogIn, userData, setUserData, setHasUnreadMessages, theme, toggleTheme, setHasUnReadFriendMessages, selectedFriendRoom,setSelectedFriendRoom } = useContext(LogContext)
 
   // 전역 STOMP 클라이언트 초기화
   const globalStomp = useGlobalStomp(userData);

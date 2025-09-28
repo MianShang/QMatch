@@ -24,8 +24,14 @@ export function useFriendChatSubscriber(selectedFriendRoom, setFriendMessages, g
                     setFriendMessages((prev) =>
                         prev.some((m) => m.id === body.id) ? prev : [...prev, body]);
                     // 현재 방 열려있으면 → 읽음 처리
-                    console.log(body.chatroomId)
-                    
+                    if (selectedFriendRoom?.roomId === body.chatroomId) {
+                        axios.post(`/api/friends/chatroom/${selectedFriendRoom.roomId}/read`, null, {
+                            params: {
+                                userId: userData.userId,
+                                lastReadMessageId: body.id,
+                            },
+                        });
+                    }
 
                 } catch (error) {
                     console.error('친구 채팅 메시지 오류:', error);

@@ -8,7 +8,7 @@ import { useFriendDelete } from '../../../hooks/friends/useFriendDelete.js';
 import { useNavigate } from "react-router-dom";
 
 function FriendListPage() {
-  const { friends, statusByUser, userData, friendUnreadCounts } = useContext(LogContext);
+  const { friends, statusByUser, userData, friendUnreadCounts, setFriendUnreadCounts } = useContext(LogContext);
   const [bottomToggle, setBottomToggle] = useState(null);
   const [selected, setSelected] = useState(null);
   const containerRef = useRef(null);
@@ -58,6 +58,15 @@ function FriendListPage() {
               className={selected === friend.userId ? 'selectCardStyle' : 'chatCard'}
               onClick={() => {
                 setSelected(friend.userId);
+
+                if (friendUnreadCounts[friend.userId] > 0) {
+                  // 전역 context 업데이트
+                  setFriendUnreadCounts(prev => ({
+                    ...prev,
+                    [friend.userId]: 0
+                  }));
+                }
+
                 navigate("/lobby", {
                   state: {
                     type: "friend",

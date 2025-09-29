@@ -1,12 +1,10 @@
-import React, { useState, useEffect, createContext, useMemo, useRef } from 'react';
+import React, { useState, useEffect, createContext, useMemo, useRef, use } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
-import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
-import { getFriendUnReadChatCount } from './hooks/chatNotice/useFriendUnReadChatCount.js';
 
 {/* 컴포넌트 import */ }
 import LobbyPage from './route/lobbyPage/lobbyPage.jsx';
@@ -14,8 +12,9 @@ import SearchPage from './route/searchPage/searchPage.jsx';
 import LoginPage from './route/loginPage/loginPage.jsx';
 import SignUpRoutePage from './route/loginPage/loginPageRoute/signupRoutePage.jsx';
 import AdminPage from './feature/admin/adminPage.jsx';
-
-
+//전역 stomp
+import { useGlobalStomp } from './hooks/stomp/useGlobalStomp.js';
+import { useGameStatus } from './hooks/status/useGameStatus.js';
 
 // 로그인 체크용 Context API 생성
 export const LogContext = createContext();
@@ -38,9 +37,10 @@ function App() {
   const [friendUnreadCounts, setFriendUnreadCounts] = useState({});
   //친구 채팅 최신값 저장 Ref
   const selectedFriendRoomRef = useRef(null);
-
   // 실시간 프로세스 목록 담을 State
   const [processes, setProcesses] = useState([]);
+  //전역 STOMP 훅
+  const { subscribe, publish, isConnected } = useGlobalStomp(userData);
 
   // 프로세스 추척할 게임 목록
   const gameTarget = [
@@ -48,8 +48,8 @@ function App() {
     { exe: "maplestory.exe", label: "메이플스토리" },
     { exe: "lostark.exe", label: "로스트아크" },];
 
-  // 게임 실행 여부 담을 State
-  const [isRunning, setIsRunning] = useState({});
+  //게임 실행여부 훅
+  const { isRunning, gameStatusByUser } = useGameStatus(publish, subscribe, isConnected, userData, gameTarget, processes);
 
   // 안 읽은 메시지 상태
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
@@ -87,26 +87,12 @@ function App() {
       }
     };
 
-    // 최초 1회 호출 및 1초마다 갱신
+    // 최초 1회 호출 및 10초마다 갱신
     fetchProcesses();
     const interval = setInterval(fetchProcesses, 10000);
 
     return () => clearInterval(interval); // 언마운트 시 clear
   }, []);
-
-  useEffect(() => {
-    const results = gameTarget.map(game => ({
-      exe: game.exe,
-      label: game.label,
-      running: processes.some(proc => proc.name?.toLowerCase() === game.exe)
-    }));
-
-    setIsRunning(results);
-
-    results.forEach(g => {
-      console.log(`${g.label} (${g.exe}) 실행 여부: ${g.running}`);
-    });
-  }, [processes]);
 
   // 새로고침 or 첫 로딩시 자동 실행
   useEffect(() => {
@@ -188,8 +174,9 @@ function App() {
     setFriendUnreadCounts,
     selectedFriendRoom,
     setSelectedFriendRoom,
-    isRunning
-  }), [isLogIn, userData, isLoading, friends, statusByUser, friendInventoryUpdate, setFriendInventoryUpdate, hasUnreadMessages, theme, hasUnReadFriendMessages, setHasUnReadFriendMessages, friendUnreadCounts, setFriendUnreadCounts, selectedFriendRoom, setSelectedFriendRoom, isRunning]);
+    isRunning,
+    gameStatusByUser
+  }), [isLogIn, userData, isLoading, friends, statusByUser, friendInventoryUpdate, setFriendInventoryUpdate, hasUnreadMessages, theme, hasUnReadFriendMessages, setHasUnReadFriendMessages, friendUnreadCounts, setFriendUnreadCounts, selectedFriendRoom, setSelectedFriendRoom, isRunning, gameStatusByUser]);
 
   //친구 최신값 저장 State가 바뀔때 마다 갱신
   useEffect(() => {
@@ -236,161 +223,145 @@ function App() {
     fetchFriends();
   }, [userData?.userId]);
 
-  //전역 Stomp
+  //전역 Stomp 훅 사용
   useEffect(() => {
     if (!userData?.userId) return;
 
-    const stomp = new Client({
-      webSocketFactory: () => new SockJS(`${BASE_URL}/gs-guide-websocket`),
-      reconnectDelay: 5000,
-      connectHeaders: { userId: userData.userId }
+    //친구 요청구독
+    subscribe(`/topic/friends/${userData.userId}`, (frame) => {
+      try {
+        const payload = JSON.parse(frame.body);
+        toast.info(payload.message || "새로운 친구 요청이 도착했습니다.");
+      } catch (e) {
+        console.error("친구추가 요청 에러", e);
+      }
     });
 
-    stomp.onConnect = () => {
+    //친구 상태구독
+    subscribe(`/topic/friends/status`, (frame) => {
+      try {
+        const payload = JSON.parse(frame.body);
+        setStatusByUser(prev => ({ ...prev, [payload.userId]: payload.status }));
+      }
+      catch (e) {
+        console.error("친구상태 업데이트 에러", e);
+      }
+    });
 
-      //친구 요청구독
-      stomp.subscribe(`/topic/friends/${userData.userId}`, (frame) => {
-        try {
-          const payload = JSON.parse(frame.body);
-          toast.info(payload.message || "새로운 친구 요청이 도착했습니다.");
-        } catch (e) {
-          console.error("친구추가 요청 에러", e);
+    // 채팅방 입장 응답 구독
+    subscribe(`/topic/user/${userData.userId}/join-response`, (message) => {
+      try {
+        const data = JSON.parse(message.body);
+
+        if (data.type === 'join-approved') {
+          toast.success(data.message);
+
+          // 승인된 멤버가 자동으로 채팅방에 입장하도록 처리
+          if (data.roomId) {
+            console.log('승인 알림 수신 - 채팅방으로 이동:', data);
+
+            // 채팅방으로 이동
+            navigate('/', {
+              state: {
+                type: 'multi', // 다대다 채팅방 타입 추가
+                roomId: data.roomId,
+                chatName: data.roomName,
+                gameName: data.gameName,
+                tagNames: data.tagNames || [],
+                joinType: 'approval', // 승인된 방
+                alreadyJoined: true // 이미 가입된 상태임을 표시
+              }
+            });
+          }
+        } else if (data.type === 'join-rejected') {
+          toast.error(data.message);
         }
-      });
+      } catch (e) {
+        console.error("채팅방 입장 응답 에러", e);
+      }
+    });
 
-      //친구 상태구독
-      stomp.subscribe(`/topic/friends/status`, (frame) => {
-        try {
-          const payload = JSON.parse(frame.body);
-          setStatusByUser(prev => ({ ...prev, [payload.userId]: payload.status }));
-        }
-        catch (e) {
-          console.error("친구상태 업데이트 에러", e);
-        }
-      });
+    //친구 요청/차단 목록 업데이트 (친구 관계 변경 시에만 전체 갱신)
+    subscribe(`/topic/friends/inventory/${userData.userId}`, (frame) => {
+      try {
+        const payload = JSON.parse(frame.body);
+        setFriendInventoryUpdate(payload);
 
-      // 채팅방 입장 응답 구독
-      stomp.subscribe(`/topic/user/${userData.userId}/join-response`, (message) => {
-        try {
-          const data = JSON.parse(message.body);
+        // 친구 관계가 변경된 경우 또는 안읽은 메시지가 업데이트된 경우 전체 목록 갱신
+        if (payload.bottomToggle === 'friends') {
+          axios
+            .get(`/api/friends/list?userId=${userData.userId}`)
+            .then(async (res) => {
+              setFriends(res.data);
 
-          if (data.type === 'join-approved') {
-            toast.success(data.message);
-            
-            // 승인된 멤버가 자동으로 채팅방에 입장하도록 처리
-            if (data.roomId) {
-              console.log('승인 알림 수신 - 채팅방으로 이동:', data);
-              
-              // 채팅방으로 이동
-              navigate('/', { 
-                state: { 
-                  type: 'multi', // 다대다 채팅방 타입 추가
-                  roomId: data.roomId,
-                  chatName: data.roomName,
-                  gameName: data.gameName,
-                  tagNames: data.tagNames || [],
-                  joinType: 'approval', // 승인된 방
-                  alreadyJoined: true // 이미 가입된 상태임을 표시
+              // 친구 목록이 변경되었으므로 안읽은 개수도 재조회
+              const unreadCounts = {};
+              let hasUnread = false;
+
+              for (const friend of res.data) {
+                try {
+                  const roomResponse = await axios.get(
+                    `/api/friends/chatroom/${friend.userId}/${userData.userId}`
+                  );
+                  const roomId = roomResponse.data.roomId;
+
+                  const countResponse = await axios.get(
+                    `/api/friends/chatroom/${roomId}/unread-count`,
+                    {
+                      params: { userId: userData.userId },
+                    }
+                  );
+
+                  const count = countResponse.data || 0;
+                  unreadCounts[friend.userId] = count;
+                  if (count > 0) hasUnread = true;
+                } catch (error) {
+                  console.error(
+                    `친구 ${friend.userId}의 안읽은 메시지 개수 조회 실패:`,
+                    error
+                  );
+                  unreadCounts[friend.userId] = 0;
                 }
-              });
-            }
-          } else if (data.type === 'join-rejected') {
-            toast.error(data.message);
-          }
-        } catch (e) {
-          console.error("채팅방 입장 응답 에러", e);
+              }
+
+              setFriendUnreadCounts(unreadCounts);
+              setHasUnReadFriendMessages(hasUnread);
+            })
+            .catch((err) => {
+              console.error('친구 목록 갱신 실패:', err);
+            });
         }
-      });
+      } catch (e) {
+        console.error('친구요청/차단 목록 업데이트 에러', e);
+      }
+    });
 
-      //친구 요청/차단 목록 업데이트 (친구 관계 변경 시에만 전체 갱신)
-      stomp.subscribe(`/topic/friends/inventory/${userData.userId}`, (frame) => {
-        try {
-          const payload = JSON.parse(frame.body);
-          setFriendInventoryUpdate(payload);
+    // 개별 친구의 안읽은 메시지 개수 실시간 업데이트
+    subscribe(`/topic/friends/unread/${userData.userId}`, (frame) => {
+      try {
+        const data = JSON.parse(frame.body);
+        const { friendId, unreadCount } = data;
 
-          // 친구 관계가 변경된 경우 또는 안읽은 메시지가 업데이트된 경우 전체 목록 갱신
-          if (payload.bottomToggle === 'friends') {
-            axios
-              .get(`/api/friends/list?userId=${userData.userId}`)
-              .then(async (res) => {
-                setFriends(res.data);
-
-                // 친구 목록이 변경되었으므로 안읽은 개수도 재조회
-                const unreadCounts = {};
-                let hasUnread = false;
-
-                for (const friend of res.data) {
-                  try {
-                    const roomResponse = await axios.get(
-                      `/api/friends/chatroom/${friend.userId}/${userData.userId}`
-                    );
-                    const roomId = roomResponse.data.roomId;
-
-                    const countResponse = await axios.get(
-                      `/api/friends/chatroom/${roomId}/unread-count`,
-                      {
-                        params: { userId: userData.userId },
-                      }
-                    );
-
-                    const count = countResponse.data || 0;
-                    unreadCounts[friend.userId] = count;
-                    if (count > 0) hasUnread = true;
-                  } catch (error) {
-                    console.error(
-                      `친구 ${friend.userId}의 안읽은 메시지 개수 조회 실패:`,
-                      error
-                    );
-                    unreadCounts[friend.userId] = 0;
-                  }
-                }
-
-                setFriendUnreadCounts(unreadCounts);
-                setHasUnReadFriendMessages(hasUnread);
-              })
-              .catch((err) => {
-                console.error('친구 목록 갱신 실패:', err);
-              });
-          }
-        } catch (e) {
-          console.error('친구요청/차단 목록 업데이트 에러', e);
+        // 항상 최신 selectedFriendRoom 확인
+        const currentRoom = selectedFriendRoomRef.current;
+        if (currentRoom?.friendId === friendId) {
+          // 현재 열려 있는 방이면 카운트 무시
+          return;
         }
-      });
 
-      // 개별 친구의 안읽은 메시지 개수 실시간 업데이트
-      stomp.subscribe(`/topic/friends/unread/${userData.userId}`, (frame) => {
-        try {
-          const data = JSON.parse(frame.body);
-          const { friendId, unreadCount } = data;
+        // 해당 친구의 안읽은 개수만 업데이트
+        setFriendUnreadCounts(prev => {
+          const updated = { ...prev, [friendId]: unreadCount };
+          const hasUnread = Object.values(updated).some(count => count > 0);
+          setHasUnReadFriendMessages(hasUnread);
+          return updated;
+        });
+      } catch (e) {
+        console.error("친구 안읽은 메시지 업데이트 에러", e);
+      }
+    });
 
-          // 항상 최신 selectedFriendRoom 확인
-          const currentRoom = selectedFriendRoomRef.current;
-          if (currentRoom?.friendId === friendId) {
-            // 현재 열려 있는 방이면 카운트 무시
-            return;
-          }
-
-          // 해당 친구의 안읽은 개수만 업데이트
-          setFriendUnreadCounts(prev => {
-            const updated = { ...prev, [friendId]: unreadCount };
-            const hasUnread = Object.values(updated).some(count => count > 0);
-            setHasUnReadFriendMessages(hasUnread);
-            return updated;
-          });
-        } catch (e) {
-          console.error("친구 안읽은 메시지 업데이트 에러", e);
-        }
-      });
-    };
-
-    stomp.activate();
-
-    return () => {
-      stomp.deactivate();
-    };
-
-  }, [userData?.userId]
-  );
+  }, [userData?.userId, subscribe]);
 
 
   // 렌더링 숨기고 로딩창 표시 

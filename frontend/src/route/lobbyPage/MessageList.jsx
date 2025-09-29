@@ -1,4 +1,6 @@
 import { memo } from "react";
+import { parseMessageWithLinks, openExternalLink } from "../../utils/linkUtils";
+import LinkPreview from "../../components/LinkPreview";
 
 
 const MessageList = memo(({ messages, userData }) => {
@@ -40,7 +42,30 @@ const MessageList = memo(({ messages, userData }) => {
                       : ""}
                   </div>
               )}
-              <div className={`chatStyle ${isSystemMessage ? 'system-chat-content' : ''} ${isMemberJoinMessage ? 'member-join-content' : ''}`}>{msg.message}</div>
+              <div className={`chatStyle ${isSystemMessage ? 'system-chat-content' : ''} ${isMemberJoinMessage ? 'member-join-content' : ''}`}>
+                {parseMessageWithLinks(msg.message).map((part) => {
+                  if (part.type === 'link') {
+                    return (
+                      <LinkPreview key={part.key} url={part.content}>
+                        <span
+                          className="message-link"
+                          onClick={() => openExternalLink(part.content)}
+                          style={{
+                            color: '#4A9EFF',
+                            textDecoration: 'underline',
+                            cursor: 'pointer',
+                            wordBreak: 'break-all'
+                          }}
+                          title="클릭하여 링크 열기"
+                        >
+                          {part.content}
+                        </span>
+                      </LinkPreview>
+                    );
+                  }
+                  return <span key={part.key}>{part.content}</span>;
+                })}
+              </div>
             </div>
           );
         })

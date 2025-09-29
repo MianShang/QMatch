@@ -1034,6 +1034,29 @@
     white-space: pre-line; /* 줄바꿈 지원 */
 }
 
+/* 멤버 입장 메시지 전체 스타일 */
+.member-join-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 8px 0;
+    padding: 0;
+}
+
+/* 멤버 입장 메시지 스타일 - 간결하게 표시 */
+.member-join-content {
+    background: transparent !important;
+    color: var(--discord-text-normal) !important;
+    font-style: italic;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.9;
+    border: none !important;
+    padding: 4px 8px !important;
+    margin: 2px 0 !important;
+}
+
 /* ================================Discord 입력 스타일============================= */
 .inputSize{
     display: flex;

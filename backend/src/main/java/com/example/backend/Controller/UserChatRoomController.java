@@ -14,6 +14,7 @@ import com.example.backend.Repository.ChatRoomRepository;
 import com.example.backend.Repository.UserChatRoomRepository;
 import com.example.backend.Repository.UserRepository;
 import com.example.backend.Service.UserChatRoomService;
+import com.example.backend.Service.ChatListService;
 import com.example.backend.Websocket.RealTimeUserManagement;
 import com.example.backend.enums.ChatRoomUserStatus;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class UserChatRoomController {
     private final UserChatRoomRepository userChatRoomRepository;
 
     private final UserChatRoomService userChatRoomService;
+    private final ChatListService chatListService;
     private final SimpMessagingTemplate simpMessagingTemplate;
 
     // 유저가 접속한 채팅방 DB 저장 API
@@ -266,7 +268,10 @@ public class UserChatRoomController {
                     .putIfAbsent(roomId, java.util.concurrent.ConcurrentHashMap.newKeySet());
             RealTimeUserManagement.activeUsersByRoom.get(roomId).add(applicantId);
             
-            // 9. 채팅방 전체에 새 멤버 입장 알림
+            // 9. 멤버 입장 메시지로 입장 알림 저장
+            chatListService.saveMemberJoinMessage(roomId, joinRequest.getUser().getUserName() + "님이 입장했습니다.");
+            
+            // 10. 채팅방 전체에 새 멤버 입장 알림
             simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId + "/member-joined",
                     Map.of(
                             "type", "member-joined",

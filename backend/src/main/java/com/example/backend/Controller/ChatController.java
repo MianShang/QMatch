@@ -455,6 +455,9 @@ public class ChatController {
                 .putIfAbsent(roomId, java.util.concurrent.ConcurrentHashMap.newKeySet());
         RealTimeUserManagement.activeUsersByRoom.get(roomId).add(userId);
 
+        // 멤버 입장 메시지로 입장 알림 저장
+        chatListService.saveMemberJoinMessage(roomId, user.getUserName() + "님이 입장했습니다.");
+        
         // 채팅방 전체에 새 멤버 입장 알림
         simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId + "/member-joined",
                 Map.of(

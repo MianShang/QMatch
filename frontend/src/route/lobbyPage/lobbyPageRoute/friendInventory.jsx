@@ -68,7 +68,7 @@ export function FriendInventory({ bottomToggle, userId }) {
                                 style={{ marginRight: "5px" }}
                                 onClick={async () => {
                                     if (bottomToggle === "friends") {
-                                        await respondFriend(RequestUser.userId, userId, "reject");
+                                        await useFriendResponse(RequestUser.userId, userId, "reject");
                                     } else {
                                         await deleteFriend(RequestUser.userId, userId);
                                     }

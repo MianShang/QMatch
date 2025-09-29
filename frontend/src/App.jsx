@@ -309,12 +309,7 @@ function App() {
           setFriendInventoryUpdate(payload);
 
           // 친구 관계가 변경된 경우 또는 안읽은 메시지가 업데이트된 경우 전체 목록 갱신
-          if (
-            payload.type === 'friend-added' ||
-            payload.type === 'friend-removed' ||
-            payload.type === 'friend-blocked' ||
-            payload.type === 'unread-updated'
-          ) {
+          if (payload.bottomToggle === 'friends') {
             axios
               .get(`/api/friends/list?userId=${userData.userId}`)
               .then(async (res) => {

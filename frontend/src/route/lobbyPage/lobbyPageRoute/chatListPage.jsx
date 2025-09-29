@@ -59,7 +59,7 @@ function ChatListPage({
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   const navigate = useNavigate();
   // State 보관함 해체
-  const { userData } = useContext(LogContext);
+  const { userData, isRunning } = useContext(LogContext);
 
   // State
   const [chatListExtend, setChatListExtend] = useState(false);
@@ -1027,6 +1027,14 @@ function ChatListPage({
                             {u.userName}
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
+                            {/* 실행 중인 게임 표시 */}
+                            {isRunning.filter(g => g.running)
+                              .map(g => (
+                                <span key={g.exe} className="membersGame" style={{marginLeft:"15px", fontSize:"12px"}}>
+                                  {g.label} 플레이중
+                                </span>
+                              ))}
+
                           </span>
                           {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
                           <div
@@ -1051,6 +1059,13 @@ function ChatListPage({
                             {u.userName}
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
+                            {/* 실행 중인 게임 표시 */}
+                            {isRunning.filter(g => g.running)
+                              .map(g => (
+                                <span key={g.exe} className="membersGame" style={{marginLeft:"15px", fontSize:"12px"}}>
+                                  {g.label} 플레이중
+                                </span>
+                              ))}
                           </span>
                           {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
                           <div

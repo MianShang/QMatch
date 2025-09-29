@@ -1,5 +1,7 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { parseMessageWithLinks, openExternalLink } from "../../utils/linkUtils";
+import { parseMessageWithImages, isGifImage } from "../../utils/imageUtils";
+import ImageMessage from "../../components/ImageMessage";
 import LinkPreview from "../../components/LinkPreview";
 
 
@@ -43,25 +45,41 @@ const MessageList = memo(({ messages, userData }) => {
                   </div>
               )}
               <div className={`chatStyle ${isSystemMessage ? 'system-chat-content' : ''} ${isMemberJoinMessage ? 'member-join-content' : ''}`}>
-                {parseMessageWithLinks(msg.message).map((part) => {
-                  if (part.type === 'link') {
+                {parseMessageWithImages(msg.message).map((part) => {
+                  if (part.type === 'image') {
+                    const isGif = isGifImage(part.url);
                     return (
-                      <LinkPreview key={part.key} url={part.content}>
-                        <span
-                          className="message-link"
-                          onClick={() => openExternalLink(part.content)}
-                          style={{
-                            color: '#4A9EFF',
-                            textDecoration: 'underline',
-                            cursor: 'pointer',
-                            wordBreak: 'break-all'
-                          }}
-                          title="클릭하여 링크 열기"
-                        >
-                          {part.content}
-                        </span>
-                      </LinkPreview>
+                      <ImageMessage
+                        key={part.key}
+                        url={part.url}
+                        alt={part.alt}
+                        isGif={isGif}
+                      />
                     );
+                  } else if (part.type === 'text') {
+                    // 텍스트 부분에서 링크 파싱
+                    return parseMessageWithLinks(part.content).map((linkPart) => {
+                      if (linkPart.type === 'link') {
+                        return (
+                          <LinkPreview key={linkPart.key} url={linkPart.content}>
+                            <span
+                              className="message-link"
+                              onClick={() => openExternalLink(linkPart.content)}
+                              style={{
+                                color: '#4A9EFF',
+                                textDecoration: 'underline',
+                                cursor: 'pointer',
+                                wordBreak: 'break-all'
+                              }}
+                              title="클릭하여 링크 열기"
+                            >
+                              {linkPart.content}
+                            </span>
+                          </LinkPreview>
+                        );
+                      }
+                      return <span key={linkPart.key}>{linkPart.content}</span>;
+                    });
                   }
                   return <span key={part.key}>{part.content}</span>;
                 })}

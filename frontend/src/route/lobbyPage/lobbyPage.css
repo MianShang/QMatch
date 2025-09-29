@@ -966,6 +966,21 @@
     line-height: 1.375;
 }
 
+/* 이모지 스타일링 */
+.chatStyle {
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Android Emoji', 'EmojiSymbols', sans-serif;
+}
+
+/* 이모지 크기 조정 */
+.chatStyle span {
+    font-family: inherit;
+}
+
+/* 이모지가 포함된 메시지의 줄 높이 조정 */
+.chatStyle:has(span[style*="font-size"]) {
+    line-height: 1.5;
+}
+
 .myChatStyle{
     display: flex;
     margin-right: 0;
@@ -1069,6 +1084,7 @@
     min-height: 80px; /* 최소 높이 보장 */
     width: 100%; /* 명시적 너비 설정 */
     transition: width 0.3s ease; /* 부드러운 전환 효과 */
+    gap: 8px; /* 요소 간 간격 추가 */
 }
 
 /* 참여자 패널이 열릴 때 입력창 너비 조정 */
@@ -1129,6 +1145,148 @@
 
 .chatButtonStyle:active {
     background: var(--discord-accent-active);
+}
+
+/* 이모지 버튼 스타일 */
+.emoji-button {
+    background: var(--discord-bg-quaternary);
+    border: none;
+    border-radius: 6px;
+    color: var(--discord-text-normal);
+    cursor: pointer;
+    padding: 8px 12px;
+    font-size: 18px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+}
+
+.emoji-button:hover {
+    background: var(--discord-bg-primary);
+    transform: scale(1.05);
+}
+
+.emoji-button:active {
+    transform: scale(0.95);
+}
+
+/* 이미지 업로드 버튼 스타일 */
+.image-upload-button {
+    background: var(--discord-bg-quaternary);
+    border: none;
+    border-radius: 6px;
+    color: var(--discord-text-normal);
+    cursor: pointer;
+    padding: 8px 12px;
+    font-size: 18px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+}
+
+.image-upload-button:hover {
+    background: var(--discord-bg-primary);
+    transform: scale(1.05);
+}
+
+.image-upload-button:active {
+    transform: scale(0.95);
+}
+
+/* 이미지 메시지 스타일 */
+.message-image-container {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    margin: 8px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.message-image {
+    max-width: 100%;
+    max-height: 400px;
+    width: auto;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.message-image:hover {
+    transform: scale(1.02);
+}
+
+.gif-image {
+    /* GIF 이미지 특별 스타일 */
+}
+
+.gif-indicator {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    pointer-events: none;
+}
+
+.image-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    font-size: 14px;
+}
+
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #4A9EFF;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.image-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    color: #666;
+    font-size: 14px;
+}
+
+.error-icon {
+    font-size: 16px;
+}
+
+.error-text {
+    font-weight: 500;
 }
 
 /* ================================참여자 패널 토글============================= */

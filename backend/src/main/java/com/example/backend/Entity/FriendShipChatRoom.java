@@ -7,6 +7,7 @@ import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -31,6 +32,9 @@ public class FriendShipChatRoom {
     //채팅방 생성 시간
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "friendShipChatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FriendShipChatReadStatus> readStatuses = new ArrayList<>();
 
     public FriendShipChatRoom(FriendShip friendship) {
         this.friendship = friendship;

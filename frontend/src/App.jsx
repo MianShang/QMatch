@@ -39,6 +39,18 @@ function App() {
   //친구 채팅 최신값 저장 Ref
   const selectedFriendRoomRef = useRef(null);
 
+  // 실시간 프로세스 목록 담을 State
+  const [processes, setProcesses] = useState([]);
+
+  // 프로세스 추척할 게임 목록
+  const gameTarget = [
+    { exe: "leagueclientux.exe", label: "리그 오브 레전드" },
+    { exe: "maplestory.exe", label: "메이플스토리" },
+    { exe: "lostark.exe", label: "로스트아크" },];
+
+  // 게임 실행 여부 담을 State
+  const [isRunning, setIsRunning] = useState({});
+
   // 안 읽은 메시지 상태
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [hasUnReadFriendMessages, setHasUnReadFriendMessages] = useState(false);
@@ -62,6 +74,39 @@ function App() {
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+
+  // 1초마다 프로세스 목록 불러오는 Effect 
+  useEffect(() => {
+    const fetchProcesses = async () => {
+      try {
+        const list = await window.require('electron').ipcRenderer.invoke('get-process-list');
+        setProcesses(list);
+      } catch (error) {
+        console.error('프로세스 목록 가져오기 실패:', error);
+      }
+    };
+
+    // 최초 1회 호출 및 1초마다 갱신
+    fetchProcesses();
+    const interval = setInterval(fetchProcesses, 10000);
+
+    return () => clearInterval(interval); // 언마운트 시 clear
+  }, []);
+
+  useEffect(() => {
+    const results = gameTarget.map(game => ({
+      exe: game.exe,
+      label: game.label,
+      running: processes.some(proc => proc.name?.toLowerCase() === game.exe)
+    }));
+
+    setIsRunning(results);
+
+    results.forEach(g => {
+      console.log(`${g.label} (${g.exe}) 실행 여부: ${g.running}`);
+    });
+  }, [processes]);
 
   // 새로고침 or 첫 로딩시 자동 실행
   useEffect(() => {
@@ -142,8 +187,9 @@ function App() {
     friendUnreadCounts,
     setFriendUnreadCounts,
     selectedFriendRoom,
-    setSelectedFriendRoom
-  }), [isLogIn, userData, isLoading, friends, statusByUser, friendInventoryUpdate, setFriendInventoryUpdate, hasUnreadMessages, theme, hasUnReadFriendMessages, setHasUnReadFriendMessages, friendUnreadCounts, setFriendUnreadCounts, selectedFriendRoom, setSelectedFriendRoom]);
+    setSelectedFriendRoom,
+    isRunning
+  }), [isLogIn, userData, isLoading, friends, statusByUser, friendInventoryUpdate, setFriendInventoryUpdate, hasUnreadMessages, theme, hasUnReadFriendMessages, setHasUnReadFriendMessages, friendUnreadCounts, setFriendUnreadCounts, selectedFriendRoom, setSelectedFriendRoom, isRunning]);
 
   //친구 최신값 저장 State가 바뀔때 마다 갱신
   useEffect(() => {
@@ -230,14 +276,21 @@ function App() {
 
           if (data.type === 'join-approved') {
             toast.success(data.message);
-            // 승인된 경우 채팅방으로 이동
-            if (window.location.pathname === '/search') {
-              navigate('/', {
-                state: {
+            
+            // 승인된 멤버가 자동으로 채팅방에 입장하도록 처리
+            if (data.roomId) {
+              console.log('승인 알림 수신 - 채팅방으로 이동:', data);
+              
+              // 채팅방으로 이동
+              navigate('/', { 
+                state: { 
+                  type: 'multi', // 다대다 채팅방 타입 추가
                   roomId: data.roomId,
                   chatName: data.roomName,
-                  gameName: data.gameName || '',
-                  tagNames: data.tagNames || []
+                  gameName: data.gameName,
+                  tagNames: data.tagNames || [],
+                  joinType: 'approval', // 승인된 방
+                  alreadyJoined: true // 이미 가입된 상태임을 표시
                 }
               });
             }
@@ -256,12 +309,7 @@ function App() {
           setFriendInventoryUpdate(payload);
 
           // 친구 관계가 변경된 경우 또는 안읽은 메시지가 업데이트된 경우 전체 목록 갱신
-          if (
-            payload.type === 'friend-added' ||
-            payload.type === 'friend-removed' ||
-            payload.type === 'friend-blocked' ||
-            payload.type === 'unread-updated'
-          ) {
+          if (payload.bottomToggle === 'friends') {
             axios
               .get(`/api/friends/list?userId=${userData.userId}`)
               .then(async (res) => {
@@ -354,6 +402,7 @@ function App() {
       </div>
     );
   }
+  console.log("권한 확인 직전 userData:", userData);
 
   // 로딩이 끝나면 실제 앱 화면을 렌더링
   return (

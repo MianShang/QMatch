@@ -1,17 +1,11 @@
 package com.example.backend.Controller;
 
-import com.example.backend.Entity.ChatIsRead;
-import com.example.backend.Entity.ChatRoom;
-import com.example.backend.Entity.User;
-import com.example.backend.Entity.UserChatRoom;
 import com.example.backend.Repository.ChatIsReadRepository;
 import com.example.backend.Repository.ChatRoomRepository;
 import com.example.backend.Repository.UserChatRoomRepository;
 import com.example.backend.Repository.UserRepository;
 import com.example.backend.Service.ChatIsReadService;
-import com.example.backend.Websocket.RealTimeUserManagement;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;

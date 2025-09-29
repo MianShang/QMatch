@@ -86,7 +86,7 @@ public class FriendController {
             return ResponseEntity.ok("친구가 삭제되었습니다.");
         }catch (IllegalArgumentException e) {
             ResponseEntity.badRequest().body(e.getMessage());
-            return ResponseEntity.badRequest().body("오류가 발새했습니다." + e.getMessage());
+            return ResponseEntity.badRequest().body("오류가 발생했습니다." + e.getMessage());
         }
     }
 

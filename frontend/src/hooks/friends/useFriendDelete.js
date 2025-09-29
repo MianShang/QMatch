@@ -1,5 +1,4 @@
 import axios from "axios";
-import { toast } from "react-toastify";
 
 export function useFriendDelete() {
   // 친구 삭제 함수 반환

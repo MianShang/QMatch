@@ -185,11 +185,8 @@ function SearchPage() {
     
     // subscribedRooms는 { chatRoom: { id: ... } } 구조
     const subscribedRoomIds = subscribedRooms.map(room => room.chatRoom.id);
-    console.log('구독한 방 IDs:', subscribedRoomIds);
-    console.log('검색된 방들:', rooms.map(r => r.id));
     
     const filtered = rooms.filter(room => !subscribedRoomIds.includes(room.id));
-    console.log('필터링된 방들:', filtered.map(r => r.id));
     
     return filtered;
   }

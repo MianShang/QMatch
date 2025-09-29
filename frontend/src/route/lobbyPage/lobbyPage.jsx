@@ -33,6 +33,7 @@ import { useChatListGet } from '../../hooks/chatList/useChatListGet.js';
 import { useSetReadUnReadChat } from '../../hooks/chatNotice/useSetReadUnReadChat.js';
 import { useFriendChatListGet } from '../../hooks/chatList/useFriendChatListGet.js';
 import { useFriendChatSender } from '../../hooks/chat/useFriendChatSender.js';
+import { useFriendReadChat } from '../../hooks/chatNotice/useFriendReadChat.js';
 
 // 상태 체크 훅 import 추가
 import useUserStatusReporter from '../../hooks/status/useUserStatusReporter.js';
@@ -71,11 +72,10 @@ function LobbyPage() {
   const [messages, setMessages] = useState([]);      // 보낼 메세지
   const [client, setClient] = useState(null);      // client 연결 여부 State
   const [input, setInput] = useState('');      // input 입력 Sate      
-  const [selectedFriendRoom, setSelectedFriendRoom] = useState(null); //친구 선택 채팅방
   const [friendMessages, setFriendMessages] = useState([]); // 친구 1:1 채팅 메시지
 
   // State 보관함 해체
-  const { isLogIn, setIsLogIn, userData, setUserData, setHasUnreadMessages, theme, toggleTheme } = useContext(LogContext)
+  const { isLogIn, setIsLogIn, userData, setUserData, setHasUnreadMessages, theme, toggleTheme, setHasUnReadFriendMessages, selectedFriendRoom,setSelectedFriendRoom } = useContext(LogContext)
 
   // 전역 STOMP 클라이언트 초기화
   const globalStomp = useGlobalStomp(userData);
@@ -83,6 +83,7 @@ function LobbyPage() {
   // 메시지 로딩 및 읽음 처리 훅
   const getChatList = useChatListGet();
   const setRead = useSetReadUnReadChat(userData);
+  const setFriendRead = useFriendReadChat(selectedFriendRoom,userData);
 
   // // userData가 로드될 때까지 로딩
   // if (!userData) {
@@ -110,7 +111,7 @@ function LobbyPage() {
   // --UseEffect
   useLoginCheck(isLogIn);                                         // 로그인 체크 훅
   useChatSubscriber(selectedRoom, setMessages, setClient, userData, globalStomp);    // 채팅방 구독 훅
-  useFriendChatSubscriber(selectedFriendRoom, setFriendMessages, globalStomp, setClient);   // 친구 1:1 채팅방 구독 훅
+  useFriendChatSubscriber(selectedFriendRoom, setFriendMessages, globalStomp, setClient, userData);   // 친구 1:1 채팅방 구독 훅
 
   // -- Function
   const logoutFunc = useLogout();                                          // 로그아웃 훅
@@ -279,6 +280,8 @@ function LobbyPage() {
           // 친구 채팅방 상세 업데이트
           setSelectedFriendRoom({ roomId: chatRoom.roomId, friendId: s.friendId });
           useFriendChatListGet(chatRoom.roomId, setFriendMessages);
+          setFriendRead(chatRoom.roomId, s.friendId);
+
         } catch (err) {
           console.error('1:1 채팅 로드 실패:', err);
         }

@@ -94,6 +94,22 @@
   text-overflow: ellipsis;
 }
 
+/* 안읽은 메시지 배지 */
+.unread-badge {
+  background-color: #f04747;
+  color: white;
+  border-radius: 10px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-weight: bold;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+}
+
 /* Discord 스타일 버튼 아이콘 */
 .CheckBox {
   padding: 6px;

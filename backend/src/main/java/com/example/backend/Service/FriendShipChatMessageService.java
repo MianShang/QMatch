@@ -9,10 +9,13 @@ import com.example.backend.Repository.FriendShipChatMessageRepository;
 import com.example.backend.Repository.FriendShipChatRoomRepository;
 import com.example.backend.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +24,8 @@ public class FriendShipChatMessageService {
     private final FriendShipChatMessageRepository friendShipChatMessageRepository;
     private final FriendShipChatRoomRepository friendShipChatRoomRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final FriendShipChatReadStatusService friendShipChatReadStatusService;
 
 
     //메세지 가져오기
@@ -41,6 +46,7 @@ public class FriendShipChatMessageService {
 
 
     //메세지 보내기
+    @Transactional
     public FriendChatMessageResponseDto saveMessage(Long roomId, FriendChatMessageRequestDto message)
     {
         FriendShipChatRoom room = friendShipChatRoomRepository.findById(roomId)
@@ -49,22 +55,40 @@ public class FriendShipChatMessageService {
         User user = userRepository.findByUserId(message.getSendId())
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다: " + message.getSendId()));
 
+
+        //메시지 저장
         FriendShipChatMessage entitySave = new FriendShipChatMessage();
         entitySave.setFriendShipChatRoom(room);
         entitySave.setUser(user);
         entitySave.setMessage(message.getMessage());
         entitySave.setSendTime(LocalDateTime.now());
-
         FriendShipChatMessage saved = friendShipChatMessageRepository.save(entitySave);
 
-        FriendChatMessageResponseDto dto = new FriendChatMessageResponseDto();
-        dto.setId(saved.getId());
-        dto.setChatroomId(saved.getFriendShipChatRoom().getId());
-        dto.setChatDate(saved.getSendTime());
-        dto.setMessage(saved.getMessage());
-        dto.setName(saved.getUser().getUserId());
-        dto.setUserName(user.getUserName());
+        // 응답 DTO
+        FriendChatMessageResponseDto dto = new FriendChatMessageResponseDto(saved);
+
+        // 브로드캐스트: 채팅방 참여자에게 메시지 전달
+        messagingTemplate.convertAndSend("/topic/friends/chat/" + roomId, dto);
+
+        // 받는 사람 unreadCount 계산
+        long lastReadId = friendShipChatReadStatusService.getLastReadMessageId(roomId, message.getReceiveId());
+        long unreadCount = friendShipChatMessageRepository
+                .countByFriendShipChatRoom_IdAndIdGreaterThan(roomId, lastReadId);
+
+        // 받는 사람에게 안읽은 개수 알림
+        messagingTemplate.convertAndSend(
+                "/topic/friends/unread/" + message.getReceiveId(),
+                Map.of("friendId", message.getSendId(), "unreadCount", unreadCount)
+        );
 
         return dto;
+    }
+    
+    
+    //안읽은 메시지 카운트
+    @Transactional(readOnly = true)
+    public long countUnreadMessages(Long roomId, Long lastReadMessageId) {
+        return friendShipChatMessageRepository
+                .countByFriendShipChatRoom_IdAndIdGreaterThan(roomId, lastReadMessageId);
     }
 }

@@ -31,6 +31,7 @@ public class FriendChatMessageController {
         return friendShipChatMessageService.getMessages(roomId);
     }
 
+
     @MessageMapping("/friends/chat/{roomId}")
     public void sendMessage(@DestinationVariable Long roomId, @Payload FriendChatMessageRequestDto message) {
         // 1) DB 저장

@@ -1055,6 +1055,7 @@
     border: none !important;
     padding: 4px 8px !important;
     margin: 2px 0 !important;
+    white-space: pre-line; /* 줄바꿈 지원 */
 }
 
 /* ================================Discord 입력 스타일============================= */

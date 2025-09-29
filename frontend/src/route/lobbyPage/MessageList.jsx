@@ -28,19 +28,6 @@ const MessageList = memo(({ messages, userData }) => {
                   </div>
               )}
               
-              {/* 멤버 입장 메시지인 경우 시간만 표시 */}
-              {isMemberJoinMessage && (
-                  <div className="message-date">
-                    {msg.chatDate
-                      ? new Date(msg.chatDate).toLocaleTimeString([], {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                          hour12: false, // 24시간제
-                        })
-                      : ""}
-                  </div>
-              )}
-              
               {/* 일반 채팅 시각 (24시간제, HH:MM) */}
               {!isMemberJoinMessage && (
                   <div className="message-date">

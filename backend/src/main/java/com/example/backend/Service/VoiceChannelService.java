@@ -1,15 +1,15 @@
 package com.example.backend.Service;
 
 import com.example.backend.Dto.VoiceChannelDto;
-import com.example.backend.Entity.ChatRoom;
 import com.example.backend.Entity.VoiceChannel;
-import com.example.backend.Repository.ChatRoomRepository;
+import com.example.backend.Entity.ChatRoom;
 import com.example.backend.Repository.VoiceChannelRepository;
+import com.example.backend.Repository.ChatRoomRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -17,39 +17,51 @@ import java.util.stream.Collectors;
 public class VoiceChannelService {
     private final VoiceChannelRepository voiceChannelRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
+    // 음성 채널 생성
+    public VoiceChannelDto createVoiceChannel(VoiceChannelDto dto) {
+
+        // ChatRoom 조회
+        ChatRoom chatRoom = chatRoomRepository.findById(dto.getChatRoomId())
+                .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다: " + dto.getChatRoomId()));
+
+        VoiceChannel voiceChannel = new VoiceChannel();
+        voiceChannel.setChatRoom(chatRoom);
+        voiceChannel.setChannelName(dto.getVoiceChannelName());
+        voiceChannel.setMaxUsers(dto.getMaxUsers());
+
+        VoiceChannel saved = voiceChannelRepository.save(voiceChannel);
+
+        VoiceChannelDto result = convertToDto(saved);
+
+        // WebSocket으로 채널 생성 알림 브로드캐스트
+        String destination = "/topic/chat/" + dto.getChatRoomId() + "/voice-channel-created";
+        messagingTemplate.convertAndSend(destination, result);
+
+        return result;
+    }
+
+    // 특정 채팅방의 음성 채널 목록 조회
     public List<VoiceChannelDto> getVoiceChannelsByChatRoom(String chatRoomId) {
-        return voiceChannelRepository.findByChatRoomId(chatRoomId)
-                .stream()
-                .map(this::toDTO)
+        List<VoiceChannel> channels = voiceChannelRepository.findByChatRoomId(chatRoomId);
+        return channels.stream()
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
-    public VoiceChannelDto createVoiceChannel(VoiceChannelDto dto) {
-        Optional<ChatRoom> chatRoomOpt = chatRoomRepository.findById(dto.getChatRoomId());
-        if (chatRoomOpt.isEmpty()) return null;
-
-        VoiceChannel vc = new VoiceChannel();
-        vc.setChatRoom(chatRoomOpt.get());
-        vc.setChannelName(dto.getVoiceChannelName());
-        vc.setMaxUsers(dto.getMaxUsers() != null ? dto.getMaxUsers() : null);
-
-
-        return toDTO(voiceChannelRepository.save(vc));
+    // 음성 채널 삭제
+    public void deleteVoiceChannel(Long channelId) {
+        voiceChannelRepository.deleteById(channelId);
     }
 
-    public boolean deleteVoiceChannel(Long id) {
-        if (!voiceChannelRepository.existsById(id)) return false;
-        voiceChannelRepository.deleteById(id);
-        return true;
-    }
-
-    private VoiceChannelDto toDTO(VoiceChannel vc) {
+    // Entity to DTO
+    private VoiceChannelDto convertToDto(VoiceChannel entity) {
         VoiceChannelDto dto = new VoiceChannelDto();
-        dto.setId(vc.getId());
-        dto.setChatRoomId(vc.getChatRoom().getId());
-        dto.setVoiceChannelName(vc.getChannelName());
-        dto.setMaxUsers(vc.getMaxUsers());
+        dto.setId(entity.getId());
+        dto.setChatRoomId(entity.getChatRoom().getId());
+        dto.setVoiceChannelName(entity.getChannelName());
+        dto.setMaxUsers(entity.getMaxUsers());
         return dto;
     }
 }

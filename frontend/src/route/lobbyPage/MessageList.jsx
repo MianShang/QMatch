@@ -27,13 +27,12 @@ const MessageList = memo(({ messages, userData }) => {
               {/* 시스템 메시지인 경우 특별한 표시 */}
               {isSystemMessage && (
                   <div className="system-message-header">
-                    <span className="system-icon">🤖</span>
-                    <span className="system-label">시스템 알림</span>
+                    <span className="system-label">채팅방 유의사항</span>
                   </div>
               )}
               
               {/* 일반 채팅 시각 (24시간제, HH:MM) */}
-              {!isMemberJoinMessage && (
+              {!isMemberJoinMessage && !isSystemMessage && (
                   <div className="message-date">
                     {msg.chatDate
                       ? new Date(msg.chatDate).toLocaleTimeString([], {

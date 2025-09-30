@@ -1014,8 +1014,6 @@
     align-items: center;
     margin: 16px 0;
     padding: 12px;
-    background: linear-gradient(135deg, rgba(88, 101, 242, 0.1), rgba(88, 101, 242, 0.05));
-    border: 1px solid rgba(88, 101, 242, 0.2);
     border-radius: 12px;
     position: relative;
 }
@@ -1040,9 +1038,9 @@
 }
 
 .system-chat-content {
-    background: rgba(88, 101, 242, 0.1) !important;
+    background: rgba(88, 101, 242, 0) !important;
     color: var(--discord-text-normal) !important;
-    border: 1px solid rgba(88, 101, 242, 0.2);
+    /* border: 1px solid rgba(88, 101, 242, 0.2); */
     text-align: center;
     font-weight: 500;
     line-height: 1.6;

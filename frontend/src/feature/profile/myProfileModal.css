@@ -765,4 +765,47 @@
           gap: 12px;
           align-items: stretch;
       }
+
+      .game-item-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px; /* 각 항목 간의 간격 */
+      }
+      
+      .game-item {
+        flex-grow: 1; /* 남는 공간을 모두 차지하도록 설정 */
+        /* 기존 .game-item 스타일은 그대로 유지 */
+        background-color: #f0f0f0;
+        padding: 8px 12px;
+        border-radius: 15px;
+        margin-right: 8px; /* 버튼과의 간격 */
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+      
+      .game-item:hover {
+        background-color: #e0e0e0;
+      }
+      
+      .delete-game-btn {
+        background-color: #ff4d4d;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        font-size: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        line-height: 1;
+        transition: background-color 0.2s;
+      }
+      
+      .delete-game-btn:hover {
+        background-color: #e60000;
+      }
   }

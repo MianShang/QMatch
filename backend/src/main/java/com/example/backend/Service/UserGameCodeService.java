@@ -64,4 +64,18 @@ public class UserGameCodeService {
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
         return userGameCodeRepository.findByUserAndGameName(user, gameName);
     }
+
+    @Transactional
+    public void deleteGameCode(Long gameCodeId) {
+        // ID를 사용하여 해당 데이터가 DB에 존재하는지 확인
+        boolean isPresent = userGameCodeRepository.existsById(gameCodeId);
+
+        if (isPresent) {
+            // 존재하면 ID로 해당 데이터를 삭제
+            userGameCodeRepository.deleteById(gameCodeId);
+        } else {
+            // 존재하지 않으면 예외를 발생시켜, 해당 ID의 데이터가 없음을 알림
+            throw new IllegalArgumentException("삭제할 데이터를 찾을 수 없습니다. ID: " + gameCodeId);
+        }
+    }
 }

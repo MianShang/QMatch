@@ -4,6 +4,7 @@ import com.example.backend.Dto.Request.GameCodeRequestDto;
 import com.example.backend.Entity.UserGameCode;
 import com.example.backend.Service.UserGameCodeService; // 새로 만든 Service import
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,5 +40,18 @@ public class UserGameCodeController {
             return ResponseEntity.ok("null"); // 또는 적절한 상태 코드로 응답
         }
         return ResponseEntity.ok(userGameCode.get());
+    }
+
+    @DeleteMapping("/api/delete/gamecode/{id}")
+    public ResponseEntity<String> deleteUserGameCode(@PathVariable Long id) {
+        try {
+            userGameCodeService.deleteGameCode(id);
+            // 삭제 성공 시 200 OK 상태 코드와 메시지 반환
+            return ResponseEntity.ok(id + "번 데이터 삭제 성공");
+        } catch (IllegalArgumentException e) {
+            // Service에서 데이터가 없다고 예외를 발생시킨 경우
+            // 404 Not Found 상태 코드와 에러 메시지 반환
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 }

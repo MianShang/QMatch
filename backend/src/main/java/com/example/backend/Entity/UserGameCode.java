@@ -16,6 +16,7 @@ public class UserGameCode {
     @JoinColumn(name = "user_id")
     private User user;
 
+
     private String gameName;
     private String gameCode;
 }

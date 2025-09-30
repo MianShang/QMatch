@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useContext, memo } from 'react'
+import { useRef, useState, useEffect, useContext, memo, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios';
 import './lobbyPage.css'
@@ -75,7 +75,7 @@ function LobbyPage() {
   const [friendMessages, setFriendMessages] = useState([]); // 친구 1:1 채팅 메시지
 
   // State 보관함 해체
-  const { isLogIn, setIsLogIn, userData, setUserData, setHasUnreadMessages, theme, toggleTheme, setHasUnReadFriendMessages, selectedFriendRoom,setSelectedFriendRoom } = useContext(LogContext)
+  const { isLogIn, setIsLogIn, userData, setUserData, setHasUnreadMessages, theme, toggleTheme, setHasUnReadFriendMessages, selectedFriendRoom,setSelectedFriendRoom, voiceParticipants: globalVoiceParticipants, setVoiceParticipants: setGlobalVoiceParticipants } = useContext(LogContext)
 
   // 전역 STOMP 클라이언트 초기화
   const globalStomp = useGlobalStomp(userData);
@@ -92,12 +92,25 @@ function LobbyPage() {
 
   // voiceChat
   const [activeVoiceChannel, setActiveVoiceChannel] = useState(null);
-  const [voiceChatRoomId, setVoiceChatRoomId] = useState(null);
-  const [voiceSpeakers, setVoiceSpeakers] = useState({});
-  const [voiceParticipants, setVoiceParticipants] = useState([]);
-  const [localMuted, setLocalMuted] = useState(false);
-  const [joinedVoice, setJoinedVoice] = useState(false);
+  const [voiceChatRoomId, setVoiceChatRoomId] = useState(null);   //음성 채널 아이디
+  const [voiceSpeakers, setVoiceSpeakers] = useState({});   //말하는중 표시
+  const [localMuted, setLocalMuted] = useState(false);      //음소거
+  const [joinedVoice, setJoinedVoice] = useState(false);    //음성 채팅 참여
   const voiceChatRef = useRef(null);
+  
+  // 현재 방의 참여자 목록 (전역 voiceParticipants에서 가져옴)
+  const voiceParticipants = useMemo(() => {
+    return selectedRoom?.id ? (globalVoiceParticipants[selectedRoom.id] || []) : [];
+  }, [selectedRoom?.id, globalVoiceParticipants]);
+
+  const [currentVoiceRoomId, setCurrentVoiceRoomId] = useState(null);   // 현재 선택된 채널 id 저장
+
+  // 채널 클릭 시
+  const onJoinVoice = (roomId) => {
+    setCurrentVoiceRoomId(roomId);
+    setVoiceChatRoomId(roomId);
+  };
+
 
   // 음성설정 모달
   const [showVoiceChatModal, setShowVoiceChatModal] = useState(false);
@@ -325,6 +338,31 @@ function LobbyPage() {
     };
   }, [selectedRoom?.id, globalStomp]);
 
+  // VoiceChat에서 참여자 변경을 감지했을 때 호출되는 함수
+  const handleVoiceParticipantsChange = useCallback((participants) => {
+    // Agora 이벤트는 무시하고 WebSocket만 사용
+  }, []);
+
+  // 음성채팅 참가자 목록을 불러오기 (초기 로딩만)
+  useEffect(() => {
+    if (!selectedRoom?.id) return;
+
+    // 초기 참가자 목록 로딩
+    const fetchParticipants = async () => {
+      try {
+        const response = await axios.get(`/api/voice/participants/${selectedRoom.id}`);
+        setGlobalVoiceParticipants(prev => ({
+          ...prev,
+          [selectedRoom.id]: response.data
+        }));
+      } catch (error) {
+        console.error("음성채팅 참가자 목록 로딩 실패:", error);
+      }
+    };
+
+    fetchParticipants();
+  }, [selectedRoom?.id, setGlobalVoiceParticipants]);
+
   // userData가 로드될 때까지 로딩
   if (!userData) {
     return <div>userData 로딩중</div>;
@@ -357,18 +395,17 @@ function LobbyPage() {
                   setSelectedRoom={setSelectedRoom}
                   onOpenProfile={(targetUserId) => { setProfileUserId(targetUserId); setShowProfileModal(true); }}
                   currentUserStatus={userStatus}
+                  onJoinVoice={onJoinVoice}
                   globalStomp={globalStomp}
                   refreshTick={listRefreshTick}
 
                   // VoiceChat 관련 props
+                  userData={userData}
                   voiceSpeakers={voiceSpeakers}
                   voiceParticipants={voiceParticipants}
-                  onJoinVoice={(roomId) => {
-                    setVoiceChatRoomId(roomId)
-                    if (voiceChatRef.current) {
-                      voiceChatRef.current.joinChannel(roomId);
-                    }
-                  }}
+                  setVoiceParticipants={setGlobalVoiceParticipants}
+                  voiceChatRef={voiceChatRef}
+                  setVoiceChatRoomId={setVoiceChatRoomId}
                   onLeaveVoice={() => {
                     if (voiceChatRef.current) {
                       voiceChatRef.current.leaveChannel();
@@ -380,10 +417,13 @@ function LobbyPage() {
                     }
                   }}
                   localMuted={localMuted}
+                  setLocalMuted={setLocalMuted}
                   joinedVoice={joinedVoice}
+                  setJoinedVoice={setJoinedVoice}
                   voiceChatRoomId={voiceChatRoomId}
-                  userData={userData}
                   setActiveVoiceChannel={setActiveVoiceChannel}
+                  uid={userData.userId}
+                  onParticipantsChange={handleVoiceParticipantsChange}
 
                   // UserHistoryModal 관련 props
                   isUserHistoryOpen={isUserHistoryOpen}
@@ -546,7 +586,10 @@ function LobbyPage() {
         onSpeakers={setVoiceSpeakers}
         onLocalMuteChange={setLocalMuted}
         onJoinChange={setJoinedVoice}
-        onParticipantsChange={setVoiceParticipants}
+        onParticipantsChange={handleVoiceParticipantsChange}
+        channelId={currentVoiceRoomId}
+        roomId={selectedRoom?.id}
+        globalStomp={globalStomp}
         ref={voiceChatRef}
       />
 

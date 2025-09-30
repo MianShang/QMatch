@@ -388,13 +388,14 @@
 
 .voice-channel-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   padding: 12px 16px;
   background: var(--discord-bg-secondary);
   border-radius: var(--discord-radius-small);
   border: 1px solid var(--discord-bg-tertiary);
   transition: all 0.2s ease;
+  position: relative;
+  min-height: 60px;
 }
 
 .voice-channel-item:hover {
@@ -406,6 +407,14 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
+}
+
+.voice-channel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
 }
 
 .voice-channel-name {
@@ -448,4 +457,84 @@
   background: var(--discord-bg-secondary);
   border-radius: var(--discord-radius-small);
   border: 1px solid var(--discord-bg-tertiary);
+}
+
+/* 음성채팅 퇴장 버튼 */
+.voice-exit-button {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.voice-exit-btn {
+  padding: 6px 12px;
+  background: var(--discord-text-danger);
+  color: white;
+  border: none;
+  border-radius: var(--discord-radius-small);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.voice-exit-btn:hover {
+  background: #d32f2f;
+  transform: translateY(-1px);
+}
+
+.voice-exit-btn:active {
+  transform: translateY(0);
+}
+
+/* 음성채널 참가자 목록 */
+.voice-channel-participants {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px;
+  background: var(--discord-bg-quaternary);
+  border-radius: var(--discord-radius-small);
+  margin-top: 8px;
+}
+
+.voice-user-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--discord-text-normal);
+  border-radius: var(--discord-radius-small);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  min-height: 32px;
+  box-shadow: 0 0 0 0 transparent;
+  margin: 2px 0;
+}
+
+.voice-user-row:hover {
+  background: var(--discord-bg-modifier-hover);
+}
+
+.voice-user-row.speaking {
+  border: 2px solid var(--discord-accent);
+  box-shadow: 
+    0 0 5px var(--discord-accent),
+    0 0 10px var(--discord-accent);
+  animation: speakingGlow 0.4s ease-in-out infinite alternate;
+}
+
+@keyframes speakingGlow {
+  0% {
+    box-shadow: 
+      0 0 3px var(--discord-accent),
+      0 0 6px var(--discord-accent);
+  }
+  100% {
+    box-shadow: 
+      0 0 8px var(--discord-accent),
+      0 0 15px var(--discord-accent);
+  }
 }

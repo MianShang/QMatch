@@ -32,16 +32,19 @@ function ChatListPage({
   setMessages,
   onOpenProfile,
   currentUserStatus,
+  onJoinVoice, // 음성채널 입장 콜백 추가
   // VoiceChat 관련 props
   voiceSpeakers,
-  onJoinVoice,
-  onLeaveVoice,
-  onToggleMute,
   localMuted,
   joinedVoice,
   voiceChatRoomId,
   voiceParticipants,
-  
+  setVoiceParticipants,
+  voiceChatRef,
+  setVoiceChatRoomId,
+  setLocalMuted,
+  setJoinedVoice,
+
   globalStomp,
   onMembersPanelToggle, // 참여자 패널 상태 변경 콜백 추가
   showMembersOnly = false, // 참여자 패널만 표시하는 플래그
@@ -725,16 +728,12 @@ function ChatListPage({
 
   /* 열기/닫기 헬퍼 */
   function openMembers(roomId) {
-    console.log('openMembers 호출됨:', roomId); // 디버깅용
     setIsMembersOpen(true);
     getChatUserList(roomId);
     setTimeout(measurePanel, 0);
     // 상위 컴포넌트에 참여자 패널 열림 알림
     if (onMembersPanelToggle) {
-      console.log('onMembersPanelToggle 호출됨'); // 디버깅용
       onMembersPanelToggle(true);
-    } else {
-      console.log('onMembersPanelToggle이 없음'); // 디버깅용
     }
   }
 
@@ -752,6 +751,33 @@ function ChatListPage({
       fetchVoiceChannels(selectedRoom.id);
     }
   }, [selectedRoom?.id]);
+
+  // 음성 채널 생성 알림 구독
+  useEffect(() => {
+    if (!globalStomp || !selectedRoom?.id) return;
+
+    const subscriptionId = `voice-channel-created-${selectedRoom.id}`;
+
+    globalStomp.subscribe(`/topic/chat/${selectedRoom.id}/voice-channel-created`, (frame) => {
+      try {
+        const newChannel = JSON.parse(frame.body);
+        setVoiceChannels(prev => {
+          // 중복 체크: 같은 ID의 채널이 이미 있는지 확인
+          const exists = prev.some(channel => channel.id === newChannel.id);
+          if (exists) {
+            return prev; // 이미 있으면 추가하지 않음
+          }
+          return [...prev, newChannel];
+        });
+      } catch (e) {
+        console.error('음성 채널 생성 알림 파싱 실패:', e);
+      }
+    }, { id: subscriptionId });
+
+    return () => {
+      globalStomp.unsubscribe(subscriptionId);
+    };
+  }, [selectedRoom?.id, globalStomp]);
 
   // 공통 메뉴 열기 함수
   function openMenu(e, userId) {
@@ -774,24 +800,169 @@ function ChatListPage({
     });
   }
 
+  // 음성채널 관련 함수들 정의
+  const joinChannel = (channelId) => {
+    // 실제 음성채널 입장 로직은 상위 컴포넌트에서 처리
+    // 여기서는 상태만 업데이트
+  };
+
+  const leaveChannel = () => {
+    // 실제 음성채널 퇴장 로직은 상위 컴포넌트에서 처리
+    // 여기서는 상태만 업데이트
+  };
+
+  const toggleMute = () => {
+    // 실제 음소거 토글 로직은 상위 컴포넌트에서 처리
+    // 여기서는 상태만 업데이트
+  };
+
+  useEffect(() => {
+    if (voiceChatRef) {
+      voiceChatRef.current = {
+        joinChannel,
+        leaveChannel,
+        toggleMute,
+      };
+    }
+  }, [voiceChatRef]);
+
   // 음성채널 목록 가져오기
   const fetchVoiceChannels = async (roomId) => {
     try {
-      const res = await axios.get(`/api/voice/channels/chat-room/${roomId}`);
+      const res = await axios.get(`/api/voice/channels/${roomId}`);
       if (res.status === 200) {
         setVoiceChannels(res.data);
       }
     } catch (error) {
       console.error('음성채널 목록 가져오기 실패:', error);
-      console.error('에러 응답:', error.response?.data);
-      console.error('에러 상태:', error.response?.status);
       setVoiceChannels([]);
     }
   };
 
+
   // 음성채널 생성 후 목록 업데이트
   const handleVoiceChannelCreated = (newChannel) => {
-    setVoiceChannels(prev => [...prev, newChannel]);
+    setVoiceChannels(prev => {
+      // 중복 체크: 같은 ID의 채널이 이미 있는지 확인
+      const exists = prev.some(channel => channel.id === newChannel.id);
+      if (exists) {
+        return prev; // 이미 있으면 추가하지 않음
+      }
+      return [...prev, newChannel];
+    });
+  };
+
+
+  // 음성 입장 핸들러
+  const handleJoinVoice = async (channelId) => {
+    // 이미 다른 채널에 접속 중인지 확인
+    if (joinedVoice && voiceChatRoomId && voiceChatRoomId !== channelId) {
+      // 현재 채널과 클릭한 채널 이름 찾기
+      const currentChannel = voiceChannels.find(ch => ch.id === voiceChatRoomId);
+      const targetChannel = voiceChannels.find(ch => ch.id === channelId);
+      
+      const currentChannelName = currentChannel?.voiceChannelName || '알 수 없는 채널';
+      const targetChannelName = targetChannel?.voiceChannelName || '알 수 없는 채널';
+      
+      // 확인 메시지
+      const confirmed = await confirmToast(
+        `지금 "${currentChannelName}" 채널에 입장해있습니다.\n"${targetChannelName}" 채널로 이동하시겠습니까?`
+      );
+      
+      if (!confirmed) {
+        return; // 취소하면 이동하지 않음
+      }
+      
+      // 기존 채널에서 퇴장
+      handleLeaveVoice();
+      
+      // 잠시 대기 후 새 채널 입장
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    setVoiceChatRoomId(channelId);
+    
+    // LobbyPage에 음성채널 입장 알림
+    if (onJoinVoice) {
+      onJoinVoice(channelId);
+    }
+    
+    if (voiceChatRef && voiceChatRef.current) {
+      try {
+        voiceChatRef.current.joinChannel(channelId);
+        setJoinedVoice(true);
+        
+        // 음성채널 참여자 목록 새로고침
+        if (selectedRoom?.id) {
+          fetchVoiceChannels(selectedRoom.id);
+          
+          // 지연된 새로고침 (서버 동기화용)
+          setTimeout(() => {
+            fetchVoiceChannels(selectedRoom.id);
+          }, 500);
+          
+          // 추가 지연된 새로고침 (다른 사용자 입장 대기용)
+          setTimeout(() => {
+            fetchVoiceChannels(selectedRoom.id);
+          }, 2000);
+        }
+        
+      } catch (error) {
+        console.error('음성채널 입장 실패:', error);
+        toast.error('음성채널 입장에 실패했습니다.');
+      }
+    } else {
+      // voiceChatRef가 없어도 기본 동작 수행
+      setJoinedVoice(true);
+      toast.info('음성채널에 입장했습니다. (기본 모드)');
+    }
+  };
+
+  // 음성 퇴장 핸들러
+  const handleLeaveVoice = () => {
+    if (voiceChatRef && voiceChatRef.current) {
+      try {
+        voiceChatRef.current.leaveChannel();
+        setJoinedVoice(false);
+        setVoiceChatRoomId(null);
+        
+        // 음성채널 참여자 목록 새로고침
+        if (selectedRoom?.id) {
+          fetchVoiceChannels(selectedRoom.id);
+          
+          // 지연된 새로고침 (서버 동기화용)
+          setTimeout(() => {
+            fetchVoiceChannels(selectedRoom.id);
+          }, 1000);
+        }
+        
+      } catch (error) {
+        console.error('음성채널 퇴장 실패:', error);
+        toast.error('음성채널 퇴장에 실패했습니다.');
+      }
+    } else {
+      // voiceChatRef가 없어도 기본 동작 수행
+      setJoinedVoice(false);
+      setVoiceChatRoomId(null);
+      toast.info('음성채널에서 퇴장했습니다. (기본 모드)');
+    }
+  };
+
+  // 음소거 토글
+  const handleToggleMute = () => {
+    if (voiceChatRef && voiceChatRef.current) {
+      try {
+        voiceChatRef.current.toggleMute();
+        setLocalMuted(prev => !prev);
+      } catch (error) {
+        console.error('음소거 토글 실패:', error);
+        toast.error('음소거 토글에 실패했습니다.');
+      }
+    } else {
+      // voiceChatRef가 없어도 기본 동작 수행
+      setLocalMuted(prev => !prev);
+      toast.info(`음소거가 ${localMuted ? '해제' : '설정'}되었습니다. (기본 모드)`);
+    }
   };
 
   return (
@@ -854,48 +1025,7 @@ function ChatListPage({
 
                   return (
                     <div key={item.userId} className='UserListContentStyle'>
-                      <p>
-                        {item.userId} <span className="membersDot">{getStatusIcon(eff)}</span>
-                        {/* 말하는 중 표시 */}
-                        {isVoiceParticipant && (
-                          <span
-                            className={`talkSpeakerArc ${talkingOn ? 'on' : ''}`}
-                            aria-label={talkingOn ? '말하는 중' : '말하지 않음'}
-                          >
-                            <svg className="icon" viewBox="0 0 64 32" aria-hidden="true">
-                              {/* 스피커 본체 */}
-                              <path className="spk" d="M6 12v8h8l10 8V4L14 12H6z" />
-                              {/* 반원 파동 3개 (오른쪽으로 퍼짐) */}
-                              <path className="wave w1" d="M30 8a8 8 0 0 1 0 16" />
-                              <path className="wave w2" d="M36 5a12 12 0 0 1 0 22" />
-                              <path className="wave w3" d="M42 2a16 16 0 0 1 0 28" />
-                            </svg>
-                          </span>
-                        )}
-                      </p>
-
-                      {/* VoiceChat 버튼 UI */}
-                      {isMe && (
-                        <div className="voice-control-panel">
-                          {joinedVoice ? (
-                            /* 현재 보고 있는 방과 참여 중인 방이 같은 경우 */
-                            voiceChatRoomId === selectedRoom.id ? (
-                              <>
-                                <button onClick={onLeaveVoice}>🎧 퇴장</button>
-                                <button onClick={onToggleMute}>
-                                  {localMuted ? '🔊' : '🔇'}
-                                </button>
-                              </>
-                            ) : (
-                              /* 다른 방에 참여 중인 경우 */
-                              <p>다른 방에 참여 중입니다.</p>
-                            )
-                          ) : (
-                            /* 음성 채팅에 참여하고 있지 않은 경우 */
-                            <button onClick={() => onJoinVoice(selectedRoom.id)}>🎙️ 입장</button>
-                          )}
-                        </div>
-                      )}
+                       
 
                       {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 
                       <div
@@ -1108,7 +1238,7 @@ function ChatListPage({
                         {Array.isArray(pendingUsers) && pendingUsers.map(u => (
                           <div className="membersRow" key={'pending-' + u.userId}>
                             <span className="membersName membersName--offline">
-                              {u.userId}
+                              {u.userName}
                               <span className="membersDot">⚪</span>
                             </span>
 
@@ -1145,70 +1275,67 @@ function ChatListPage({
                   </div>
                 )}
 
-                {/* 음성채널 목록 */}
+                {/* 음성채팅 UI */}
                 <div className="voice-channels-list">
                   {voiceChannels.length > 0 ? (
                     voiceChannels.map((channel) => {
-                      //console.log(`채널: ${channel.id}`);
+                      // voiceChannelId를 문자열과 숫자 모두 비교
+                      const participantsInChannel = (Array.isArray(voiceParticipants) ? voiceParticipants : []).filter(
+                        p => p.voiceChannelId == channel.id || p.voiceChannelId === String(channel.id) || p.voiceChannelId === Number(channel.id)
+                      );
+                      const participantCount = participantsInChannel.length;
                       const isJoined = joinedVoice && voiceChatRoomId === channel.id;
-                      // 이 채널에 참여 중인 유저만 필터링
-                      const participants = chatUserList.filter((u) => {
-                        const key = String(u.userId);
-                        const info = voiceSpeakers[key];
-                        return info && info.voiceChannelId === channel.id;
-                      });
-
+                      
                       return (
                         <div
-                          key={channel.id}
+                          key={`voice-channel-${selectedRoom?.id}-${channel.id}`}
                           className={`voice-channel-item ${isJoined ? 'joined' : ''}`}
-                          onClick={() => onJoinVoice(channel.id)}
+                          onClick={() => !isJoined && handleJoinVoice(channel.id)}
                         >
-                          {/* 채널명 + 인원 수 */}
-                          <div className="voice-channel-info">
-                            <span className="voice-channel-name">{channel.voiceChannelName}</span>
-                            <span className="voice-channel-users">
-                              {participants.length}/{channel.maxUsers || '∞'}
-                            </span>
+                          <div className="voice-channel-header">
+                            <div className="voice-channel-info">
+                              <span className="voice-channel-name">{channel.voiceChannelName}</span>
+                              <span className="voice-channel-users">
+                                {participantCount} / {channel.maxUsers || '∞'}
+                              </span>
+                            </div>
+
+                            {isJoined && (
+                              <div className="voice-exit-button" onClick={(e) => {
+                                e.stopPropagation();
+                                handleLeaveVoice();
+                              }}>
+                                <button className="voice-exit-btn">퇴장</button>
+                              </div>
+                            )}
                           </div>
 
-                          {/* 참여자 목록 */}
-                          {participants.length > 0 && (
-                            <div className="voice-channel-participants">
-                              {participants.map((u) => {
-                                const key = String(u.userId);
-                                const info = voiceSpeakers[key] || {};
-                                const isMe = u.userId === userData.userId;
-                                const talking = info.speaking && !(isMe && localMuted);
-
+                          <div className="voice-channel-participants" key={`participants-${channel.id}-${participantCount}`}>
+                            {participantCount > 0 ? (
+                              participantsInChannel.map((p) => {
+                                const isSpeaking = voiceSpeakers[p.userId]?.speaking;
                                 return (
-                                  <div key={u.userId} className="voice-user-row">
-                                    <span>{u.userId}</span>
-                                    {talking && (
-                                      <span
-                                        className="talkSpeakerArc on"
-                                        aria-label="말하는 중"
-                                      >
-                                        <svg className="icon" viewBox="0 0 64 32" aria-hidden="true">
-                                          <path className="spk" d="M6 12v8h8l10 8V4L14 12H6z" />
-                                          <path className="wave w1" d="M30 8a8 8 0 0 1 0 16" />
-                                          <path className="wave w2" d="M36 5a12 12 0 0 1 0 22" />
-                                          <path className="wave w3" d="M42 2a16 16 0 0 1 0 28" />
-                                        </svg>
-                                      </span>
-                                    )}
+                                  <div 
+                                    key={`${p.userId}-${channel.id}`} 
+                                    className={`voice-user-row ${isSpeaking ? 'speaking' : ''}`}
+                                  >
+                                    <span>{p.userName}</span>
                                   </div>
                                 );
-                              })}
-                            </div>
-                          )}
+                              })
+                            ) : (
+                              <div className="voice-user-row">
+                                <span style={{ color: 'var(--discord-text-muted)', fontStyle: 'italic' }}>
+                                  참여자가 없습니다
+                                </span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       );
                     })
                   ) : (
-                    <div className="no-voice-channels">
-                      아직 생성된 음성채널이 없습니다.
-                    </div>
+                    <div className="no-voice-channels">아직 생성된 음성채널이 없습니다.</div>
                   )}
                 </div>
 

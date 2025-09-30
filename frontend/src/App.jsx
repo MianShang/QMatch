@@ -2,13 +2,14 @@ import React, { useState, useEffect, createContext, useMemo, useRef } from 'reac
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
-import { Client } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 import { getFriendUnReadChatCount } from './hooks/chatNotice/useFriendUnReadChatCount.js';
 
-{/* 컴포넌트 import */ }
+// useGlobalStomp import
+import { useGlobalStomp } from './hooks/stomp/useGlobalStomp.js';
+
+{/* 컴포넌트 import */}
 import LobbyPage from './route/lobbyPage/lobbyPage.jsx';
 import SearchPage from './route/searchPage/searchPage.jsx';
 import LoginPage from './route/loginPage/loginPage.jsx';
@@ -54,6 +55,9 @@ function App() {
   // 안 읽은 메시지 상태
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [hasUnReadFriendMessages, setHasUnReadFriendMessages] = useState(false);
+
+  // 음성채널 참여자 목록 (전역)
+  const [voiceParticipants, setVoiceParticipants] = useState({});
 
   // 테마 상태
   const [theme, setTheme] = useState(() => {
@@ -188,14 +192,15 @@ function App() {
     setFriendUnreadCounts,
     selectedFriendRoom,
     setSelectedFriendRoom,
-    isRunning
-  }), [isLogIn, userData, isLoading, friends, statusByUser, friendInventoryUpdate, setFriendInventoryUpdate, hasUnreadMessages, theme, hasUnReadFriendMessages, setHasUnReadFriendMessages, friendUnreadCounts, setFriendUnreadCounts, selectedFriendRoom, setSelectedFriendRoom, isRunning]);
+    isRunning,
+    voiceParticipants,
+    setVoiceParticipants
+  }), [isLogIn, userData, isLoading, friends, statusByUser, friendInventoryUpdate, setFriendInventoryUpdate, hasUnreadMessages, theme, hasUnReadFriendMessages, setHasUnReadFriendMessages, friendUnreadCounts, setFriendUnreadCounts, selectedFriendRoom, setSelectedFriendRoom, isRunning, voiceParticipants]);
 
   //친구 최신값 저장 State가 바뀔때 마다 갱신
   useEffect(() => {
     selectedFriendRoomRef.current = selectedFriendRoom;
   }, [selectedFriendRoom]);
-
 
   //친구 목록 가져오기
   useEffect(() => {
@@ -236,79 +241,73 @@ function App() {
     fetchFriends();
   }, [userData?.userId]);
 
-  //전역 Stomp
+  // 전역 STOMP 클라이언트 (useGlobalStomp 사용)
+  const globalStomp = useGlobalStomp(userData);
+
+  //전역 Stomp 구독
   useEffect(() => {
-    if (!userData?.userId) return;
+    if (!userData?.userId || !globalStomp) return;
 
-    const stomp = new Client({
-      webSocketFactory: () => new SockJS(`${BASE_URL}/gs-guide-websocket`),
-      reconnectDelay: 5000,
-      connectHeaders: { userId: userData.userId }
-    });
+    //친구 요청구독
+    globalStomp.subscribe(`/topic/friends/${userData.userId}`, (frame) => {
+      try {
+        const payload = JSON.parse(frame.body);
+        toast.info(payload.message || "새로운 친구 요청이 도착했습니다.");
+      } catch (e) {
+        console.error("친구추가 요청 에러", e);
+      }
+    }, { id: 'app-friend-request' });
 
-    stomp.onConnect = () => {
+    //친구 상태구독
+    globalStomp.subscribe(`/topic/friends/status`, (frame) => {
+      try {
+        const payload = JSON.parse(frame.body);
+        setStatusByUser(prev => ({ ...prev, [payload.userId]: payload.status }));
+      } catch (e) {
+        console.error("친구상태 업데이트 에러", e);
+      }
+    }, { id: 'app-friend-status' });
 
-      //친구 요청구독
-      stomp.subscribe(`/topic/friends/${userData.userId}`, (frame) => {
-        try {
-          const payload = JSON.parse(frame.body);
-          toast.info(payload.message || "새로운 친구 요청이 도착했습니다.");
-        } catch (e) {
-          console.error("친구추가 요청 에러", e);
-        }
-      });
-
-      //친구 상태구독
-      stomp.subscribe(`/topic/friends/status`, (frame) => {
-        try {
-          const payload = JSON.parse(frame.body);
-          setStatusByUser(prev => ({ ...prev, [payload.userId]: payload.status }));
-        }
-        catch (e) {
-          console.error("친구상태 업데이트 에러", e);
-        }
-      });
-
-      // 채팅방 입장 응답 구독
-      stomp.subscribe(`/topic/user/${userData.userId}/join-response`, (message) => {
-        try {
-          const data = JSON.parse(message.body);
-
-          if (data.type === 'join-approved') {
-            toast.success(data.message);
+    // 채팅방 입장 응답 구독
+    globalStomp.subscribe(`/topic/user/${userData.userId}/join-response`, (message) => {
+      try {
+        const data = JSON.parse(message.body);
+        
+        if (data.type === 'join-approved') {
+          toast.success(data.message);
+          
+          // 승인된 멤버가 자동으로 채팅방에 입장하도록 처리
+          if (data.roomId) {
+            console.log('승인 알림 수신 - 채팅방으로 이동:', data);
             
-            // 승인된 멤버가 자동으로 채팅방에 입장하도록 처리
-            if (data.roomId) {
-              console.log('승인 알림 수신 - 채팅방으로 이동:', data);
-              
-              // 채팅방으로 이동
-              navigate('/', { 
-                state: { 
-                  type: 'multi', // 다대다 채팅방 타입 추가
-                  roomId: data.roomId,
-                  chatName: data.roomName,
-                  gameName: data.gameName,
-                  tagNames: data.tagNames || [],
-                  joinType: 'approval', // 승인된 방
-                  alreadyJoined: true // 이미 가입된 상태임을 표시
-                }
-              });
-            }
-          } else if (data.type === 'join-rejected') {
-            toast.error(data.message);
+            // 채팅방으로 이동
+            navigate('/', { 
+              state: { 
+                type: 'multi', // 다대다 채팅방 타입 추가
+                roomId: data.roomId,
+                chatName: data.roomName,
+                gameName: data.gameName,
+                tagNames: data.tagNames || [],
+                joinType: 'approval', // 승인된 방
+                alreadyJoined: true // 이미 가입된 상태임을 표시
+              }
+            });
           }
-        } catch (e) {
-          console.error("채팅방 입장 응답 에러", e);
+        } else if (data.type === 'join-rejected') {
+          toast.error(data.message);
         }
-      });
+      } catch (e) {
+        console.error("채팅방 입장 응답 에러", e);
+      }
+    }, { id: 'app-join-response' });
 
-      //친구 요청/차단 목록 업데이트 (친구 관계 변경 시에만 전체 갱신)
-      stomp.subscribe(`/topic/friends/inventory/${userData.userId}`, (frame) => {
-        try {
-          const payload = JSON.parse(frame.body);
-          setFriendInventoryUpdate(payload);
+    //친구 요청/차단 목록 업데이트
+    globalStomp.subscribe(`/topic/friends/inventory/${userData.userId}`, (frame) => {
+      try {
+        const payload = JSON.parse(frame.body);
+        setFriendInventoryUpdate(payload);
 
-          // 친구 관계가 변경된 경우 또는 안읽은 메시지가 업데이트된 경우 전체 목록 갱신
+        // 친구 관계가 변경된 경우 또는 안읽은 메시지가 업데이트된 경우 전체 목록 갱신
           if (payload.bottomToggle === 'friends') {
             axios
               .get(`/api/friends/list?userId=${userData.userId}`)
@@ -355,10 +354,10 @@ function App() {
         } catch (e) {
           console.error('친구요청/차단 목록 업데이트 에러', e);
         }
-      });
+      }, { id: 'app-friend-inventory' });
 
       // 개별 친구의 안읽은 메시지 개수 실시간 업데이트
-      stomp.subscribe(`/topic/friends/unread/${userData.userId}`, (frame) => {
+      globalStomp.subscribe(`/topic/friends/unread/${userData.userId}`, (frame) => {
         try {
           const data = JSON.parse(frame.body);
           const { friendId, unreadCount } = data;
@@ -380,17 +379,34 @@ function App() {
         } catch (e) {
           console.error("친구 안읽은 메시지 업데이트 에러", e);
         }
-      });
-    };
+      }, { id: 'app-friend-unread' });
 
-    stomp.activate();
+    // 음성채널 참여자 전역 구독
+    globalStomp.subscribe(`/topic/voice-participants`, (frame) => {
+      try {
+        const payload = JSON.parse(frame.body);
+        
+        // payload 구조: { roomId: string, participants: [...] }
+        if (payload.roomId && Array.isArray(payload.participants)) {
+          setVoiceParticipants(prev => ({
+            ...prev,
+            [payload.roomId]: payload.participants
+          }));
+        }
+      } catch (e) {
+        console.error("음성채널 참여자 업데이트 에러", e);
+      }
+    }, { id: 'app-voice-participants' });
 
     return () => {
-      stomp.deactivate();
+      globalStomp.unsubscribe('app-friend-request');
+      globalStomp.unsubscribe('app-friend-status');
+      globalStomp.unsubscribe('app-join-response');
+      globalStomp.unsubscribe('app-friend-inventory');
+      globalStomp.unsubscribe('app-friend-unread');
+      globalStomp.unsubscribe('app-voice-participants');
     };
-
-  }, [userData?.userId]
-  );
+  }, [userData?.userId, globalStomp, navigate]);
 
 
   // 렌더링 숨기고 로딩창 표시 
@@ -442,6 +458,7 @@ function App() {
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick
+        closeButton={false}  // X 표시 제거
         rtl={false}
         pauseOnFocusLoss
         draggable

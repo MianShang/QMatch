@@ -33,7 +33,7 @@ export function useGameStatus(publish, subscribe, isConnected, userData, gameTar
         };
 
         if (lastSentRef.current !== JSON.stringify(payload)) {
-            publish(`/app/presence/games/${userData.userId}`, payload);
+            publish(`/app/status/games/${userData.userId}`, payload);
             lastSentRef.current = JSON.stringify(payload);
         }
     }, [processes, userData, isConnected, publish]);
@@ -45,7 +45,7 @@ export function useGameStatus(publish, subscribe, isConnected, userData, gameTar
         let sub;
 
         (async () => {
-            sub = await subscribe("/user/queue/presence/games", (frame) => {
+            sub = await subscribe(`/topic/status/games`, (frame) => {
                 const payload = JSON.parse(frame.body);
                 setGameStatusByUser(prev => ({
                     ...prev,

@@ -41,7 +41,7 @@ function ChatListPage({
   joinedVoice,
   voiceChatRoomId,
   voiceParticipants,
-  
+
   globalStomp,
   onMembersPanelToggle, // 참여자 패널 상태 변경 콜백 추가
   showMembersOnly = false, // 참여자 패널만 표시하는 플래그
@@ -59,7 +59,7 @@ function ChatListPage({
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   const navigate = useNavigate();
   // State 보관함 해체
-  const { userData, isRunning } = useContext(LogContext);
+  const { userData, isRunning, gameStatusByUser } = useContext(LogContext);
 
   // State
   const [chatListExtend, setChatListExtend] = useState(false);
@@ -1028,12 +1028,31 @@ function ChatListPage({
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
                             {/* 실행 중인 게임 표시 */}
-                            {isRunning.filter(g => g.running)
-                              .map(g => (
-                                <span key={g.exe} className="membersGame" style={{marginLeft:"15px", fontSize:"12px"}}>
+                            {/* 1. 내 실행 상태 */}
+                            {u.userId === userData?.userId &&
+                              isRunning.filter(g => g.running).map(g => (
+                                <span
+                                  key={g.exe}
+                                  className="membersGame"
+                                  style={{ marginLeft: "15px", fontSize: "12px" }}
+                                >
                                   {g.label} 플레이중
                                 </span>
-                              ))}
+                              ))
+                            }
+
+                            {/* 2. 다른 유저 실행 상태 */}
+                            {u.userId !== userData?.userId &&
+                              gameStatusByUser[u.userId]?.map((game, idx) => (
+                                <span
+                                  key={idx}
+                                  className="membersGame"
+                                  style={{ marginLeft: "15px", fontSize: "12px" }}
+                                >
+                                  {game} 플레이중
+                                </span>
+                              ))
+                            }
 
                           </span>
                           {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
@@ -1060,12 +1079,31 @@ function ChatListPage({
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
                             {/* 실행 중인 게임 표시 */}
-                            {isRunning.filter(g => g.running)
-                              .map(g => (
-                                <span key={g.exe} className="membersGame" style={{marginLeft:"15px", fontSize:"12px"}}>
+                            {/* 1. 내 실행 상태 */}
+                            {u.userId === userData?.userId &&
+                              isRunning.filter(g => g.running).map(g => (
+                                <span
+                                  key={g.exe}
+                                  className="membersGame"
+                                  style={{ marginLeft: "15px", fontSize: "12px" }}
+                                >
                                   {g.label} 플레이중
                                 </span>
-                              ))}
+                              ))
+                            }
+
+                            {/* 2. 다른 유저 실행 상태 */}
+                            {u.userId !== userData?.userId &&
+                              gameStatusByUser[u.userId]?.map((game, idx) => (
+                                <span
+                                  key={idx}
+                                  className="membersGame"
+                                  style={{ marginLeft: "15px", fontSize: "12px" }}
+                                >
+                                  {game} 플레이중
+                                </span>
+                              ))
+                            }
                           </span>
                           {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
                           <div

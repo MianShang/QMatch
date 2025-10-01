@@ -44,9 +44,10 @@ function App() {
 
   // 프로세스 추척할 게임 목록
   const gameTarget = [
-    { exe: "leagueclientux.exe", label: "리그 오브 레전드" },
+    { exe: "leagueclientux.exe", label: "리그오브레전드" },
     { exe: "maplestory.exe", label: "메이플스토리" },
-    { exe: "lostark.exe", label: "로스트아크" },];
+    { exe: "lostark.exe", label: "로스트아크" },
+    { exe: "dnf.exe", label:"던전앤파이터"}];
 
   //게임 실행여부 훅
   const { isRunning, gameStatusByUser } = useGameStatus(publish, subscribe, isConnected, userData, gameTarget, processes);

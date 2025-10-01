@@ -1,0 +1,166 @@
+/* FriendInviteNotificationModal.css */
+.friend-invite-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--discord-bg-primary);
+  border: 1px solid var(--discord-bg-tertiary);
+  border-radius: 12px;
+  box-shadow: var(--discord-elevation-high);
+  z-index: 1001;
+  min-width: 320px;
+  max-width: 400px;
+  animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--discord-bg-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-icon {
+  font-size: 24px;
+}
+
+.notification-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--discord-text-normal);
+  margin: 0;
+}
+
+.notification-content {
+  padding: 16px 20px;
+}
+
+.room-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.room-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: var(--discord-brand);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.room-details {
+  flex: 1;
+}
+
+.room-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--discord-text-normal);
+  margin: 0 0 4px 0;
+}
+
+.inviter-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+
+.inviter-avatar-container {
+  position: relative;
+}
+
+.inviter-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.inviter-avatar-initial {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--discord-brand);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+.inviter-text {
+  font-size: 12px;
+  color: var(--discord-text-muted);
+  margin: 0;
+}
+
+.notification-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.accept-btn {
+  background: var(--discord-brand);
+  color: white;
+}
+
+.accept-btn:hover {
+  background: var(--discord-brand-hover);
+}
+
+.reject-btn {
+  background: var(--discord-bg-tertiary);
+  color: var(--discord-text-normal);
+}
+
+.reject-btn:hover {
+  background: var(--discord-bg-quaternary);
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px) {
+  .friend-invite-notification {
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    min-width: auto;
+    max-width: none;
+  }
+}

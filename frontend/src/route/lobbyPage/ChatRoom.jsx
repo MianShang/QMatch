@@ -1,5 +1,6 @@
 import MessageList from "./MessageList";
 import RoomSettingsModal from "../../modal/RoomSettingsModal/RoomSettingsModal";
+import FriendInviteModal from "../../modal/FriendInviteModal/FriendInviteModal";
 import { useState } from "react";
 
 function ChatRoom({
@@ -17,6 +18,7 @@ function ChatRoom({
 }) {
 
     const [showRoomSettings, setShowRoomSettings] = useState(false);
+    const [showFriendInvite, setShowFriendInvite] = useState(false);
 
     const handleSend = () => {
         if (selectedRoom) {
@@ -24,6 +26,11 @@ function ChatRoom({
         } else if (selectedFriendRoom) {
             sendFriendMessage();
         }
+    };
+
+    const handleInviteSent = (friend) => {
+        console.log(`${friend.userName}님에게 초대를 보냈습니다.`);
+        setShowFriendInvite(false);
     };
     
     return (
@@ -44,6 +51,13 @@ function ChatRoom({
                             {selectedRoom.hostUserId === userData?.userId && (
                                 <span className="hostBadge">방장</span>
                             )}
+                            <button 
+                                className="roomSettingsBtn"
+                                onClick={() => setShowFriendInvite(true)}
+                                title="친구 초대"
+                            >
+                                👥
+                            </button>
                             {selectedRoom.hostUserId === userData?.userId && (
                                 <button 
                                     className="roomSettingsBtn"
@@ -98,6 +112,14 @@ function ChatRoom({
                     onClose={() => setShowRoomSettings(false)}
                     room={selectedRoom}
                     onRoomUpdated={onRoomUpdated}
+                />
+
+                {/* 친구 초대 모달 */}
+                <FriendInviteModal
+                    open={showFriendInvite}
+                    onClose={() => setShowFriendInvite(false)}
+                    room={selectedRoom}
+                    onInviteSent={handleInviteSent}
                 />
             </div>
     );

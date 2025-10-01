@@ -75,6 +75,7 @@ public class MyUserDetailsService implements UserDetailsService {
         customUserDetail.userId = user.getUserId();
         customUserDetail.userEmail = user.getUserEmail();
         customUserDetail.userProfile = user.getUserProfile();
+        customUserDetail.userNickName = user.getUserNickName();
         customUserDetail.userTags = user.getUserTags();
         customUserDetail.userIntro = user.getUserIntro();
         customUserDetail.userStatusMessage = user.getUserStatusMessage();
@@ -100,10 +101,12 @@ public class MyUserDetailsService implements UserDetailsService {
         public String userId;
         public String userEmail;
         public String userProfile;
+        public String userNickName;
         public List<String>userTags;
         public String userIntro;
         public String userStatusMessage;
         public AccountStatus status;
+
 
         public CustomUserDetails(String username,
                                  String password,

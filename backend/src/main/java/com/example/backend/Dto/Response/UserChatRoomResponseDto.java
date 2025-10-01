@@ -18,4 +18,5 @@ public class UserChatRoomResponseDto {
     private Role role;
     private ChatRoomUserStatus status;
     private String hostUserId; // 방장 ID 추가
+    private String userId;
 }

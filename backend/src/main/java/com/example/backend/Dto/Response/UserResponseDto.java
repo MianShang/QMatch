@@ -20,12 +20,14 @@ public class UserResponseDto {
     private String userName;
     private String userEmail;
     private String userProfile;
+    private String userNickName;
     private List<String> userTags;
     private String userStatusMessage;
     private String userIntro;
     private ChatRoomUserStatus joinStatus; // 입장 신청 상태 추가
     private String status;
     private Collection<GrantedAuthority> authorities;
+
 
 
     //로그인 했을때 내 정보
@@ -38,6 +40,7 @@ public class UserResponseDto {
                 .userTags(userDetails.userTags)
                 .userStatusMessage(userDetails.userStatusMessage)
                 .userIntro(userDetails.userIntro)
+                .userNickName(userDetails.userNickName)
                 .status(userDetails.status != null ? userDetails.status.getDescription() : "null")
                 .authorities(userDetails.getAuthorities())
                 .build();
@@ -50,6 +53,7 @@ public class UserResponseDto {
                 .userName(user.getUserName())
                 .userEmail(user.getUserEmail())
                 .userProfile(user.getUserProfile())
+                .userNickName(user.getUserNickName())
                 .userTags(user.getUserTags())
                 .userStatusMessage(user.getUserStatusMessage())
                 .userIntro(user.getUserIntro())

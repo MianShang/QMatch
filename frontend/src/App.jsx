@@ -152,6 +152,7 @@ function App() {
     // 10분마다 반복 실행, 유저 데이터 Set 을 제외하면 로직은 위 코드와 동일하다
     // 서버에 세션은 사라졌지만 웹 조작을 통한 악성유저 방지
     const interval = setInterval(() => {
+
       if (isMounted && isLogIn) {
         axios.get('/api/check-login', { withCredentials: true })
           .catch(() => {
@@ -163,6 +164,7 @@ function App() {
           });
       }
     }, 10 * 60 * 1000); // 10분마다 반복
+
 
     // 언마운트 시 반복 중지
     return () => {

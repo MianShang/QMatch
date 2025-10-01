@@ -6,6 +6,7 @@ import com.example.backend.Repository.UserRepository;
 import jakarta.servlet.ServletContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.startup.RealmRuleSet;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -120,6 +121,26 @@ public class UserProfileService {
     public UserResponseDto getUserTag(String userId) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(()-> new RuntimeException("그런 유저는 없어"));
+
+        return UserResponseDto.from(user);
+    }
+
+    //닉네임 조회
+    public UserResponseDto getUserNickname(String userId){
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(()-> new RuntimeException("그런 유저는 없어"));
+
+        return UserResponseDto.from(user);
+    }
+
+    //닉네임 등록
+    @Transactional
+    public UserResponseDto updateUserNickname(String userId, String nickName){
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(()->new RuntimeException("그런 유저는 없어"));
+
+        user.setUserNickName(nickName);
+        userRepository.save(user);
 
         return UserResponseDto.from(user);
     }

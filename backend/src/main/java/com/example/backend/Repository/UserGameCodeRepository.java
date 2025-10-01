@@ -9,9 +9,11 @@ import java.util.Optional;
 
 public interface UserGameCodeRepository extends JpaRepository<UserGameCode, Long> {
 
-    // 유저를 인자로 저장된 게임 코드들 찾기
-    List<UserGameCode> findByUser(User user);
+    // 저장된 게임 코드들 찾기
+    List<UserGameCode> findByUserOrderByGameNameAsc(User user);
 
     // 중복저장 방지 위한 유저 - 게임 이름 으로 중복 여부 검사
     Optional<UserGameCode> findByUserAndGameName(User user, String gameName);
+
+    Optional<UserGameCode> findByUserAndGameNameAndGameCode(User user, String gameName, String gameCode);
 }

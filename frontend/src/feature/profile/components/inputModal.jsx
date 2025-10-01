@@ -30,8 +30,8 @@ function InputModal({ type, onClose, sendUserGameCode, sendUserTag }) {
 
   
   return (
-    <div className="input-modal-overlay">
-      <div className="input-modal-content" style={{ maxWidth: "400px", padding: "1.5rem" }}>
+    <div className="input-modal-overlay" onClick={onClose}>
+      <div className="input-modal-content"  onClick={(e) => e.stopPropagation()} style={{ maxWidth: "400px", padding: "1.5rem" }}>
         <h3>{type === 'game' ? "게임 코드 추가" : "태그 추가"}</h3>
 
         {type === 'game' && (

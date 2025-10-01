@@ -19,6 +19,7 @@ export function useChatGetRooms(userData, setChatList){
         // Context에 저장된 userId로 get 요청
         params: { 
           userId: userData.userId   // 유저 ID
+          
         }
       })
       .then((res) => {

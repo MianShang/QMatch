@@ -22,6 +22,8 @@ public class User {
     private String userId;      // 유저 아이디
     private String userPw;      // 유저 비밀번호
     private String userName;    // 유저 이름
+    @Column(unique = true)
+    private String userNickName; // 유저 닉네임
     private String userEmail;   // 유저 이메일
     private String userProfile; // 유저 프로필 이미지
     private String userStatusMessage; //유저 상태메시지

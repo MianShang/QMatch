@@ -79,16 +79,9 @@ function AdminPage() {
     const handleOpenDetailInfoModal = async (user) => {
         try {
             toast.info(`${user.userId}님의 상세 정보를 불러오는 중...`);
-
-            // 1. userId로 백엔드에 상세 정보를 요청합니다.
-            const response = await axios.get(`/api/admin/users/${user.userId}`, { withCredentials: true });
-            
-            // 2. 응답받은 상세 데이터를 state에 저장합니다.
+            const response = await axios.get(`/api/admin/users/${user.userId}`, { withCredentials: true }); 
             setSelectedUser(response.data);
-            
-            // 3. 데이터가 준비되면 모달을 엽니다.
             setIsDetailInfoModalOpen(true);
-
         } catch (error) {
             console.error("회원 상세 정보 조회 실패:", error);
             toast.error("상세 정보를 불러오는 데 실패했습니다.");
@@ -96,7 +89,6 @@ function AdminPage() {
     };
 
     const fetchData = () => {
-        // 전체 유저
         axios.get('/api/admin/users', { withCredentials: true })
             .then(response => {
                 setUsers(response.data);
@@ -105,7 +97,6 @@ function AdminPage() {
                 console.error("회원 목록을 불러오는 중 오류 발생:", error);
                 toast.error("회원 목록을 불러올 수 없습니다.");
             });
-
         // 전체 신고 내역
         axios.get('/api/admin/reports', { withCredentials: true })
             .then(response => {

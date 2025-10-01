@@ -199,48 +199,38 @@ public class FriendShipService {
     }
 
     //사용자 차단
-    @Transactional
     public void blockUser(String requesterId, String blockedId) {
         User requester = userRepository.findByUserId(requesterId)
                 .orElseThrow(() -> new IllegalArgumentException("요청한 사용자를 찾을 수 없습니다."));
-
         User targetUser = userRepository.findByUserId(blockedId)
                 .orElseThrow(() -> new IllegalArgumentException("차단할 사용자를 찾을 수 없습니다."));
 
-        // 요청자 → 대상
-        Optional<FriendShip> directRelation = friendshipRepository.findByRequesterAndAddressee(requester, targetUser);
+        // 항상 양쪽 관계를 하나로 묶어서 조회
+        FriendShip friendship = friendshipRepository.findByBothUsers(requester.getId(), targetUser.getId())
+                .orElseGet(() -> new FriendShip(requester, targetUser, FriendShipStatus.BLOCKED));
 
-        // 대상 → 요청자 (역방향)
-        Optional<FriendShip> reverseRelation = friendshipRepository.findByRequesterAndAddressee(targetUser, requester);
-
-        // 직접 관계가 없으면 새로 생성
-        FriendShip relation = directRelation.orElseGet(
-                () -> new FriendShip(requester, targetUser, FriendShipStatus.BLOCKED)
-        );
-        relation.setStatus(FriendShipStatus.BLOCKED);
-        friendshipRepository.save(relation);
-
-        // 양쪽 모두 BLOCKED라면 BLOCKS 처리
-        if (reverseRelation.isPresent() && reverseRelation.get().getStatus() == FriendShipStatus.BLOCKED) {
-            relation.setStatus(FriendShipStatus.BLOCKS);
-            FriendShip reverse = reverseRelation.get();
-            reverse.setStatus(FriendShipStatus.BLOCKS);
-
-            friendshipRepository.save(relation);
-            friendshipRepository.save(reverse);
+        // 상태 업데이트
+        if (friendship.getStatus() == FriendShipStatus.BLOCKED &&
+                !friendship.getRequester().equals(requester)) {
+            // 이미 상대방이 먼저 BLOCKED 했다면 → 양쪽 모두 BLOCKS
+            friendship.setStatus(FriendShipStatus.BLOCKS);
+        } else {
+            friendship.setStatus(FriendShipStatus.BLOCKED);
         }
 
+        friendshipRepository.save(friendship);
+
+        // 차단 상태 알림 (필요에 따라 수정)
         simpMessagingTemplate.convertAndSend(
                 "/topic/friends/status",
-                Map.of("userId", requesterId, "status", relation.getStatus().name())
+                Map.of("userId", requesterId, "status", friendship.getStatus().name())
         );
     }
     
     
     //친구 요청/차단 목록 리스트
     @Transactional
-    public List<FriendShipResponseDto> getUserInventoryList(String requesterId, String bottomToggle)
-    {
+    public List<FriendShipResponseDto> getUserInventoryList(String requesterId, String bottomToggle) {
         User user = userRepository.findByUserId(requesterId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
@@ -252,28 +242,39 @@ public class FriendShipService {
         return friendships.stream()
                 .map(friendship -> {
                     User friendUser;
+
                     if (bottomToggle.equals("friends")) {
+                        // 친구 요청 목록 → 상대는 requester
                         friendUser = friendship.getRequester();
-                    } else { // "blocked"인 경우
-                        friendUser = friendship.getAddressee(); // receiver를 가져오도록 수정
+                    } else {
+                        // 차단 목록
+                        if (friendship.getRequester().equals(user)) {
+                            friendUser = friendship.getAddressee();
+                        } else {
+                            friendUser = friendship.getRequester();
+                        }
                     }
 
                     return new FriendShipResponseDto(friendUser);
                 })
                 .collect(Collectors.toList());
+
     }
 
     
     //친구 삭제
     @Transactional
-    public void getDeleteFriend(String requesterId, String userId)
-    {
-        User user = userRepository.findByUserId(userId).orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        User requester = userRepository.findByUserId(requesterId).orElseThrow(()-> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        // 2. 두 유저 간의 친구 관계를 찾습니다.
+    public void getDeleteFriend(String requesterId, String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User requester = userRepository.findByUserId(requesterId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         FriendShip friendship = friendshipRepository.findByBothUsers(user.getId(), requester.getId())
                 .orElseThrow(() -> new IllegalArgumentException("친구 관계를 찾을 수 없습니다."));
+
+        // 삭제 전에 상태 확인
+        String prevStatus = friendship.getStatus().name();
 
         friendshipRepository.delete(friendship);
 
@@ -283,17 +284,27 @@ public class FriendShipService {
                 simpMessagingTemplate.convertAndSend("/topic/friends/" + userId,
                         Map.of("message", requester.getUserName() + "님이 삭제되었습니다."));
 
-                //inventory 양방향 갱신
-                simpMessagingTemplate.convertAndSend(
-                        "/topic/friends/inventory/" + requesterId,
-                        Map.of("bottomToggle", "friends")
-                );
-                simpMessagingTemplate.convertAndSend(
-                        "/topic/friends/inventory/" + userId,
-                        Map.of("bottomToggle", "friends")
-                );
+                // inventory 갱신
+                if (prevStatus.equals("BLOCKED") || prevStatus.equals("BLOCKS")) {
+                    simpMessagingTemplate.convertAndSend(
+                            "/topic/friends/inventory/" + requesterId,
+                            Map.of("bottomToggle", "blocked")
+                    );
+                    simpMessagingTemplate.convertAndSend(
+                            "/topic/friends/inventory/" + userId,
+                            Map.of("bottomToggle", "blocked")
+                    );
+                } else {
+                    simpMessagingTemplate.convertAndSend(
+                            "/topic/friends/inventory/" + requesterId,
+                            Map.of("bottomToggle", "friends")
+                    );
+                    simpMessagingTemplate.convertAndSend(
+                            "/topic/friends/inventory/" + userId,
+                            Map.of("bottomToggle", "friends")
+                    );
+                }
             }
         });
     }
-
 }

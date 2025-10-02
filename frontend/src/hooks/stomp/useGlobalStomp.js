@@ -59,25 +59,43 @@ export function useGlobalStomp(userData) {
     return connectionPromiseRef.current;
   }, [userData]);
 
+  // 로그인 즉시 웹소켓 연결
+  useEffect(() => {
+    if (userData?.userId) {
+      initializeStomp().catch(error => {
+        console.error('로그인 시 웹소켓 연결 실패:', error);
+      });
+    }
+  }, [userData?.userId, initializeStomp]);
+
   // 구독 함수
   const subscribe = useCallback(async (destination, callback, options = {}) => {
     try {
-      const stomp = await initializeStomp();
+      // 웹소켓 연결 대기
+      let attempts = 0;
+      const maxAttempts = 10;
       
-      if (!stomp.connected) {
-        return null;
+      while (attempts < maxAttempts) {
+        const stomp = await initializeStomp();
+        
+        if (stomp.connected) {
+          const subscription = stomp.subscribe(destination, callback, options);
+          const subscriptionId = options.id || destination;
+          
+          // 기존 구독이 있다면 해제
+          if (subscriptionsRef.current.has(subscriptionId)) {
+            subscriptionsRef.current.get(subscriptionId).unsubscribe();
+          }
+          
+          subscriptionsRef.current.set(subscriptionId, subscription);
+          return subscription;
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 500));
+        attempts++;
       }
-
-      const subscription = stomp.subscribe(destination, callback, options);
-      const subscriptionId = options.id || destination;
       
-      // 기존 구독이 있다면 해제
-      if (subscriptionsRef.current.has(subscriptionId)) {
-        subscriptionsRef.current.get(subscriptionId).unsubscribe();
-      }
-      
-      subscriptionsRef.current.set(subscriptionId, subscription);
-      return subscription;
+      return null;
     } catch (error) {
       console.error('구독 실패:', error);
       return null;

@@ -12,6 +12,7 @@ import SearchPage from './route/searchPage/searchPage.jsx';
 import LoginPage from './route/loginPage/loginPage.jsx';
 import SignUpRoutePage from './route/loginPage/loginPageRoute/signupRoutePage.jsx';
 import AdminPage from './feature/admin/adminPage.jsx';
+import FriendInviteNotificationModal from './modal/FriendInviteNotificationModal/FriendInviteNotificationModal.jsx';
 //전역 stomp
 import { useGlobalStomp } from './hooks/stomp/useGlobalStomp.js';
 import { useGameStatus } from './hooks/status/useGameStatus.js';
@@ -58,6 +59,12 @@ function App() {
 
   // 음성채널 참여자 목록 (전역)
   const [voiceParticipants, setVoiceParticipants] = useState({});
+
+  // 친구 초대 알림 상태
+  const [friendInviteNotification, setFriendInviteNotification] = useState({
+    open: false,
+    data: null
+  });
 
   // 테마 상태
   const [theme, setTheme] = useState(() => {
@@ -183,8 +190,10 @@ function App() {
     isRunning,
     voiceParticipants,
     setVoiceParticipants,
-    gameStatusByUser
-  }), [isLogIn, userData, isLoading, friends, statusByUser, friendInventoryUpdate, setFriendInventoryUpdate, hasUnreadMessages, theme, hasUnReadFriendMessages, setHasUnReadFriendMessages, friendUnreadCounts, setFriendUnreadCounts, selectedFriendRoom, setSelectedFriendRoom, isRunning, voiceParticipants, gameStatusByUser]);
+    gameStatusByUser,
+    friendInviteNotification,
+    setFriendInviteNotification
+  }), [isLogIn, userData, isLoading, friends, statusByUser, friendInventoryUpdate, setFriendInventoryUpdate, hasUnreadMessages, theme, hasUnReadFriendMessages, setHasUnReadFriendMessages, friendUnreadCounts, setFriendUnreadCounts, selectedFriendRoom, setSelectedFriendRoom, isRunning, voiceParticipants, gameStatusByUser, friendInviteNotification, setFriendInviteNotification]);
 
   //친구 최신값 저장 State가 바뀔때 마다 갱신
   useEffect(() => {
@@ -368,8 +377,38 @@ function App() {
       }
     });
 
+    // 친구 초대 알림 구독
+    subscribe(`/topic/user/${userData.userId}/friend-invite`, (frame) => {
+      try {
+        const payload = JSON.parse(frame.body);
+        console.log('친구 초대 알림 수신:', payload);
+        
+        setFriendInviteNotification({
+          open: true,
+          data: payload
+        });
+      } catch (e) {
+        console.error("친구 초대 알림 에러", e);
+      }
+    });
+
+    // 방장에게 친구 초대 응답 알림 구독
+    subscribe(`/topic/user/${userData.userId}/friend-invite-response`, (frame) => {
+      try {
+        const payload = JSON.parse(frame.body);
+      } catch (e) {
+        console.error("친구 초대 응답 알림 에러", e);
+      }
+    });
+
   }, [userData?.userId, subscribe]);
 
+  // 로그아웃 시 초대 수락 모달 숨기기
+  useEffect(() => {
+    if (!isLogIn) {
+      setFriendInviteNotification({ open: false, data: null });
+    }
+  }, [isLogIn]);
 
   // 렌더링 숨기고 로딩창 표시 
   if (isLoading) {
@@ -414,6 +453,28 @@ function App() {
         </Routes>
 
       </LogContext.Provider>
+      
+      {/* 친구 초대 알림 모달 */}
+      <FriendInviteNotificationModal
+        open={friendInviteNotification.open}
+        onClose={() => setFriendInviteNotification({ open: false, data: null })}
+        inviteData={friendInviteNotification.data}
+        onAccept={(inviteData) => {
+          // 방 입장 처리
+          navigate('/', {
+            state: {
+              type: 'multi',
+              roomId: inviteData.roomId,
+              chatName: inviteData.roomName,
+              gameName: inviteData.gameName,
+              tagNames: inviteData.tagNames || [],
+              joinType: 'friend-invite',
+              alreadyJoined: true
+            }
+          });
+        }}
+      />
+      
       <ToastContainer
         position="top-right"
         autoClose={1000}   // 3초 뒤 자동 닫힘

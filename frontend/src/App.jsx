@@ -396,6 +396,11 @@ function App() {
     subscribe(`/topic/user/${userData.userId}/friend-invite-response`, (frame) => {
       try {
         const payload = JSON.parse(frame.body);
+
+        if (payload.type === 'rejected') {
+          toast.info(`${payload.friendName}님이 초대를 거절했습니다.`);
+        }
+
       } catch (e) {
         console.error("친구 초대 응답 알림 에러", e);
       }

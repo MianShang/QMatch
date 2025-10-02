@@ -139,7 +139,7 @@ public class FriendInviteService {
 
     // 친구 초대 거절
     @Transactional
-    public void rejectFriendInvite(String roomId, String userId) {
+    public void rejectFriendInvite(String roomId, String userId, boolean isAutoReject) {
         
         // 1. 채팅방 존재 확인
         ChatRoom room = chatRoomRepository.findById(roomId)
@@ -149,11 +149,12 @@ public class FriendInviteService {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         
-        // 3. 방장에게 거절 알림 전송
+        // 3. 방장에게 거절 알림 전송 (자동 거절이든 수동 거절이든 항상 전송)
         Map<String, Object> responseData = Map.of(
                 "type", "rejected",
                 "friendName", user.getUserName(),
-                "roomId", roomId
+                "roomId", roomId,
+                "isAutoReject", isAutoReject
         );
         
         messagingTemplate.convertAndSend("/topic/user/" + room.getOwner().getUserId() + "/friend-invite-response", responseData);

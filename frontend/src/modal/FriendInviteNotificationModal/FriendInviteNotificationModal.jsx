@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import './FriendInviteNotificationModal.css';
 import { useFriendInviteNotification } from '../../hooks/friends/useFriendInviteNotification.js';
 
@@ -14,6 +14,41 @@ function FriendInviteNotificationModal({
     rejectInvite,
     getRoomAvatar
   } = useFriendInviteNotification();
+
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [isAutoRejected, setIsAutoRejected] = useState(false);
+
+  // 30초 타이머 및 자동 거절 로직
+  useEffect(() => {
+    if (!open || !inviteData || isAutoRejected) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          // 시간이 끝나면 자동으로 거절
+          setIsAutoRejected(true);
+          handleAutoReject();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [open, inviteData, isAutoRejected]);
+
+  // 모달이 열릴 때마다 타이머 리셋
+  useEffect(() => {
+    if (open && inviteData) {
+      setTimeLeft(30);
+      setIsAutoRejected(false);
+    }
+  }, [open, inviteData]);
+
+  // 자동 거절 핸들러
+  const handleAutoReject = () => {
+    rejectInvite(inviteData, onClose, true); // 자동 거절 플래그 전달
+  };
 
   // 초대 수락 핸들러
   const handleAccept = () => {
@@ -32,6 +67,9 @@ function FriendInviteNotificationModal({
       <div className="notification-header">
         <div className="notification-icon">🎮</div>
         <h3 className="notification-title">친구 초대</h3>
+        <div className="timer-display">
+          {timeLeft}초 후 자동 거절
+        </div>
       </div>
       
       <div className="notification-content">

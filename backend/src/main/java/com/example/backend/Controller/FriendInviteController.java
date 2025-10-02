@@ -60,8 +60,9 @@ public class FriendInviteController {
         try {
             String roomId = (String) request.get("roomId");
             String userId = (String) request.get("userId");
+            Boolean isAutoReject = (Boolean) request.getOrDefault("isAutoReject", false);
 
-            friendInviteService.rejectFriendInvite(roomId, userId);
+            friendInviteService.rejectFriendInvite(roomId, userId, isAutoReject);
             
             return ResponseEntity.ok(Map.of("success", true, "message", "초대를 거절했습니다."));
         } catch (Exception e) {

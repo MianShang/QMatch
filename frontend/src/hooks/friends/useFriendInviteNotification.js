@@ -38,7 +38,7 @@ export function useFriendInviteNotification() {
   }, []);
 
   // 초대 거절 함수
-  const rejectInvite = useCallback(async (inviteData, onClose) => {
+  const rejectInvite = useCallback(async (inviteData, onClose, isAutoReject = false) => {
     if (!inviteData) return;
 
     setProcessing(true);
@@ -46,14 +46,21 @@ export function useFriendInviteNotification() {
     try {
       await axios.post('/api/chat/rooms/reject-invite', {
         roomId: inviteData.roomId,
-        userId: inviteData.userId
+        userId: inviteData.userId,
+        isAutoReject: isAutoReject // 자동 거절 여부를 서버에 전달
       });
       
-      toast.info('초대를 거절했습니다.');
+      // 자동 거절인 경우 사용자에게만 메시지 표시하지 않음
+      // 방장에게는 서버에서 알림이 전송됨
+      if (!isAutoReject) {
+        toast.info('초대를 거절했습니다.');
+      }
       onClose();
     } catch (error) {
       console.error('초대 거절 오류:', error);
-      toast.error('초대 거절 중 오류가 발생했습니다.');
+      if (!isAutoReject) {
+        toast.error('초대 거절 중 오류가 발생했습니다.');
+      }
     } finally {
       setProcessing(false);
     }

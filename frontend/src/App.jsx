@@ -396,13 +396,6 @@ function App() {
     subscribe(`/topic/user/${userData.userId}/friend-invite-response`, (frame) => {
       try {
         const payload = JSON.parse(frame.body);
-        console.log('친구 초대 응답 알림 수신:', payload);
-        
-        if (payload.type === 'accepted') {
-          toast.success(`${payload.friendName}님이 초대를 수락했습니다!`);
-        } else if (payload.type === 'rejected') {
-          toast.info(`${payload.friendName}님이 초대를 거절했습니다.`);
-        }
       } catch (e) {
         console.error("친구 초대 응답 알림 에러", e);
       }
@@ -410,6 +403,12 @@ function App() {
 
   }, [userData?.userId, subscribe]);
 
+  // 로그아웃 시 초대 수락 모달 숨기기
+  useEffect(() => {
+    if (!isLogIn) {
+      setFriendInviteNotification({ open: false, data: null });
+    }
+  }, [isLogIn]);
 
   // 렌더링 숨기고 로딩창 표시 
   if (isLoading) {

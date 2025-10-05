@@ -62,7 +62,7 @@ function ChatListPage({
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   const navigate = useNavigate();
   // State 보관함 해체
-  const { userData, isRunning } = useContext(LogContext);
+  const { userData, isRunning, setCurrentGroupVoiceChat } = useContext(LogContext);
 
   // State
   const [chatListExtend, setChatListExtend] = useState(false);
@@ -892,6 +892,17 @@ function ChatListPage({
         voiceChatRef.current.joinChannel(channelId);
         setJoinedVoice(true);
         
+        // 그룹 채팅방 음성채팅 정보를 전역 상태에 저장 (음성채팅 전환 시에도 업데이트)
+        if (selectedRoom) {
+          setCurrentGroupVoiceChat({
+            roomId: selectedRoom.id,
+            roomName: selectedRoom.name,
+            gameName: selectedRoom.gameName,
+            tagNames: selectedRoom.tagNames || [],
+            channelId: channelId
+          });
+        }
+        
         // 음성채널 참여자 목록 새로고침
         if (selectedRoom?.id) {
           fetchVoiceChannels(selectedRoom.id);
@@ -1158,7 +1169,7 @@ function ChatListPage({
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
                             {/* 실행 중인 게임 표시 */}
-                            {isRunning.filter(g => g.running)
+                            {Array.isArray(isRunning) && isRunning.filter(g => g.running)
                               .map(g => (
                                 <span key={g.exe} className="membersGame" style={{marginLeft:"15px", fontSize:"12px"}}>
                                   {g.label} 플레이중
@@ -1190,7 +1201,7 @@ function ChatListPage({
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
                             {/* 실행 중인 게임 표시 */}
-                            {isRunning.filter(g => g.running)
+                            {Array.isArray(isRunning) && isRunning.filter(g => g.running)
                               .map(g => (
                                 <span key={g.exe} className="membersGame" style={{marginLeft:"15px", fontSize:"12px"}}>
                                   {g.label} 플레이중

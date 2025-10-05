@@ -701,103 +701,15 @@
     overflow-y: auto;
 }
 
-/* 음성채팅 컨트롤 스타일 */
-.voice-chat-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    color: var(--discord-text-primary);
-}
 
-.voice-status h3 {
-    margin: 0 0 10px 0;
-    color: var(--discord-text-primary);
-    font-size: 16px;
-}
 
-.voice-status p {
-    margin: 5px 0;
-    color: var(--discord-text-secondary);
-    font-size: 14px;
-}
 
-.voice-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
 
-.voice-buttons {
-    display: flex;
-    gap: 10px;
-}
 
-.voice-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s;
-}
 
-.voice-btn.join-btn {
-    background: var(--discord-brand);
-    color: white;
-}
 
-.voice-btn.join-btn:hover {
-    background: var(--discord-brand-dark);
-}
 
-.voice-btn.leave-btn {
-    background: var(--discord-danger);
-    color: white;
-}
 
-.voice-btn.leave-btn:hover {
-    background: #d73a49;
-}
-
-.voice-btn.mute-btn {
-    background: var(--discord-bg-tertiary);
-    color: var(--discord-text-primary);
-}
-
-.voice-btn.mute-btn:hover {
-    background: var(--discord-bg-quaternary);
-}
-
-.voice-btn.mute-btn.muted {
-    background: var(--discord-danger);
-    color: white;
-}
-
-.voice-participants h4 {
-    margin: 0 0 10px 0;
-    color: var(--discord-text-primary);
-    font-size: 14px;
-}
-
-.participants-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.participant-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px;
-    background: var(--discord-bg-tertiary);
-    border-radius: 4px;
-}
-
-.participant-name {
-    color: var(--discord-text-primary);
-    font-size: 14px;
-}
 
 .participant-status {
     font-size: 16px;
@@ -1114,7 +1026,6 @@
 /* ================================음성채팅 컨트롤============================= */
 
 .voice-chat-controls {
-    padding: 16px;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -1499,4 +1410,79 @@
     .empty-chat-text {
         font-size: 14px;
     }
+}
+
+/* ================================친구 음성채팅 버튼============================= */
+.voice-chat-btn {
+    background: var(--discord-bg-tertiary);
+    border: 1px solid var(--discord-border);
+    color: var(--discord-text-normal);
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.voice-chat-btn:hover {
+    background: var(--discord-bg-hover);
+    border-color: var(--discord-accent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.voice-chat-btn.voice-chat-active {
+    background: var(--discord-accent);
+    border-color: var(--discord-accent);
+    color: white;
+}
+
+.voice-chat-btn.voice-chat-active:hover {
+    background: var(--discord-accent-hover);
+    border-color: var(--discord-accent-hover);
+}
+
+/* 테마별 음성채팅 버튼 색상 */
+[data-theme="dark"] .voice-chat-btn.voice-chat-active {
+    background: #5865f2;
+    border-color: #5865f2;
+}
+
+[data-theme="dark"] .voice-chat-btn.voice-chat-active:hover {
+    background: #4752c4;
+    border-color: #4752c4;
+}
+
+[data-theme="light"] .voice-chat-btn.voice-chat-active {
+    background: #5865f2;
+    border-color: #5865f2;
+}
+
+[data-theme="light"] .voice-chat-btn.voice-chat-active:hover {
+    background: #4752c4;
+    border-color: #4752c4;
+}
+
+[data-theme="pink"] .voice-chat-btn.voice-chat-active {
+    background: #ff69b4;
+    border-color: #ff69b4;
+}
+
+[data-theme="pink"] .voice-chat-btn.voice-chat-active:hover {
+    background: #ff1493;
+    border-color: #ff1493;
+}
+
+[data-theme="blue"] .voice-chat-btn.voice-chat-active {
+    background: #00bfff;
+    border-color: #00bfff;
+}
+
+[data-theme="blue"] .voice-chat-btn.voice-chat-active:hover {
+    background: #0099cc;
+    border-color: #0099cc;
 }

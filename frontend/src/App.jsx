@@ -4,6 +4,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
+import { FaPhoneSlash, FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa6';
 import { getFriendUnReadChatCount } from './hooks/chatNotice/useFriendUnReadChatCount.js';
 
 {/* 컴포넌트 import */}
@@ -13,6 +14,8 @@ import LoginPage from './route/loginPage/loginPage.jsx';
 import SignUpRoutePage from './route/loginPage/loginPageRoute/signupRoutePage.jsx';
 import AdminPage from './feature/admin/adminPage.jsx';
 import FriendInviteNotificationModal from './modal/FriendInviteNotificationModal/FriendInviteNotificationModal.jsx';
+import VoiceChat from './route/lobbyPage/lobbyPageRoute/VoiceChat.jsx';
+
 //전역 stomp
 import { useGlobalStomp } from './hooks/stomp/useGlobalStomp.js';
 import { useGameStatus } from './hooks/status/useGameStatus.js';
@@ -57,7 +60,7 @@ function App() {
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [hasUnReadFriendMessages, setHasUnReadFriendMessages] = useState(false);
 
-  // 음성채널 참여자 목록 (전역)
+  // 음성채널 참여자 목록
   const [voiceParticipants, setVoiceParticipants] = useState({});
 
   // 친구 초대 알림 상태
@@ -65,6 +68,70 @@ function App() {
     open: false,
     data: null
   });
+
+  // 음성채팅 관련 상태 관리
+  const [activeVoiceChannel, setActiveVoiceChannel] = useState(null); // 현재 활성 음성채널
+  const [voiceChatRoomId, setVoiceChatRoomId] = useState(null); // 음성채팅 룸 ID
+  const [voiceSpeakers, setVoiceSpeakers] = useState({}); // 음성 참여자 목록
+  const [localMuted, setLocalMuted] = useState(false); // 로컬 음소거 상태
+  const [joinedVoice, setJoinedVoice] = useState(false); // 음성채팅 참여 여부
+  const [currentVoiceRoomId, setCurrentVoiceRoomId] = useState(null); // 현재 음성채팅 룸 ID
+  
+  // 드래그 가능한 음성채팅 UI 위치 관리
+  const [voiceChatPosition, setVoiceChatPosition] = useState({ x: 20, y: 20 }); // UI 위치 좌표
+  const [isDragging, setIsDragging] = useState(false); // 드래그 중인지 여부
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 }); // 드래그 시작점
+  const [currentSelectedRoom, setCurrentSelectedRoom] = useState(null);
+  const [friendVoiceChatActive, setFriendVoiceChatActive] = useState(false);
+  const [currentFriendVoiceChat, setCurrentFriendVoiceChat] = useState(null); // 현재 친구 음성채팅 정보
+  const [currentGroupVoiceChat, setCurrentGroupVoiceChat] = useState(null); // 현재 그룹 음성채팅 정보
+  const voiceChatRef = useRef(null);
+
+  // 음성채팅 UI 드래그 핸들러 함수들
+  const handleMouseDown = (e) => {
+    // 버튼 영역에서는 드래그 방지
+    if (e.target.closest('.voice-chat-controls')) {
+      return;
+    }
+    setIsDragging(true);
+    const rect = e.currentTarget.getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    
+    const newX = e.clientX - dragOffset.x;
+    const newY = e.clientY - dragOffset.y;
+    
+    // 화면 경계 내에서만 이동 가능하도록 제한
+    const maxX = window.innerWidth - 300;
+    const maxY = window.innerHeight - 100;
+    
+    setVoiceChatPosition({
+      x: Math.max(0, Math.min(newX, maxX)),
+      y: Math.max(0, Math.min(newY, maxY))
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // 드래그 중일 때 전역 마우스 이벤트 리스너 등록
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      return () => {
+        document.removeEventListener('mousemove', handleMouseMove);
+        document.removeEventListener('mouseup', handleMouseUp);
+      };
+    }
+  }, [isDragging, dragOffset]);
 
   // 테마 상태
   const [theme, setTheme] = useState(() => {
@@ -87,8 +154,15 @@ function App() {
   }, [theme]);
 
 
-  // 1초마다 프로세스 목록 불러오는 Effect 
+  // 1초마다 프로세스 목록 불러오는 Effect (Electron 환경에서만)
   useEffect(() => {
+    // Electron 환경 체크
+    const isElectron = window.require && window.require('electron');
+    
+    if (!isElectron) {
+      return;
+    }
+
     const fetchProcesses = async () => {
       try {
         const list = await window.require('electron').ipcRenderer.invoke('get-process-list');
@@ -121,7 +195,6 @@ function App() {
         if (isMounted) {
           // 전역으로 관리할 유저 데이터 State Set
           setUserData(userDataResponse.data);
-          console.log("서버에서 받은 실제 유저 데이터:", userDataResponse.data);
           // 로그인 체크용 State TRUE
           setIsLogIn(true);
         }
@@ -192,8 +265,30 @@ function App() {
     setVoiceParticipants,
     gameStatusByUser,
     friendInviteNotification,
-    setFriendInviteNotification
-  }), [isLogIn, userData, isLoading, friends, statusByUser, friendInventoryUpdate, setFriendInventoryUpdate, hasUnreadMessages, theme, hasUnReadFriendMessages, setHasUnReadFriendMessages, friendUnreadCounts, setFriendUnreadCounts, selectedFriendRoom, setSelectedFriendRoom, isRunning, voiceParticipants, gameStatusByUser, friendInviteNotification, setFriendInviteNotification]);
+    setFriendInviteNotification,
+
+    activeVoiceChannel,
+    setActiveVoiceChannel,
+    voiceChatRoomId,
+    setVoiceChatRoomId,
+    voiceSpeakers,
+    setVoiceSpeakers,
+    localMuted,
+    setLocalMuted,
+    joinedVoice,
+    setJoinedVoice,
+    currentVoiceRoomId,
+    setCurrentVoiceRoomId,
+    currentSelectedRoom,
+    setCurrentSelectedRoom,
+    friendVoiceChatActive,
+    setFriendVoiceChatActive,
+    currentFriendVoiceChat,
+    setCurrentFriendVoiceChat,
+    currentGroupVoiceChat,
+    setCurrentGroupVoiceChat,
+    voiceChatRef
+  }), [isLogIn, userData, isLoading, friends, statusByUser, friendInventoryUpdate, setFriendInventoryUpdate, hasUnreadMessages, theme, hasUnReadFriendMessages, setHasUnReadFriendMessages, friendUnreadCounts, setFriendUnreadCounts, selectedFriendRoom, setSelectedFriendRoom, isRunning, voiceParticipants, activeVoiceChannel, voiceChatRoomId, voiceSpeakers, localMuted, joinedVoice, currentVoiceRoomId, currentSelectedRoom, friendVoiceChatActive, currentFriendVoiceChat, currentGroupVoiceChat, gameStatusByUser, friendInviteNotification, setFriendInviteNotification]);
 
   //친구 최신값 저장 State가 바뀔때 마다 갱신
   useEffect(() => {
@@ -424,7 +519,6 @@ function App() {
       </div>
     );
   }
-  console.log("권한 확인 직전 userData:", userData);
 
   // 로딩이 끝나면 실제 앱 화면을 렌더링
   return (
@@ -479,6 +573,132 @@ function App() {
           });
         }}
       />
+
+      {/* VoiceChat 컴포넌트를 App.jsx에서 전역 렌더링 */}
+      {isLogIn && userData && (
+        <VoiceChat
+          uid={userData.userId}
+          onSpeakers={setVoiceSpeakers}
+          onLocalMuteChange={setLocalMuted}
+          onJoinChange={setJoinedVoice}
+          onParticipantsChange={() => {}} 
+          channelId={currentVoiceRoomId}
+          roomId={currentSelectedRoom?.id} 
+          globalStomp={globalStomp}
+          onVoiceChatSwitch={(data) => {
+            // 음성채팅 전환 시 전역 상태 업데이트
+            if (data.type === 'join') {
+              // 그룹 채팅방 음성채팅인 경우
+              if (currentSelectedRoom && !data.channelId.startsWith('friend_')) {
+                setCurrentGroupVoiceChat({
+                  roomId: currentSelectedRoom.id,
+                  roomName: currentSelectedRoom.name,
+                  gameName: currentSelectedRoom.gameName,
+                  tagNames: currentSelectedRoom.tagNames || [],
+                  channelId: data.channelId
+                });
+                // 친구 음성채팅 상태 초기화
+                setFriendVoiceChatActive(false);
+                setCurrentFriendVoiceChat(null);
+              }
+            } else if (data.type === 'leave') {
+              // 음성채팅 퇴장 시 모든 상태 초기화
+              setCurrentGroupVoiceChat(null);
+              setFriendVoiceChatActive(false);
+              setCurrentFriendVoiceChat(null);
+            }
+          }}
+          ref={voiceChatRef}
+        />
+      )}
+      
+      {/* 전역 음성채팅 상태 표시 UI - 친구 및 그룹 채팅 지원 */}
+      {((friendVoiceChatActive && currentFriendVoiceChat) || (joinedVoice && currentGroupVoiceChat)) && (
+        <div 
+          className={`global-voice-chat-indicator ${isDragging ? 'dragging' : ''}`}
+          style={{
+            position: 'fixed',
+            left: `${voiceChatPosition.x}px`,
+            top: `${voiceChatPosition.y}px`,
+            cursor: isDragging ? 'grabbing' : 'grab'
+          }}
+          onMouseDown={handleMouseDown}
+          onClick={(e) => {
+            if (isDragging) {
+              e.preventDefault();
+              return;
+            }
+            // 클릭 시 해당 채팅방으로 이동
+            if (friendVoiceChatActive && currentFriendVoiceChat) {
+              // 1대1 친구 채팅방으로 이동
+              setSelectedFriendRoom({
+                friendId: currentFriendVoiceChat.friendId,
+                roomId: currentFriendVoiceChat.roomId
+              });
+            } else if (currentGroupVoiceChat) {
+              // 그룹 채팅방으로 이동
+              navigate('/', { 
+                state: { 
+                  type: 'multi',
+                  roomId: currentGroupVoiceChat.roomId,
+                  chatName: currentGroupVoiceChat.roomName,
+                  gameName: currentGroupVoiceChat.gameName,
+                  tagNames: currentGroupVoiceChat.tagNames || []
+                }
+              });
+            }
+          }}
+          title="채팅방으로 이동"
+        >
+          {/* 음성채팅 정보 표시 영역 */}
+          <div className="voice-chat-info">
+            <span className="voice-chat-text">
+              {friendVoiceChatActive && currentFriendVoiceChat 
+                ? `${currentFriendVoiceChat.friendName}님과 통화 중`
+                : currentGroupVoiceChat 
+                  ? `${currentGroupVoiceChat.roomName} 방에서 통화 중`
+                  : '통화 중'
+              }
+            </span>
+          </div>
+          {/* 음성채팅 컨트롤 버튼 영역 */}
+          <div className="voice-chat-controls">
+            {/* 음소거/음소거 해제 버튼 */}
+            <button 
+              className={`voice-chat-mute-btn ${localMuted ? 'muted' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (voiceChatRef.current) {
+                  voiceChatRef.current.toggleMute();
+                }
+              }}
+              title={localMuted ? "음소거 해제" : "음소거"}
+            >
+              {localMuted ? <FaMicrophoneSlash className="voice-chat-icon" /> : <FaMicrophone className="voice-chat-icon" />}
+            </button>
+            {/* 통화 종료 버튼 */}
+            <button 
+              className="voice-chat-end-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (voiceChatRef.current) {
+                  voiceChatRef.current.leaveChannel();
+                }
+                // 음성채팅 상태 초기화
+                setFriendVoiceChatActive(false);
+                setCurrentFriendVoiceChat(null);
+                setCurrentGroupVoiceChat(null);
+                setJoinedVoice(false);
+                setCurrentVoiceRoomId(null);
+                setVoiceChatRoomId(null);
+              }}
+              title="통화 종료"
+            >
+              <FaPhoneSlash className="voice-chat-icon" />
+            </button>
+          </div>
+        </div>
+      )}
       
       <ToastContainer
         position="top-right"

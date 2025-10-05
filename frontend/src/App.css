@@ -81,3 +81,163 @@ input, textarea {
   color: var(--discord-text-normal) !important;
   box-shadow: var(--discord-elevation-medium) !important;
 }
+
+/* ================================전역 음성채팅 UI (친구 + 그룹)============================= */
+.global-voice-chat-indicator {
+  position: fixed !important;
+  background: var(--discord-bg-secondary) !important;
+  border: 1px solid var(--discord-accent) !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+  box-shadow: var(--discord-elevation-high) !important;
+  z-index: 1000 !important;
+  backdrop-filter: blur(10px) !important;
+  animation: slideInFromRight 0.3s ease-out !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  min-width: fit-content !important;
+  max-width: none !important;
+  width: auto !important;
+  white-space: nowrap !important;
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.voice-chat-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.voice-chat-controls {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-shrink: 0 !important;
+}
+
+.voice-chat-icon {
+  font-size: 16px;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.voice-chat-text {
+  color: var(--discord-text-normal);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.voice-chat-mute-btn {
+  background: var(--discord-bg-tertiary) !important;
+  border: 1px solid var(--discord-border) !important;
+  border-radius: 6px !important;
+  padding: 6px 8px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: var(--discord-text-normal) !important;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
+
+.voice-chat-mute-btn:hover {
+  background: var(--discord-bg-modifier-hover) !important;
+  transform: scale(1.05) !important;
+}
+
+.voice-chat-mute-btn.muted {
+  background: var(--discord-button-danger-background);
+  border-color: var(--discord-button-danger-background);
+  color: white;
+}
+
+.voice-chat-mute-btn.muted:hover {
+  background: #d32f2f !important;
+}
+
+.voice-chat-end-btn {
+  background: var(--discord-bg-tertiary) !important;
+  border: 1px solid var(--discord-border) !important;
+  border-radius: 6px !important;
+  padding: 6px 8px !important;
+  cursor: pointer !important;
+  font-size: 14px !important;
+  transition: all 0.2s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
+
+.voice-chat-end-btn:hover {
+  background: var(--discord-bg-modifier-hover) !important;
+  transform: scale(1.05) !important;
+}
+
+.global-voice-chat-indicator:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--discord-elevation-high), 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.global-voice-chat-indicator.dragging {
+  transform: scale(1.05);
+  box-shadow: var(--discord-elevation-high), 0 12px 30px rgba(0, 0, 0, 0.4);
+  z-index: 1001 !important;
+}
+
+/* 테마별 전역 음성채팅 UI 색상 */
+[data-theme="dark"] .global-voice-chat-indicator {
+  background: #2f3136;
+  border-color: #5865f2;
+}
+
+[data-theme="light"] .global-voice-chat-indicator {
+  background: #ffffff;
+  border-color: #5865f2;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="pink"] .global-voice-chat-indicator {
+  background: #ff69b4;
+  border-color: #ff1493;
+}
+
+[data-theme="pink"] .voice-chat-text {
+  color: #ad1457;
+}
+
+[data-theme="blue"] .global-voice-chat-indicator {
+  background: #00bfff;
+  border-color: #0099cc;
+}
+
+[data-theme="blue"] .voice-chat-text {
+  color: #1976d2;
+}

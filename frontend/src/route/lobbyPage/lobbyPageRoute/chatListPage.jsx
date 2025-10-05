@@ -62,7 +62,7 @@ function ChatListPage({
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   const navigate = useNavigate();
   // State 보관함 해체
-  const { userData, isRunning, gameStatusByUser } = useContext(LogContext);
+  const { userData, isRunning, gameStatusByUser, setCurrentGroupVoiceChat } = useContext(LogContext);
 
   // State
   const [chatListExtend, setChatListExtend] = useState(false);
@@ -891,6 +891,17 @@ function ChatListPage({
       try {
         voiceChatRef.current.joinChannel(channelId);
         setJoinedVoice(true);
+        
+        // 그룹 채팅방 음성채팅 정보를 전역 상태에 저장 (음성채팅 전환 시에도 업데이트)
+        if (selectedRoom) {
+          setCurrentGroupVoiceChat({
+            roomId: selectedRoom.id,
+            roomName: selectedRoom.name,
+            gameName: selectedRoom.gameName,
+            tagNames: selectedRoom.tagNames || [],
+            channelId: channelId
+          });
+        }
         
         // 음성채널 참여자 목록 새로고침
         if (selectedRoom?.id) {

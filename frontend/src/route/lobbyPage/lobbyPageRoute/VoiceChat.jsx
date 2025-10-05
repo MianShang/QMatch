@@ -5,28 +5,28 @@ import './VoiceChat.css';
 
 import { useSpeakingIndicator } from "../../../hooks/voiceChat/useSpeakingIndicator";
 
-// 음성 채팅 컴포넌트 : 채널 입장/퇴장 및 마이크 제어 기능 포함
-const VoiceChat=React.forwardRef(({ channelId, uid, onSpeakers, onLocalMuteChange, onJoinChange, onParticipantsChange, roomId, globalStomp}, ref) => {
+// Agora RTC를 사용한 음성채팅 컴포넌트
+// 채널 입장/퇴장, 마이크 제어, 참여자 관리 기능 제공
+const VoiceChat=React.forwardRef(({ channelId, uid, onSpeakers, onLocalMuteChange, onJoinChange, onParticipantsChange, roomId, globalStomp, onVoiceChatSwitch}, ref) => {
   
-  const [joined, setJoined] = useState(false);  // 입장 여부 상태
-  const [muted, setMuted] = useState(false);    // 음소거 상태
-  const clientRef = useRef(null);               // Agora 클라이언트 인스턴스 저장
-  const localAudioTrackRef = useRef(null);      // 마이크 오디오 트랙 저장
+  // 음성채팅 상태 관리
+  const [joined, setJoined] = useState(false);  // 채널 입장 여부
+  const [muted, setMuted] = useState(false);    // 로컬 음소거 상태
+  const clientRef = useRef(null);               // Agora RTC 클라이언트 인스턴스
+  const localAudioTrackRef = useRef(null);      // 로컬 오디오 트랙 참조
 
-  const [joinedUserIds, setJoinedUserIds] = useState([]);
+  // 참여자 관리
+  const [joinedUserIds, setJoinedUserIds] = useState([]); // 참여 중인 사용자 ID 목록
+  const joiningRef = useRef(false); // 중복 입장 방지 플래그
 
-  const joiningRef = useRef(false);
-
-  // 참여자 목록 변경을 부모에게 직접 알림하는 함수
+  // 참여자 목록 변경을 부모 컴포넌트에 알림
   const notifyParticipantsChange = useCallback((participants) => {
     if (onParticipantsChange) {
       onParticipantsChange(participants);
     }
   }, [onParticipantsChange]);
 
-
-
-  // 서버에 음성채팅 참여자 정보 알림 (STOMP 사용)
+  // STOMP를 통해 서버에 음성채팅 참여자 정보 전송
   const notifyVoiceParticipantChange = (action, voiceChannelId) => {
     if (!roomId || !uid || !globalStomp) return;
     
@@ -65,21 +65,42 @@ const VoiceChat=React.forwardRef(({ channelId, uid, onSpeakers, onLocalMuteChang
     toggleMute,
   }));
 
-  // 채널 입장 함수
+  // Agora RTC 채널 입장 처리
   const joinChannel = async (channelId) => {
+    // 중복 입장 방지 체크
     if (joiningRef.current || joined || clientRef.current) {
-      return; // 중복 방지
+      return;
     }
 
-    joiningRef.current = true; // 즉시 플래그 설정
+    joiningRef.current = true;
     
     // 채널 전환 시 이전 참여자 목록 초기화
     setJoinedUserIds([]);
     
     try {
+      // channelId를 안전하게 문자열로 변환
+      const channelIdStr = String(channelId || '');
+      
       // 채널 이름을 Agora 규칙에 맞게 변환 (음성채널 ID 포함)
       // Agora 채널 이름 규칙: 1-64자, a-z,A-Z,0-9,space,!, #, $, %, &, (, ), +, -, :, ;, <, =, ., >, ?, @, [, ], ^, _, {, }, |, ~
-      let channelName = `voice_channel_${roomId}_${channelId}`.replace(/[^a-zA-Z0-9_]/g, '_');
+      let channelName;
+      
+      if (channelIdStr && channelIdStr.startsWith('friend_')) {
+        // 친구 1대1 채팅의 경우: friend_user1과 friend_user2가 같은 채널에 입장해야 함
+        // 채널명을 정렬하여 일관성 있게 만듦
+        const friendIds = channelIdStr.replace('friend_', '').split('_');
+        if (friendIds.length >= 2) {
+          // 두 친구 ID를 정렬하여 동일한 채널명 생성
+          const sortedIds = friendIds.sort();
+          channelName = `friend_voice_${sortedIds[0]}_${sortedIds[1]}`.replace(/[^a-zA-Z0-9_]/g, '_');
+        } else {
+          // 단일 친구 ID인 경우
+          channelName = `friend_voice_${friendIds[0]}`.replace(/[^a-zA-Z0-9_]/g, '_');
+        }
+      } else {
+        // 그룹 채팅의 경우
+        channelName = `voice_channel_${roomId}_${channelIdStr}`.replace(/[^a-zA-Z0-9_]/g, '_');
+      }
       
       // 채널 이름 길이 제한 (64자)
       if (channelName.length > 64) {
@@ -90,7 +111,6 @@ const VoiceChat=React.forwardRef(({ channelId, uid, onSpeakers, onLocalMuteChang
       if (channelName.length === 0) {
         channelName = 'voice_channel_default';
       }
-      
       
       // 백엔드에서 토큰 요청
       const { data } = await axios.post('/agora/token', { channelName, uid });
@@ -149,7 +169,16 @@ const VoiceChat=React.forwardRef(({ channelId, uid, onSpeakers, onLocalMuteChang
       onJoinChange?.(true);
       
       // 서버에 음성채팅 참여자 입장 알림 (WebSocket으로 참여자 목록 동기화)
-      notifyVoiceParticipantChange('join', channelId);
+      notifyVoiceParticipantChange('join', channelIdStr);
+      
+      // 음성채팅 전환 시 전역 상태 업데이트
+      if (onVoiceChatSwitch) {
+        onVoiceChatSwitch({
+          type: 'join',
+          channelId: channelIdStr,
+          roomId: roomId
+        });
+      }
       
       // 로컬 상태만 업데이트 (userName은 WebSocket에서 제공하므로 Agora 이벤트는 무시)
       
@@ -166,9 +195,12 @@ const VoiceChat=React.forwardRef(({ channelId, uid, onSpeakers, onLocalMuteChang
     }
   };
 
-  // 채널 퇴장 함수
+  // Agora RTC 채널 퇴장 처리
   async function leaveChannel() {
     try {
+      // channelId를 안전하게 문자열로 변환
+      const channelIdStr = String(channelId || '');
+      
       // 원격 전송 중단
       if (clientRef.current && localAudioTrackRef.current) {
         await clientRef.current.unpublish([localAudioTrackRef.current]);
@@ -193,17 +225,28 @@ const VoiceChat=React.forwardRef(({ channelId, uid, onSpeakers, onLocalMuteChang
       onJoinChange?.(false);
       
       // 서버에 음성채팅 참여자 퇴장 알림 (WebSocket으로 참여자 목록 동기화)
-      notifyVoiceParticipantChange('leave', channelId);
+      notifyVoiceParticipantChange('leave', channelIdStr);
+      
+      // 음성채팅 전환 시 전역 상태 업데이트
+      if (onVoiceChatSwitch) {
+        onVoiceChatSwitch({
+          type: 'leave',
+          channelId: channelIdStr,
+          roomId: roomId
+        });
+      }
       
       // 로컬 상태만 업데이트
       setJoinedUserIds([]);
+    } catch (error) {
+      console.error('음성채팅 퇴장 중 오류:', error);
     } finally {
       setMuted(false);
       setJoined(false);
     }
   }
 
-  // 마이크 음소거 토글
+  // 마이크 음소거 상태 토글 처리
   const toggleMute = async () => {
     if (!localAudioTrackRef.current) return;
 

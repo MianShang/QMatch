@@ -36,7 +36,6 @@ export function useSpeakingIndicator(client, options = {}) {
         // EMA 스무딩
         const level = Math.round(prev.level * (1 - smooth) + v.level * smooth);
 
-        console.log(`[Agora Volume] UID: ${v.uid}, Raw Level: ${v.level}, Smooth Level: ${level}`);
 
         let speaking = prev.speaking;
         let lastAbove = prev.lastAbove;

@@ -7,7 +7,7 @@ import { useSpeakingIndicator } from "../../../hooks/voiceChat/useSpeakingIndica
 
 // Agora RTC를 사용한 음성채팅 컴포넌트
 // 채널 입장/퇴장, 마이크 제어, 참여자 관리 기능 제공
-const VoiceChat=React.forwardRef(({ channelId, uid, onSpeakers, onLocalMuteChange, onJoinChange, onParticipantsChange, roomId, globalStomp, onVoiceChatSwitch}, ref) => {
+const VoiceChat=React.forwardRef(({ channelId, uid, onSpeakers, onLocalMuteChange, onJoinChange, onParticipantsChange, roomId, globalStomp, onVoiceChatSwitch, publish}, ref) => {
   
   // 음성채팅 상태 관리
   const [joined, setJoined] = useState(false);  // 채널 입장 여부
@@ -42,7 +42,7 @@ const VoiceChat=React.forwardRef(({ channelId, uid, onSpeakers, onLocalMuteChang
       };
       
       // useGlobalStomp의 publish 함수 사용 (destination, body)
-      globalStomp.publish(destination, payload);
+      publish(destination, payload);
       
     } catch (error) {
       console.error(`음성채팅 참여자 ${action} 알림 실패:`, error);

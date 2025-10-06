@@ -584,7 +584,8 @@ function App() {
           onParticipantsChange={() => {}} 
           channelId={currentVoiceRoomId}
           roomId={currentSelectedRoom?.id} 
-          globalStomp={globalStomp}
+          globalStomp={subscribe}
+          publish = {publish}
           onVoiceChatSwitch={(data) => {
             // 음성채팅 전환 시 전역 상태 업데이트
             if (data.type === 'join') {

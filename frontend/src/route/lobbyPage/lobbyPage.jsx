@@ -209,7 +209,6 @@ function LobbyPage() {
           roomData = data;
 
         // 서버에서 상세 방 정보를 가져와 state 업데이트
-        console.log('서버에서 받은 방 정보:', data);
         setSelectedRoom({
           id: data.id,
           name: data.name ?? s.chatName,
@@ -242,18 +241,14 @@ function LobbyPage() {
           // 승인된 사용자이거나 이미 가입된 사용자이거나 방장 승인 방인 경우 - join API 호출하지 않음
           // 임시로 승인된 사용자는 무조건 join API 호출하지 않음
           if (s.alreadyJoined || s.joinType === 'approval' || roomJoinType !== 'free' || s.type === 'multi') {
-            console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId, 'joinType:', roomJoinType, 'alreadyJoined:', s.alreadyJoined, 's.joinType:', s.joinType, 's.type:', s.type);
             getChatList(s.roomId, setMessages);
             setRead({ id: s.roomId });
           } else {
             // 자유 입장 방인 경우에만 join API 호출
-            console.log('자유 입장 API 호출: roomId:', s.roomId, 'joinType:', roomJoinType);
             axios.post(`/api/chat/rooms/${s.roomId}/join`, {
               userId: userData.userId
             }).then(() => {
-              console.log('자유 입장 성공');
               // 채팅방 이동 시 메시지 로딩 및 읽음 처리
-              console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId);
               getChatList(s.roomId, setMessages);
               setRead({ id: s.roomId });
               

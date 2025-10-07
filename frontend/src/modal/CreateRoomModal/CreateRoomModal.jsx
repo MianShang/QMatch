@@ -11,6 +11,7 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
   const [errorMsg, setErrorMsg] = useState('');         // 커스텀 에러 메시지
   const [maxUsers, setMaxUsers] = useState(5);         // 방 생성 시 기본값
   const [joinType, setJoinType] = useState('approval'); // 입장 방식: 'approval' (방장 승인) 또는 'free' (자유 입장)
+  const [isCreating, setIsCreating] = useState(false);  // 방 생성 중 상태
 
   // 모달 닫기 핸들러
   const handleClose = () => {
@@ -40,6 +41,11 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
 
   // 방 생성 API 호출
   const createRoom = async () => {
+    // 이미 생성 중이면 중복 요청 방지
+    if (isCreating) {
+      return;
+    }
+
     if (!name.trim() || !gameName.trim()) {
       // alert("채팅방 이름과 게임을 입력해주세요!");
       setErrorMsg("채팅방 이름과 게임을 입력해주세요!");
@@ -55,6 +61,10 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
       setErrorMsg("인원 수는 2명 이상 20명 이하만 가능합니다.");
       return;
     }
+
+    // 생성 시작 - 로딩 상태 활성화
+    setIsCreating(true);
+    setErrorMsg(''); // 에러 메시지 초기화
 
     // 숫자 배열로 변환
     const tagIds = selectedTags.map(id => Number(id));
@@ -103,6 +113,9 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
     } catch (err) {
       console.error(err);
       alert(err.message || '방 생성 중 오류가 발생했습니다.');
+    } finally {
+      // 생성 완료 후 로딩 상태 해제
+      setIsCreating(false);
     }
   };
 
@@ -205,7 +218,13 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
 
         {/* 하단 버튼 영역 */}
         <div className="footerArea">
-          <button className="createBtn" onClick={createRoom}>방 만들기</button>
+          <button 
+            className="createBtn" 
+            onClick={createRoom}
+            disabled={isCreating}
+          >
+            {isCreating ? '생성 중...' : '방 만들기'}
+          </button>
         </div>
       </div>
     </div>

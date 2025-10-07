@@ -4,6 +4,8 @@ import FriendInviteModal from "../../modal/FriendInviteModal/FriendInviteModal";
 import { useState, useContext } from "react";
 import { LogContext } from "../../App.jsx";
 import { FaPhone, FaPhoneSlash } from "react-icons/fa6";
+import EmojiPicker from "../../components/EmojiPicker";
+import ImageUpload from "../../components/ImageUpload";
 
 function ChatRoom({
     userData,
@@ -20,6 +22,8 @@ function ChatRoom({
 }) {
 
     const [showRoomSettings, setShowRoomSettings] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [showImageUpload, setShowImageUpload] = useState(false);
 
     const [showFriendInvite, setShowFriendInvite] = useState(false);
 
@@ -96,6 +100,45 @@ function ChatRoom({
             if (voiceChatRef.current) {
                 voiceChatRef.current.joinChannel(friendChannelId);
             }
+        }
+    }
+
+    const handleEmojiSelect = (emoji) => {
+        setInput(prev => prev + emoji);
+    };
+
+    const handleImageSelect = async (file) => {
+        try {
+            // 파일 크기 검증 (10MB 제한)
+            if (file.size > 10 * 1024 * 1024) {
+                alert('파일 크기는 10MB를 초과할 수 없습니다.');
+                return;
+            }
+
+            // FormData 생성
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('userId', userData.userId);
+            
+            // 서버에 이미지 업로드
+            const response = await fetch('/api/upload/image', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                const imageUrl = result.url;
+                
+                // 이미지 URL을 메시지로 전송
+                const imageMessage = `![이미지](${imageUrl})`;
+                setInput(prev => prev + imageMessage);
+            } else {
+                alert('이미지 업로드에 실패했습니다.');
+            }
+        } catch (error) {
+            console.error('이미지 업로드 오류:', error);
+            alert('이미지 업로드 중 오류가 발생했습니다.');
         }
     };
     
@@ -182,6 +225,20 @@ function ChatRoom({
                 {/* 입력창 */}
                 {(selectedRoom || selectedFriendRoom) && (
                     <div className="inputSize">
+                        <button 
+                            className="emoji-button"
+                            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                            title="이모지 추가"
+                        >
+                            😊
+                        </button>
+                        <button 
+                            className="image-upload-button"
+                            onClick={() => setShowImageUpload(true)}
+                            title="이미지 업로드"
+                        >
+                            📷
+                        </button>
                         <input
                             className="chatInputStyle"
                             type="text"
@@ -211,7 +268,20 @@ function ChatRoom({
                     open={showFriendInvite}
                     onClose={() => setShowFriendInvite(false)}
                     room={selectedRoom}
-                    onInviteSent={handleInviteSent}
+                />
+
+                {/* 이모지 피커 */}
+                <EmojiPicker
+                    isOpen={showEmojiPicker}
+                    onClose={() => setShowEmojiPicker(false)}
+                    onEmojiSelect={handleEmojiSelect}
+                />
+
+                {/* 이미지 업로드 */}
+                <ImageUpload
+                    isOpen={showImageUpload}
+                    onClose={() => setShowImageUpload(false)}
+                    onImageSelect={handleImageSelect}
                 />
             </div>
     );

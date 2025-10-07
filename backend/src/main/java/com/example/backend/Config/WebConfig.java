@@ -17,5 +17,8 @@ public class WebConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/uploads/profile/**") // 프론트 요청 경로
                 .addResourceLocations("file:" + new File("uploads/profile").getAbsolutePath() + "/"); // 실제 저장 위치
-}
+        
+        registry.addResourceHandler("/uploads/chat/**") // 채팅 이미지 요청 경로
+                .addResourceLocations("file:" + new File("uploads/chat").getAbsolutePath() + "/"); // 실제 저장 위치
+    }
 }

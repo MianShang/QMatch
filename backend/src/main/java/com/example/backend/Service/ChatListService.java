@@ -54,6 +54,51 @@ public class ChatListService {
         return true;
     }
 
+    // 시스템 메시지 저장하는 Service (운영 유의사항 등)
+    public boolean saveSystemMessage(String roomId, String messageContent) {
+        Optional<ChatRoom> chatRoom = chatRoomRepository.findById(roomId);
+        
+        if (chatRoom.isEmpty()) {
+            return false;
+        }
+
+        // Entity 객체 생성
+        ChatList chatList = new ChatList();
+
+        // Set
+        chatList.setChatContent(messageContent);
+        chatList.setChatRoom(chatRoom.get());
+        chatList.setUser(null); // 시스템 메시지는 User가 null
+        chatList.setUserName("시스템"); // 시스템 메시지임을 표시
+
+        // DB 저장
+        chatListRepository.save(chatList);
+
+        return true;
+    }
+
+    // 멤버 입장 메시지 저장하는 Service
+    public boolean saveMemberJoinMessage(String roomId, String messageContent) {
+        Optional<ChatRoom> chatRoom = chatRoomRepository.findById(roomId);
+        
+        if (chatRoom.isEmpty()) {
+            return false;
+        }
+
+        // Entity 객체 생성
+        ChatList chatList = new ChatList();
+
+        // Set
+        chatList.setChatContent(messageContent);
+        chatList.setChatRoom(chatRoom.get());
+        chatList.setUser(null); // 멤버 입장 메시지는 User가 null
+        chatList.setUserName("MEMBER_JOIN"); // 멤버 입장 메시지임을 표시
+
+        // DB 저장
+        chatListRepository.save(chatList);
+
+        return true;
+    }
 
     // 채팅 내역 가져오는 Service
     public List<ChatListResponseDto> getChatList(String roomId){
@@ -75,10 +120,14 @@ public class ChatListService {
             ChatListResponseDto chatListResponseDto = new ChatListResponseDto();
 
             chatListResponseDto.setMessage(chatList1.getChatContent());
-            chatListResponseDto.setName(chatList1.getUser().getUserId());
+            // userName이 "MEMBER_JOIN"이면 name도 "MEMBER_JOIN"으로 설정, 그 외에는 기존 로직 유지
+            if ("MEMBER_JOIN".equals(chatList1.getUserName())) {
+                chatListResponseDto.setName("MEMBER_JOIN");
+            } else {
+                chatListResponseDto.setName(chatList1.getUser() != null ? chatList1.getUser().getUserId() : "SYSTEM");
+            }
             chatListResponseDto.setChatDate(chatList1.getChatDate());
             chatListResponseDto.setUserName(chatList1.getUserName());
-            chatListResponseDto.setChatDate(chatList1.getChatDate());
 
             // List add
             chatListResponseDtoList.add(chatListResponseDto);

@@ -31,6 +31,7 @@ public class ChatIsReadService {
         // Map에서 가져옴
         String chatRoomId = request.get("chatRoom");
         String chatContent = request.get("chatContent");
+        String senderUserId = request.get("userId"); // 메시지를 보낸 사용자 ID
 
         // 채팅방을 저장한 유저들을 찾기 위해 특정 방 Id의 컬럼을 가져온다
         List<UserChatRoom> userChatRooms = userChatRoomRepository.findByChatRoom_Id(chatRoomId);
@@ -44,15 +45,27 @@ public class ChatIsReadService {
         // 채팅방 ID를 기준으로 Map에서 유저 목록을 가져온다
         Set<String> activeUsers = RealTimeUserManagement.activeUsersByRoom.getOrDefault(chatRoomId, Set.of());
 
+        System.out.println("채팅방 접속 중인 사용자들: " + activeUsers);
+
         for (UserChatRoom ucr : userChatRooms) {
             User user = ucr.getUser();
             String userId = user.getUserId();
 
-            // 현재 채팅방에 접속 중인 유저는 저장 제외
-            if (activeUsers.contains(userId)) {
+            System.out.println("처리 중인 사용자: " + userId);
+
+            // 메시지를 보낸 사용자는 항상 읽음 상태로 처리 (안읽음 저장 제외)
+            if (senderUserId != null && senderUserId.equals(userId)) {
+                System.out.println("메시지 보낸 사용자이므로 안읽음 저장 제외: " + userId);
                 continue;
             }
 
+            // 현재 채팅방에 접속 중인 유저는 저장 제외
+            if (activeUsers.contains(userId)) {
+                System.out.println("현재 접속 중인 사용자이므로 안읽음 저장 제외: " + userId);
+                continue;
+            }
+
+            System.out.println("안읽음 메시지 저장: " + userId);
             ChatIsRead chatIsRead = new ChatIsRead();
             chatIsRead.setChatRoomId(chatRoom.get());
             chatIsRead.setUser(user);
@@ -60,6 +73,7 @@ public class ChatIsReadService {
 
             chatIsReadRepository.save(chatIsRead);
         }
+        System.out.println("=== 안읽음 메시지 처리 완료 ===");
         return true;
     }
 

@@ -119,6 +119,20 @@ function ChatListPage({
   const { sendRequest } = useFriendRequest();
   const { sendBlockRequest } = blockUser();
 
+  // 채팅방 목록 새로고침 함수
+  const refreshChatList = async () => {
+    if (!userData?.userId) return;
+    
+    try {
+      const response = await axios.get('/api/get/user/chatrooms', {
+        params: { userId: userData.userId }
+      });
+      setChatList(response.data);
+    } catch (error) {
+      console.error('채팅방 목록 새로고침 실패:', error);
+    }
+  };
+
   // 아이콘
   function setGameIcon(gameName) {
     switch (gameName) {
@@ -234,15 +248,9 @@ function ChatListPage({
 
   // 채팅방 인원수 업데이트 함수 (chatList만 업데이트, selectedRoom은 별도 처리)
   const updateChatRoomUserCount = (roomId, change) => {
-    console.log('updateChatRoomUserCount 호출 - roomId:', roomId, 'change:', change);
-    console.log('현재 chatList 구조:', chatList);
-
     setChatList(prev => {
-      console.log('업데이트 전 chatList:', prev);
       const updated = prev.map(chat => {
-        console.log('비교 중 - chat.chatRoom.id:', chat.chatRoom?.id, 'vs roomId:', roomId);
         if (chat.chatRoom?.id === roomId) {
-          console.log('chatList 업데이트 - 이전 인원수:', chat.chatRoom.currentUsers, '→ 새로운 인원수:', chat.chatRoom.currentUsers + change);
           return {
             ...chat,
             chatRoom: {
@@ -253,7 +261,6 @@ function ChatListPage({
         }
         return chat;
       });
-      console.log('업데이트 후 chatList:', updated);
       return updated;
     });
   };
@@ -320,7 +327,6 @@ function ChatListPage({
 
       // 목록에서 제거
       setPendingUsers(prev => prev.filter(req => req.userId !== applicantId));
-      console.log('입장 승인 완료:', applicantId);
 
       // 인원수는 WebSocket 이벤트에서 자동으로 업데이트되므로 여기서는 제거
 
@@ -353,7 +359,6 @@ function ChatListPage({
 
       // 목록에서 제거
       setPendingUsers(prev => prev.filter(req => req.userId !== applicantId));
-      console.log('입장 거절 완료:', applicantId);
 
       // 토스트 알림 표시
       toast.warning('입장을 거절했습니다.');
@@ -387,7 +392,6 @@ function ChatListPage({
     globalStomp.subscribe(`/user/queue/join-request`, (frame) => {
       try {
         const payload = JSON.parse(frame.body);
-        console.log('개인 입장 신청 알림 수신:', payload);
 
         // 방장에게만 토스트 알림 표시 (payload에서 hostUserId 확인)
         console.log('개인 알림 토스트 조건 확인:', {
@@ -428,8 +432,6 @@ function ChatListPage({
     globalStomp.subscribe(`/topic/chat/${selectedRoom.id}/member-joined`, (frame) => {
       try {
         const payload = JSON.parse(frame.body);
-        console.log('새 멤버 입장:', payload);
-        console.log('selectedRoom.id:', selectedRoom?.id, 'payload.roomId:', payload.roomId);
 
         // 모든 채팅방 멤버에게 토스트 알림 표시
         toast.success(`${payload.userName}님이 입장했습니다!`);
@@ -439,12 +441,10 @@ function ChatListPage({
 
         // 멤버 목록 새로고침 (모든 사용자)
         if (selectedRoom?.id) {
-          console.log('멤버 목록 새로고침 호출:', selectedRoom.id);
           getChatUserList(selectedRoom.id);
 
           // 다른 이벤트와의 충돌을 방지하기 위해 약간의 지연 후 다시 새로고침
           setTimeout(() => {
-            console.log('지연된 멤버 목록 새로고침 호출:', selectedRoom.id);
             getChatUserList(selectedRoom.id);
           }, 500);
         }
@@ -479,7 +479,6 @@ function ChatListPage({
     globalStomp.subscribe(`/topic/room/${selectedRoom.id}/join-request`, (frame) => {
       try {
         const payload = JSON.parse(frame.body);
-        console.log('새 입장 신청:', payload);
 
         // 방장에게만 토스트 알림 표시
         console.log('토스트 조건 확인:', {
@@ -548,7 +547,7 @@ function ChatListPage({
           setIsMembersOpen(false);
           setChatList((prev) =>
             prev.filter((it) =>
-              it.id !== selectedRoom.id && it.chatRoom?.id !== selectedRoom.id
+              it.chatRoom?.id !== payload.roomId
             )
           );
           setUnreadCounts(prev => {
@@ -557,6 +556,11 @@ function ChatListPage({
             return next;
           });
           toast.success('방장에게 의해 방에서 추방되었습니다.');
+          
+          // 채팅방 목록 새로고침 (서버에서 최신 데이터 가져오기)
+          setTimeout(() => {
+            refreshChatList();
+          }, 500);
         } else {
           // 다른 사람 추방 시 참여자 목록 갱신
           setChatUserList(prev => prev.filter(u => u.userId !== payload?.targetUserId));
@@ -579,7 +583,6 @@ function ChatListPage({
 
         // 다른 이벤트와의 충돌을 방지하기 위해 약간의 지연 후 다시 새로고침
         setTimeout(() => {
-          console.log('join 이벤트 지연된 멤버 목록 새로고침:', roomId);
           getChatUserList(roomId);
         }, 500);
 
@@ -601,7 +604,6 @@ function ChatListPage({
         toast.info(`${payload.userId} 님이 방에서 나갔습니다.`);
         setChatUserList(prev => prev.filter(u => u.userId !== payload.userId));
         // chatList의 인원수만 업데이트 (방 나간 사용자는 이미 즉시 업데이트에서 처리됨)
-        console.log('방 나가기 WebSocket 이벤트 - chatList 인원수 감소');
         updateChatRoomUserCount(payload.roomId, -1);
 
         // selectedRoom도 함께 업데이트 (현재 보고 있는 방이면)
@@ -625,7 +627,6 @@ function ChatListPage({
     globalStomp.subscribe(`/topic/chat/${roomId}/host-transfer`, (frame) => {
       try {
         const payload = JSON.parse(frame.body);
-        console.log("방장 변경 이벤트:", payload);
 
         // selectedRoom의 hostUserId 업데이트
         setSelectedRoom(prev => prev ? ({
@@ -682,7 +683,6 @@ function ChatListPage({
 
       // 채팅방에 입장했으므로 메시지 목록 불러오기
       if (payload.roomId) {
-        console.log('개인 수락 알림: 메시지를 가져옵니다. roomId:', payload.roomId);
         getChatList(payload.roomId, setMessages);
         // 읽음 처리
         setRead({ id: payload.roomId });
@@ -1082,7 +1082,31 @@ function ChatListPage({
                 <div
                   key={item.id}
                   className="chatCard"
-                  onClick={() => {
+                  onClick={async () => {
+                    // 채팅방 입장 전 권한 확인
+                    try {
+                      const response = await axios.get(`/api/chat/rooms/${item.chatRoom.id}/check-access`, {
+                        params: { userId: userData.userId }
+                      });
+                      
+                      if (!response.data.hasAccess) {
+                        toast.error('이 채팅방에 접근할 권한이 없습니다.');
+                        // 권한이 없는 채팅방을 목록에서 제거
+                        setChatList(prev => prev.filter(chat => chat.chatRoom.id !== item.chatRoom.id));
+                        // 읽지 않은 메시지 카운트도 제거
+                        setUnreadCounts(prev => {
+                          const next = { ...prev };
+                          delete next[item.chatRoom.id];
+                          return next;
+                        });
+                        return;
+                      }
+                    } catch (error) {
+                      console.error('채팅방 접근 권한 확인 실패:', error);
+                      toast.error('채팅방 접근 권한을 확인할 수 없습니다.');
+                      return;
+                    }
+
                     setSendToModalGameName(item.chatRoom.gameName);
                     setChatListExtend(false);
                     setUnreadCounts((prev) => ({ ...prev, [item.chatRoom.id]: 0 }));
@@ -1474,8 +1498,6 @@ function ChatListPage({
                         ...prev,
                         hostUserId: menu.userId
                       }) : null);
-
-                      toast.success('방장을 넘겼습니다.');
                     } catch (err) {
                       toast.error('방장 넘기기에 실패했습니다.');
                     }

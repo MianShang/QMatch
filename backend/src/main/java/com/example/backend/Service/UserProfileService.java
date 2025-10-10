@@ -3,15 +3,11 @@ package com.example.backend.Service;
 import com.example.backend.Dto.Response.UserResponseDto;
 import com.example.backend.Entity.User;
 import com.example.backend.Repository.UserRepository;
-import jakarta.servlet.ServletContext;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.startup.RealmRuleSet;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
 import java.io.File;
 import java.io.IOException;
 
@@ -20,16 +16,18 @@ import java.io.IOException;
 public class UserProfileService {
 
     private final UserRepository userRepository;
+    // 폴더 생성 위치 설정
+    @Value("${upload.path}")
+    private String relativePath;
+
 
     public UserResponseDto userProfileImage(String userId, MultipartFile file) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("그런 유저는 없어"));
 
-        // 폴더 생성 위치 설정
-        String relativePath = "uploads/profile";
 
         // 실제 절대 경로를 반환하고 없다면 파일 생성
-        String uploadPath = new File(relativePath).getAbsolutePath();
+        String uploadPath = new File("/app/"+relativePath).getAbsolutePath();
         File uploadDir = new File(uploadPath);
         if (!uploadDir.exists()) uploadDir.mkdirs();
 

@@ -124,11 +124,11 @@ function App() {
 
         // 세션이 유효할 시 유저 정보를 가져온다
         const userDataResponse = await axios.get('/api/user/get-data', { withCredentials: true });
-
+        
         if (isMounted) {
           // 전역으로 관리할 유저 데이터 State Set
           setUserData(userDataResponse.data);
-          console.log("서버에서 받은 실제 유저 데이터:", userDataResponse.data);
+          //console.log("서버에서 받은 실제 유저 데이터:", userDataResponse.data);
           // 로그인 체크용 State TRUE
           setIsLogIn(true);
         }
@@ -153,7 +153,7 @@ function App() {
     // 서버에 세션은 사라졌지만 웹 조작을 통한 악성유저 방지
     const interval = setInterval(() => {
 
-      if (isMounted && isLogIn) {
+      if (isLogIn) {
         axios.get('/api/check-login', { withCredentials: true })
           .catch(() => {
             // 세션 만료 시 자동으로 로그아웃 처리
@@ -163,7 +163,7 @@ function App() {
             }
           });
       }
-    }, 10 * 60 * 1000); // 10분마다 반복
+    }, 10000); // 10분마다 반복
 
 
     // 언마운트 시 반복 중지
@@ -420,7 +420,7 @@ function App() {
       </div>
     );
   }
-  console.log("권한 확인 직전 userData:", userData);
+  //console.log("권한 확인 직전 userData:", userData);
 
   // 로딩이 끝나면 실제 앱 화면을 렌더링
   return (

@@ -1,6 +1,6 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, session } = require('electron');
 const path = require('path');
-const psList = require('ps-list').default; // 프로세스 리스트 가져오는 모듈
+const psList = require('ps-list').default;
 
 function createWindow() {
   const win = new BrowserWindow({

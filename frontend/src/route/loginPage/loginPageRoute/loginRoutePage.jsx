@@ -8,6 +8,8 @@ import './routePage.css'
 // 로그인 체크용 Context import
 import { LogContext } from '../../../App.jsx'
 
+
+
 function LogInRoutePage() {
   // navigate 객체 생성
   const navigate = useNavigate();
@@ -16,6 +18,9 @@ function LogInRoutePage() {
   let {isLogIn, setIsLogIn, setUserData}  = useContext(LogContext);
 
   console.log(isLogIn)
+
+  //자동로그인 체크박스 
+  const [rememberMe, setRememberMe] = useState(false);
 
   // ID, PW 받을 State
   const [credentials, setCredentials] = useState({
@@ -41,6 +46,12 @@ function LogInRoutePage() {
 
     params.append('username', credentials.username);
     params.append('password', credentials.password);
+
+    //자동 로그인이 체크 되어있을 경우 파라미터를 추가 
+    if (rememberMe) {
+      params.append('remember-me', 'true');
+    }
+  
 
     // HTML 폼 형식 (x-www-form-urlencoded)
     // username=입력한아이디&password=입력한비밀번호 이런식으로 드감
@@ -88,7 +99,19 @@ function LogInRoutePage() {
             value={credentials.username} onChange={handleChange} />
 
         <input type="password" name="password" placeholder='PW' required
-            value={credentials.password} onChange={handleChange} /> 
+            value={credentials.password} onChange={handleChange} />
+
+        <div className="remember-me-container">
+
+          <input 
+                    type="checkbox" 
+                    id="remember-me" 
+                    name="remember-me"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                />
+                    <label htmlFor="remember-me">자동 로그인</label>
+                </div>
 
         <button type="submit">로그인</button>
       </form>

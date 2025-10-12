@@ -98,6 +98,16 @@ function SearchPage() {
         if (response.status === 200) {
           // 자유 입장 성공 - 바로 채팅방으로 이동
           toast.success('채팅방에 입장했습니다!');
+          // 입장한 본인에게도 즉시 입장 메시지 추가
+          const userName = userData.userName || userData.userId;
+          const joinMessage = {
+            name: "MEMBER_JOIN",
+            userName: "MEMBER_JOIN", 
+            message: `${userName}님이 입장했습니다. \n 모두 환영해주세요~~`,
+            chatDate: new Date().toISOString()
+          };
+          // 전역 상태에 임시 저장 (lobbyPage에서 사용)
+          sessionStorage.setItem('pendingJoinMessage', JSON.stringify(joinMessage));
           navigate('/', { 
             state: { 
               type: 'multi', // 다대다 채팅방 타입 추가

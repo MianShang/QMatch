@@ -439,14 +439,11 @@ function ChatListPage({
         // 대기자 목록에서 제거 (입장한 사용자)
         setPendingUsers(prev => prev.filter(req => req.userId !== payload.userId));
 
-        // 멤버 목록 새로고침 (모든 사용자)
+        // 멤버 목록 새로고침 (즉시 + 지연 재시도)
         if (selectedRoom?.id) {
           getChatUserList(selectedRoom.id);
-
-          // 다른 이벤트와의 충돌을 방지하기 위해 약간의 지연 후 다시 새로고침
-          setTimeout(() => {
-            getChatUserList(selectedRoom.id);
-          }, 500);
+          setTimeout(() => getChatUserList(selectedRoom.id), 300);
+          setTimeout(() => getChatUserList(selectedRoom.id), 1000);
         }
 
         // selectedRoom의 currentUsers도 업데이트
@@ -456,6 +453,19 @@ function ChatListPage({
             ...prev,
             currentUsers: prev.currentUsers + 1
           } : null);
+
+          // 채팅 메시지 리스트에도 즉시 입장 시스템 메시지 추가
+          if (typeof setMessages === 'function') {
+            setMessages(prev => ([
+              ...prev,
+              {
+                name: "MEMBER_JOIN",
+                userName: "MEMBER_JOIN",
+                message: `${payload.userName}님이 입장했습니다. \n 모두 환영해주세요~~`,
+                chatDate: new Date().toISOString()
+              }
+            ]));
+          }
         } else {
           console.log('currentUsers 업데이트 안됨:', selectedRoom?.id, '!==', payload.roomId);
         }
@@ -730,6 +740,8 @@ function ChatListPage({
   function openMembers(roomId) {
     setIsMembersOpen(true);
     getChatUserList(roomId);
+    // 초반 구독 타이밍 이슈로 누락될 수 있어 한번 더 새로고침
+    setTimeout(() => getChatUserList(roomId), 500);
     setTimeout(measurePanel, 0);
     // 상위 컴포넌트에 참여자 패널 열림 알림
     if (onMembersPanelToggle) {

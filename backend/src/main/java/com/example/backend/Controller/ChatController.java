@@ -207,6 +207,12 @@ public class ChatController {
                         )
                 );
 
+        // (1-1) 중복 이름(동일 게임 내) 방지 - 선제 체크
+        if (roomName != null && gameName != null
+                && chatRoomRepository.existsByNameIgnoreCaseAndGameName(roomName.trim(), gameName.trim())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 동일한 이름의 방이 존재합니다.");
+        }
+
         // (2) 방 생성 + owner 설정
         ChatRoom room = new ChatRoom(UUID.randomUUID().toString(), roomName, maxUsers, creator);
         room.setGameName(gameName);

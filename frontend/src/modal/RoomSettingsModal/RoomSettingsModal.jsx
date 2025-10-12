@@ -7,6 +7,7 @@ function RoomSettingsModal({ open, onClose, room, onRoomUpdated }) {
   const [gameName, setGameName] = useState('');
   const [tags, setTags] = useState([]);                 // 태그 목록
   const [selectedTags, setSelectedTags] = useState([]); // 사용자가 선택한 태그
+  const [groupedTags, setGroupedTags] = useState({});   // 카테고리별 그룹화
   const { userData } = useContext(LogContext);
   const [errorMsg, setErrorMsg] = useState('');         // 커스텀 에러 메시지
   const [maxUsers, setMaxUsers] = useState(5);         // 방 인원
@@ -43,7 +44,16 @@ function RoomSettingsModal({ open, onClose, room, onRoomUpdated }) {
     if (!gameName) return;
     fetch(`/api/tags/${gameName}`)
       .then(res => res.json())
-      .then(data => setTags(data))
+      .then(data => {
+        setTags(data);
+        const grouped = data.reduce((acc, tag) => {
+          const category = tag.category || '기타';
+          if (!acc[category]) acc[category] = [];
+          acc[category].push(tag);
+          return acc;
+        }, {});
+        setGroupedTags(grouped);
+      })
       .catch(err => console.error(err));
   }, [gameName]);
 
@@ -210,21 +220,28 @@ function RoomSettingsModal({ open, onClose, room, onRoomUpdated }) {
             </div>
           </div>
 
-          {/* 태그 선택 */}
+          {/* 태그 선택 (카테고리/티어 그룹) */}
           <div className="formGroup">
             <label>태그 선택</label>
-            <div className="tagContainer">
-              {tags.map(tag => (
-                <button
-                  key={tag.id}
-                  type="button" // 폼 제출을 방지하기 위해 type="button" 지정
-                  className={`tagButton ${selectedTags.includes(tag.id) ? 'selected' : ''}`}
-                  onClick={() => toggleTag(tag.id)}
-                >
-                  {tag.tagName}
-                  </button>
-              ))}
-            </div>
+            {Object.keys(groupedTags).map((category) => (
+              <div key={category} className="tag-section">
+                <p className="tag-title">
+                  {category === 'tier' ? '티어' : category === 'line' ? '라인' : category === 'class' ? '직업/보스' : category}
+                </p>
+                <div className="tagContainer">
+                  {groupedTags[category].map(tag => (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      className={`tagButton ${selectedTags.includes(tag.id) ? 'selected' : ''}`}
+                      onClick={() => toggleTag(tag.id)}
+                    >
+                      {tag.tagName}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

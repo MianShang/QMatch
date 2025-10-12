@@ -10,12 +10,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
+@Table(
+        uniqueConstraints = @UniqueConstraint(columnNames = {"name", "gameName"})
+)
 @Getter @Setter
 public class ChatRoom {
     @Id
     private String id;
 
+    @Column(nullable = false)
     private String name;
+    @Column(nullable = false)
     private String gameName;
 
     @Column(nullable = false)

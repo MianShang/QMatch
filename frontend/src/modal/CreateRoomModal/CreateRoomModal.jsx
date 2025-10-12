@@ -3,10 +3,27 @@ import { LogContext } from '../../App.jsx';
 import './CreateRoomModal.css';
 
 function CreateRoomModal({ setOpenModal, onRoomCreated }) {
+  const mapTierIcon = (tierName) => {
+    const key = String(tierName || '').toLowerCase();
+    const mapping = {
+      '아이언': 'iron.png',
+      '브론즈': 'bronze.png',
+      '실버': 'silver.png',
+      '골드': 'gold.png',
+      '플레티넘': 'platinum.png',
+      '에메랄드': 'emerald.png',
+      '다이아몬드': 'diamond.png',
+      '마스터': 'master.png',
+      '그랜드마스터': 'grandmaster.png',
+      '챌린저': 'challenger.png',
+    };
+    return mapping[tierName] || 'unranked.png';
+  };
   const [name, setName] = useState('');
   const [gameName, setGameName] = useState('');
   const [tags, setTags] = useState([]);                 // 태그 목록
   const [selectedTags, setSelectedTags] = useState([]); // 사용자가 선택한 태그
+  const [groupedTags, setGroupedTags] = useState({});   // 카테고리별 그룹화
   const { userData } = useContext(LogContext);
   const [errorMsg, setErrorMsg] = useState('');         // 커스텀 에러 메시지
   const [maxUsers, setMaxUsers] = useState(5);         // 방 생성 시 기본값
@@ -27,7 +44,17 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
     if (!gameName) return;
     fetch(`/api/tags/${gameName}`)
       .then(res => res.json())
-      .then(data => setTags(data))
+      .then(data => {
+        setTags(data);
+        // 카테고리 기준 그룹화
+        const grouped = data.reduce((acc, tag) => {
+          const category = tag.category || '기타';
+          if (!acc[category]) acc[category] = [];
+          acc[category].push(tag);
+          return acc;
+        }, {});
+        setGroupedTags(grouped);
+      })
       .catch(err => console.error(err));
   }, [gameName]);
 
@@ -95,6 +122,10 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
           console.log("🔎 error body:", errBody);
           msg = errBody?.error || errBody?.message || msg;
         } catch (_) {}
+        if (res.status === 409) {
+          setErrorMsg(msg || '이미 동일한 이름의 방이 존재합니다.');
+          return; // 에러 토스트만 표시하고 종료
+        }
         throw new Error(msg);
       }
 
@@ -112,7 +143,9 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
       handleClose();
     } catch (err) {
       console.error(err);
-      alert(err.message || '방 생성 중 오류가 발생했습니다.');
+      if (!errorMsg) {
+        setErrorMsg(err.message || '방 생성 중 오류가 발생했습니다.');
+      }
     } finally {
       // 생성 완료 후 로딩 상태 해제
       setIsCreating(false);
@@ -198,21 +231,36 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
             </div>
           </div>
 
-          {/* 태그 선택 */}
+          {/* 태그 선택 (카테고리/티어 그룹) */}
           <div className="formGroup">
             <label>태그 선택</label>
-            <div className="tagContainer">
-              {tags.map(tag => (
-                <button
-                  key={tag.id}
-                  type="button" // 폼 제출을 방지하기 위해 type="button" 지정
-                  className={`tagButton ${selectedTags.includes(tag.id) ? 'selected' : ''}`}
-                  onClick={() => toggleTag(tag.id)}
-                >
-                  {tag.tagName}
-                  </button>
-              ))}
-            </div>
+            {Object.keys(groupedTags).map((category) => (
+              <div key={category} className="tag-section">
+                <p className="tag-title">
+                  {category === 'tier' ? '티어' : category === 'line' ? '라인' : category === 'class' ? '직업/보스' : category}
+                </p>
+                <div className="tagContainer">
+                  {groupedTags[category].map(tag => (
+                    <button
+                      key={tag.id}
+                      type="button"
+                      className={`tagButton ${selectedTags.includes(tag.id) ? 'selected' : ''}`}
+                      onClick={() => toggleTag(tag.id)}
+                    >
+                      {/* 티어 아이콘 (롤 티어 전용) */}
+                      {category === 'tier' && gameName === 'lol' ? (
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                          <img src={`/tiers/${mapTierIcon(tag.tagName)}`} alt={tag.tagName} style={{ width: 18, height: 18 }} />
+                          {tag.tagName}
+                        </span>
+                      ) : (
+                        tag.tagName
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

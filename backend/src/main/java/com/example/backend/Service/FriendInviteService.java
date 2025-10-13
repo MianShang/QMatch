@@ -24,6 +24,7 @@ public class FriendInviteService {
     private final ChatRoomRepository chatRoomRepository;
     private final UserRepository userRepository;
     private final UserChatRoomRepository userChatRoomRepository;
+    private final ChatListService chatListService;
 
     // 친구 초대 전송
     @Transactional
@@ -127,13 +128,16 @@ public class FriendInviteService {
         
         messagingTemplate.convertAndSend("/topic/user/" + room.getOwner().getUserId() + "/friend-invite-response", responseData);
         
-        // 8. 방 참여자들에게 새 멤버 입장 알림
+        // 8. 방 참여자들에게 새 멤버 입장 알림 + 메시지 저장
+        chatListService.saveMemberJoinMessage(roomId, user.getUserName() + "님이 입장했습니다. \n 모두 환영해주세요~~");
+
         Map<String, Object> joinData = Map.of(
+                "type", "member-joined",
                 "userId", userId,
                 "userName", user.getUserName(),
-                "roomId", roomId
+                "roomId", roomId,
+                "timestamp", System.currentTimeMillis()
         );
-        
         messagingTemplate.convertAndSend("/topic/chat/" + roomId + "/member-joined", joinData);
     }
 

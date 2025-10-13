@@ -3,10 +3,12 @@ import RoomSettingsModal from "../../modal/RoomSettingsModal/RoomSettingsModal";
 import FriendInviteModal from "../../modal/FriendInviteModal/FriendInviteModal";
 import { useState, useContext } from "react";
 import { LogContext } from "../../App.jsx";
+import { toast } from "react-toastify";
 import { FaPhone, FaPhoneSlash } from "react-icons/fa6";
 import EmojiPicker from "../../components/EmojiPicker";
 import ImageUpload from "../../components/ImageUpload";
-import { toast } from "react-toastify";
+import axios from "axios";
+
 
 // 확인 / 취소 토스트 모달
 function confirmToast(message) {
@@ -52,6 +54,7 @@ function ChatRoom({
     sendFriendMessage,
     messageContainerRef,
     onRoomUpdated,
+    client,
 }) {
 
     // 테마 컨텍스트 가져오기
@@ -174,10 +177,65 @@ function ChatRoom({
             if (response.ok) {
                 const result = await response.json();
                 const imageUrl = result.url;
-                
-                // 이미지 URL을 메시지로 전송
+
+                // 이미지 URL을 바로 전송 (입력창 거치지 않음)
                 const imageMessage = `![이미지](${imageUrl})`;
-                setInput(prev => prev + imageMessage);
+                if (selectedRoom) {
+                    // STOMP 발행 + 저장 API 직접 호출
+                    if (client && imageMessage.trim()) {
+                        // 메세지 발행 로직
+                        client.publish({
+                            destination: `/app/chat/${selectedRoom.id}`,
+                            body: JSON.stringify({ 
+                                name: userData.userId, 
+                                message: imageMessage 
+                            }),
+                        });
+
+                        // 채팅 내역 저장 API
+                        axios.post('/api/user/add/userchatlist', {
+                            chatRoom: selectedRoom.id,
+                            chatContent: imageMessage,
+                            userId: userData.userId
+                        }).then((res) => {
+                            console.log('이미지 메세지 저장 성공');
+                        }).catch((err) => {
+                            console.error('이미지 메세지 저장 실패:', err);
+                        });
+
+                        // 안읽은 메세지 처리
+                        axios.post('/api/chat/isread', {
+                            chatRoom: selectedRoom.id,
+                            chatContent: imageMessage,
+                            userId: userData.userId
+                        }).then((res) => {
+                            console.log('이미지 메세지 저장 성공2');
+                        }).catch((err) => {
+                            console.error('이미지 메세지 저장 실패2:', err);
+                        });
+                    }
+                } else if (selectedFriendRoom) {
+                    // 친구 채팅도 동일하게 처리
+                    if (client && imageMessage.trim()) {
+                        client.publish({
+                            destination: `/app/friend-chat/${selectedFriendRoom.friendId}`,
+                            body: JSON.stringify({ 
+                                name: userData.userId, 
+                                message: imageMessage 
+                            }),
+                        });
+
+                        axios.post('/api/friendship-chat/send', {
+                            friendshipChatRoomId: selectedFriendRoom.friendshipChatRoomId,
+                            chatContent: imageMessage,
+                            userId: userData.userId
+                        }).then((res) => {
+                            console.log('친구 이미지 메세지 저장 성공');
+                        }).catch((err) => {
+                            console.error('친구 이미지 메세지 저장 실패:', err);
+                        });
+                    }
+                }
             } else {
                 alert('이미지 업로드에 실패했습니다.');
             }

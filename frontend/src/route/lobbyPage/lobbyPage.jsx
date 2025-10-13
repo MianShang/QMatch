@@ -258,6 +258,19 @@ function LobbyPage() {
           if (s.alreadyJoined || s.joinType === 'approval' || roomJoinType !== 'free' || s.type === 'multi') {
             getChatList(s.roomId, setMessages);
             setRead({ id: s.roomId });
+            
+            // sessionStorage에서 pendingJoinMessage 확인 후 추가
+            const pendingMessage = sessionStorage.getItem('pendingJoinMessage');
+            if (pendingMessage) {
+              try {
+                const joinMsg = JSON.parse(pendingMessage);
+                setMessages(prev => [...prev, joinMsg]);
+                sessionStorage.removeItem('pendingJoinMessage');
+              } catch (e) {
+                console.warn('pendingJoinMessage 파싱 실패:', e);
+                sessionStorage.removeItem('pendingJoinMessage');
+              }
+            }
           } else {
             // 자유 입장 방인 경우에만 join API 호출
             axios.post(`/api/chat/rooms/${s.roomId}/join`, {
@@ -266,6 +279,19 @@ function LobbyPage() {
               // 채팅방 이동 시 메시지 로딩 및 읽음 처리
               getChatList(s.roomId, setMessages);
               setRead({ id: s.roomId });
+              
+              // sessionStorage에서 pendingJoinMessage 확인 후 추가
+              const pendingMessage = sessionStorage.getItem('pendingJoinMessage');
+              if (pendingMessage) {
+                try {
+                  const joinMsg = JSON.parse(pendingMessage);
+                  setMessages(prev => [...prev, joinMsg]);
+                  sessionStorage.removeItem('pendingJoinMessage');
+                } catch (e) {
+                  console.warn('pendingJoinMessage 파싱 실패:', e);
+                  sessionStorage.removeItem('pendingJoinMessage');
+                }
+              }
               
               // 자유 입장 성공 - WebSocket 이벤트로 멤버 목록이 자동 업데이트됨
             }).catch(err => {
@@ -584,6 +610,7 @@ function LobbyPage() {
           messageContainerRef={messageContainerRef}
           onRoomUpdated={handleRoomUpdated}
           sendFriendMessage={sendFriendMessage}
+          client={client}
         />
 
           <div style={{ display: "flex" }}>

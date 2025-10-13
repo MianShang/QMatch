@@ -1,55 +1,89 @@
+/* 모달 오버레이 */
 .voice-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.7);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(5px);
+    z-index: 9999;
+    backdrop-filter: blur(4px);
 }
 
+/* 모달 콘텐츠 */
 .voice-modal-content {
-    background: #1c2025;
-    border-radius: 12px;
-    width: 380px;
-    padding: 25px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    background: var(--discord-bg-primary);
+    border-radius: var(--discord-radius);
+    width: 450px;
+    max-width: 90vw;
+    padding: 24px;
+    box-shadow: var(--discord-elevation-high);
     display: flex;
     flex-direction: column;
-    color: #e0e0e0;
-    border: 1px solid rgba(74, 110, 225, 0.2);
+    max-height: 90vh;
+    overflow-y: auto;
+    border: 1px solid var(--discord-bg-tertiary);
 }
 
+/* 스크롤바 스타일 */
+.voice-modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+.voice-modal-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+.voice-modal-content::-webkit-scrollbar-thumb {
+    background-color: var(--discord-bg-quaternary);
+    border-radius: 4px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+.voice-modal-content::-webkit-scrollbar-thumb:hover {
+    background: var(--discord-bg-modifier-hover);
+    background-clip: content-box;
+}
+
+/* 모달 헤더 */
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--discord-bg-tertiary);
 }
 
 .modal-header h3 {
     margin: 0;
     font-size: 1.5rem;
-    color: #00e57a;
+    color: var(--discord-text-normal);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
+/* 닫기 버튼 */
 .close-btn {
     background: none;
     border: none;
     font-size: 1.5rem;
-    color: #cfcfcf;
+    color: var(--discord-text-muted);
     cursor: pointer;
-    transition: color 0.2s ease;
+    transition: all 0.2s;
+    padding: 4px;
+    border-radius: 4px;
 }
 
 .close-btn:hover {
-    color: #ff0000;
+    color: var(--discord-text-danger);
+    background: var(--discord-bg-modifier-hover);
 }
 
+/* 폼 그룹 */
 .form-group {
     display: flex;
     flex-direction: column;
@@ -58,42 +92,146 @@
 
 .form-group label {
     font-weight: 500;
-    margin-bottom: 6px;
-    color: #aaa;
+    margin-bottom: 8px;
+    color: var(--discord-text-muted);
     font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
+/* 셀렉트 박스 */
 .voice-modal-content select {
     width: 100%;
-    padding: 10px;
+    padding: 12px;
     font-size: 1rem;
-    border: 1px solid #444;
-    border-radius: 8px;
-    background-color: #2a2f36;
-    color: #e0e0e0;
+    border: 1px solid var(--discord-bg-tertiary);
+    border-radius: var(--discord-radius-small);
+    background-color: var(--discord-bg-secondary);
+    color: var(--discord-text-normal);
     outline: none;
     transition: border-color 0.2s, box-shadow 0.2s;
+    cursor: pointer;
 }
 
 .voice-modal-content select:focus {
-    border-color: #4a6ee1;
-    box-shadow: 0 0 8px rgba(74, 110, 225, 0.5);
+    border-color: var(--discord-accent);
+    box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.2);
 }
 
+/* 토글 그룹 */
 .toggle-group {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+    margin-top: 8px;
 }
 
 .toggle-label {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     cursor: pointer;
+    padding: 12px;
+    background: var(--discord-bg-secondary);
+    border: 1px solid var(--discord-bg-tertiary);
+    border-radius: var(--discord-radius-small);
+    transition: all 0.2s ease;
+    color: var(--discord-text-normal);
+}
+
+.toggle-label:hover {
+    background: var(--discord-bg-modifier-hover);
+    border-color: var(--discord-accent);
 }
 
 .toggle-label input[type="checkbox"] {
-    accent-color: #00e57a;
+    accent-color: var(--discord-accent);
     transform: scale(1.2);
+    cursor: pointer;
+}
+
+/* 마이크 감도 표시 */
+.mic-meter {
+    width: 100%;
+    height: 8px;
+    background: var(--discord-bg-secondary);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid var(--discord-bg-tertiary);
+    position: relative;
+}
+
+.mic-meter-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--discord-text-positive), var(--discord-accent));
+    transition: width 0.1s ease;
+    border-radius: 4px;
+}
+
+/* 슬라이더 */
+.voice-modal-content input[type="range"] {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--discord-bg-secondary);
+    outline: none;
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.voice-modal-content input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--discord-accent);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid var(--discord-bg-primary);
+}
+
+.voice-modal-content input[type="range"]::-webkit-slider-thumb:hover {
+    background: var(--discord-accent-hover);
+    transform: scale(1.1);
+}
+
+.voice-modal-content input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--discord-accent);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid var(--discord-bg-primary);
+}
+
+.voice-modal-content input[type="range"]::-moz-range-thumb:hover {
+    background: var(--discord-accent-hover);
+    transform: scale(1.1);
+}
+
+/* 테스트 버튼 */
+.test-sound-btn {
+    width: 100%;
+    padding: 12px 24px;
+    border: none;
+    border-radius: var(--discord-radius-small);
+    background: var(--discord-bg-quaternary);
+    color: var(--discord-text-normal);
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.test-sound-btn:hover {
+    background: var(--discord-bg-modifier-hover);
+    transform: translateY(-1px);
+}
+
+.test-sound-btn:active {
+    background: var(--discord-bg-modifier-active);
+    transform: translateY(0);
 }

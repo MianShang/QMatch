@@ -61,8 +61,19 @@ function ChatListPage({
 }) {
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   const navigate = useNavigate();
+  
   // State 보관함 해체
-  const { userData, isRunning, gameStatusByUser, setCurrentGroupVoiceChat } = useContext(LogContext);
+  const {
+  userData,
+  isRunning,
+  gameStatusByUser,
+  currentGroupVoiceChat,
+  setCurrentGroupVoiceChat,
+  friendVoiceChatActive,
+  setFriendVoiceChatActive,
+  currentFriendVoiceChat,
+  setCurrentFriendVoiceChat
+} = useContext(LogContext);
 
   // State
   const [chatListExtend, setChatListExtend] = useState(false);
@@ -855,79 +866,73 @@ function ChatListPage({
 
   // 음성 입장 핸들러
   const handleJoinVoice = async (channelId) => {
-    // 이미 다른 채널에 접속 중인지 확인
+    // 이미 다른 채널(그룹 또는 친구 통화)에 접속 중인지 확인
     if (joinedVoice && voiceChatRoomId && voiceChatRoomId !== channelId) {
-      // 현재 채널과 클릭한 채널 이름 찾기
-      const currentChannel = voiceChannels.find(ch => ch.id === voiceChatRoomId);
-      const targetChannel = voiceChannels.find(ch => ch.id === channelId);
-      
-      const currentChannelName = currentChannel?.voiceChannelName || '알 수 없는 채널';
-      const targetChannelName = targetChannel?.voiceChannelName || '알 수 없는 채널';
-      
-      // 확인 메시지
-      const confirmed = await confirmToast(
-        `지금 "${currentChannelName}" 채널에 입장해있습니다.\n"${targetChannelName}" 채널로 이동하시겠습니까?`
-      );
-      
-      if (!confirmed) {
-        return; // 취소하면 이동하지 않음
+      let currentContextName = "알 수 없는 채널";
+
+      // 현재 1:1 통화 중인 경우
+      if (friendVoiceChatActive && currentFriendVoiceChat) {
+        currentContextName = `${currentFriendVoiceChat.friendName}님과`;
       }
-      
-      // 기존 채널에서 퇴장
-      handleLeaveVoice();
-      
-      // 잠시 대기 후 새 채널 입장
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // 현재 그룹 음성채널 중인 경우
+      else if (currentGroupVoiceChat) {
+        currentContextName = `${currentGroupVoiceChat.channelName} 채널에서`;
+      }
+
+      // 클릭한 대상 채널
+      const targetChannel = voiceChannels.find(ch => String(ch.id) === String(channelId));
+      const targetChannelName = targetChannel?.voiceChannelName || "알 수 없는 채널";
+
+      const confirmed = await confirmToast(
+        `현재 ${currentContextName} 통화 중입니다.\n${targetChannelName} 채널로 이동하시겠습니까?`
+      );
+      if (!confirmed) return;
+
+      // 기존 통화 종료 (친구 또는 그룹)
+      if (voiceChatRef.current) {
+        await voiceChatRef.current.leaveChannel();
+      }
+      setJoinedVoice(false);
+      setFriendVoiceChatActive(false);
+      setCurrentFriendVoiceChat(null);
+      await new Promise(res => setTimeout(res, 500));
     }
-    
+
+    // 새 그룹 음성채널 입장
     setVoiceChatRoomId(channelId);
-    
-    // LobbyPage에 음성채널 입장 알림
-    if (onJoinVoice) {
-      onJoinVoice(channelId);
-    }
-    
-    if (voiceChatRef && voiceChatRef.current) {
+    if (onJoinVoice) onJoinVoice(channelId);
+
+    if (voiceChatRef?.current) {
       try {
-        voiceChatRef.current.joinChannel(channelId);
+        await voiceChatRef.current.joinChannel(channelId);
         setJoinedVoice(true);
-        
-        // 그룹 채팅방 음성채팅 정보를 전역 상태에 저장 (음성채팅 전환 시에도 업데이트)
+
+        const targetChannel = voiceChannels.find(ch => String(ch.id) === String(channelId));
+        const targetChannelName = targetChannel?.voiceChannelName || "알 수 없는 채널";
+
+        // 전역 그룹 통화 상태 갱신
         if (selectedRoom) {
           setCurrentGroupVoiceChat({
             roomId: selectedRoom.id,
             roomName: selectedRoom.name,
             gameName: selectedRoom.gameName,
             tagNames: selectedRoom.tagNames || [],
-            channelId: channelId
+            channelId,
+            channelName: targetChannelName
           });
         }
-        
-        // 음성채널 참여자 목록 새로고침
-        if (selectedRoom?.id) {
-          fetchVoiceChannels(selectedRoom.id);
-          
-          // 지연된 새로고침 (서버 동기화용)
-          setTimeout(() => {
-            fetchVoiceChannels(selectedRoom.id);
-          }, 500);
-          
-          // 추가 지연된 새로고침 (다른 사용자 입장 대기용)
-          setTimeout(() => {
-            fetchVoiceChannels(selectedRoom.id);
-          }, 2000);
-        }
-        
+
+        toast.success(`"${targetChannelName}"에 입장했습니다.`);
       } catch (error) {
-        console.error('음성채널 입장 실패:', error);
-        toast.error('음성채널 입장에 실패했습니다.');
+        console.error("음성채널 입장 실패:", error);
+        toast.error("음성채널 입장에 실패했습니다.");
       }
     } else {
-      // voiceChatRef가 없어도 기본 동작 수행
       setJoinedVoice(true);
-      toast.info('음성채널에 입장했습니다. (기본 모드)');
+      toast.info("음성채널에 입장했습니다. (기본 모드)");
     }
   };
+ 
 
   // 음성 퇴장 핸들러
   const handleLeaveVoice = () => {

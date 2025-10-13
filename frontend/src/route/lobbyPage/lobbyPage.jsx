@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect, useContext, memo, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios';
+import AgoraRTC from 'agora-rtc-sdk-ng';
 import './lobbyPage.css'
 import { FaPhone } from 'react-icons/fa6';
 
@@ -122,6 +123,7 @@ function LobbyPage() {
 
   // 음성설정 모달
   const [showVoiceChatModal, setShowVoiceChatModal] = useState(false);
+  const [localAudioTrack, setLocalAudioTrack] = useState(null);
 
   // 입장 신청 관리 상태 제거 - 기존 UI에 통합
 
@@ -150,6 +152,19 @@ function LobbyPage() {
     if (status === '온라인') return '🟢';
     if (status === '자리비움') return '🟠';
     return '🔴';
+  }
+
+  // 음성 설정 열기 함수
+  async function openVoiceSettings() {
+    try {
+      if (!localAudioTrack) {
+        const track = await AgoraRTC.createMicrophoneAudioTrack();
+        setLocalAudioTrack(track);
+      }
+      setShowVoiceChatModal(true);
+    } catch (err) {
+      console.error("마이크 초기화 실패:", err);
+    }
   }
 
   // 스크롤 하단 자동 이동 Effect
@@ -342,6 +357,33 @@ function LobbyPage() {
     // Agora 이벤트는 무시하고 WebSocket만 사용
   }, []);
 
+  // 현재 방의 실시간 음성참가자 구독
+  useEffect(() => {
+    if (!selectedRoom?.id || !globalStomp) return;
+
+    const roomId = selectedRoom.id;
+    const subscriptionId = `voice-participants-${roomId}`;
+
+    globalStomp.subscribe(`/topic/chat/${roomId}/voice-participants`, (frame) => {
+      console.log("📡 ROOM RECEIVE:", frame.body);
+      try {
+        const data = JSON.parse(frame.body);
+        // 서버는 List<VoiceParticipantDto>를 보내므로 data는 배열 형태
+        setGlobalVoiceParticipants(prev => ({
+          ...prev,
+          [roomId]: data
+        }));
+      } catch (e) {
+        console.error("음성채널 방별 업데이트 에러:", e);
+      }
+    }, { id: subscriptionId });
+
+    // cleanup (방 이동 시 기존 구독 해제)
+    return () => {
+      globalStomp.unsubscribe(subscriptionId);
+    };
+  }, [selectedRoom?.id, globalStomp]);
+
   // 음성채팅 참가자 목록을 불러오기 (초기 로딩만)
   useEffect(() => {
     if (!selectedRoom?.id) return;
@@ -503,7 +545,7 @@ function LobbyPage() {
               <button
                 className="bottom-button"
                 aria-label="음성 채팅 설정"
-                onClick={() => { setShowVoiceChatModal(true); }}
+                onClick={openVoiceSettings}
               >
                 <FaPhone className="button-icon" />
               </button>
@@ -569,13 +611,13 @@ function LobbyPage() {
           onClose={() => setShowProfileModal(false)}
         />}
 
-      {/*음성설정 모달*/}
-      {showVoiceChatModal &&
-        <VoiceChatModal viewUserId={profileUserId}
-          userData={userData}
-          setUserData={setUserData}
+      {/* 음성 설정 모달 */}
+      {showVoiceChatModal && (
+        <VoiceChatModal
           onClose={() => setShowVoiceChatModal(false)}
-        />}
+          localAudioTrack={localAudioTrack}
+        />
+      )}
 
 
       {/* 입장 신청 관리 모달 제거 - 기존 UI에 통합 */}

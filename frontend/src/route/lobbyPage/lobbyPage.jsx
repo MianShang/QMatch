@@ -89,7 +89,8 @@ function LobbyPage() {
     joinedVoice, setJoinedVoice,
     currentVoiceRoomId, setCurrentVoiceRoomId,
     currentSelectedRoom, setCurrentSelectedRoom,
-    voiceChatRef
+    voiceChatRef,
+    listRefreshTick, setListRefreshTick
   } = useContext(LogContext)
 
   // 전역 STOMP 클라이언트 초기화
@@ -142,7 +143,6 @@ function LobbyPage() {
   const sendFriendMessage = useFriendChatSender(client ,selectedFriendRoom, userData, input, setInput);
 
   const location = useLocation();                                      // 방 입장 시 전달된 state 확인
-  const [listRefreshTick, setListRefreshTick] = useState(0);      // 방 목록 강제 리렌더링 트리거
 
   // useUserStatusReporter 훅에서 반환되는 새로운 함수를 받음
   const [userStatus, manuallySetStatus] = useUserStatusReporter(userData?.userId);

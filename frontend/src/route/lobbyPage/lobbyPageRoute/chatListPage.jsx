@@ -51,6 +51,7 @@ function ChatListPage({
   membersToggle = true, // 참여자/음성채팅 토글 상태
   setMembersToggle = () => { }, // 참여자/음성채팅 토글 상태 변경 함수
   setHasUnreadMessages, // 안 읽은 메시지 상태 업데이트 함수
+  refreshTick, // 채팅방 목록 새로고침 트리거
   // UserHistoryModal 관련 props
   isUserHistoryOpen,
   setIsUserHistoryOpen,
@@ -122,6 +123,13 @@ function ChatListPage({
   useChatGetRooms(userData, setChatList);              // 로그인한 유저의 채팅방
   useUnReadChatCount(userData, chatList, setUnreadCounts);     // 안읽은 메세지 카운트
   useNewChatNotice(userData, selectedRoom, setUnreadCounts, globalStomp);   // 새 메세지 알림
+
+  // refreshTick이 변경될 때마다 채팅방 목록 새로고침
+  useEffect(() => {
+    if (refreshTick > 0) {
+      refreshChatList();
+    }
+  }, [refreshTick]);
 
   const getChatUserList = useChatGetUserList(setChatUserList);
   const deleteUserRoom = useChatDeleteRoom();

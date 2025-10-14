@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useMemo, useRef, use } from 'react';
+import React, { useState, useEffect, createContext, useMemo, useRef, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
@@ -106,7 +106,7 @@ function App() {
     const rect = e.currentTarget.getBoundingClientRect();
     setDragOffset({ x: e.clientX - rect.left, y: e.clientY - rect.top });
   };
-  const handleMouseMove = (e) => {
+  const handleMouseMove = useCallback((e) => {
     if (!isDragging) return;
     const newX = e.clientX - dragOffset.x;
     const newY = e.clientY - dragOffset.y;
@@ -114,18 +114,17 @@ function App() {
       x: Math.max(0, Math.min(newX, window.innerWidth - 300)),
       y: Math.max(0, Math.min(newY, window.innerHeight - 100))
     });
-  };
+  }, [isDragging, dragOffset]);
   const handleMouseUp = () => setIsDragging(false);
   useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, dragOffset]);
+    if (!isDragging) return;
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, handleMouseMove]);
 
   // Electron 환경에서 실행 중인 프로세스 감지
   useEffect(() => {

@@ -21,14 +21,15 @@ const VoiceChat = React.forwardRef(({ channelId, uid, onSpeakers, onLocalMuteCha
   
 
   // STOMP를 통해 서버에 음성채팅 참여자 정보 전송
-  const notifyVoiceParticipantChange = (action, voiceChannelId) => {
-    if (!roomId || !uid || !globalStomp) return;
+  const notifyVoiceParticipantChange = (action, voiceChannelId, customRoomId) => {
+    const targetRoomId = customRoomId || roomId;
+    if (!targetRoomId || !uid || !globalStomp) return;
     try {
       const destination = action === 'join'
-        ? `/app/voice/${roomId}/join`
-        : `/app/voice/${roomId}/leave`;
+        ? `/app/voice/${targetRoomId}/join`
+        : `/app/voice/${targetRoomId}/leave`;
 
-      const payload = { userId: uid, voiceChannelId, roomId };
+      const payload = { userId: uid, voiceChannelId, roomId: targetRoomId };
       console.log("🔈 STOMP SEND:", destination, payload);
 
       globalStomp.publish(destination, payload);
@@ -37,6 +38,7 @@ const VoiceChat = React.forwardRef(({ channelId, uid, onSpeakers, onLocalMuteCha
       console.error(`음성채팅 ${action} 알림 실패:`, error);
     }
   };
+
 
   // 스피킹 인디케이터
   const speakers = useSpeakingIndicator(clientRef.current);
@@ -181,8 +183,8 @@ const VoiceChat = React.forwardRef(({ channelId, uid, onSpeakers, onLocalMuteCha
     }
   };
 
-  // Agora RTC 채널 퇴장 처리
-  async function leaveChannel() {
+// Agora RTC 채널 퇴장 처리
+  async function leaveChannel(forceRoomId = roomId) {
     try {
       // channelId를 안전하게 문자열로 변환
       const channelIdStr = String(channelId || '');
@@ -211,14 +213,15 @@ const VoiceChat = React.forwardRef(({ channelId, uid, onSpeakers, onLocalMuteCha
       onJoinChange?.(false);
 
       // 서버에 음성채팅 참여자 퇴장 알림 (WebSocket으로 참여자 목록 동기화)
-      notifyVoiceParticipantChange('leave', channelIdStr);
+      notifyVoiceParticipantChange('leave', channelIdStr, forceRoomId);
+
 
       // 음성채팅 전환 시 전역 상태 업데이트
       if (onVoiceChatSwitch) {
         onVoiceChatSwitch({
           type: 'leave',
           channelId: channelIdStr,
-          roomId: roomId
+          roomId: forceRoomId
         });
       }
 

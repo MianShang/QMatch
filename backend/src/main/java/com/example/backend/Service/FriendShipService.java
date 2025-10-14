@@ -307,4 +307,13 @@ public class FriendShipService {
             }
         });
     }
+
+    // 대기 중인 친구 요청 개수 조회
+    public long getPendingFriendRequestCount(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다: " + userId));
+        
+        List<FriendShip> pendingRequests = friendshipRepository.findFriendsPendingByUserId(user.getId());
+        return pendingRequests.size();
+    }
 }

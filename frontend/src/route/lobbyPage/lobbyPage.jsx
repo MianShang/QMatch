@@ -34,6 +34,7 @@ import { useChatListGet } from '../../hooks/chatList/useChatListGet.js';
 import { useSetReadUnReadChat } from '../../hooks/chatNotice/useSetReadUnReadChat.js';
 import { useFriendChatListGet } from '../../hooks/chatList/useFriendChatListGet.js';
 import { useFriendChatSender } from '../../hooks/chat/useFriendChatSender.js';
+import { useFriendReadChat } from '../../hooks/chatNotice/useFriendReadChat.js';
 
 // 상태 체크 훅 import 추가
 import useUserStatusReporter from '../../hooks/status/useUserStatusReporter.js';
@@ -90,7 +91,8 @@ function LobbyPage() {
     currentVoiceRoomId, setCurrentVoiceRoomId,
     currentSelectedRoom, setCurrentSelectedRoom,
     voiceChatRef,
-    listRefreshTick, setListRefreshTick
+    listRefreshTick, setListRefreshTick,
+    pendingCount
   } = useContext(LogContext)
 
   // 전역 STOMP 클라이언트 초기화
@@ -99,6 +101,8 @@ function LobbyPage() {
   // 메시지 로딩 및 읽음 처리 훅
   const getChatList = useChatListGet();
   const setRead = useSetReadUnReadChat(userData);
+  
+  // 친구 요청 개수 조회 훅
 
   // // userData가 로드될 때까지 로딩
   // if (!userData) {
@@ -136,6 +140,7 @@ function LobbyPage() {
   useLoginCheck(isLogIn);                                         // 로그인 체크 훅
   useChatSubscriber(selectedRoom, setMessages, setClient, userData, globalStomp);    // 채팅방 구독 훅
   useFriendChatSubscriber(selectedFriendRoom, setFriendMessages, globalStomp, setClient);   // 친구 1:1 채팅방 구독 훅
+  useFriendReadChat(selectedFriendRoom, userData, friendMessages); // 친구 채팅 읽음 처리 훅
 
   // -- Function
   const logoutFunc = useLogout();                                          // 로그아웃 훅
@@ -334,7 +339,9 @@ function LobbyPage() {
           console.log('1:1 채팅방 정보:', chatRoom);
           // 친구 채팅방 상세 업데이트
           setSelectedFriendRoom({ roomId: chatRoom.roomId, friendId: s.friendId });
-          useFriendChatListGet(chatRoom.roomId, setFriendMessages);
+          await useFriendChatListGet(chatRoom.roomId, setFriendMessages);
+          
+          // 친구 채팅방 입장 시 읽음 처리 (useFriendReadChat 훅에서 자동 처리됨)
         } catch (err) {
           console.error('1:1 채팅 로드 실패:', err);
         }
@@ -451,6 +458,11 @@ function LobbyPage() {
               <div onClick={() => handleToggleChange(false)}
                 className={`toggleSwitchText toggleSwitch ${!toggle ? 'activeBorder' : ''}`}>
                 친구
+                {pendingCount > 0 && (
+                  <span className="friend-request-badge">
+                    {pendingCount}
+                  </span>
+                )}
               </div>
             </div>
 

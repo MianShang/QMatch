@@ -78,6 +78,16 @@ public class FriendController {
         }
     }
 
+    @GetMapping("/pending-count")
+    public ResponseEntity<Long> getPendingFriendRequestCount(@RequestParam String userId) {
+        try {
+            long count = friendShipService.getPendingFriendRequestCount(userId);
+            return ResponseEntity.ok(count);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(0L);
+        }
+    }
+
     @PostMapping("delete")
     public ResponseEntity<String> deleteFriendRequest(@RequestParam String requesterId, @RequestParam String addresseeId)
     {

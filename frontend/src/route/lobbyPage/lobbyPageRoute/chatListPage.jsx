@@ -73,7 +73,8 @@ function ChatListPage({
   friendVoiceChatActive,
   setFriendVoiceChatActive,
   currentFriendVoiceChat,
-  setCurrentFriendVoiceChat
+  setCurrentFriendVoiceChat,
+  refreshPendingCount
 } = useContext(LogContext);
 
   // State
@@ -1643,6 +1644,10 @@ function ChatListPage({
                     const result = await sendRequest(requesterId, addresseeId);
                     if (result.success) {
                       toast.success(result.message);
+                      // 친구 요청 성공 시 개수 즉시 업데이트
+                      if (refreshPendingCount) {
+                        refreshPendingCount();
+                      }
                     }
                     else {
                       toast.error(result.message);

@@ -11,7 +11,7 @@ export function useFriendDelete() {
         { success: true, message: response.data }
       ) // 서버 응답 반환
     } catch (error) {
-      return { success: false, message: response.data }
+      return { success: false, message: error.response?.data || error.message }
     }
   };
 

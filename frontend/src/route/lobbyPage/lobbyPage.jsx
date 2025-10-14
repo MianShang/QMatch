@@ -35,6 +35,7 @@ import { useSetReadUnReadChat } from '../../hooks/chatNotice/useSetReadUnReadCha
 import { useFriendChatListGet } from '../../hooks/chatList/useFriendChatListGet.js';
 import { useFriendChatSender } from '../../hooks/chat/useFriendChatSender.js';
 import { useFriendReadChat } from '../../hooks/chatNotice/useFriendReadChat.js';
+import { useFriendRequestCount } from '../../hooks/friends/useFriendRequestCount.js';
 
 // 상태 체크 훅 import 추가
 import useUserStatusReporter from '../../hooks/status/useUserStatusReporter.js';
@@ -100,6 +101,9 @@ function LobbyPage() {
   // 메시지 로딩 및 읽음 처리 훅
   const getChatList = useChatListGet();
   const setRead = useSetReadUnReadChat(userData);
+  
+  // 친구 요청 개수 조회 훅
+  const { pendingCount } = useFriendRequestCount(userData, globalStomp);
 
   // // userData가 로드될 때까지 로딩
   // if (!userData) {
@@ -455,6 +459,11 @@ function LobbyPage() {
               <div onClick={() => handleToggleChange(false)}
                 className={`toggleSwitchText toggleSwitch ${!toggle ? 'activeBorder' : ''}`}>
                 친구
+                {pendingCount > 0 && (
+                  <span className="friend-request-badge">
+                    {pendingCount}
+                  </span>
+                )}
               </div>
             </div>
 

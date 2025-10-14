@@ -18,6 +18,7 @@ import VoiceChat from './route/lobbyPage/lobbyPageRoute/VoiceChat.jsx';
 //전역 stomp
 import { useGlobalStomp } from './hooks/stomp/useGlobalStomp.js';
 import { useGameStatus } from './hooks/status/useGameStatus.js';
+import { useFriendRequestCount } from './hooks/friends/useFriendRequestCount.js';
 
 // 로그인 체크용 Context API 생성
 export const LogContext = createContext();
@@ -43,7 +44,10 @@ function App() {
   // 실시간 프로세스 목록 담을 State
   const [processes, setProcesses] = useState([]);
   //전역 STOMP 훅
-  const { subscribe, publish, isConnected } = useGlobalStomp(userData);
+  const { subscribe, publish, isConnected, unsubscribe } = useGlobalStomp(userData);
+  
+  // 친구 요청 개수 관리 훅
+  const { pendingCount, refreshPendingCount } = useFriendRequestCount(userData, { subscribe, publish, isConnected, unsubscribe });
 
   // 프로세스 추척할 게임 목록
   const gameTarget = [
@@ -209,13 +213,14 @@ function App() {
     currentGroupVoiceChat, setCurrentGroupVoiceChat,
     voiceChatRef,
     currentSelectedRoom, setCurrentSelectedRoom,
-    listRefreshTick, setListRefreshTick
+    listRefreshTick, setListRefreshTick,
+    pendingCount, refreshPendingCount
   }), [isLogIn, userData, friends, statusByUser, friendInventoryUpdate,
        theme, hasUnreadMessages, hasUnReadFriendMessages, selectedFriendRoom,
        isRunning, voiceParticipants, activeVoiceChannel, voiceChatRoomId,
        voiceSpeakers, localMuted, joinedVoice, currentVoiceRoomId,
        friendVoiceChatActive, currentFriendVoiceChat, currentGroupVoiceChat,
-       gameStatusByUser, listRefreshTick]);
+       gameStatusByUser, listRefreshTick, pendingCount, refreshPendingCount]);
 
 
   useEffect(() => {
@@ -259,16 +264,6 @@ function App() {
   //전역 Stomp 훅 사용
   useEffect(() => {
     if (!userData?.userId) return;
-
-    //친구 요청구독
-    subscribe(`/topic/friends/${userData.userId}`, (frame) => {
-      try {
-        const payload = JSON.parse(frame.body);
-        toast.info(payload.message || "새로운 친구 요청이 도착했습니다.");
-      } catch (e) {
-        console.error("친구추가 요청 에러", e);
-      }
-    });
 
     //친구 상태구독
     subscribe(`/topic/friends/status`, (frame) => {

@@ -35,7 +35,6 @@ import { useSetReadUnReadChat } from '../../hooks/chatNotice/useSetReadUnReadCha
 import { useFriendChatListGet } from '../../hooks/chatList/useFriendChatListGet.js';
 import { useFriendChatSender } from '../../hooks/chat/useFriendChatSender.js';
 import { useFriendReadChat } from '../../hooks/chatNotice/useFriendReadChat.js';
-import { useFriendRequestCount } from '../../hooks/friends/useFriendRequestCount.js';
 
 // 상태 체크 훅 import 추가
 import useUserStatusReporter from '../../hooks/status/useUserStatusReporter.js';
@@ -92,7 +91,8 @@ function LobbyPage() {
     currentVoiceRoomId, setCurrentVoiceRoomId,
     currentSelectedRoom, setCurrentSelectedRoom,
     voiceChatRef,
-    listRefreshTick, setListRefreshTick
+    listRefreshTick, setListRefreshTick,
+    pendingCount
   } = useContext(LogContext)
 
   // 전역 STOMP 클라이언트 초기화
@@ -103,7 +103,6 @@ function LobbyPage() {
   const setRead = useSetReadUnReadChat(userData);
   
   // 친구 요청 개수 조회 훅
-  const { pendingCount } = useFriendRequestCount(userData, globalStomp);
 
   // // userData가 로드될 때까지 로딩
   // if (!userData) {

@@ -58,6 +58,9 @@ function App() {
   // 안 읽은 메시지 상태
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [hasUnReadFriendMessages, setHasUnReadFriendMessages] = useState(false);
+  
+  // 채팅방 목록 새로고침 트리거
+  const [listRefreshTick, setListRefreshTick] = useState(0);
 
   // 음성채팅 관련 상태
   const [voiceParticipants, setVoiceParticipants] = useState({});
@@ -205,13 +208,14 @@ function App() {
     currentFriendVoiceChat, setCurrentFriendVoiceChat,
     currentGroupVoiceChat, setCurrentGroupVoiceChat,
     voiceChatRef,
-    currentSelectedRoom, setCurrentSelectedRoom
+    currentSelectedRoom, setCurrentSelectedRoom,
+    listRefreshTick, setListRefreshTick
   }), [isLogIn, userData, friends, statusByUser, friendInventoryUpdate,
        theme, hasUnreadMessages, hasUnReadFriendMessages, selectedFriendRoom,
        isRunning, voiceParticipants, activeVoiceChannel, voiceChatRoomId,
        voiceSpeakers, localMuted, joinedVoice, currentVoiceRoomId,
        friendVoiceChatActive, currentFriendVoiceChat, currentGroupVoiceChat,
-       gameStatusByUser]);
+       gameStatusByUser, listRefreshTick]);
 
 
   useEffect(() => {
@@ -300,6 +304,9 @@ function App() {
             // 전역 상태에 임시 저장 (lobbyPage에서 사용)
             sessionStorage.setItem('pendingJoinMessage', JSON.stringify(joinMessage));
 
+            // 채팅방 목록 새로고침 트리거
+            setListRefreshTick(prev => prev + 1);
+            
             // 채팅방으로 이동
             navigate('/', {
               state: {
@@ -480,6 +487,8 @@ function App() {
         onClose={() => setFriendInviteNotification({ open: false, data: null })}
         inviteData={friendInviteNotification.data}
         onAccept={(inviteData) => {
+          // 채팅방 목록 새로고침 트리거
+          setListRefreshTick(prev => prev + 1);
 
           // 방 입장 처리
           navigate('/', {

@@ -90,6 +90,9 @@ function ChatListPage({
   }, [unreadCounts, setHasUnreadMessages]);
 
   const [pendingUsers, setPendingUsers] = useState([]);
+  
+  // 처리 중인 사용자들을 추적하는 상태 (중복 클릭 방지)
+  const [processingUsers, setProcessingUsers] = useState(new Set());
 
   // chatList를 다시 로컬 state로 관리합니다.
   const [chatList, setChatList] = useState([]);
@@ -339,6 +342,14 @@ function ChatListPage({
 
   // 수락 함수
   const handleAccept = async (applicantId) => {
+    // 이미 처리 중인 요청인지 확인
+    if (processingUsers.has(applicantId)) {
+      return;
+    }
+
+    // 처리 중 상태로 설정
+    setProcessingUsers(prev => new Set(prev).add(applicantId));
+
     try {
       await axios.post(`/api/chat/rooms/${selectedRoom.id}/approve-join`, null, {
         params: { ownerId: selectedRoom.hostUserId, applicantId }
@@ -366,11 +377,26 @@ function ChatListPage({
     } catch (error) {
       console.error('입장 승인 실패:', error);
       toast.error('입장 승인에 실패했습니다.');
+    } finally {
+      // 처리 완료 후 상태에서 제거
+      setProcessingUsers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(applicantId);
+        return newSet;
+      });
     }
   };
 
   // 거절 함수
   const handleReject = async (applicantId) => {
+    // 이미 처리 중인 요청인지 확인
+    if (processingUsers.has(applicantId)) {
+      return;
+    }
+
+    // 처리 중 상태로 설정
+    setProcessingUsers(prev => new Set(prev).add(applicantId));
+
     try {
       await axios.post(`/api/chat/rooms/${selectedRoom.id}/reject-join`, null, {
         params: { ownerId: selectedRoom.hostUserId, applicantId }
@@ -389,6 +415,13 @@ function ChatListPage({
     } catch (error) {
       console.error('입장 거절 실패:', error);
       toast.error('입장 거절에 실패했습니다.');
+    } finally {
+      // 처리 완료 후 상태에서 제거
+      setProcessingUsers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(applicantId);
+        return newSet;
+      });
     }
   };
 
@@ -1343,8 +1376,26 @@ function ChatListPage({
                             {/* 방장만 수락/거절 버튼 표시 */}
                             {(selectedRoom?.hostUserId === userData.userId) && (
                               <div className="pending-actions">
-                                <button onClick={() => handleAccept(u.userId)}>수락</button>
-                                <button onClick={() => handleReject(u.userId)}>거절</button>
+                                <button 
+                                  onClick={() => handleAccept(u.userId)}
+                                  disabled={processingUsers.has(u.userId)}
+                                  style={{ 
+                                    opacity: processingUsers.has(u.userId) ? 0.6 : 1,
+                                    cursor: processingUsers.has(u.userId) ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  {processingUsers.has(u.userId) ? '처리중...' : '수락'}
+                                </button>
+                                <button 
+                                  onClick={() => handleReject(u.userId)}
+                                  disabled={processingUsers.has(u.userId)}
+                                  style={{ 
+                                    opacity: processingUsers.has(u.userId) ? 0.6 : 1,
+                                    cursor: processingUsers.has(u.userId) ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  {processingUsers.has(u.userId) ? '처리중...' : '거절'}
+                                </button>
                               </div>
                             )}
                             <div

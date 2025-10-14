@@ -12,47 +12,82 @@ function SignUpRoutePage({ onSuccess }) {
   const navigate = useNavigate();
 
   // 유저 State
-  // 유저 프로필 이미지는 추후 추가 예정
   const [user, setUser] = useState({
     userId: '',
     userPw: '',
+    passwordConfirm: '', 
     userName: '',
     userEmail: '',
   });
 
-  // input 값 state 자동 적용
-  function handleChange(e) {
-    // 현재 입력중인 input의 id, value 가져옴
+  // 입력창의 내용이 바뀔 때마다 실행하는 함수 
+  const handleChange = (e) => {
     const { id, value } = e.target;
-    // User State 세팅
-    setUser(prev => ({ ...prev, [id]: value}));
-  }
-
-  // 회원가입 
-  function userJoin(e) {
+    setUser(prev => ({ ...prev, [id]: value }));  //prev는 이전 상태를 의미, ...pev로 기존 값을 복사하고 현재 변경된 값만 덮어씌움
+    
+  };
+  //폼 제출 때 실행되는 유효성 검사 
+  const userJoin = (e) => {
     e.preventDefault();
 
-    // Axios POST
-    axios.post('/api/user/join', user)
+    if (!user.userId || user.userId.length < 4 || user.userId.length > 20) {
+      toast.warn('아이디는 4자 이상 20자 이하로 입력해주세요.');
+      return;
+    }
+
+    const pwRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*()_+=~`]).{8,16}$/;
+    if (!pwRegex.test(user.userPw)) {
+      toast.error('비밀번호는 8~16자, 대문자/특수문자를 각 1개 이상 포함해야 합니다.');
+      return;
+    }
+
+    if (user.userPw !== user.passwordConfirm) {
+      toast.error('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    
+    if (!user.userName.trim()) {
+      toast.error('이름을 입력해주세요.');
+      return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(user.userEmail)) {
+      toast.error('올바른 이메일 형식이 아닙니다.');
+      return;
+    }
+
+    const { passwordConfirm, ...submissionData } = user;
+
+    axios.post('/api/user/join', submissionData)
       .then(response => {
-        console.log(response.data);
         toast.success("회원가입이 성공적으로 완료되었습니다!");
-        onSuccess?.(); 
+        setTimeout(() => {
+          onSuccess?.(); 
+        }, 1000);
       })
       .catch(error => {
+        if (error.response && error.response.data) {
+          toast.error(error.response.data);
+        } else {
+          toast.error("회원가입 중 오류가 발생했습니다.");
+        }
         console.error(error);
       });
-  }
+  };
 
   return (
     <div className='fullscreen LogRoutePageStyle'>
-        <form className="login-form" onSubmit={ userJoin }>
+        <form className="login-form" onSubmit={ userJoin } noValidate>
 
-        <input type="text" id="userId" placeholder="아이디" required
+        <input type="text" id="userId" placeholder="아이디(4자~20자)" required
             value={user.userId} onChange={handleChange}/>
 
         <input type="password" id="userPw" placeholder="비밀번호" required
           value={user.userPw} onChange={handleChange}/>
+        
+        <input type="password" id="passwordConfirm" placeholder="비밀번호 확인" required
+          value={user.passwordConfirm} onChange={handleChange}/>
 
         <input type="text" id="userName" placeholder="이름" required
          value={user.userName} onChange={handleChange}/>

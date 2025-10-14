@@ -27,6 +27,10 @@ public class UserService {
             throw new IllegalArgumentException("필수 값 누락");
         }
 
+        if (userRepository.existsByUserId(user.getUserId())) {
+            throw new IllegalArgumentException("이미 사용 중인 아이디입니다.");
+        } //아이디 중복 체크
+
         User saveUser = new User();
 
         saveUser.setUserId(user.getUserId());
@@ -40,5 +44,7 @@ public class UserService {
         // DB 저장
         userRepository.save(saveUser);
     }
+
+
 
 }

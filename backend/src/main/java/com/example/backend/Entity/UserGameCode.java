@@ -17,6 +17,7 @@ public class UserGameCode {
     private User user;
 
 
-    private String gameName;
     private String gameCode;
+    private String gameName;
+
 }

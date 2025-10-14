@@ -21,8 +21,13 @@ export function useChatSubscriber(selectedRoom, setMessages, setClient, userData
       `/topic/chat/${selectedRoom.id}`,
       (msg) => {
         try {
+          const messageData = JSON.parse(msg.body);
+          // 시간 정보가 없으면 현재 시간 추가
+          if (!messageData.chatDate) {
+            messageData.chatDate = new Date().toISOString();
+          }
           // Message State Set
-          setMessages(prev => [...prev, JSON.parse(msg.body)]);
+          setMessages(prev => [...prev, messageData]);
         } catch (error) {
           console.error('채팅 메시지 처리 오류:', error);
         }
@@ -35,12 +40,12 @@ export function useChatSubscriber(selectedRoom, setMessages, setClient, userData
 
     // 퇴장 시 서버에 알림 전송 (현재 이부분 때문에 input 입력시 백엔드 로고 무한증식 버그가 있음)
     // 방나가기 로직이 ChatList페이지에 따로 있음으로 임시 삭제 추후 채팅방 전체 나가기 알림시 이용 가능할 것으로 보임
-      // if (globalStomp.isConnected()) {
-      //   globalStomp.publish('/app/disconnect', {
-      //     userId: userData.userId,
-      //     roomId: selectedRoom.id,
-      //   });
-      // }
+      if (globalStomp.isConnected()) {
+        globalStomp.publish('/app/disconnect', {
+          userId: userData.userId,
+          roomId: selectedRoom.id,
+        });
+      }
 
     return () => {
     

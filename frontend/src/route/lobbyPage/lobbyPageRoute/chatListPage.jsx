@@ -61,8 +61,19 @@ function ChatListPage({
 }) {
   const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
   const navigate = useNavigate();
+  
   // State 보관함 해체
-  const { userData, isRunning } = useContext(LogContext);
+  const {
+  userData,
+  isRunning,
+  gameStatusByUser,
+  currentGroupVoiceChat,
+  setCurrentGroupVoiceChat,
+  friendVoiceChatActive,
+  setFriendVoiceChatActive,
+  currentFriendVoiceChat,
+  setCurrentFriendVoiceChat
+} = useContext(LogContext);
 
   // State
   const [chatListExtend, setChatListExtend] = useState(false);
@@ -118,6 +129,20 @@ function ChatListPage({
   const setRead = useSetReadUnReadChat(userData);
   const { sendRequest } = useFriendRequest();
   const { sendBlockRequest } = blockUser();
+
+  // 채팅방 목록 새로고침 함수
+  const refreshChatList = async () => {
+    if (!userData?.userId) return;
+    
+    try {
+      const response = await axios.get('/api/get/user/chatrooms', {
+        params: { userId: userData.userId }
+      });
+      setChatList(response.data);
+    } catch (error) {
+      console.error('채팅방 목록 새로고침 실패:', error);
+    }
+  };
 
   // 아이콘
   function setGameIcon(gameName) {
@@ -234,15 +259,9 @@ function ChatListPage({
 
   // 채팅방 인원수 업데이트 함수 (chatList만 업데이트, selectedRoom은 별도 처리)
   const updateChatRoomUserCount = (roomId, change) => {
-    console.log('updateChatRoomUserCount 호출 - roomId:', roomId, 'change:', change);
-    console.log('현재 chatList 구조:', chatList);
-
     setChatList(prev => {
-      console.log('업데이트 전 chatList:', prev);
       const updated = prev.map(chat => {
-        console.log('비교 중 - chat.chatRoom.id:', chat.chatRoom?.id, 'vs roomId:', roomId);
         if (chat.chatRoom?.id === roomId) {
-          console.log('chatList 업데이트 - 이전 인원수:', chat.chatRoom.currentUsers, '→ 새로운 인원수:', chat.chatRoom.currentUsers + change);
           return {
             ...chat,
             chatRoom: {
@@ -253,7 +272,6 @@ function ChatListPage({
         }
         return chat;
       });
-      console.log('업데이트 후 chatList:', updated);
       return updated;
     });
   };
@@ -320,7 +338,6 @@ function ChatListPage({
 
       // 목록에서 제거
       setPendingUsers(prev => prev.filter(req => req.userId !== applicantId));
-      console.log('입장 승인 완료:', applicantId);
 
       // 인원수는 WebSocket 이벤트에서 자동으로 업데이트되므로 여기서는 제거
 
@@ -353,7 +370,6 @@ function ChatListPage({
 
       // 목록에서 제거
       setPendingUsers(prev => prev.filter(req => req.userId !== applicantId));
-      console.log('입장 거절 완료:', applicantId);
 
       // 토스트 알림 표시
       toast.warning('입장을 거절했습니다.');
@@ -387,7 +403,6 @@ function ChatListPage({
     globalStomp.subscribe(`/user/queue/join-request`, (frame) => {
       try {
         const payload = JSON.parse(frame.body);
-        console.log('개인 입장 신청 알림 수신:', payload);
 
         // 방장에게만 토스트 알림 표시 (payload에서 hostUserId 확인)
         console.log('개인 알림 토스트 조건 확인:', {
@@ -428,8 +443,6 @@ function ChatListPage({
     globalStomp.subscribe(`/topic/chat/${selectedRoom.id}/member-joined`, (frame) => {
       try {
         const payload = JSON.parse(frame.body);
-        console.log('새 멤버 입장:', payload);
-        console.log('selectedRoom.id:', selectedRoom?.id, 'payload.roomId:', payload.roomId);
 
         // 모든 채팅방 멤버에게 토스트 알림 표시
         toast.success(`${payload.userName}님이 입장했습니다!`);
@@ -437,16 +450,11 @@ function ChatListPage({
         // 대기자 목록에서 제거 (입장한 사용자)
         setPendingUsers(prev => prev.filter(req => req.userId !== payload.userId));
 
-        // 멤버 목록 새로고침 (모든 사용자)
+        // 멤버 목록 새로고침 (즉시 + 지연 재시도)
         if (selectedRoom?.id) {
-          console.log('멤버 목록 새로고침 호출:', selectedRoom.id);
           getChatUserList(selectedRoom.id);
-
-          // 다른 이벤트와의 충돌을 방지하기 위해 약간의 지연 후 다시 새로고침
-          setTimeout(() => {
-            console.log('지연된 멤버 목록 새로고침 호출:', selectedRoom.id);
-            getChatUserList(selectedRoom.id);
-          }, 500);
+          setTimeout(() => getChatUserList(selectedRoom.id), 300);
+          setTimeout(() => getChatUserList(selectedRoom.id), 1000);
         }
 
         // selectedRoom의 currentUsers도 업데이트
@@ -456,6 +464,19 @@ function ChatListPage({
             ...prev,
             currentUsers: prev.currentUsers + 1
           } : null);
+
+          // 채팅 메시지 리스트에도 즉시 입장 시스템 메시지 추가
+          if (typeof setMessages === 'function') {
+            setMessages(prev => ([
+              ...prev,
+              {
+                name: "MEMBER_JOIN",
+                userName: "MEMBER_JOIN",
+                message: `${payload.userName}님이 입장했습니다. \n 모두 환영해주세요~~`,
+                chatDate: new Date().toISOString()
+              }
+            ]));
+          }
         } else {
           console.log('currentUsers 업데이트 안됨:', selectedRoom?.id, '!==', payload.roomId);
         }
@@ -479,7 +500,6 @@ function ChatListPage({
     globalStomp.subscribe(`/topic/room/${selectedRoom.id}/join-request`, (frame) => {
       try {
         const payload = JSON.parse(frame.body);
-        console.log('새 입장 신청:', payload);
 
         // 방장에게만 토스트 알림 표시
         console.log('토스트 조건 확인:', {
@@ -548,7 +568,7 @@ function ChatListPage({
           setIsMembersOpen(false);
           setChatList((prev) =>
             prev.filter((it) =>
-              it.id !== selectedRoom.id && it.chatRoom?.id !== selectedRoom.id
+              it.chatRoom?.id !== payload.roomId
             )
           );
           setUnreadCounts(prev => {
@@ -557,6 +577,11 @@ function ChatListPage({
             return next;
           });
           toast.success('방장에게 의해 방에서 추방되었습니다.');
+          
+          // 채팅방 목록 새로고침 (서버에서 최신 데이터 가져오기)
+          setTimeout(() => {
+            refreshChatList();
+          }, 500);
         } else {
           // 다른 사람 추방 시 참여자 목록 갱신
           setChatUserList(prev => prev.filter(u => u.userId !== payload?.targetUserId));
@@ -579,7 +604,6 @@ function ChatListPage({
 
         // 다른 이벤트와의 충돌을 방지하기 위해 약간의 지연 후 다시 새로고침
         setTimeout(() => {
-          console.log('join 이벤트 지연된 멤버 목록 새로고침:', roomId);
           getChatUserList(roomId);
         }, 500);
 
@@ -601,7 +625,6 @@ function ChatListPage({
         toast.info(`${payload.userId} 님이 방에서 나갔습니다.`);
         setChatUserList(prev => prev.filter(u => u.userId !== payload.userId));
         // chatList의 인원수만 업데이트 (방 나간 사용자는 이미 즉시 업데이트에서 처리됨)
-        console.log('방 나가기 WebSocket 이벤트 - chatList 인원수 감소');
         updateChatRoomUserCount(payload.roomId, -1);
 
         // selectedRoom도 함께 업데이트 (현재 보고 있는 방이면)
@@ -625,7 +648,6 @@ function ChatListPage({
     globalStomp.subscribe(`/topic/chat/${roomId}/host-transfer`, (frame) => {
       try {
         const payload = JSON.parse(frame.body);
-        console.log("방장 변경 이벤트:", payload);
 
         // selectedRoom의 hostUserId 업데이트
         setSelectedRoom(prev => prev ? ({
@@ -682,7 +704,6 @@ function ChatListPage({
 
       // 채팅방에 입장했으므로 메시지 목록 불러오기
       if (payload.roomId) {
-        console.log('개인 수락 알림: 메시지를 가져옵니다. roomId:', payload.roomId);
         getChatList(payload.roomId, setMessages);
         // 읽음 처리
         setRead({ id: payload.roomId });
@@ -730,6 +751,8 @@ function ChatListPage({
   function openMembers(roomId) {
     setIsMembersOpen(true);
     getChatUserList(roomId);
+    // 초반 구독 타이밍 이슈로 누락될 수 있어 한번 더 새로고침
+    setTimeout(() => getChatUserList(roomId), 500);
     setTimeout(measurePanel, 0);
     // 상위 컴포넌트에 참여자 패널 열림 알림
     if (onMembersPanelToggle) {
@@ -855,68 +878,73 @@ function ChatListPage({
 
   // 음성 입장 핸들러
   const handleJoinVoice = async (channelId) => {
-    // 이미 다른 채널에 접속 중인지 확인
+    // 이미 다른 채널(그룹 또는 친구 통화)에 접속 중인지 확인
     if (joinedVoice && voiceChatRoomId && voiceChatRoomId !== channelId) {
-      // 현재 채널과 클릭한 채널 이름 찾기
-      const currentChannel = voiceChannels.find(ch => ch.id === voiceChatRoomId);
-      const targetChannel = voiceChannels.find(ch => ch.id === channelId);
-      
-      const currentChannelName = currentChannel?.voiceChannelName || '알 수 없는 채널';
-      const targetChannelName = targetChannel?.voiceChannelName || '알 수 없는 채널';
-      
-      // 확인 메시지
-      const confirmed = await confirmToast(
-        `지금 "${currentChannelName}" 채널에 입장해있습니다.\n"${targetChannelName}" 채널로 이동하시겠습니까?`
-      );
-      
-      if (!confirmed) {
-        return; // 취소하면 이동하지 않음
+      let currentContextName = "알 수 없는 채널";
+
+      // 현재 1:1 통화 중인 경우
+      if (friendVoiceChatActive && currentFriendVoiceChat) {
+        currentContextName = `${currentFriendVoiceChat.friendName}님과`;
       }
-      
-      // 기존 채널에서 퇴장
-      handleLeaveVoice();
-      
-      // 잠시 대기 후 새 채널 입장
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // 현재 그룹 음성채널 중인 경우
+      else if (currentGroupVoiceChat) {
+        currentContextName = `${currentGroupVoiceChat.channelName} 채널에서`;
+      }
+
+      // 클릭한 대상 채널
+      const targetChannel = voiceChannels.find(ch => String(ch.id) === String(channelId));
+      const targetChannelName = targetChannel?.voiceChannelName || "알 수 없는 채널";
+
+      const confirmed = await confirmToast(
+        `현재 ${currentContextName} 통화 중입니다.\n${targetChannelName} 채널로 이동하시겠습니까?`
+      );
+      if (!confirmed) return;
+
+      // 기존 통화 종료 (친구 또는 그룹)
+      if (voiceChatRef.current) {
+        await voiceChatRef.current.leaveChannel();
+      }
+      setJoinedVoice(false);
+      setFriendVoiceChatActive(false);
+      setCurrentFriendVoiceChat(null);
+      await new Promise(res => setTimeout(res, 500));
     }
-    
+
+    // 새 그룹 음성채널 입장
     setVoiceChatRoomId(channelId);
-    
-    // LobbyPage에 음성채널 입장 알림
-    if (onJoinVoice) {
-      onJoinVoice(channelId);
-    }
-    
-    if (voiceChatRef && voiceChatRef.current) {
+    if (onJoinVoice) onJoinVoice(channelId);
+
+    if (voiceChatRef?.current) {
       try {
-        voiceChatRef.current.joinChannel(channelId);
+        await voiceChatRef.current.joinChannel(channelId);
         setJoinedVoice(true);
-        
-        // 음성채널 참여자 목록 새로고침
-        if (selectedRoom?.id) {
-          fetchVoiceChannels(selectedRoom.id);
-          
-          // 지연된 새로고침 (서버 동기화용)
-          setTimeout(() => {
-            fetchVoiceChannels(selectedRoom.id);
-          }, 500);
-          
-          // 추가 지연된 새로고침 (다른 사용자 입장 대기용)
-          setTimeout(() => {
-            fetchVoiceChannels(selectedRoom.id);
-          }, 2000);
+
+        const targetChannel = voiceChannels.find(ch => String(ch.id) === String(channelId));
+        const targetChannelName = targetChannel?.voiceChannelName || "알 수 없는 채널";
+
+        // 전역 그룹 통화 상태 갱신
+        if (selectedRoom) {
+          setCurrentGroupVoiceChat({
+            roomId: selectedRoom.id,
+            roomName: selectedRoom.name,
+            gameName: selectedRoom.gameName,
+            tagNames: selectedRoom.tagNames || [],
+            channelId,
+            channelName: targetChannelName
+          });
         }
-        
+
+        toast.success(`"${targetChannelName}"에 입장했습니다.`);
       } catch (error) {
-        console.error('음성채널 입장 실패:', error);
-        toast.error('음성채널 입장에 실패했습니다.');
+        console.error("음성채널 입장 실패:", error);
+        toast.error("음성채널 입장에 실패했습니다.");
       }
     } else {
-      // voiceChatRef가 없어도 기본 동작 수행
       setJoinedVoice(true);
-      toast.info('음성채널에 입장했습니다. (기본 모드)');
+      toast.info("음성채널에 입장했습니다. (기본 모드)");
     }
   };
+ 
 
   // 음성 퇴장 핸들러
   const handleLeaveVoice = () => {
@@ -1071,7 +1099,31 @@ function ChatListPage({
                 <div
                   key={item.id}
                   className="chatCard"
-                  onClick={() => {
+                  onClick={async () => {
+                    // 채팅방 입장 전 권한 확인
+                    try {
+                      const response = await axios.get(`/api/chat/rooms/${item.chatRoom.id}/check-access`, {
+                        params: { userId: userData.userId }
+                      });
+                      
+                      if (!response.data.hasAccess) {
+                        toast.error('이 채팅방에 접근할 권한이 없습니다.');
+                        // 권한이 없는 채팅방을 목록에서 제거
+                        setChatList(prev => prev.filter(chat => chat.chatRoom.id !== item.chatRoom.id));
+                        // 읽지 않은 메시지 카운트도 제거
+                        setUnreadCounts(prev => {
+                          const next = { ...prev };
+                          delete next[item.chatRoom.id];
+                          return next;
+                        });
+                        return;
+                      }
+                    } catch (error) {
+                      console.error('채팅방 접근 권한 확인 실패:', error);
+                      toast.error('채팅방 접근 권한을 확인할 수 없습니다.');
+                      return;
+                    }
+
                     setSendToModalGameName(item.chatRoom.gameName);
                     setChatListExtend(false);
                     setUnreadCounts((prev) => ({ ...prev, [item.chatRoom.id]: 0 }));
@@ -1158,12 +1210,31 @@ function ChatListPage({
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
                             {/* 실행 중인 게임 표시 */}
-                            {isRunning.filter(g => g.running)
-                              .map(g => (
-                                <span key={g.exe} className="membersGame" style={{marginLeft:"15px", fontSize:"12px"}}>
+                            {/* 1. 내 실행 상태 */}
+                            {u.userId === userData?.userId &&
+                              isRunning.filter(g => g.running).map(g => (
+                                <span
+                                  key={g.exe}
+                                  className="membersGame"
+                                  style={{ marginLeft: "15px", fontSize: "12px" }}
+                                >
                                   {g.label} 플레이중
                                 </span>
-                              ))}
+                              ))
+                            }
+
+                            {/* 2. 다른 유저 실행 상태 */}
+                            {u.userId !== userData?.userId &&
+                              gameStatusByUser[u.userId]?.map((game, idx) => (
+                                <span
+                                  key={idx}
+                                  className="membersGame"
+                                  style={{ marginLeft: "15px", fontSize: "12px" }}
+                                >
+                                  {game} 플레이중
+                                </span>
+                              ))
+                            }
 
                           </span>
                           {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
@@ -1190,12 +1261,31 @@ function ChatListPage({
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
                             {/* 실행 중인 게임 표시 */}
-                            {isRunning.filter(g => g.running)
-                              .map(g => (
-                                <span key={g.exe} className="membersGame" style={{marginLeft:"15px", fontSize:"12px"}}>
+                            {/* 1. 내 실행 상태 */}
+                            {u.userId === userData?.userId &&
+                              isRunning.filter(g => g.running).map(g => (
+                                <span
+                                  key={g.exe}
+                                  className="membersGame"
+                                  style={{ marginLeft: "15px", fontSize: "12px" }}
+                                >
                                   {g.label} 플레이중
                                 </span>
-                              ))}
+                              ))
+                            }
+
+                            {/* 2. 다른 유저 실행 상태 */}
+                            {u.userId !== userData?.userId &&
+                              gameStatusByUser[u.userId]?.map((game, idx) => (
+                                <span
+                                  key={idx}
+                                  className="membersGame"
+                                  style={{ marginLeft: "15px", fontSize: "12px" }}
+                                >
+                                  {game} 플레이중
+                                </span>
+                              ))
+                            }
                           </span>
                           {/* … 버튼 : 클릭 좌표로 포털 메뉴 오픈 */}
                           <div
@@ -1425,8 +1515,6 @@ function ChatListPage({
                         ...prev,
                         hostUserId: menu.userId
                       }) : null);
-
-                      toast.success('방장을 넘겼습니다.');
                     } catch (err) {
                       toast.error('방장 넘기기에 실패했습니다.');
                     }

@@ -42,7 +42,8 @@ export function useChatSender(client, selectedRoom, userData, input, setInput) {
       // 안읽은 메세지 처리를 위해 
       axios.post('/api/chat/isread', {
         chatRoom : selectedRoom.id,   // 해당 채팅방 ID
-        chatContent : input            // 입력 내용
+        chatContent : input,          // 입력 내용
+        userId : userData.userId      // 유저 ID
       })
       .then((res) => {
         console.log('메세지 저장 성공2');
@@ -51,7 +52,7 @@ export function useChatSender(client, selectedRoom, userData, input, setInput) {
         console.error('메세지 저장 실패2', err);
       });
 
-      // 입력창 비우기기
+      // 입력창 비우기
       setInput('');
 
     }

@@ -155,60 +155,7 @@
   color: white;
 }
 
-/* Discord 스타일 음성 컨트롤 버튼 */
-.voice-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: none;
-  background: var(--discord-bg-quaternary);
-  color: var(--discord-text-normal);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 16px;
-}
 
-.voice-btn:hover {
-  background: var(--discord-bg-modifier-hover);
-  transform: scale(1.05);
-}
-
-.voice-btn:active {
-  transform: scale(0.95);
-}
-
-.voice-btn.muted {
-  background: var(--discord-text-danger);
-  color: white;
-}
-
-.voice-btn.muted:hover {
-  background: var(--discord-text-danger);
-  opacity: 0.8;
-}
-
-.voice-btn.speaking {
-  background: var(--discord-accent);
-  color: white;
-}
-
-.voice-btn.speaking:hover {
-  background: var(--discord-accent-hover);
-}
-
-/* Discord 스타일 음성 참여자 목록 */
-.voice-participants {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 8px;
-  background: var(--discord-bg-secondary);
-  border-radius: var(--discord-radius);
-  margin-top: 8px;
-}
 
 .voice-participant {
   display: flex;

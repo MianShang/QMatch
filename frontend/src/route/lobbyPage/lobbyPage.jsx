@@ -1,13 +1,14 @@
 import { useRef, useState, useEffect, useContext, memo, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios';
+import AgoraRTC from 'agora-rtc-sdk-ng';
 import './lobbyPage.css'
+import { FaPhone } from 'react-icons/fa6';
 
 // 컴포넌트 import
 import ChatListPage from './lobbyPageRoute/chatListPage.jsx';
 import FriendListPage from './lobbyPageRoute/friendListPage.jsx';
 import MyProfile from '../../feature/profile/myProfileModal.jsx';
-import VoiceChat from './lobbyPageRoute/VoiceChat.jsx';
 import VoiceChatModal from '../../modal/VoiceChatSettingsModal/VoiceChatSettingsModal.jsx';
 import ChatRoom from './ChatRoom.jsx';
 
@@ -33,7 +34,6 @@ import { useChatListGet } from '../../hooks/chatList/useChatListGet.js';
 import { useSetReadUnReadChat } from '../../hooks/chatNotice/useSetReadUnReadChat.js';
 import { useFriendChatListGet } from '../../hooks/chatList/useFriendChatListGet.js';
 import { useFriendChatSender } from '../../hooks/chat/useFriendChatSender.js';
-import { useFriendReadChat } from '../../hooks/chatNotice/useFriendReadChat.js';
 
 // 상태 체크 훅 import 추가
 import useUserStatusReporter from '../../hooks/status/useUserStatusReporter.js';
@@ -74,10 +74,23 @@ function LobbyPage() {
   const [messages, setMessages] = useState([]);      // 보낼 메세지
   const [client, setClient] = useState(null);      // client 연결 여부 State
   const [input, setInput] = useState('');      // input 입력 Sate      
+  const [selectedFriendRoom, setSelectedFriendRoom] = useState(null); //친구 선택 채팅방
   const [friendMessages, setFriendMessages] = useState([]); // 친구 1:1 채팅 메시지
 
   // State 보관함 해체
-  const { isLogIn, setIsLogIn, userData, setUserData, setHasUnreadMessages, theme, toggleTheme, setHasUnReadFriendMessages, selectedFriendRoom,setSelectedFriendRoom, voiceParticipants: globalVoiceParticipants, setVoiceParticipants: setGlobalVoiceParticipants } = useContext(LogContext)
+  const { 
+    isLogIn, setIsLogIn, userData, setUserData, setHasUnreadMessages, theme, toggleTheme, 
+    voiceParticipants: globalVoiceParticipants, setVoiceParticipants: setGlobalVoiceParticipants,
+    // 음성채팅 관련 state
+    activeVoiceChannel, setActiveVoiceChannel,
+    voiceChatRoomId, setVoiceChatRoomId,
+    voiceSpeakers, setVoiceSpeakers,
+    localMuted, setLocalMuted,
+    joinedVoice, setJoinedVoice,
+    currentVoiceRoomId, setCurrentVoiceRoomId,
+    currentSelectedRoom, setCurrentSelectedRoom,
+    voiceChatRef
+  } = useContext(LogContext)
 
   // 전역 STOMP 클라이언트 초기화
   const globalStomp = useGlobalStomp(userData);
@@ -85,27 +98,21 @@ function LobbyPage() {
   // 메시지 로딩 및 읽음 처리 훅
   const getChatList = useChatListGet();
   const setRead = useSetReadUnReadChat(userData);
-  const setFriendRead = useFriendReadChat(selectedFriendRoom,userData);
 
   // // userData가 로드될 때까지 로딩
   // if (!userData) {
   //   return <div>userData 로딩중</div>; 
   // }
 
-  // voiceChat
-  const [activeVoiceChannel, setActiveVoiceChannel] = useState(null);
-  const [voiceChatRoomId, setVoiceChatRoomId] = useState(null);   //음성 채널 아이디
-  const [voiceSpeakers, setVoiceSpeakers] = useState({});   //말하는중 표시
-  const [localMuted, setLocalMuted] = useState(false);      //음소거
-  const [joinedVoice, setJoinedVoice] = useState(false);    //음성 채팅 참여
-  const voiceChatRef = useRef(null);
-  
   // 현재 방의 참여자 목록 (전역 voiceParticipants에서 가져옴)
   const voiceParticipants = useMemo(() => {
     return selectedRoom?.id ? (globalVoiceParticipants[selectedRoom.id] || []) : [];
   }, [selectedRoom?.id, globalVoiceParticipants]);
 
-  const [currentVoiceRoomId, setCurrentVoiceRoomId] = useState(null);   // 현재 선택된 채널 id 저장
+  // selectedRoom이 변경될 때마다 Context의 currentSelectedRoom 업데이트
+  useEffect(() => {
+    setCurrentSelectedRoom(selectedRoom);
+  }, [selectedRoom, setCurrentSelectedRoom]);
 
   // 채널 클릭 시
   const onJoinVoice = (roomId) => {
@@ -116,6 +123,7 @@ function LobbyPage() {
 
   // 음성설정 모달
   const [showVoiceChatModal, setShowVoiceChatModal] = useState(false);
+  const [localAudioTrack, setLocalAudioTrack] = useState(null);
 
   // 입장 신청 관리 상태 제거 - 기존 UI에 통합
 
@@ -126,7 +134,7 @@ function LobbyPage() {
   // --UseEffect
   useLoginCheck(isLogIn);                                         // 로그인 체크 훅
   useChatSubscriber(selectedRoom, setMessages, setClient, userData, globalStomp);    // 채팅방 구독 훅
-  useFriendChatSubscriber(selectedFriendRoom, setFriendMessages, globalStomp, setClient, userData);   // 친구 1:1 채팅방 구독 훅
+  useFriendChatSubscriber(selectedFriendRoom, setFriendMessages, globalStomp, setClient);   // 친구 1:1 채팅방 구독 훅
 
   // -- Function
   const logoutFunc = useLogout();                                          // 로그아웃 훅
@@ -144,6 +152,19 @@ function LobbyPage() {
     if (status === '온라인') return '🟢';
     if (status === '자리비움') return '🟠';
     return '🔴';
+  }
+
+  // 음성 설정 열기 함수
+  async function openVoiceSettings() {
+    try {
+      if (!localAudioTrack) {
+        const track = await AgoraRTC.createMicrophoneAudioTrack();
+        setLocalAudioTrack(track);
+      }
+      setShowVoiceChatModal(true);
+    } catch (err) {
+      console.error("마이크 초기화 실패:", err);
+    }
   }
 
   // 스크롤 하단 자동 이동 Effect
@@ -176,14 +197,12 @@ function LobbyPage() {
           ...prevUserData, //기존 데이터를 모두 복사
           ...res.data,     //새로 받은 데이터로 덮어쓰기
           //authorities 만큼은 무조건 기존 값으로 다시 덮어쓰기
-
           authorities: prevUserData.authorities
         }));
       })
       .catch(err => console.error("유저 정보 불러오기 실패:", err));
 
   }, [userData?.userId, setUserData]);
-
 
   useEffect(() => {
     const s = location.state;
@@ -205,7 +224,6 @@ function LobbyPage() {
           roomData = data;
 
         // 서버에서 상세 방 정보를 가져와 state 업데이트
-        console.log('서버에서 받은 방 정보:', data);
         setSelectedRoom({
           id: data.id,
           name: data.name ?? s.chatName,
@@ -238,20 +256,42 @@ function LobbyPage() {
           // 승인된 사용자이거나 이미 가입된 사용자이거나 방장 승인 방인 경우 - join API 호출하지 않음
           // 임시로 승인된 사용자는 무조건 join API 호출하지 않음
           if (s.alreadyJoined || s.joinType === 'approval' || roomJoinType !== 'free' || s.type === 'multi') {
-            console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId, 'joinType:', roomJoinType, 'alreadyJoined:', s.alreadyJoined, 's.joinType:', s.joinType, 's.type:', s.type);
             getChatList(s.roomId, setMessages);
             setRead({ id: s.roomId });
+            
+            // sessionStorage에서 pendingJoinMessage 확인 후 추가
+            const pendingMessage = sessionStorage.getItem('pendingJoinMessage');
+            if (pendingMessage) {
+              try {
+                const joinMsg = JSON.parse(pendingMessage);
+                setMessages(prev => [...prev, joinMsg]);
+                sessionStorage.removeItem('pendingJoinMessage');
+              } catch (e) {
+                console.warn('pendingJoinMessage 파싱 실패:', e);
+                sessionStorage.removeItem('pendingJoinMessage');
+              }
+            }
           } else {
             // 자유 입장 방인 경우에만 join API 호출
-            console.log('자유 입장 API 호출: roomId:', s.roomId, 'joinType:', roomJoinType);
             axios.post(`/api/chat/rooms/${s.roomId}/join`, {
               userId: userData.userId
             }).then(() => {
-              console.log('자유 입장 성공');
               // 채팅방 이동 시 메시지 로딩 및 읽음 처리
-              console.log('채팅방 이동: 메시지를 가져옵니다. roomId:', s.roomId);
               getChatList(s.roomId, setMessages);
               setRead({ id: s.roomId });
+              
+              // sessionStorage에서 pendingJoinMessage 확인 후 추가
+              const pendingMessage = sessionStorage.getItem('pendingJoinMessage');
+              if (pendingMessage) {
+                try {
+                  const joinMsg = JSON.parse(pendingMessage);
+                  setMessages(prev => [...prev, joinMsg]);
+                  sessionStorage.removeItem('pendingJoinMessage');
+                } catch (e) {
+                  console.warn('pendingJoinMessage 파싱 실패:', e);
+                  sessionStorage.removeItem('pendingJoinMessage');
+                }
+              }
               
               // 자유 입장 성공 - WebSocket 이벤트로 멤버 목록이 자동 업데이트됨
             }).catch(err => {
@@ -295,8 +335,6 @@ function LobbyPage() {
           // 친구 채팅방 상세 업데이트
           setSelectedFriendRoom({ roomId: chatRoom.roomId, friendId: s.friendId });
           useFriendChatListGet(chatRoom.roomId, setFriendMessages);
-          setFriendRead(chatRoom.roomId, s.friendId);
-
         } catch (err) {
           console.error('1:1 채팅 로드 실패:', err);
         }
@@ -344,6 +382,33 @@ function LobbyPage() {
   const handleVoiceParticipantsChange = useCallback((participants) => {
     // Agora 이벤트는 무시하고 WebSocket만 사용
   }, []);
+
+  // 현재 방의 실시간 음성참가자 구독
+  useEffect(() => {
+    if (!selectedRoom?.id || !globalStomp) return;
+
+    const roomId = selectedRoom.id;
+    const subscriptionId = `voice-participants-${roomId}`;
+
+    globalStomp.subscribe(`/topic/chat/${roomId}/voice-participants`, (frame) => {
+      console.log("📡 ROOM RECEIVE:", frame.body);
+      try {
+        const data = JSON.parse(frame.body);
+        // 서버는 List<VoiceParticipantDto>를 보내므로 data는 배열 형태
+        setGlobalVoiceParticipants(prev => ({
+          ...prev,
+          [roomId]: data
+        }));
+      } catch (e) {
+        console.error("음성채널 방별 업데이트 에러:", e);
+      }
+    }, { id: subscriptionId });
+
+    // cleanup (방 이동 시 기존 구독 해제)
+    return () => {
+      globalStomp.unsubscribe(subscriptionId);
+    };
+  }, [selectedRoom?.id, globalStomp]);
 
   // 음성채팅 참가자 목록을 불러오기 (초기 로딩만)
   useEffect(() => {
@@ -506,11 +571,9 @@ function LobbyPage() {
               <button
                 className="bottom-button"
                 aria-label="음성 채팅 설정"
-                onClick={() => { setShowVoiceChatModal(true); }}
+                onClick={openVoiceSettings}
               >
-                <svg className="button-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.32.57 3.55.57.55 0 1 .45 1 1v3.5c0 .55-.45 1-1 1C12.95 22 2 11.05 2 4c0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.23.2 2.43.57 3.55.12.35.03.75-.24 1.02l-2.2 2.2z" />
-                </svg>
+                <FaPhone className="button-icon" />
               </button>
 
 
@@ -547,6 +610,7 @@ function LobbyPage() {
           messageContainerRef={messageContainerRef}
           onRoomUpdated={handleRoomUpdated}
           sendFriendMessage={sendFriendMessage}
+          client={client}
         />
 
           <div style={{ display: "flex" }}>
@@ -574,26 +638,14 @@ function LobbyPage() {
           onClose={() => setShowProfileModal(false)}
         />}
 
-      {/*음성설정 모달*/}
-      {showVoiceChatModal &&
-        <VoiceChatModal viewUserId={profileUserId}
-          userData={userData}
-          setUserData={setUserData}
+      {/* 음성 설정 모달 */}
+      {showVoiceChatModal && (
+        <VoiceChatModal
           onClose={() => setShowVoiceChatModal(false)}
-        />}
+          localAudioTrack={localAudioTrack}
+        />
+      )}
 
-      {/* VoiceChat 컴포넌트를 lobbyPage에 렌더링 */}
-      <VoiceChat
-        uid={userData.userId}
-        onSpeakers={setVoiceSpeakers}
-        onLocalMuteChange={setLocalMuted}
-        onJoinChange={setJoinedVoice}
-        onParticipantsChange={handleVoiceParticipantsChange}
-        channelId={currentVoiceRoomId}
-        roomId={selectedRoom?.id}
-        globalStomp={globalStomp}
-        ref={voiceChatRef}
-      />
 
       {/* 입장 신청 관리 모달 제거 - 기존 UI에 통합 */}
 

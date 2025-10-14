@@ -23,8 +23,8 @@ public interface FriendShipRepository extends JpaRepository<FriendShip,Long> {
     
     
     //차단 관계
-    @Query("SELECT f FROM FriendShip f WHERE f.requester = :requesterId AND f.status IN ('BLOCKED', 'BLOCKS')")
-    List<FriendShip> findByBlockUser(@Param("requesterId") User requester);
+    @Query("SELECT f FROM FriendShip f WHERE (f.requester = :user OR f.addressee = :user)AND f.status IN ('BLOCKED', 'BLOCKS')")
+    List<FriendShip> findByBlockUser(@Param("user") User user);
     
     //대기 상태
     @Query("SELECT f FROM FriendShip f where (f.addressee.id = :userId) AND f.status IN ('PENDING')")

@@ -701,103 +701,15 @@
     overflow-y: auto;
 }
 
-/* 음성채팅 컨트롤 스타일 */
-.voice-chat-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    color: var(--discord-text-primary);
-}
 
-.voice-status h3 {
-    margin: 0 0 10px 0;
-    color: var(--discord-text-primary);
-    font-size: 16px;
-}
 
-.voice-status p {
-    margin: 5px 0;
-    color: var(--discord-text-secondary);
-    font-size: 14px;
-}
 
-.voice-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
 
-.voice-buttons {
-    display: flex;
-    gap: 10px;
-}
 
-.voice-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s;
-}
 
-.voice-btn.join-btn {
-    background: var(--discord-brand);
-    color: white;
-}
 
-.voice-btn.join-btn:hover {
-    background: var(--discord-brand-dark);
-}
 
-.voice-btn.leave-btn {
-    background: var(--discord-danger);
-    color: white;
-}
 
-.voice-btn.leave-btn:hover {
-    background: #d73a49;
-}
-
-.voice-btn.mute-btn {
-    background: var(--discord-bg-tertiary);
-    color: var(--discord-text-primary);
-}
-
-.voice-btn.mute-btn:hover {
-    background: var(--discord-bg-quaternary);
-}
-
-.voice-btn.mute-btn.muted {
-    background: var(--discord-danger);
-    color: white;
-}
-
-.voice-participants h4 {
-    margin: 0 0 10px 0;
-    color: var(--discord-text-primary);
-    font-size: 14px;
-}
-
-.participants-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.participant-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px;
-    background: var(--discord-bg-tertiary);
-    border-radius: 4px;
-}
-
-.participant-name {
-    color: var(--discord-text-primary);
-    font-size: 14px;
-}
 
 .participant-status {
     font-size: 16px;
@@ -960,6 +872,21 @@
     line-height: 1.375;
 }
 
+/* 이모지 스타일링 */
+.chatStyle {
+    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Android Emoji', 'EmojiSymbols', sans-serif;
+}
+
+/* 이모지 크기 조정 */
+.chatStyle span {
+    font-family: inherit;
+}
+
+/* 이모지가 포함된 메시지의 줄 높이 조정 */
+.chatStyle:has(span[style*="font-size"]) {
+    line-height: 1.5;
+}
+
 .myChatStyle{
     display: flex;
     margin-right: 0;
@@ -986,6 +913,70 @@
     color: var(--discord-text-normal);
 }
 
+/* 시스템 메시지 스타일 */
+.system-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 16px 0;
+    padding: 12px;
+    border-radius: 12px;
+    position: relative;
+}
+
+.system-message-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--discord-accent);
+}
+
+.system-icon {
+    font-size: 16px;
+}
+
+.system-label {
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.system-chat-content {
+    background: rgba(88, 101, 242, 0) !important;
+    color: var(--discord-text-normal) !important;
+    /* border: 1px solid rgba(88, 101, 242, 0.2); */
+    text-align: center;
+    font-weight: 500;
+    line-height: 1.6;
+    white-space: pre-line; /* 줄바꿈 지원 */
+}
+
+/* 멤버 입장 메시지 전체 스타일 */
+.member-join-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 8px 0;
+    padding: 0;
+}
+
+/* 멤버 입장 메시지 스타일 - 간결하게 표시 */
+.member-join-content {
+    background: transparent !important;
+    color: var(--discord-text-normal) !important;
+    font-style: italic;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    opacity: 0.9;
+    border: none !important;
+    padding: 4px 8px !important;
+    margin: 2px 0 !important;
+    white-space: pre-line; /* 줄바꿈 지원 */
+}
+
 /* ================================Discord 입력 스타일============================= */
 .inputSize{
     display: flex;
@@ -997,6 +988,7 @@
     min-height: 80px; /* 최소 높이 보장 */
     width: 100%; /* 명시적 너비 설정 */
     transition: width 0.3s ease; /* 부드러운 전환 효과 */
+    gap: 8px; /* 요소 간 간격 추가 */
 }
 
 /* 참여자 패널이 열릴 때 입력창 너비 조정 */
@@ -1059,6 +1051,148 @@
     background: var(--discord-accent-active);
 }
 
+/* 이모지 버튼 스타일 */
+.emoji-button {
+    background: var(--discord-bg-quaternary);
+    border: none;
+    border-radius: 6px;
+    color: var(--discord-text-normal);
+    cursor: pointer;
+    padding: 8px 12px;
+    font-size: 18px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+}
+
+.emoji-button:hover {
+    background: var(--discord-bg-primary);
+    transform: scale(1.05);
+}
+
+.emoji-button:active {
+    transform: scale(0.95);
+}
+
+/* 이미지 업로드 버튼 스타일 */
+.image-upload-button {
+    background: var(--discord-bg-quaternary);
+    border: none;
+    border-radius: 6px;
+    color: var(--discord-text-normal);
+    cursor: pointer;
+    padding: 8px 12px;
+    font-size: 18px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+}
+
+.image-upload-button:hover {
+    background: var(--discord-bg-primary);
+    transform: scale(1.05);
+}
+
+.image-upload-button:active {
+    transform: scale(0.95);
+}
+
+/* 이미지 메시지 스타일 */
+.message-image-container {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    margin: 8px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.message-image {
+    max-width: 100%;
+    max-height: 400px;
+    width: auto;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.message-image:hover {
+    transform: scale(1.02);
+}
+
+.gif-image {
+    /* GIF 이미지 특별 스타일 */
+}
+
+.gif-indicator {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    pointer-events: none;
+}
+
+.image-loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    font-size: 14px;
+}
+
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #4A9EFF;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.image-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    color: #666;
+    font-size: 14px;
+}
+
+.error-icon {
+    font-size: 16px;
+}
+
+.error-text {
+    font-weight: 500;
+}
+
 /* ================================참여자 패널 토글============================= */
 
 /* 참여자 패널 토글 컨테이너 */
@@ -1114,7 +1248,6 @@
 /* ================================음성채팅 컨트롤============================= */
 
 .voice-chat-controls {
-    padding: 16px;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -1498,5 +1631,359 @@
     
     .empty-chat-text {
         font-size: 14px;
+    }
+}
+
+/* ================================친구 음성채팅 버튼============================= */
+.voice-chat-btn {
+    background: var(--discord-bg-tertiary);
+    border: 1px solid var(--discord-border);
+    color: var(--discord-text-normal);
+    cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.voice-chat-btn:hover {
+    background: var(--discord-bg-hover);
+    border-color: var(--discord-accent);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.voice-chat-btn.voice-chat-active {
+    background: var(--discord-accent);
+    border-color: var(--discord-accent);
+    color: white;
+}
+
+.voice-chat-btn.voice-chat-active:hover {
+    background: var(--discord-accent-hover);
+    border-color: var(--discord-accent-hover);
+}
+
+/* 테마별 음성채팅 버튼 색상 */
+[data-theme="dark"] .voice-chat-btn.voice-chat-active {
+    background: #5865f2;
+    border-color: #5865f2;
+}
+
+[data-theme="dark"] .voice-chat-btn.voice-chat-active:hover {
+    background: #4752c4;
+    border-color: #4752c4;
+}
+
+[data-theme="light"] .voice-chat-btn.voice-chat-active {
+    background: #5865f2;
+    border-color: #5865f2;
+}
+
+[data-theme="light"] .voice-chat-btn.voice-chat-active:hover {
+    background: #4752c4;
+    border-color: #4752c4;
+}
+
+[data-theme="pink"] .voice-chat-btn.voice-chat-active {
+    background: #ff69b4;
+    border-color: #ff69b4;
+}
+
+[data-theme="pink"] .voice-chat-btn.voice-chat-active:hover {
+    background: #ff1493;
+    border-color: #ff1493;
+}
+
+[data-theme="blue"] .voice-chat-btn.voice-chat-active {
+    background: #00bfff;
+    border-color: #00bfff;
+}
+
+[data-theme="blue"] .voice-chat-btn.voice-chat-active:hover {
+    background: #0099cc;
+    border-color: #0099cc;
+}
+
+/* ================================메시지 링크 스타일============================= */
+
+/* 메시지 내 링크 기본 스타일 */
+.message-link {
+    color: var(--discord-accent) !important;
+    text-decoration: underline !important;
+    cursor: pointer !important;
+    word-break: break-all !important;
+    transition: all 0.2s ease !important;
+    padding: 1px 2px !important;
+    border-radius: 3px !important;
+    display: inline !important;
+}
+
+/* 링크 호버 효과 */
+.message-link:hover {
+    background-color: rgba(88, 101, 242, 0.1) !important;
+    color: var(--discord-accent-hover) !important;
+    text-decoration: none !important;
+    transform: scale(1.02) !important;
+}
+
+/* 링크 활성 상태 */
+.message-link:active {
+    transform: scale(0.98) !important;
+    background-color: rgba(88, 101, 242, 0.2) !important;
+}
+
+/* 다크 테마 링크 색상 */
+[data-theme="dark"] .message-link {
+    color: #4A9EFF !important;
+}
+
+[data-theme="dark"] .message-link:hover {
+    color: #6BB6FF !important;
+    background-color: rgba(74, 158, 255, 0.1) !important;
+}
+
+/* 라이트 테마 링크 색상 */
+[data-theme="light"] .message-link {
+    color: #1976D2 !important;
+}
+
+[data-theme="light"] .message-link:hover {
+    color: #1565C0 !important;
+    background-color: rgba(25, 118, 210, 0.1) !important;
+}
+
+/* 핑크 테마 링크 색상 */
+[data-theme="pink"] .message-link {
+    color: #E91E63 !important;
+}
+
+[data-theme="pink"] .message-link:hover {
+    color: #C2185B !important;
+    background-color: rgba(233, 30, 99, 0.1) !important;
+}
+
+/* 블루 테마 링크 색상 */
+[data-theme="blue"] .message-link {
+    color: #2196F3 !important;
+}
+
+[data-theme="blue"] .message-link:hover {
+    color: #1976D2 !important;
+    background-color: rgba(33, 150, 243, 0.1) !important;
+}
+
+/* 내 메시지의 링크 스타일 (흰색 배경에서도 보이도록) */
+.myChatStyle .message-link {
+    color: #FFFFFF !important;
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.3) !important;
+}
+
+.myChatStyle .message-link:hover {
+    color: #E3F2FD !important;
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    text-shadow: 0 0 3px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* 시스템 메시지의 링크 스타일 */
+.system-chat-content .message-link {
+    color: var(--discord-accent) !important;
+    font-weight: 600 !important;
+}
+
+.system-chat-content .message-link:hover {
+    background-color: rgba(88, 101, 242, 0.2) !important;
+}
+
+/* 멤버 입장 메시지의 링크 스타일 */
+.member-join-content .message-link {
+    color: var(--discord-accent) !important;
+    font-style: normal !important;
+}
+
+.member-join-content .message-link:hover {
+    background-color: rgba(88, 101, 242, 0.1) !important;
+}
+
+/* ================================링크 미리보기 툴팁 스타일============================= */
+
+/* 링크 미리보기 래퍼 */
+.link-preview-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+/* 링크 미리보기 툴팁 */
+.link-preview-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 8px;
+    z-index: 10000;
+    background-color: var(--discord-bg-primary);
+    border: 1px solid var(--discord-bg-tertiary);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    max-width: 320px;
+    min-width: 280px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    animation: previewFadeIn 0.2s ease-out;
+}
+
+/* 미리보기 페이드인 애니메이션 */
+@keyframes previewFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* 미리보기 툴팁 화살표 */
+.link-preview-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--discord-bg-primary);
+}
+
+.link-preview-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 7px solid transparent;
+    border-right: 7px solid transparent;
+    border-top: 7px solid var(--discord-bg-tertiary);
+    z-index: -1;
+}
+
+/* 미리보기 호버 효과 */
+.link-preview-tooltip:hover {
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* YouTube 미리보기 썸네일 */
+.link-preview-tooltip img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.link-preview-tooltip:hover img {
+    transform: scale(1.02);
+}
+
+/* 미리보기 텍스트 스타일 */
+.link-preview-tooltip .preview-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--discord-text-normal);
+    margin-bottom: 4px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.link-preview-tooltip .preview-author {
+    font-size: 12px;
+    color: var(--discord-text-muted);
+    margin-bottom: 8px;
+}
+
+.link-preview-tooltip .preview-action {
+    font-size: 12px;
+    color: var(--discord-accent);
+    font-weight: 500;
+}
+
+/* 다크 테마 미리보기 */
+[data-theme="dark"] .link-preview-tooltip {
+    background-color: var(--discord-bg-primary);
+    border-color: var(--discord-bg-tertiary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .link-preview-tooltip::after {
+    border-top-color: var(--discord-bg-primary);
+}
+
+[data-theme="dark"] .link-preview-tooltip::before {
+    border-top-color: var(--discord-bg-tertiary);
+}
+
+/* 라이트 테마 미리보기 */
+[data-theme="light"] .link-preview-tooltip {
+    background-color: var(--discord-bg-primary);
+    border-color: var(--discord-bg-tertiary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* 핑크 테마 미리보기 */
+[data-theme="pink"] .link-preview-tooltip {
+    background-color: var(--discord-bg-primary);
+    border-color: var(--discord-bg-tertiary);
+    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.1);
+}
+
+[data-theme="pink"] .link-preview-tooltip .preview-action {
+    color: #E91E63;
+}
+
+/* 블루 테마 미리보기 */
+[data-theme="blue"] .link-preview-tooltip {
+    background-color: var(--discord-bg-primary);
+    border-color: var(--discord-bg-tertiary);
+    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.1);
+}
+
+[data-theme="blue"] .link-preview-tooltip .preview-action {
+    color: #2196F3;
+}
+
+/* 반응형 미리보기 */
+@media (max-width: 768px) {
+    .link-preview-tooltip {
+        max-width: 280px;
+        min-width: 240px;
+    }
+    
+    .link-preview-tooltip img {
+        height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .link-preview-tooltip {
+        max-width: 240px;
+        min-width: 200px;
+    }
+    
+    .link-preview-tooltip img {
+        height: 120px;
     }
 }

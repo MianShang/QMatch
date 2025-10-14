@@ -396,21 +396,21 @@ function MyProfile({ viewUserId, onClose }) {
           <div className="logout-confirm-modal" onClick={(e) => e.stopPropagation()}>
             <h3>로그아웃 확인</h3>
             <p>정말 로그아웃 하시겠습니까?</p>
-            <div className="logout-confirm-buttons">
-              <button className="cancel-btn" onClick={() => setShowLogoutConfirm(false)}>
-                취소
-              </button>
-              <button className="confirm-btn" onClick={() => {
+            <button className="confirm-btn" onClick={() => {
                 logoutFunc(setIsLogIn);
                 onClose();
               }}>
                 로그아웃
               </button>
+            <div className="logout-confirm-buttons">
+              <button className="cancel-btn" onClick={() => setShowLogoutConfirm(false)}>
+                취소
+              </button>
             </div>
           </div>
         </div>
       )}
-
+      
       {showGameModal && (
         <InputModal
           type="game"

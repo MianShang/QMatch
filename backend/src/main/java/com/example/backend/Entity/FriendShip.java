@@ -14,8 +14,14 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-@Table(name = "friendships")
+@Table(
+        name = "friendships",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"requester_id", "addressee_id"})
+        }
+)
 @EntityListeners(AuditingEntityListener.class)
+
 public class FriendShip {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

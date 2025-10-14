@@ -11,6 +11,9 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false, // IPC 사용을 위해 false (보안 강화 시 preload 사용 권장)
+      media: true,
+      mediaAudioCapture: true,
+      allowRunningInsecureContent: true,
     }
   });
 

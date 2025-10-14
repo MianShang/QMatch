@@ -11,6 +11,7 @@ import java.util.Optional;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, String> {
     List<ChatRoom> findByNameContainingIgnoreCase(String keyword);
+    boolean existsByNameIgnoreCaseAndGameName(String name, String gameName);
 
     @Query("SELECT DISTINCT r FROM ChatRoom r JOIN r.chatRoomTags crt JOIN crt.gameTag gt WHERE (gt.id IN :tagIds) AND r.gameName = :gametag")
     List<ChatRoom> findByGameAndTagIdsIn(@Param("tagIds")List<Long> tagIds, @Param("gametag")String gametag);

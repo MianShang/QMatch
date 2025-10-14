@@ -8,14 +8,13 @@ import com.example.backend.Repository.UserRepository;
 import com.example.backend.Security.MyUserDetailsService;
 import com.example.backend.Service.UserService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,14 +27,14 @@ public class UserController {
 
     // 회원가입 API
     @PostMapping("/api/user/join")
-    public ResponseEntity<String> userJoin(@RequestBody UserRequestDto user) {
+    public ResponseEntity<String> userJoin(@Valid @RequestBody UserRequestDto user) {
         try {
             // Service 레이어 분리
             userService.saveUser(user);
             return ResponseEntity.ok("회원가입 성공");
 
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 

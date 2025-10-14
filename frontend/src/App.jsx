@@ -141,45 +141,48 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // 새로고침 or 첫 로딩시 자동 실행
-  useEffect(() => {
-    // 앱이 처음 마운트 될 때 실행되는 초기 값 (메모리 누수 방지용)
-    let isMounted = true;
-    const checkLoginStatus = async () => {
-      try {
-        await axios.get('/api/check-login', { withCredentials: true });
-        const res = await axios.get('/api/user/get-data', { withCredentials: true });
-        if (isMounted) {
-          setUserData(res.data);
-          setIsLogIn(true);
+  
+    // 새로고침 or 첫 로딩시 자동 실행
+    useEffect(() => {
+      // 앱이 처음 마운트 될 때 실행되는 초기 값 (메모리 누수 방지용)
+      let isMounted = true;
+      const checkLoginStatus = async () => {
+        try {
+          await axios.get('/api/check-login', { withCredentials: true });
+          const res = await axios.get('/api/user/get-data', { withCredentials: true });
+          if (isMounted) {
+            setUserData(res.data);
+            setIsLogIn(true);
+          }
+        } catch {
+          if (isMounted) {
+            setIsLogIn(false);
+            setUserData(null);
+          }
+        } finally {
+          if (isMounted) setIsLoading(false);
         }
-      } catch {
-        if (isMounted) {
-          setIsLogIn(false);
-          setUserData(null);
+      };
+      checkLoginStatus();
+      const interval = setInterval(() => {
+  
+        if (isMounted && isLogIn) {
+          axios.get('/api/check-login', { withCredentials: true }).catch(() => {
+            setIsLogIn(false);
+            setUserData(null);
+          });
         }
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-    checkLoginStatus();
-    const interval = setInterval(() => {
-
-      if (isMounted && isLogIn) {
-        axios.get('/api/check-login', { withCredentials: true }).catch(() => {
-          setIsLogIn(false);
-          setUserData(null);
-        });
-      }
-    }, 10 * 60 * 1000); // 10분마다 반복
-
-
-    // 언마운트 시 반복 중지
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, [isLogIn]);
+      }, 10 * 60 * 1000); // 10분마다 반복
+  
+  
+      // 언마운트 시 반복 중지
+      return () => {
+        isMounted = false;
+        clearInterval(interval);
+      };
+    }, [isLogIn]);
+  
+    
 
   // 전역 Context
   const contextValue = useMemo(() => ({
@@ -453,6 +456,7 @@ function App() {
       </div>
     );
   }
+  //console.log("권한 확인 직전 userData:", userData);
 
   return (
     <div className="fullscreen">
@@ -631,5 +635,6 @@ function App() {
     </div>
   );
 }
+
 
 export default App;

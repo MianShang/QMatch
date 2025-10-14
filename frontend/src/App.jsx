@@ -463,7 +463,7 @@ function App() {
       </div>
     );
   }
-  //console.log("권한 확인 직전 userData:", userData);
+  console.log("권한 확인 직전 userData:", userData);
 
   return (
     <div className="fullscreen">

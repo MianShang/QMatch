@@ -38,8 +38,20 @@ function MyProfile({ viewUserId, onClose }) {
     return axios.get("/api/profile/user/info", { params: { userId: viewUserId } })
       .then((res) => {
         if (isMe) {
-          setUserData(res.data); // 본인일 경우 Context도 업데이트
-        }
+
+        setUserData(prevUserData => {
+          //res에서 dataauthorities를 분리하고,
+          //나머지 모든 데이터를 profileInfo 라는 새 객체에 담아서 관리자 권한 유지
+          const { authorities, ...profileInfo } = res.data;
+
+          //기존 userData(...prevUserData) 위에
+          //관리자 권한이 제거된  프로필 정보만 덮어씁니다.
+          return {
+            ...prevUserData,
+            ...profileInfo
+          };
+        });
+      }
         setProfileData(res.data);
       })
       .catch((err) => console.error("유저 프로필 불러오기 실패", err));

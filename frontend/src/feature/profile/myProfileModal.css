@@ -1,5 +1,4 @@
 /* Discord 스타일 프로필 모달 */
-
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -51,7 +50,6 @@
   }
 }
 
-
 .modal-content-scrollable {
   overflow-y: auto;
   overflow-x: hidden;
@@ -66,24 +64,17 @@
 .modal-content-scrollable::-webkit-scrollbar {
   width: 8px;
 }
-
 .modal-content-scrollable::-webkit-scrollbar-track {
   background: var(--discord-bg-secondary);
   border-radius: 4px;
 }
-
 .modal-content-scrollable::-webkit-scrollbar-thumb {
   background: var(--discord-bg-tertiary);
   border-radius: 4px;
   border: 1px solid var(--discord-bg-quaternary);
 }
-
 .modal-content-scrollable::-webkit-scrollbar-thumb:hover {
   background: var(--discord-bg-modifier-hover);
-}
-
-.modal-content-scrollable::-webkit-scrollbar-corner {
-  background: var(--discord-bg-secondary);
 }
 
 /* 프로필 상단 영역 */
@@ -466,18 +457,15 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 16px 20px;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .game-item-container:hover {
   background: rgba(88, 101, 242, 0.1);
   border-color: rgba(88, 101, 242, 0.3);
-  transform: translateX(8px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateX(4px);
 }
 
 .game-item-container::before {
@@ -498,6 +486,16 @@
 
 .game-item {
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 16px 0 16px 20px;
+  flex-grow: 1;
+}
+
+.main-account-badge {
+  color: #ffd700;
+  margin-right: 10px;
+  font-size: 1.1rem;
 }
 
 .game-name {
@@ -516,15 +514,42 @@
   border-radius: 6px;
 }
 
+.game-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 15px;
+  flex-shrink: 0; /* 버튼 영역이 줄어들지 않도록 설정 */
+}
+
+.set-main-btn {
+  background: rgba(88, 101, 242, 0.15);
+  color: var(--discord-accent);
+  border: 1px solid rgba(88, 101, 242, 0.3);
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.set-main-btn:hover {
+  background: var(--discord-accent);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(88, 101, 242, 0.2);
+}
+
 .delete-game-btn {
   background-color: transparent;
   color: #a0a0a0;
   border: none;
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   font-size: 20px;
-  font-weight: bold;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -532,14 +557,12 @@
   padding: 0;
   line-height: 1;
   transition: color 0.2s, background-color 0.2s;
-  flex-shrink: 0;
 }
 
 .delete-game-btn:hover {
   color: #ff4d4d;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 77, 77, 0.1);
 }
-
 /* ======================================================== */
 /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲ 게임 목록 관련 CSS 끝 ▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
 /* ======================================================== */

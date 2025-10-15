@@ -5,6 +5,7 @@ import { LogContext } from '../../App.jsx';
 import { useLogout } from '../../hooks/login/useLogout.js';
 import InputModal from './components/inputModal.jsx';
 import SpecModal from './components/specModal/specModal.jsx';
+import { toast } from 'react-toastify';
 import './myProfileModal.css';
 
 function MyProfile({ viewUserId, onClose }) {
@@ -44,8 +45,7 @@ function MyProfile({ viewUserId, onClose }) {
           //나머지 모든 데이터를 profileInfo 라는 새 객체에 담아서 관리자 권한 유지
           const { authorities, ...profileInfo } = res.data;
 
-          //기존 userData(...prevUserData) 위에
-          //관리자 권한이 제거된  프로필 정보만 덮어씁니다.
+          //기존 userData(...prevUserData) 위에 관리자 권한을 덮어씌움
           return {
             ...prevUserData,
             ...profileInfo
@@ -132,17 +132,37 @@ function MyProfile({ viewUserId, onClose }) {
   };
 
   // 게임 코드 삭제
-  const handleDeleteGameCode = (gameCodeId) => {
+  const handleDeleteGameCode = (gameCode) => {
     if (!isMe) return;
-    axios.delete(`/api/delete/gamecode/${gameCodeId}`)
+    axios.delete(`/api/delete/gamecode/${gameCode}`)
       .then(response => {
-        console.log(response.data);
+        console.log(response.data); 
         setGameData(prevGameData =>
-          prevGameData.filter(item => item.id !== gameCodeId)
+          prevGameData.filter(item => item.id !== gameCode)
         );
       })
       .catch(error => console.error("게임 정보 삭제 실패", error));
   };
+
+    
+    const fetchGameData = () => {
+      return axios.get("/api/get/user/gamecode", { params: { userId: viewUserId } })
+        .then((res) => setGameData(res.data || []))
+        .catch((err) => console.error("게임 목록 불러오기 실패", err));
+    };
+  
+    //대표 계정 설정
+    const handleSetMainAccount = async (gameCodeId) => {
+      if (!isMe) return;
+      try {
+        await axios.put(`/api/user-game-codes/${gameCodeId}/set-main`, {}, { withCredentials: true });
+        toast.success('대표 계정이 설정되었습니다.');
+        fetchGameData(); 
+      } catch (err) {
+        console.error("대표 계정 설정 실패:", err);
+        toast.error('대표 계정 설정에 실패했습니다.');
+      }
+    };
 
   // 유저 태그 저장
   const sendUserTag = (newTag) => {
@@ -162,12 +182,18 @@ function MyProfile({ viewUserId, onClose }) {
     if (!viewUserId) return;
 
     fetchProfileData();
+
     
     axios.get("/api/get/user/gamecode", { params: { userId: viewUserId } })
-      .then((res) => setGameData(res.data))
-      .catch((err) => console.error("게임코드 불러오기 실패", err));
+    .then((res) => {
+      console.log("서버에서 받은 게임 데이터:", res.data); 
+      setGameData(res.data);
+    })
+    .catch((err) => console.error("게임코드 불러오기 실패", err));
 
   }, [viewUserId]);
+
+  
 
   // --- 렌더링 (Rendering) ---
 
@@ -298,7 +324,6 @@ function MyProfile({ viewUserId, onClose }) {
             </div>
           </div>
 
-          {/* 자주 하는 게임 영역 */}
           <div className="profile-games-section">
             <div className="section-header">
               <h3 className="section-title">자주 하는 게임</h3>
@@ -319,19 +344,36 @@ function MyProfile({ viewUserId, onClose }) {
                         setShowSpecModal(true);
                       }}
                     >
+                      
+                      {item.main && <span className="main-account-badge" title="대표 계정">👑</span>}
                       <span className="game-name">{item.gameName}</span>
                       <span className="game-code">({item.gameCode})</span>
                     </div>
+
                     {isMe && (
-                      <button
-                        className="delete-game-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteGameCode(item.id);
-                        }}
-                      >
-                        ✕
-                      </button>
+                      <div className="game-item-actions">
+                       
+                        {!item.main && (
+                          <button
+                            className="set-main-btn"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSetMainAccount(item.id);
+                            }}
+                          >
+                            대표 설정
+                          </button>
+                        )}
+                        <button
+                          className="delete-game-btn"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteGameCode(item.id);
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
                     )}
                   </div>
                 ))

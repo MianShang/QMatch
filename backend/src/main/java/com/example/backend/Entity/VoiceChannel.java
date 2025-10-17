@@ -1,5 +1,6 @@
 package com.example.backend.Entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -12,6 +13,7 @@ public class VoiceChannel {
 
     @ManyToOne
     @JoinColumn(name = "chat_room_id")
+    @JsonBackReference
     private ChatRoom chatRoom;
 
     @Column(nullable = false)

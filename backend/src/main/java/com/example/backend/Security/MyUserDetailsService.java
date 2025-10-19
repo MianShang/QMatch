@@ -67,7 +67,7 @@ public class MyUserDetailsService implements UserDetailsService {
         }
 
         // 유저 ID를 포함한 커스텀 유저 정보 객체
-        var customUserDetail = new CustomUserDetails(user.getUserName(),
+        var customUserDetail = new CustomUserDetails(user.getUserId(),
                 user.getUserPw(),
                 authorities);
 

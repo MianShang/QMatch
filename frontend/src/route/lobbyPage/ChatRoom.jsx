@@ -121,7 +121,9 @@ function ChatRoom({
             );
             if (!confirmed) return;
 
-            if (voiceChatRef.current) await voiceChatRef.current.leaveChannel();
+            if (voiceChatRef.current) {
+                await voiceChatRef.current.leaveChannel(currentGroupVoiceChat.roomId);
+            }
             setJoinedVoice(false);
             setCurrentGroupVoiceChat(null);
             await new Promise(res => setTimeout(res, 500));

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useMemo, useRef, use } from 'react';
+import React, { useState, useEffect, createContext, useMemo, useRef, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
@@ -18,6 +18,7 @@ import VoiceChat from './route/lobbyPage/lobbyPageRoute/VoiceChat.jsx';
 //전역 stomp
 import { useGlobalStomp } from './hooks/stomp/useGlobalStomp.js';
 import { useGameStatus } from './hooks/status/useGameStatus.js';
+import { useFriendRequestCount } from './hooks/friends/useFriendRequestCount.js';
 
 // 로그인 체크용 Context API 생성
 export const LogContext = createContext();
@@ -43,7 +44,10 @@ function App() {
   // 실시간 프로세스 목록 담을 State
   const [processes, setProcesses] = useState([]);
   //전역 STOMP 훅
-  const { subscribe, publish, isConnected } = useGlobalStomp(userData);
+  const { subscribe, publish, isConnected, unsubscribe } = useGlobalStomp(userData);
+  
+  // 친구 요청 개수 관리 훅
+  const { pendingCount, refreshPendingCount } = useFriendRequestCount(userData, { subscribe, publish, isConnected, unsubscribe });
 
   // 프로세스 추척할 게임 목록
   const gameTarget = [
@@ -58,6 +62,9 @@ function App() {
   // 안 읽은 메시지 상태
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const [hasUnReadFriendMessages, setHasUnReadFriendMessages] = useState(false);
+  
+  // 채팅방 목록 새로고침 트리거
+  const [listRefreshTick, setListRefreshTick] = useState(0);
 
   // 음성채팅 관련 상태
   const [voiceParticipants, setVoiceParticipants] = useState({});
@@ -103,7 +110,7 @@ function App() {
     const rect = e.currentTarget.getBoundingClientRect();
     setDragOffset({ x: e.clientX - rect.left, y: e.clientY - rect.top });
   };
-  const handleMouseMove = (e) => {
+  const handleMouseMove = useCallback((e) => {
     if (!isDragging) return;
     const newX = e.clientX - dragOffset.x;
     const newY = e.clientY - dragOffset.y;
@@ -111,18 +118,17 @@ function App() {
       x: Math.max(0, Math.min(newX, window.innerWidth - 300)),
       y: Math.max(0, Math.min(newY, window.innerHeight - 100))
     });
-  };
+  }, [isDragging, dragOffset]);
   const handleMouseUp = () => setIsDragging(false);
   useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove);
-        document.removeEventListener('mouseup', handleMouseUp);
-      };
-    }
-  }, [isDragging, dragOffset]);
+    if (!isDragging) return;
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isDragging, handleMouseMove]);
 
   // Electron 환경에서 실행 중인 프로세스 감지
   useEffect(() => {
@@ -141,45 +147,48 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // 새로고침 or 첫 로딩시 자동 실행
-  useEffect(() => {
-    // 앱이 처음 마운트 될 때 실행되는 초기 값 (메모리 누수 방지용)
-    let isMounted = true;
-    const checkLoginStatus = async () => {
-      try {
-        await axios.get('/api/check-login', { withCredentials: true });
-        const res = await axios.get('/api/user/get-data', { withCredentials: true });
-        if (isMounted) {
-          setUserData(res.data);
-          setIsLogIn(true);
+  
+    // 새로고침 or 첫 로딩시 자동 실행
+    useEffect(() => {
+      // 앱이 처음 마운트 될 때 실행되는 초기 값 (메모리 누수 방지용)
+      let isMounted = true;
+      const checkLoginStatus = async () => {
+        try {
+          await axios.get('/api/check-login', { withCredentials: true });
+          const res = await axios.get('/api/user/get-data', { withCredentials: true });
+          if (isMounted) {
+            setUserData(res.data);
+            setIsLogIn(true);
+          }
+        } catch {
+          if (isMounted) {
+            setIsLogIn(false);
+            setUserData(null);
+          }
+        } finally {
+          if (isMounted) setIsLoading(false);
         }
-      } catch {
-        if (isMounted) {
-          setIsLogIn(false);
-          setUserData(null);
+      };
+      checkLoginStatus();
+      const interval = setInterval(() => {
+  
+        if (isMounted && isLogIn) {
+          axios.get('/api/check-login', { withCredentials: true }).catch(() => {
+            setIsLogIn(false);
+            setUserData(null);
+          });
         }
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-    checkLoginStatus();
-    const interval = setInterval(() => {
-
-      if (isMounted && isLogIn) {
-        axios.get('/api/check-login', { withCredentials: true }).catch(() => {
-          setIsLogIn(false);
-          setUserData(null);
-        });
-      }
-    }, 10 * 60 * 1000); // 10분마다 반복
-
-
-    // 언마운트 시 반복 중지
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, [isLogIn]);
+      }, 10 * 60 * 1000); // 10분마다 반복
+  
+  
+      // 언마운트 시 반복 중지
+      return () => {
+        isMounted = false;
+        clearInterval(interval);
+      };
+    }, [isLogIn]);
+  
+    
 
   // 전역 Context
   const contextValue = useMemo(() => ({
@@ -202,13 +211,15 @@ function App() {
     currentFriendVoiceChat, setCurrentFriendVoiceChat,
     currentGroupVoiceChat, setCurrentGroupVoiceChat,
     voiceChatRef,
-    currentSelectedRoom, setCurrentSelectedRoom
+    currentSelectedRoom, setCurrentSelectedRoom,
+    listRefreshTick, setListRefreshTick,
+    pendingCount, refreshPendingCount
   }), [isLogIn, userData, friends, statusByUser, friendInventoryUpdate,
        theme, hasUnreadMessages, hasUnReadFriendMessages, selectedFriendRoom,
        isRunning, voiceParticipants, activeVoiceChannel, voiceChatRoomId,
        voiceSpeakers, localMuted, joinedVoice, currentVoiceRoomId,
        friendVoiceChatActive, currentFriendVoiceChat, currentGroupVoiceChat,
-       gameStatusByUser]);
+       gameStatusByUser, listRefreshTick, pendingCount, refreshPendingCount]);
 
 
   useEffect(() => {
@@ -253,16 +264,6 @@ function App() {
   useEffect(() => {
     if (!userData?.userId) return;
 
-    //친구 요청구독
-    subscribe(`/topic/friends/${userData.userId}`, (frame) => {
-      try {
-        const payload = JSON.parse(frame.body);
-        toast.info(payload.message || "새로운 친구 요청이 도착했습니다.");
-      } catch (e) {
-        console.error("친구추가 요청 에러", e);
-      }
-    });
-
     //친구 상태구독
     subscribe(`/topic/friends/status`, (frame) => {
       try {
@@ -297,6 +298,9 @@ function App() {
             // 전역 상태에 임시 저장 (lobbyPage에서 사용)
             sessionStorage.setItem('pendingJoinMessage', JSON.stringify(joinMessage));
 
+            // 채팅방 목록 새로고침 트리거
+            setListRefreshTick(prev => prev + 1);
+            
             // 채팅방으로 이동
             navigate('/', {
               state: {
@@ -453,6 +457,7 @@ function App() {
       </div>
     );
   }
+  console.log("권한 확인 직전 userData:", userData);
 
   return (
     <div className="fullscreen">
@@ -476,6 +481,8 @@ function App() {
         onClose={() => setFriendInviteNotification({ open: false, data: null })}
         inviteData={friendInviteNotification.data}
         onAccept={(inviteData) => {
+          // 채팅방 목록 새로고침 트리거
+          setListRefreshTick(prev => prev + 1);
 
           // 방 입장 처리
           navigate('/', {
@@ -631,5 +638,6 @@ function App() {
     </div>
   );
 }
+
 
 export default App;

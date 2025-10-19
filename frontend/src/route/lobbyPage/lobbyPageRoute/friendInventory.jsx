@@ -5,6 +5,8 @@ import { FaCheck } from "react-icons/fa";
 import { FaXmark } from "react-icons/fa6";
 import { useFriendResponse } from '../../../hooks/friends/useFriendResponse';
 import { useFriendDelete } from '../../../hooks/friends/useFriendDelete';
+import { useContext } from 'react';
+import { LogContext } from '../../../App.jsx';
 
 
 export function FriendInventory({ bottomToggle, userId }) {
@@ -12,6 +14,9 @@ export function FriendInventory({ bottomToggle, userId }) {
     // useFriendsinventory 훅의 반환값을 올바르게 비구조화 할당
     const { responseUsers, loading, error } = useFriendsinventory(userId, bottomToggle);
     const { deleteFriend } = useFriendDelete();
+    
+    // 친구 요청 개수 새로고침을 위한 함수 가져오기
+    const { refreshPendingCount } = useContext(LogContext);
 
     // 렌더링할 제목을 결정
     const title = (bottomToggle === "friends" ? "친구 요청" : "차단된");
@@ -59,7 +64,13 @@ export function FriendInventory({ bottomToggle, userId }) {
                                     size={20}
                                     color="#32CD32"
                                     style={{ marginRight: "-10px" }}
-                                    onClick={async () => useFriendResponse(RequestUser.userId, userId, 'accept')}
+                                    onClick={async () => {
+                                        const result = await useFriendResponse(RequestUser.userId, userId, 'accept');
+                                        if (result.success && refreshPendingCount) {
+                                            // 수락 후 친구 요청 개수 즉시 업데이트
+                                            refreshPendingCount();
+                                        }
+                                    }}
                                     className='CheckBox'
                                 />
                             )}
@@ -69,7 +80,11 @@ export function FriendInventory({ bottomToggle, userId }) {
                                 style={{ marginRight: "5px" }}
                                 onClick={async () => {
                                     if (bottomToggle === "friends") {
-                                        await useFriendResponse(RequestUser.userId, userId, "reject");
+                                        const result = await useFriendResponse(RequestUser.userId, userId, "reject");
+                                        if (result.success && refreshPendingCount) {
+                                            // 거절 후 친구 요청 개수 즉시 업데이트
+                                            refreshPendingCount();
+                                        }
                                     } else {
                                         await deleteFriend(RequestUser.userId, userId);
                                     }

@@ -8,7 +8,7 @@ import axios from "axios";
  * @param {Function} setClient    - STOMP 클라이언트 인스턴스를 설정하는 함수
  */
 
-export function useFriendChatSubscriber(selectedFriendRoom, setFriendMessages, globalStomp, setClient, userData) {
+export function useFriendChatSubscriber(selectedFriendRoom, setFriendMessages, globalStomp, setClient) {
     useEffect(() => {
         if (!selectedFriendRoom || !globalStomp) return;
 
@@ -23,15 +23,7 @@ export function useFriendChatSubscriber(selectedFriendRoom, setFriendMessages, g
 
                     setFriendMessages((prev) =>
                         prev.some((m) => m.id === body.id) ? prev : [...prev, body]);
-                    // 현재 방 열려있으면 → 읽음 처리
-                    if (selectedFriendRoom?.roomId === body.chatroomId) {
-                        axios.post(`/api/friends/chatroom/${selectedFriendRoom.roomId}/read`, null, {
-                            params: {
-                                userId: userData.userId,
-                                lastReadMessageId: body.id,
-                            },
-                        });
-                    }
+                    // 읽음 처리는 useFriendReadChat 훅에서 처리
 
                 } catch (error) {
                     console.error('친구 채팅 메시지 오류:', error);

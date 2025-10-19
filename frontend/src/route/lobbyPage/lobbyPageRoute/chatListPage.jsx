@@ -51,6 +51,7 @@ function ChatListPage({
   membersToggle = true, // 참여자/음성채팅 토글 상태
   setMembersToggle = () => { }, // 참여자/음성채팅 토글 상태 변경 함수
   setHasUnreadMessages, // 안 읽은 메시지 상태 업데이트 함수
+  refreshTick, // 채팅방 목록 새로고침 트리거
   // UserHistoryModal 관련 props
   isUserHistoryOpen,
   setIsUserHistoryOpen,
@@ -72,7 +73,8 @@ function ChatListPage({
   friendVoiceChatActive,
   setFriendVoiceChatActive,
   currentFriendVoiceChat,
-  setCurrentFriendVoiceChat
+  setCurrentFriendVoiceChat,
+  refreshPendingCount
 } = useContext(LogContext);
 
   // State
@@ -89,6 +91,9 @@ function ChatListPage({
   }, [unreadCounts, setHasUnreadMessages]);
 
   const [pendingUsers, setPendingUsers] = useState([]);
+  
+  // 처리 중인 사용자들을 추적하는 상태 (중복 클릭 방지)
+  const [processingUsers, setProcessingUsers] = useState(new Set());
 
   // chatList를 다시 로컬 state로 관리합니다.
   const [chatList, setChatList] = useState([]);
@@ -122,6 +127,13 @@ function ChatListPage({
   useChatGetRooms(userData, setChatList);              // 로그인한 유저의 채팅방
   useUnReadChatCount(userData, chatList, setUnreadCounts);     // 안읽은 메세지 카운트
   useNewChatNotice(userData, selectedRoom, setUnreadCounts, globalStomp);   // 새 메세지 알림
+
+  // refreshTick이 변경될 때마다 채팅방 목록 새로고침
+  useEffect(() => {
+    if (refreshTick > 0) {
+      refreshChatList();
+    }
+  }, [refreshTick]);
 
   const getChatUserList = useChatGetUserList(setChatUserList);
   const deleteUserRoom = useChatDeleteRoom();
@@ -331,6 +343,14 @@ function ChatListPage({
 
   // 수락 함수
   const handleAccept = async (applicantId) => {
+    // 이미 처리 중인 요청인지 확인
+    if (processingUsers.has(applicantId)) {
+      return;
+    }
+
+    // 처리 중 상태로 설정
+    setProcessingUsers(prev => new Set(prev).add(applicantId));
+
     try {
       await axios.post(`/api/chat/rooms/${selectedRoom.id}/approve-join`, null, {
         params: { ownerId: selectedRoom.hostUserId, applicantId }
@@ -358,11 +378,26 @@ function ChatListPage({
     } catch (error) {
       console.error('입장 승인 실패:', error);
       toast.error('입장 승인에 실패했습니다.');
+    } finally {
+      // 처리 완료 후 상태에서 제거
+      setProcessingUsers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(applicantId);
+        return newSet;
+      });
     }
   };
 
   // 거절 함수
   const handleReject = async (applicantId) => {
+    // 이미 처리 중인 요청인지 확인
+    if (processingUsers.has(applicantId)) {
+      return;
+    }
+
+    // 처리 중 상태로 설정
+    setProcessingUsers(prev => new Set(prev).add(applicantId));
+
     try {
       await axios.post(`/api/chat/rooms/${selectedRoom.id}/reject-join`, null, {
         params: { ownerId: selectedRoom.hostUserId, applicantId }
@@ -381,6 +416,13 @@ function ChatListPage({
     } catch (error) {
       console.error('입장 거절 실패:', error);
       toast.error('입장 거절에 실패했습니다.');
+    } finally {
+      // 처리 완료 후 상태에서 제거
+      setProcessingUsers(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(applicantId);
+        return newSet;
+      });
     }
   };
 
@@ -1335,8 +1377,26 @@ function ChatListPage({
                             {/* 방장만 수락/거절 버튼 표시 */}
                             {(selectedRoom?.hostUserId === userData.userId) && (
                               <div className="pending-actions">
-                                <button onClick={() => handleAccept(u.userId)}>수락</button>
-                                <button onClick={() => handleReject(u.userId)}>거절</button>
+                                <button 
+                                  onClick={() => handleAccept(u.userId)}
+                                  disabled={processingUsers.has(u.userId)}
+                                  style={{ 
+                                    opacity: processingUsers.has(u.userId) ? 0.6 : 1,
+                                    cursor: processingUsers.has(u.userId) ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  {processingUsers.has(u.userId) ? '처리중...' : '수락'}
+                                </button>
+                                <button 
+                                  onClick={() => handleReject(u.userId)}
+                                  disabled={processingUsers.has(u.userId)}
+                                  style={{ 
+                                    opacity: processingUsers.has(u.userId) ? 0.6 : 1,
+                                    cursor: processingUsers.has(u.userId) ? 'not-allowed' : 'pointer'
+                                  }}
+                                >
+                                  {processingUsers.has(u.userId) ? '처리중...' : '거절'}
+                                </button>
                               </div>
                             )}
                             <div
@@ -1584,6 +1644,10 @@ function ChatListPage({
                     const result = await sendRequest(requesterId, addresseeId);
                     if (result.success) {
                       toast.success(result.message);
+                      // 친구 요청 성공 시 개수 즉시 업데이트
+                      if (refreshPendingCount) {
+                        refreshPendingCount();
+                      }
                     }
                     else {
                       toast.error(result.message);

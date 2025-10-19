@@ -9,4 +9,7 @@ public interface UserRepository extends CrudRepository<User, Long> {
 
     // 유저 아이디로 유저 검색
     Optional<User> findByUserId(String userId);
+
+    // 유저 Id 중복 체크
+    boolean existsByUserId(String userId);
 }

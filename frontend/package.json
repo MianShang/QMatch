@@ -1,26 +1,43 @@
 {
-  "name": "electron",
+  "name": "qmatch",
   "private": true,
-  "version": "0.0.0",
-  "main": "electron/main.js",
+  "version": "0.0.1",
+  "description": "QMatch App",
+  "main": "main.js",
+  "author": "QMatch",
   "scripts": {
     "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
-    "build": "vite build",
-    "electron:build": "npm run build && electron-builder"
+    "build:react": "vite build",
+    "dist": "npm run build:react && electron-builder"
   },
   "build": {
-    "appId": "com.example.myapp",
-    "productName": "MyViteApp",
+    "appId": "com.qmatch.app",
+    "productName": "QMatch",
     "directories": {
+      "output": "web-build",
       "buildResources": "assets"
     },
     "files": [
-      "dist/**/*",
-      "electron/**/*"
+      "web-build/**/*",
+      "assets/**/*",
+      "main.js",
+      "node_modules/ps-list/vendor/**/*"
     ],
     "win": {
-      "target": "nsis"
-    }
+      "target": "nsis",
+      "icon": "qmatchLogo.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "QMatch",
+      "runAfterFinish": true
+    },
+    "asarUnpack": [
+      "**/*.exe",
+      "**/ps-list/vendor/**/*"
+    ]
   },
   "dependencies": {
     "@stomp/stompjs": "^7.1.1",

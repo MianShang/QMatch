@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
   plugins: [react()],
   base: './',
   build: {
-    outDir: 'dist',
+    outDir: 'web-build',
   },
   define: {
     global: 'window',

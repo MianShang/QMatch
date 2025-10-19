@@ -23,7 +23,7 @@ win.webContents.openDevTools();//콘솔
 
   win.loadURL(
     app.isPackaged
-      ? `file://${path.join(__dirname, '../dist/index.html')}`
+      ? `file://${path.join(__dirname, 'web-build','index.html')}`
       : 'http://localhost:5173'
   );
 }

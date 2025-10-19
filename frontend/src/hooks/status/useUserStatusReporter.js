@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
+import axios from '@axios';
 
 export default function useUserStatusReporter(userId) {
   // 초기값 한글로 통일

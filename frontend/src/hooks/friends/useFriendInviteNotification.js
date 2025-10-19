@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { toast } from 'react-toastify';
-import axios from 'axios';
+import axios from '@axios';
 
 export function useFriendInviteNotification() {
   const [processing, setProcessing] = useState(false);

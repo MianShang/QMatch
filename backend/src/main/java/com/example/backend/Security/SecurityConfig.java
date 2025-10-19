@@ -2,6 +2,7 @@ package com.example.backend.Security;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -27,6 +28,9 @@ public class SecurityConfig {
     private final DataSource dataSource; //자동로그인을 위한 의존성 주입(spring security)
     private final UserDetailsService myUserDetailsService;
 
+    @Value("${front_URL}")
+    private String front_url;
+
     @Bean
     //토근을 DB에 저장하기 위함
     public PersistentTokenRepository tokenRepository() {
@@ -46,11 +50,12 @@ public class SecurityConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:5173"); // 리액트 서버
-        config.addAllowedOrigin("http://localhost");      // Electron 앱 기본 주소 (개발용)
 
-        // 필요하다면 전체 허용도 가능 (단, 보안 위험 높음)
-        config.addAllowedOriginPattern("*"); // 개발 단계에서 허용
+        // 정확한 Origin만 허용 (Electron, Vite, 서버 주소)
+        config.addAllowedOrigin("http://localhost:5173"); // React 개발 서버
+        config.addAllowedOrigin("http://localhost");      // Electron 개발 모드
+        config.addAllowedOrigin("app://.");               // Electron 패키지 모드
+        config.addAllowedOrigin(front_url); // 실제 서버 주소
 
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");

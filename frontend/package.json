@@ -21,7 +21,7 @@
       "web-build/**/*",
       "assets/**/*",
       "main.js",
-      "node_modules/ps-list/vendor/**/*"
+      "node_modules/**/*"
     ],
     "win": {
       "target": "nsis",
@@ -35,7 +35,6 @@
       "runAfterFinish": true
     },
     "asarUnpack": [
-      "**/*.exe",
       "**/ps-list/vendor/**/*"
     ]
   },

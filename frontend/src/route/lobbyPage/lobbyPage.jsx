@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useContext, memo, useCallback, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import axios from 'axios';
+import axios from '@axios';
 import AgoraRTC from 'agora-rtc-sdk-ng';
 import './lobbyPage.css'
 import { FaPhone } from 'react-icons/fa6';

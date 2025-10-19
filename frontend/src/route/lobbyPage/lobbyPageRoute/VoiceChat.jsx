@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useImperativeHandle, useCallback } from 'react';
 import AgoraRTC from 'agora-rtc-sdk-ng';
-import axios from 'axios';
+import axios from '@axios';
 import './VoiceChat.css';
 
 import { useSpeakingIndicator } from "../../../hooks/voiceChat/useSpeakingIndicator";

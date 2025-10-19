@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useMemo, useRef, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
-import axios from 'axios';
+import axios from '@axios';
 import './App.css';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaPhoneSlash, FaMicrophone, FaMicrophoneSlash } from 'react-icons/fa6';

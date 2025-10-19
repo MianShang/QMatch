@@ -2,7 +2,7 @@ import { useState, useContext, useEffect, useRef } from 'react';
 import './list.css';
 import { toast } from 'react-toastify';
 import { useNavigate } from "react-router-dom";
-import axios from 'axios';
+import axios from '@axios';
 
 // 전역 유저 State 데이터 가져오기용 Context API import
 import { LogContext } from '../../../App.jsx';

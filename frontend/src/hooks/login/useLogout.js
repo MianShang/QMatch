@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios from '@axios';
 import { useContext } from "react";
 import { LogContext } from '../../App';
 
@@ -20,7 +20,7 @@ export function useLogout(){
 
     try {
       // 백엔드 로그아웃 요청
-      await axios.post("/api/logout");
+      await axios.post(BASE_URL+"/api/logout");
 
       // 음성채팅 종료
       if (voiceChatRef?.current) {

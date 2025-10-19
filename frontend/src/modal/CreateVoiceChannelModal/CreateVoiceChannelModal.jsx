@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { createPortal } from 'react-dom';
-import axios from 'axios';
+import axios from '@axios';
 import { toast } from 'react-toastify';
 import './CreateVoiceChannelModal.css';
 

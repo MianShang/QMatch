@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from 'react'
 import { Routes, Route, Link, useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import axios from 'axios';
+import axios from '@axios';
 import './routePage.css'
 
 // 로그인 체크용 Context import

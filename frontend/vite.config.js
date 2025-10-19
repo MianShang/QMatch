@@ -1,5 +1,6 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
+import * as path from 'path'
 
 export default defineConfig(({ mode }) => {
   // 환경변수 로드
@@ -15,6 +16,13 @@ export default defineConfig(({ mode }) => {
   define: {
     global: 'window',
   },
+  resolve: {
+      alias: {
+        // axios import가 자동으로 globalAxios.js를 가리키게 설정
+        '@axios': path.resolve(__dirname, 'src/api/globalAxios.js'),
+        '@': path.resolve(__dirname, 'src'), // 선택: 절대경로 import용
+      },
+    },
   // 프론트에서 /api로 시작하는 요청 들어올 시 백엔드로 전달
   server: {
     proxy: {

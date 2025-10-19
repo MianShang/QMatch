@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios';
+import axios from '@axios';
 
 /* ======================================================================
 이 커스텀 훅은 유저가 lobby 컴포넌트의 chatListPage 컴포넌트일시 해당 유저가 저장한 

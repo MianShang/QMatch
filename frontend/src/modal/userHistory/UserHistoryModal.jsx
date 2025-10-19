@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import axios from 'axios';
+import axios from '@axios';
 import './UserHistoryModal.css';
 import LOLPage from './LOLPage';
 import DNFPage from './DNFPage'; 

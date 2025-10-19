@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
-import axios from 'axios';
+import axios from '@axios';
 
 export function useFriendInvite(room) {
   const [availableFriends, setAvailableFriends] = useState([]);

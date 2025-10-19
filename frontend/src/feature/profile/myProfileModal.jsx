@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { createPortal } from 'react-dom';
-import axios from 'axios';
+import axios from '@axios';
 import { LogContext } from '../../App.jsx';
 import { useLogout } from '../../hooks/login/useLogout.js';
 import InputModal from './components/inputModal.jsx';

@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
+import axios from '@axios';
 import './searchPage.css';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -380,27 +380,27 @@ function SearchPage() {
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('lol')}>
-                  <img src="./public/gameIcons/lol_Icon.png" alt="LOL" />
+                  <img src="/public/gameIcons/lol_Icon.png" alt="LOL" />
                   <p>League of Legends</p>
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('maplestory')}>
-                  <img src="./public/gameIcons/maplestory_Icon.png" alt="MapleStory" />
+                  <img src="/public/gameIcons/maplestory_Icon.png" alt="MapleStory" />
                   <p>MapleStory</p>
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('tft')}>
-                  <img src="./public/gameIcons/tft_Icon.png" alt="TFT"/>
+                  <img src="/public/gameIcons/tft_Icon.png" alt="TFT"/>
                   <p>Teamfight Tactics</p>
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('dnf')}>
-                  <img src="./public/gameIcons/dnf_Icon.png" alt="Dnf"/>
+                  <img src="/public/gameIcons/dnf_Icon.png" alt="Dnf"/>
                   <p>던전앤파이터</p>
                 </button>
 
                 <button className='chat_tag' onClick={()=> setGameTag('lostark')}>
-                  <img src="./public/gameIcons/lostark_Icon.png" alt="lostark"/>
+                  <img src="/public/gameIcons/lostark_Icon.png" alt="lostark"/>
                   <p>로스트아크</p>
                 </button>
 

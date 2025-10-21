@@ -889,10 +889,18 @@
   border-radius: 50%;
 }
 
-.avatar-text {
+.default-profile-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: white;
-  font-weight: 600;
-  font-size: 14px;
+}
+
+.default-profile-icon svg {
+  width: 20px;
+  height: 20px;
 }
 
 .message-author {
@@ -900,12 +908,20 @@
   font-weight: 600;
   color: var(--discord-text-normal);
   margin: 0;
+  display: block; /* 명시적으로 블록 요소로 설정 */
+  visibility: visible; /* 보이도록 설정 */
+  opacity: 1; /* 투명도 설정 */
 }
 
 .message-bubble-wrapper {
   display: flex;
   align-items: flex-end;
   gap: 8px;
+}
+
+/* 다른 사용자 메시지 - 모든 메시지가 첫 번째 메시지와 동일한 위치에서 시작 */
+.message-wrapper.otherChatStyle .message-bubble-wrapper {
+  margin-left: 0; /* 기본적으로 마진 없음 */
 }
 
 .message-time {
@@ -916,30 +932,30 @@
 }
 
 /* 내 메시지의 경우 오른쪽 정렬 */
-.myChatStyle .message-content-wrapper {
+.message-wrapper.myChatStyle .message-content-wrapper {
   align-items: flex-end;
 }
 
-.myChatStyle .message-bubble-wrapper {
+.message-wrapper.myChatStyle .message-bubble-wrapper {
   flex-direction: row-reverse;
 }
 
 /* 다른 사용자 메시지의 경우 왼쪽 정렬 */
-.otherChatStyle .message-content-wrapper {
+.message-wrapper.otherChatStyle .message-content-wrapper {
   align-items: flex-start;
 }
 
-.otherChatStyle .message-header {
+.message-wrapper.otherChatStyle .message-header {
   flex-direction: row;
 }
 
-.otherChatStyle .message-bubble-wrapper {
+.message-wrapper.otherChatStyle .message-bubble-wrapper {
   flex-direction: row;
 }
 
 .chatStyle{
     display: inline-block;
-    max-width: 70%;
+    max-width: 400px; /* 고정 픽셀 값으로 변경 */
     padding: 8px 12px;
     margin: 2px 0;
     border-radius: 18px;
@@ -965,14 +981,14 @@
     line-height: 1.5;
 }
 
-.myChatStyle{
+.message-wrapper.myChatStyle {
     display: flex;
     margin-right: 0;
     flex-direction: column;
     align-items: flex-end;
 }
 
-.otherChatStyle {
+.message-wrapper.otherChatStyle {
     display: flex;
     margin-left: 0;
     flex-direction: column;
@@ -980,13 +996,13 @@
 }
 
 /* 내 채팅 스타일 */
-.myChatStyle .chatStyle {
+.message-wrapper.myChatStyle .chatStyle {
     background: var(--discord-accent);
     color: white;
 }
 
 /* 다른 사용자 채팅 스타일 */
-.otherChatStyle .chatStyle {
+.message-wrapper.otherChatStyle .chatStyle {
     background: var(--discord-bg-quaternary);
     color: var(--discord-text-normal);
 }
@@ -1058,12 +1074,11 @@
 /* ================================Discord 입력 스타일============================= */
 .inputSize{
     display: flex;
-    align-items: center;
+    align-items: flex-end; /* 하단 정렬로 변경 */
     padding: 16px;
     background: transparent; /* 기본적으로 투명 */
     border-top: 1px solid var(--discord-bg-primary);
-    height: 80px; /* 고정 높이 설정 */
-    min-height: 80px; /* 최소 높이 보장 */
+    min-height: 80px; /* 최소 높이만 설정 */
     width: 100%; /* 명시적 너비 설정 */
     transition: width 0.3s ease; /* 부드러운 전환 효과 */
     gap: 8px; /* 요소 간 간격 추가 */
@@ -1090,9 +1105,11 @@
     font-size: 16px;
     transition: all 0.2s ease;
     resize: none;
-    height: 40px;
     min-height: 40px;
-    max-height: 40px;
+    max-height: 120px; /* 최대 높이 설정 */
+    overflow-y: auto; /* 스크롤 가능하도록 */
+    white-space: nowrap; /* 자동 줄바꿈 방지 */
+    overflow-x: hidden; /* 가로 스크롤 숨김 */
 }
 
 .chatInputStyle:focus {
@@ -1114,11 +1131,11 @@
     font-weight: 500;
     font-size: 14px;
     transition: all 0.2s ease;
-    height: 40px;
     min-height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
+    align-self: flex-end; /* 하단 정렬 */
 }
 
 .chatButtonStyle:hover {
@@ -1143,7 +1160,8 @@
     align-items: center;
     justify-content: center;
     min-width: 40px;
-    height: 40px;
+    min-height: 40px;
+    align-self: flex-end; /* 하단 정렬 */
 }
 
 .emoji-button:hover {
@@ -1169,7 +1187,8 @@
     align-items: center;
     justify-content: center;
     min-width: 40px;
-    height: 40px;
+    min-height: 40px;
+    align-self: flex-end; /* 하단 정렬 */
 }
 
 .image-upload-button:hover {

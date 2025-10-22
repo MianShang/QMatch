@@ -11,7 +11,9 @@ import com.example.backend.Repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +26,7 @@ public class ChatListService {
     private final ChatListRepository chatListRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
 
     // 채팅 내역 저장하는 Service
@@ -119,6 +122,7 @@ public class ChatListService {
             // DTO 객체 생성
             ChatListResponseDto chatListResponseDto = new ChatListResponseDto();
 
+            chatListResponseDto.setId(chatList1.getId());
             chatListResponseDto.setMessage(chatList1.getChatContent());
             // userName이 "MEMBER_JOIN"이면 name도 "MEMBER_JOIN"으로 설정, 그 외에는 기존 로직 유지
             if ("MEMBER_JOIN".equals(chatList1.getUserName())) {
@@ -128,6 +132,7 @@ public class ChatListService {
             }
             chatListResponseDto.setChatDate(chatList1.getChatDate());
             chatListResponseDto.setUserName(chatList1.getUserName());
+            chatListResponseDto.setIsPinned(chatList1.getIsPinned());
 
             // List add
             chatListResponseDtoList.add(chatListResponseDto);
@@ -135,6 +140,48 @@ public class ChatListService {
 
         return chatListResponseDtoList;
     }
-
+    
+    //메시지 고정/해제 (하나만 고정 가능)
+    @Transactional
+    public ChatListResponseDto togglePinMessage(Long messageId, String roomId) {
+        ChatList message = chatListRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("메시지를 찾을 수 없습니다: " + messageId));
+        
+        // 같은 채팅방의 메시지인지 확인
+        if (!message.getChatRoom().getId().equals(roomId)) {
+            throw new IllegalArgumentException("해당 채팅방의 메시지가 아닙니다.");
+        }
+        
+        // 현재 메시지가 이미 고정되어 있다면 해제
+        if (message.getIsPinned()) {
+            message.setIsPinned(false);
+        } else {
+            // 다른 메시지가 고정되어 있다면 해제
+            List<ChatList> pinnedMessages = chatListRepository.findByChatRoomIdAndIsPinnedTrue(roomId);
+            for (ChatList pinnedMessage : pinnedMessages) {
+                pinnedMessage.setIsPinned(false);
+                chatListRepository.save(pinnedMessage);
+            }
+            
+            // 현재 메시지 고정
+            message.setIsPinned(true);
+        }
+        
+        ChatList saved = chatListRepository.save(message);
+        
+        // 응답 DTO 생성
+        ChatListResponseDto dto = new ChatListResponseDto();
+        dto.setId(saved.getId());
+        dto.setMessage(saved.getChatContent());
+        dto.setName(saved.getUser() != null ? saved.getUser().getUserId() : "SYSTEM");
+        dto.setChatDate(saved.getChatDate());
+        dto.setUserName(saved.getUserName());
+        dto.setIsPinned(saved.getIsPinned());
+        
+        // 브로드캐스트: 채팅방 참여자에게 메시지 고정 상태 변경 알림
+        messagingTemplate.convertAndSend("/topic/chat/" + roomId, dto);
+        
+        return dto;
+    }
 
 }

@@ -33,15 +33,8 @@ public class FriendShipChatMessageService {
     {
         return friendShipChatMessageRepository.findByFriendShipChatRoom_IdOrderBySendTimeAsc(roomId)
                 .stream()
-                .map(msg -> {
-                    FriendChatMessageResponseDto dto = new FriendChatMessageResponseDto();
-                    dto.setId(msg.getId());
-                    dto.setChatroomId(msg.getFriendShipChatRoom().getId());
-                    dto.setChatDate(msg.getSendTime());
-                    dto.setMessage(msg.getMessage());
-                    dto.setName(msg.getUser().getUserId());
-                    return dto;
-                }).toList();
+                .map(FriendChatMessageResponseDto::new)
+                .toList();
     }
 
 
@@ -62,6 +55,7 @@ public class FriendShipChatMessageService {
         entitySave.setUser(user);
         entitySave.setMessage(message.getMessage());
         entitySave.setSendTime(LocalDateTime.now());
+        entitySave.setIsPinned(false); // 새 메시지는 기본적으로 고정되지 않음
         FriendShipChatMessage saved = friendShipChatMessageRepository.save(entitySave);
 
         // 응답 DTO
@@ -90,5 +84,42 @@ public class FriendShipChatMessageService {
     public long countUnreadMessages(Long roomId, Long lastReadMessageId) {
         return friendShipChatMessageRepository
                 .countByFriendShipChatRoom_IdAndIdGreaterThan(roomId, lastReadMessageId);
+    }
+    
+    //메시지 고정/해제
+    @Transactional
+    public FriendChatMessageResponseDto togglePinMessage(Long messageId, Long roomId) {
+        FriendShipChatMessage message = friendShipChatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("메시지를 찾을 수 없습니다: " + messageId));
+        
+        // 같은 채팅방의 메시지인지 확인
+        if (message.getFriendShipChatRoom().getId() != roomId) {
+            throw new IllegalArgumentException("해당 채팅방의 메시지가 아닙니다.");
+        }
+        
+        // 현재 메시지가 이미 고정되어 있다면 해제
+        if (message.getIsPinned()) {
+            message.setIsPinned(false);
+        } else {
+            // 다른 메시지가 고정되어 있다면 해제
+            List<FriendShipChatMessage> pinnedMessages = friendShipChatMessageRepository.findByFriendShipChatRoomIdAndIsPinnedTrue(roomId);
+            for (FriendShipChatMessage pinnedMessage : pinnedMessages) {
+                pinnedMessage.setIsPinned(false);
+                friendShipChatMessageRepository.save(pinnedMessage);
+            }
+            
+            // 현재 메시지 고정
+            message.setIsPinned(true);
+        }
+        
+        FriendShipChatMessage saved = friendShipChatMessageRepository.save(message);
+        
+        // 응답 DTO 생성
+        FriendChatMessageResponseDto dto = new FriendChatMessageResponseDto(saved);
+        
+        // 브로드캐스트: 채팅방 참여자에게 메시지 고정 상태 변경 알림
+        messagingTemplate.convertAndSend("/topic/friends/chat/" + roomId, dto);
+        
+        return dto;
     }
 }

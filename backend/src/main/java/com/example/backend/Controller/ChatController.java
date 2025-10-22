@@ -3,6 +3,7 @@ package com.example.backend.Controller;
 
 import com.example.backend.Dto.Request.ChatRoomRequestDto;
 import com.example.backend.Dto.Request.ChatListRequestDto;
+import com.example.backend.Dto.Response.ChatListResponseDto;
 import com.example.backend.Entity.*;
 import com.example.backend.Constants.ChatConstants;
 import com.example.backend.Repository.*;
@@ -88,9 +89,11 @@ public class ChatController {
 
         // 메세지로 유저 ID, 메세지 내용, 시간 보냄
         Map<String, Object> response = new HashMap<>();
+        response.put("id", null); // 실시간 메시지는 ID가 없음 (DB 저장 후 생성됨)
         response.put("name", name);
         response.put("message", message);
         response.put("chatDate", currentTime);
+        response.put("isPinned", false); // 새 메시지는 기본적으로 고정되지 않음
 
         return response;
     }
@@ -626,6 +629,23 @@ public class ChatController {
                 "message", "host transferred",
                 "newHost", toUserId
         ));
+    }
+    
+    //메시지 고정/해제
+    @PutMapping("/rooms/{roomId}/messages/{messageId}/pin")
+    public ResponseEntity<?> togglePinMessage(@PathVariable String roomId, @PathVariable Long messageId) {
+        try {
+            System.out.println("🟢 메시지 고정/해제: " + messageId + " in room: " + roomId);
+            ChatListResponseDto result = chatListService.togglePinMessage(messageId, roomId);
+            
+            // 브로드캐스트: 채팅방 참여자에게 메시지 고정 상태 변경 알림
+            simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId, result);
+            
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            System.err.println("메시지 고정/해제 실패: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }
 

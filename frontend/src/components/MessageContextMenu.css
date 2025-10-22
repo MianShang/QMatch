@@ -1,0 +1,34 @@
+.message-context-menu {
+    background: var(--discord-bg-primary);
+    border: 1px solid var(--discord-border);
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    padding: 4px 0;
+    min-width: 160px;
+    z-index: 1000;
+}
+
+.context-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    color: var(--discord-text-normal);
+    font-size: 14px;
+    transition: background-color 0.1s ease;
+}
+
+.context-menu-item:hover {
+    background-color: var(--discord-bg-secondary);
+}
+
+.context-menu-icon {
+    margin-right: 8px;
+    font-size: 16px;
+    width: 20px;
+    text-align: center;
+}
+
+.context-menu-item span {
+    flex: 1;
+}

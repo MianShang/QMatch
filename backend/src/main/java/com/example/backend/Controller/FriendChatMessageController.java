@@ -8,10 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -39,5 +36,12 @@ public class FriendChatMessageController {
 
         // 2) 구독자(두 명)에게 브로드캐스트
         messagingTemplate.convertAndSend("/topic/friends/chat/" + roomId, saved);
+    }
+    
+    //메시지 고정/해제
+    @PutMapping("{roomId}/messages/{messageId}/pin")
+    public FriendChatMessageResponseDto togglePinMessage(@PathVariable Long roomId, @PathVariable Long messageId) {
+        System.out.println("🟢 메시지 고정/해제: " + messageId);
+        return friendShipChatMessageService.togglePinMessage(messageId, roomId);
     }
 }

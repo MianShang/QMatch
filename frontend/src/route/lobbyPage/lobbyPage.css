@@ -2125,3 +2125,189 @@
   align-items: center;
   justify-content: center;
 }
+
+/* 고정된 메시지 스타일 - 카톡 스타일 */
+.pinned-message {
+  background-color: rgba(255, 193, 7, 0.1);
+  border-left: 4px solid #ffc107;
+  border-radius: 12px;
+  margin: 6px 0;
+  padding: 8px 12px;
+  position: relative;
+}
+
+.pinned-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding: 4px 8px;
+  background-color: rgba(255, 193, 7, 0.15);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f57c00;
+}
+
+.pin-icon {
+  font-size: 14px;
+  color: #ffc107;
+}
+
+.pinned-text {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #f57c00;
+}
+
+.pinned-chat-style {
+  background-color: rgba(255, 193, 7, 0.08);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+/* 고정된 메시지 호버 효과 */
+.pinned-message:hover {
+  background-color: rgba(255, 193, 7, 0.15);
+}
+
+/* 핑크 테마에서 고정 메시지 스타일 */
+[data-theme="pink"] .pinned-message {
+  background-color: rgba(233, 30, 99, 0.1);
+  border-left-color: #e91e63;
+}
+
+[data-theme="pink"] .pinned-indicator {
+  background-color: rgba(233, 30, 99, 0.15);
+  color: #ad1457;
+}
+
+[data-theme="pink"] .pin-icon {
+  color: #e91e63;
+}
+
+[data-theme="pink"] .pinned-text {
+  color: #ad1457;
+}
+
+[data-theme="pink"] .pinned-chat-style {
+  background-color: rgba(233, 30, 99, 0.08);
+  border-color: rgba(233, 30, 99, 0.2);
+}
+
+[data-theme="pink"] .pinned-message:hover {
+  background-color: rgba(233, 30, 99, 0.15);
+}
+
+/* 고정된 메시지 컨테이너 - 카톡 스타일 */
+.pinned-messages-container {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  margin: 8px 12px;
+  padding: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+}
+
+.pinned-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 6px 8px;
+  background-color: #fff3cd;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 13px;
+  color: #856404;
+  border-left: 3px solid #ffc107;
+}
+
+.pinned-title {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+
+.pinned-messages-list {
+  max-height: 120px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+}
+
+.pinned-messages-list::-webkit-scrollbar {
+  width: 3px;
+}
+
+.pinned-messages-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pinned-messages-list::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+.pinned-message-item {
+  margin-bottom: 6px;
+  padding: 6px 8px;
+  background-color: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  color: #212529;
+}
+
+.pinned-message-item .chatStyle {
+  color: #212529 !important;
+}
+
+.pinned-message-item .message-author {
+  color: #495057 !important;
+  font-weight: 500;
+}
+
+.pinned-message-item .message-time {
+  color: #6c757d !important;
+}
+
+.pinned-message-item:last-child {
+  margin-bottom: 0;
+}
+
+/* 핑크 테마에서 고정 메시지 컨테이너 */
+[data-theme="pink"] .pinned-messages-container {
+  background-color: #fdf2f8;
+  border-color: #fce7f3;
+}
+
+[data-theme="pink"] .pinned-header {
+  background-color: #fce7f3;
+  color: #be185d;
+  border-left-color: #e91e63;
+}
+
+[data-theme="pink"] .pinned-message-item {
+  background-color: #ffffff;
+  border-color: #fce7f3;
+  color: #212529;
+}
+
+[data-theme="pink"] .pinned-message-item .chatStyle {
+  color: #212529 !important;
+}
+
+[data-theme="pink"] .pinned-message-item .message-author {
+  color: #495057 !important;
+  font-weight: 500;
+}
+
+[data-theme="pink"] .pinned-message-item .message-time {
+  color: #6c757d !important;
+}

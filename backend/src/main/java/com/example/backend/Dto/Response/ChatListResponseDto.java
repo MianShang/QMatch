@@ -11,9 +11,11 @@ import java.util.Date;
 @Getter
 @Setter
 public class ChatListResponseDto {
+    private Long id;
     private String name;
     private String message;
     private Date chatDate;
     private String userName;
     private String ChatDate;
+    private Boolean isPinned;
 }

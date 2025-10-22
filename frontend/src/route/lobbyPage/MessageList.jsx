@@ -3,12 +3,52 @@ import { parseMessageWithLinks, openExternalLink } from "../../utils/linkUtils";
 import { parseMessageWithImages, isGifImage } from "../../utils/imageUtils";
 import ImageMessage from "../../components/ImageMessage";
 import LinkPreview from "../../components/LinkPreview";
+import MessageContextMenu from "../../components/MessageContextMenu";
+import { useMessagePin } from "../../hooks/chat/useMessagePin";
 import axios from "axios";
 
 
-const MessageList = memo(({ messages, userData }) => {
+const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) => {
   const [userProfiles, setUserProfiles] = useState({});
   const [userNames, setUserNames] = useState({});
+  const [contextMenu, setContextMenu] = useState({
+    isVisible: false,
+    position: { x: 0, y: 0 },
+    messageId: null,
+    isPinned: false
+  });
+  
+  const { togglePinMessage } = useMessagePin();
+
+  // 우클릭 핸들러
+  const handleContextMenu = (e, messageId, isPinned) => {
+    e.preventDefault();
+    setContextMenu({
+      isVisible: true,
+      position: { x: e.clientX, y: e.clientY },
+      messageId,
+      isPinned
+    });
+  };
+
+  // 컨텍스트 메뉴 닫기
+  const closeContextMenu = () => {
+    setContextMenu({
+      isVisible: false,
+      position: { x: 0, y: 0 },
+      messageId: null,
+      isPinned: false
+    });
+  };
+
+  // 메시지 고정/해제 핸들러
+  const handleTogglePin = async (messageId, roomId, isFriendChat) => {
+    try {
+      await togglePinMessage(messageId, roomId, isFriendChat);
+    } catch (error) {
+      console.error('메시지 고정/해제 실패:', error);
+    }
+  };
 
   // 사용자 프로필 이미지와 이름 가져오기
   const fetchUserProfile = async (userId) => {
@@ -129,11 +169,127 @@ const MessageList = memo(({ messages, userData }) => {
     return true;
   };
 
-  return (
+  // 고정된 메시지와 일반 메시지 분리 (고정 메시지는 하나만, 원래 위치에도 남아있음)
+  const pinnedMessage = messages.find(msg => msg.isPinned);
+  const regularMessages = messages; // 모든 메시지를 표시 (고정된 메시지도 원래 위치에 표시)
 
+  return (
     <div className='chatContentStyle'>
+      {/* 고정된 메시지 영역 (하나만) */}
+      {pinnedMessage && (
+        <div className="pinned-messages-container">
+          <div className="pinned-header">
+            <span className="pin-icon">📌</span>
+            <span className="pinned-title">고정된 메시지</span>
+          </div>
+          <div className="pinned-messages-list">
+            {(() => {
+              const msg = pinnedMessage;
+              const isSystemMessage = msg.name === "SYSTEM" || msg.name === "시스템" || msg.type === "system";
+              const isMemberJoinMessage = msg.name === "MEMBER_JOIN" || msg.userName === "MEMBER_JOIN";
+              const shouldShowProfile = true; // 고정 메시지는 항상 프로필 표시
+              const shouldShowTime = true; // 고정 메시지는 항상 시간 표시
+              
+              return (
+                <div className={`pinned-message-item ${msg.name == userData?.userId ? 'myChatStyle' : 'otherChatStyle'}`}>
+                  
+                  {!isSystemMessage && !isMemberJoinMessage && (
+                    <div className={`message-content-wrapper ${msg.name !== userData?.userId && !shouldShowProfile ? 'no-profile' : ''}`}>
+                      {/* 프로필 아이콘과 사용자 이름 */}
+                      {msg.name !== userData?.userId && shouldShowProfile && (
+                        <div className="message-header">
+                          <div className="profile-icon">
+                            <div className="profile-avatar">
+                              {userProfiles[msg.name] ? (
+                                <img 
+                                  src={userProfiles[msg.name]} 
+                                  alt={msg.userName || '프로필'} 
+                                  className="profile-image"
+                                />
+                              ) : (
+                                <div className="default-profile-icon">
+                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                  </svg>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="message-author">
+                            {userNames[msg.name] || msg.userName || msg.name || '알 수 없음'}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* 메시지 버블과 시간 */}
+                      <div className="message-bubble-wrapper">
+                        <div 
+                          className={`chatStyle pinned-chat-style`}
+                        >
+                          {parseMessageWithImages(msg.message).map((part) => {
+                            if (part.type === 'image') {
+                              const isGif = isGifImage(part.url);
+                              return (
+                                <ImageMessage
+                                  key={part.key}
+                                  url={part.url}
+                                  alt={part.alt}
+                                  isGif={isGif}
+                                />
+                              );
+                            } else if (part.type === 'text') {
+                              return parseMessageWithLinks(part.content).map((linkPart) => {
+                                if (linkPart.type === 'link') {
+                                  return (
+                                    <LinkPreview key={linkPart.key} url={linkPart.content}>
+                                      <span
+                                        className="message-link"
+                                        onClick={() => openExternalLink(linkPart.content)}
+                                        style={{
+                                          color: '#4A9EFF',
+                                          textDecoration: 'underline',
+                                          cursor: 'pointer',
+                                          wordBreak: 'break-all'
+                                        }}
+                                        title="클릭하여 링크 열기"
+                                      >
+                                        {linkPart.content}
+                                      </span>
+                                    </LinkPreview>
+                                  );
+                                }
+                                return <span key={linkPart.key}>{linkPart.content}</span>;
+                              });
+                            }
+                            return <span key={part.key}>{part.content}</span>;
+                          })}
+                        </div>
+                        
+                        {/* 시간 표시 */}
+                        {shouldShowTime && (
+                          <div className="message-time">
+                            {msg.chatDate
+                              ? new Date(msg.chatDate).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                  hour12: true,
+                                })
+                              : ""}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+          </div>
+        </div>
+      )}
+
+      {/* 일반 메시지 영역 */}
       {
-        messages.map((msg, i) => {
+        regularMessages.map((msg, i) => {
           // 멤버 입장 메시지인지 먼저 확인
           const isMemberJoinMessage = msg.name === "MEMBER_JOIN" || msg.userName === "MEMBER_JOIN";
           // 시스템 메시지인지 확인 (멤버 입장 메시지가 아닌 경우에만)
@@ -191,7 +347,19 @@ const MessageList = memo(({ messages, userData }) => {
                   
                   {/* 메시지 버블과 시간 */}
                   <div className="message-bubble-wrapper">
-                    <div className={`chatStyle ${isSystemMessage ? 'system-chat-content' : ''} ${isMemberJoinMessage ? 'member-join-content' : ''}`}>
+                    <div 
+                      className={`chatStyle ${isSystemMessage ? 'system-chat-content' : ''} ${isMemberJoinMessage ? 'member-join-content' : ''}`}
+                      onContextMenu={(e) => {
+                        console.log('메시지 버블 우클릭 이벤트 발생:', { isSystemMessage, isMemberJoinMessage, msgId: msg.id, messageIndex: i });
+                        // 시스템 메시지나 멤버 입장 메시지는 우클릭 비활성화
+                        if (!isSystemMessage && !isMemberJoinMessage && msg.id) {
+                          console.log('메시지 버블 우클릭 처리됨');
+                          handleContextMenu(e, msg.id, msg.isPinned || false);
+                        } else {
+                          console.log('메시지 버블 우클릭 무시됨');
+                        }
+                      }}
+                    >
                       {parseMessageWithImages(msg.message).map((part) => {
                         if (part.type === 'image') {
                           const isGif = isGifImage(part.url);
@@ -258,6 +426,18 @@ const MessageList = memo(({ messages, userData }) => {
           );
         })
       }
+      
+      {/* 컨텍스트 메뉴 */}
+      <MessageContextMenu
+        isVisible={contextMenu.isVisible}
+        position={contextMenu.position}
+        onClose={closeContextMenu}
+        messageId={contextMenu.messageId}
+        roomId={roomId}
+        isPinned={contextMenu.isPinned}
+        onTogglePin={handleTogglePin}
+        isFriendChat={isFriendChat}
+      />
     </div>
   );
 });

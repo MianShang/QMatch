@@ -220,21 +220,12 @@ function ChatRoom({
                     // 친구 채팅도 동일하게 처리
                     if (client && imageMessage.trim()) {
                         client.publish({
-                            destination: `/app/friend-chat/${selectedFriendRoom.friendId}`,
+                            destination: `/app/friends/chat/${selectedFriendRoom.roomId}`,
                             body: JSON.stringify({ 
-                                name: userData.userId, 
-                                message: imageMessage 
+                                sendId: userData.userId,
+                                message: imageMessage,
+                                receiveId: selectedFriendRoom.friendId
                             }),
-                        });
-
-                        axios.post('/api/friendship-chat/send', {
-                            friendshipChatRoomId: selectedFriendRoom.friendshipChatRoomId,
-                            chatContent: imageMessage,
-                            userId: userData.userId
-                        }).then((res) => {
-                            console.log('친구 이미지 메세지 저장 성공');
-                        }).catch((err) => {
-                            console.error('친구 이미지 메세지 저장 실패:', err);
                         });
                     }
                 }
@@ -313,9 +304,9 @@ function ChatRoom({
             {/* 메시지 영역 */}
             <div ref={messageContainerRef} className="scroll-container chatDivStyle">
                 {selectedRoom ? (
-                    <MessageList messages={messages} userData={userData} />
+                    <MessageList messages={messages} userData={userData} roomId={selectedRoom.id} isFriendChat={false} />
                 ) : selectedFriendRoom ? (
-                    <MessageList messages={friendMessages} userData={userData} />
+                    <MessageList messages={friendMessages} userData={userData} roomId={selectedFriendRoom.roomId} isFriendChat={true} />
                 ) : (
                     <div className="empty-chat-container">
                         <div className="empty-chat-logo">

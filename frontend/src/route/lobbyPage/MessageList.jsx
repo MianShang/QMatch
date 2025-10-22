@@ -26,7 +26,7 @@ const MessageList = memo(({ messages, userData }) => {
       
       setUserNames(prev => ({
         ...prev,
-        [userId]: response.data.userNickName 
+        [userId]: response.data.userName
       }));
     } catch (error) {
       console.error(`사용자 ${userId} 프로필 가져오기 실패:`, error);
@@ -150,9 +150,14 @@ const MessageList = memo(({ messages, userData }) => {
 
               {/* 시스템 메시지인 경우 특별한 표시 */}
               {isSystemMessage && (
+                <div className="system-message-content">
                   <div className="system-message-header">
                     <span className="system-label">채팅방 유의사항</span>
                   </div>
+                  <div className={`chatStyle system-chat-content`}>
+                    {msg.message}
+                  </div>
+                </div>
               )}
               
               {/* 일반 채팅 메시지 레이아웃 */}
@@ -179,7 +184,7 @@ const MessageList = memo(({ messages, userData }) => {
                         </div>
                       </div>
                       <div className="message-author">
-                        {msg.userName || userNames[msg.name] || msg.name || '알 수 없음'}
+                        {userNames[msg.name] || msg.userName || msg.name || '알 수 없음'}
                       </div>
                     </div>
                   )}

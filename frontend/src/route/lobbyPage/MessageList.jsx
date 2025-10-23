@@ -15,19 +15,21 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
     isVisible: false,
     position: { x: 0, y: 0 },
     messageId: null,
-    isPinned: false
+    isPinned: false,
+    messageContent: ''
   });
   
   const { togglePinMessage } = useMessagePin();
 
   // 우클릭 핸들러
-  const handleContextMenu = (e, messageId, isPinned) => {
+  const handleContextMenu = (e, messageId, isPinned, messageContent) => {
     e.preventDefault();
     setContextMenu({
       isVisible: true,
       position: { x: e.clientX, y: e.clientY },
       messageId,
-      isPinned
+      isPinned,
+      messageContent
     });
   };
 
@@ -37,7 +39,8 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
       isVisible: false,
       position: { x: 0, y: 0 },
       messageId: null,
-      isPinned: false
+      isPinned: false,
+      messageContent: ''
     });
   };
 
@@ -350,11 +353,9 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
                     <div 
                       className={`chatStyle ${isSystemMessage ? 'system-chat-content' : ''} ${isMemberJoinMessage ? 'member-join-content' : ''}`}
                       onContextMenu={(e) => {
-                        console.log('메시지 버블 우클릭 이벤트 발생:', { isSystemMessage, isMemberJoinMessage, msgId: msg.id, messageIndex: i });
                         // 시스템 메시지나 멤버 입장 메시지는 우클릭 비활성화
                         if (!isSystemMessage && !isMemberJoinMessage && msg.id) {
-                          console.log('메시지 버블 우클릭 처리됨');
-                          handleContextMenu(e, msg.id, msg.isPinned || false);
+                          handleContextMenu(e, msg.id, msg.isPinned || false, msg.message);
                         } else {
                           console.log('메시지 버블 우클릭 무시됨');
                         }
@@ -436,6 +437,7 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
         roomId={roomId}
         isPinned={contextMenu.isPinned}
         onTogglePin={handleTogglePin}
+        messageContent={contextMenu.messageContent}
         isFriendChat={isFriendChat}
       />
     </div>

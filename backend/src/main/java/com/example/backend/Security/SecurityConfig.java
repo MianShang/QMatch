@@ -60,6 +60,8 @@ public class SecurityConfig {
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
 
+        config.addExposedHeader("Set-Cookie");
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
 
@@ -88,12 +90,13 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .loginProcessingUrl("/api/loginProc")
                         .defaultSuccessUrl("/loginOk", true)
+                        .permitAll()
                 )
                 //자동 로그인 설정
                 .rememberMe(remember -> remember
                         .key("asdasdasddaasdaddada")
                         .rememberMeParameter("remember-me") //프론트에 보낼 파라미터 이름
-                        .tokenValiditySeconds(60)  //시간 단위(초)
+                        .tokenValiditySeconds(60 * 60 * 24 * 7)  //시간 단위(초)
                         .userDetailsService(myUserDetailsService) //유저 정보를 조회 시 사용할 서비스
                         .tokenRepository(tokenRepository()) //DB 토근 저장소 연결
                         .useSecureCookie(false) //http 환경에서도 테스트

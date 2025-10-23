@@ -8,7 +8,9 @@ function configureSession() {
 
   session.defaultSession.webRequest.onHeadersReceived(filter, (details, callback) => {
     const cookies = (details.responseHeaders['set-cookie'] || []).map(cookie =>
-      cookie.replace('SameSite=Lax', 'SameSite=None; Secure')
+      cookie
+        .replace(/SameSite=Lax/gi, 'SameSite=None')
+        .replace(/SameSite=Strict/gi, 'SameSite=None')
     );
     if (cookies.length > 0) {
       details.responseHeaders['set-cookie'] = cookies;
@@ -44,6 +46,8 @@ function createWindow() {
 
   win.loadURL(startURL);
 
+  console.log('🚀 로드 대상 URL:', startURL);
+
   if (!app.isPackaged) win.webContents.openDevTools();
 }
 
@@ -63,16 +67,27 @@ app.whenReady().then(() => {
   //프로토콜은 반드시 앱 준비 후 등록
   protocol.registerFileProtocol('app', (request, callback) => {
     let url = request.url.replace('app://', '');
-    if (url === 'index.html') {
-      //index.html 명시적 경로 지정
-      callback({ path: path.join(__dirname, 'web-build', 'index.html') });
-    } else {
-      callback({ path: path.join(__dirname, 'web-build', url) });
+    const buildPath = path.join(__dirname, 'frontend', 'web-build');
+
+    try {
+      if (!url || url === 'index.html') {
+        const target = path.join(buildPath, 'index.html');
+        console.log('📦 Electron index.html 경로:', target);
+        callback({ path: target });
+      } else {
+        const target = path.join(buildPath, url);
+        console.log('📦 Electron 요청 파일:', target);
+        callback({ path: target });
+      }
+    } catch (err) {
+      console.error('❌ 파일 로드 실패:', err);
     }
   });
 
   createWindow();
 });
+
+
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();

@@ -1,13 +1,13 @@
 import axios from 'axios';
 
 // -----------------------------------------------------
-// 1️⃣ 환경 감지
+// 1️ 환경 감지
 // -----------------------------------------------------
 const isDev = import.meta.env.DEV; // vite dev 여부
 const isElectron = !!window?.electron; // electron 여부
 
 // -----------------------------------------------------
-// 2️⃣ 기본 URL 결정
+// 2️ 기본 URL 결정
 // -----------------------------------------------------
 let BASE_URL = '';
 
@@ -21,7 +21,7 @@ if (isDev) {
 }
 
 // -----------------------------------------------------
-// 3️⃣ Axios 인스턴스 생성
+// 3️ Axios 인스턴스 생성
 // -----------------------------------------------------
 const globalAxios = axios.create({
   baseURL: BASE_URL,
@@ -33,24 +33,24 @@ const globalAxios = axios.create({
 });
 
 // -----------------------------------------------------
-// 4️⃣ Electron 환경에서 쿠키 수동 주입 (빌드 시)
+// 4️ Electron 환경에서 쿠키 수동 주입 (빌드 시)
 // -----------------------------------------------------
-if (isElectron && !isDev) {
-  // Electron 쿠키를 axios 요청 헤더에 자동 추가
-  (async () => {
-    try {
-      const cookies = await window.electron.cookies.get({ url: BASE_URL });
-      const cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ');
-      globalAxios.defaults.headers.Cookie = cookieHeader;
-      console.log('[Electron] 쿠키 헤더 주입 완료:', cookieHeader);
-    } catch (err) {
-      console.error('[Electron] 쿠키 불러오기 실패:', err);
-    }
-  })();
-}
+// if (isElectron && !isDev) {
+//   // Electron 쿠키를 axios 요청 헤더에 자동 추가
+//   (async () => {
+//     try {
+//       const cookies = await window.electron.cookies.get({ url: BASE_URL });
+//       const cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ');
+//       globalAxios.defaults.headers.Cookie = cookieHeader;
+//       console.log('[Electron] 쿠키 헤더 주입 완료:', cookieHeader);
+//     } catch (err) {
+//       console.error('[Electron] 쿠키 불러오기 실패:', err);
+//     }
+//   })();
+// }
 
 // -----------------------------------------------------
-// 5️⃣ 요청/응답 인터셉터
+// 5️ 요청/응답 인터셉터
 // -----------------------------------------------------
 globalAxios.interceptors.request.use(
   (config) => {

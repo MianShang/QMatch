@@ -82,6 +82,12 @@ function App() {
   const [localMuted, setLocalMuted] = useState(false); // 로컬 음소거 상태
   const [joinedVoice, setJoinedVoice] = useState(false); // 음성채팅 참여 여부
   const [currentVoiceRoomId, setCurrentVoiceRoomId] = useState(null); // 현재 음성채팅 룸 ID
+  const [voiceSettings, setVoiceSettings] = useState({
+    inputDeviceId: '',
+    outputDeviceId: '',
+    micVolume: 80,
+  });
+
   
   // 드래그 가능한 음성채팅 UI 위치 관리
   const [voiceChatPosition, setVoiceChatPosition] = useState({ x: 20, y: 20 }); // UI 위치 좌표
@@ -210,6 +216,7 @@ function App() {
     friendVoiceChatActive, setFriendVoiceChatActive,
     currentFriendVoiceChat, setCurrentFriendVoiceChat,
     currentGroupVoiceChat, setCurrentGroupVoiceChat,
+    voiceSettings, setVoiceSettings,
     voiceChatRef,
     currentSelectedRoom, setCurrentSelectedRoom,
     listRefreshTick, setListRefreshTick,
@@ -473,6 +480,43 @@ function App() {
           } />
           <Route path="/lobby" element={<LobbyPage />} />
         </Routes>
+        
+        {isLogIn && userData && (
+          <VoiceChat
+            uid={userData.userId}
+            roomId={currentSelectedRoom?.id}
+            channelId={currentVoiceRoomId}
+            globalStomp={{ publish, subscribe, isConnected }}
+            onSpeakers={setVoiceSpeakers}
+            onLocalMuteChange={setLocalMuted}
+            onJoinChange={setJoinedVoice}
+            onParticipantsChange={(list) => setVoiceParticipants(list)}
+            onVoiceChatSwitch={(data) => {
+              // 음성채팅 전환 시 전역 상태 업데이트
+              if (data.type === 'join') {
+                // 그룹 채팅방 음성채팅인 경우
+                if (currentSelectedRoom && !data.channelId.startsWith('friend_')) {
+                  setCurrentGroupVoiceChat({
+                    roomId: currentSelectedRoom.id,
+                    roomName: currentSelectedRoom.name,
+                    gameName: currentSelectedRoom.gameName,
+                    tagNames: currentSelectedRoom.tagNames || [],
+                    channelId: data.channelId
+                  });
+                  // 친구 음성채팅 상태 초기화
+                  setFriendVoiceChatActive(false);
+                  setCurrentFriendVoiceChat(null);
+                }
+              } else if (data.type === 'leave') {
+                // 음성채팅 퇴장 시 모든 상태 초기화
+                setCurrentGroupVoiceChat(null);
+                setFriendVoiceChatActive(false);
+                setCurrentFriendVoiceChat(null);
+              }
+            }}
+            ref={voiceChatRef}
+          />
+        )}
       </LogContext.Provider>
 
       {/* 친구 초대 알림 모달 */}
@@ -499,43 +543,6 @@ function App() {
         }}
       />
 
-      {/* VoiceChat 컴포넌트를 App.jsx에서 전역 렌더링 */}
-      {isLogIn && userData && (
-        <VoiceChat
-          uid={userData.userId}
-          roomId={currentSelectedRoom?.id}
-          channelId={currentVoiceRoomId}
-          globalStomp={{ publish, subscribe, isConnected }}
-          onSpeakers={setVoiceSpeakers}
-          onLocalMuteChange={setLocalMuted}
-          onJoinChange={setJoinedVoice}
-          onParticipantsChange={(list) => setVoiceParticipants(list)}
-          onVoiceChatSwitch={(data) => {
-            // 음성채팅 전환 시 전역 상태 업데이트
-            if (data.type === 'join') {
-              // 그룹 채팅방 음성채팅인 경우
-              if (currentSelectedRoom && !data.channelId.startsWith('friend_')) {
-                setCurrentGroupVoiceChat({
-                  roomId: currentSelectedRoom.id,
-                  roomName: currentSelectedRoom.name,
-                  gameName: currentSelectedRoom.gameName,
-                  tagNames: currentSelectedRoom.tagNames || [],
-                  channelId: data.channelId
-                });
-                // 친구 음성채팅 상태 초기화
-                setFriendVoiceChatActive(false);
-                setCurrentFriendVoiceChat(null);
-              }
-            } else if (data.type === 'leave') {
-              // 음성채팅 퇴장 시 모든 상태 초기화
-              setCurrentGroupVoiceChat(null);
-              setFriendVoiceChatActive(false);
-              setCurrentFriendVoiceChat(null);
-            }
-          }}
-          ref={voiceChatRef}
-        />
-      )}
 
       {/* 전역 음성채팅 상태 UI */}
       {((friendVoiceChatActive && currentFriendVoiceChat) || (joinedVoice && currentGroupVoiceChat)) && (

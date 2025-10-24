@@ -128,7 +128,8 @@ function LobbyPage() {
 
   // 음성설정 모달
   const [showVoiceChatModal, setShowVoiceChatModal] = useState(false);
-  const [localAudioTrack, setLocalAudioTrack] = useState(null);
+  const localAudioTrackRef = useRef(null);
+  const { voiceSettings, setVoiceSettings } = useContext(LogContext);
 
   // 입장 신청 관리 상태 제거 - 기존 UI에 통합
 
@@ -162,13 +163,13 @@ function LobbyPage() {
   // 음성 설정 열기 함수
   async function openVoiceSettings() {
     try {
-      if (!localAudioTrack) {
+      if (!localAudioTrackRef.current) {
         const track = await AgoraRTC.createMicrophoneAudioTrack();
-        setLocalAudioTrack(track);
+        localAudioTrackRef.current = track;
       }
       setShowVoiceChatModal(true);
     } catch (err) {
-      console.error("마이크 초기화 실패:", err);
+      console.error("agora 초기화 실패:", err);
     }
   }
 
@@ -654,7 +655,9 @@ function LobbyPage() {
       {showVoiceChatModal && (
         <VoiceChatModal
           onClose={() => setShowVoiceChatModal(false)}
-          localAudioTrack={localAudioTrack}
+          localAudioTrack={localAudioTrackRef.current}
+          voiceSettings={voiceSettings}
+          onChangeSettings={setVoiceSettings}
         />
       )}
 

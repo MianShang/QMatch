@@ -23,6 +23,43 @@ export function useChatSubscriber(selectedRoom, setMessages, setClient, userData
         try {
           const messageData = JSON.parse(msg.body);
           
+          // 실시간 메시지 삭제인지 확인
+          if (messageData.type === 'realtime-message-deleted') {
+            setMessages(prev => {
+              return prev.map(msg => {
+                // senderId와 timestamp가 일치하는 실시간 메시지 찾기
+                if (msg.senderId === messageData.senderId && msg.timestamp === messageData.timestamp) {
+                  return { 
+                    ...msg, 
+                    message: "삭제된 메시지입니다",
+                    userName: "DELETED"
+                    // name(senderId)는 원래 작성자 정보로 유지
+                  };
+                }
+                return msg;
+              });
+            });
+            return;
+          }
+
+          // DB 메시지 삭제인지 확인
+          if (messageData.type === 'message-deleted') {
+            setMessages(prev => {
+              return prev.map(msg => {
+                if (msg.id === messageData.messageId) {
+                  return { 
+                    ...msg, 
+                    message: "삭제된 메시지입니다",
+                    userName: "DELETED"
+                    // name은 원래 작성자 정보로 유지
+                  };
+                }
+                return msg;
+              });
+            });
+            return;
+          }
+
           // 실시간 메시지 고정 상태 변경인지 확인
           if (messageData.type === 'realtime-pin-toggle') {
             setMessages(prev => {

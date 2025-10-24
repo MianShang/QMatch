@@ -5,6 +5,7 @@ import ImageMessage from "../../components/ImageMessage";
 import LinkPreview from "../../components/LinkPreview";
 import MessageContextMenu from "../../components/MessageContextMenu";
 import { useMessagePin } from "../../hooks/chat/useMessagePin";
+import { useMessageDelete } from "../../hooks/chat/useMessageDelete";
 import axios from "axios";
 
 
@@ -21,6 +22,7 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
   });
   
   const { togglePinMessage } = useMessagePin();
+  const { deleteMessage } = useMessageDelete();
 
   // 우클릭 핸들러
   const handleContextMenu = (e, messageId, isPinned, messageContent, messageData) => {
@@ -53,6 +55,15 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
       await togglePinMessage(messageId, roomId, isFriendChat, messageData);
     } catch (error) {
       console.error('메시지 고정/해제 실패:', error);
+    }
+  };
+
+  // 메시지 삭제 핸들러
+  const handleDeleteMessage = async (messageId, roomId, isFriendChat, messageData = null) => {
+    try {
+      await deleteMessage(messageId, roomId, isFriendChat, messageData, userData.userId);
+    } catch (error) {
+      console.error('메시지 삭제 실패:', error);
     }
   };
 
@@ -193,16 +204,17 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
               const msg = pinnedMessage;
               const isSystemMessage = msg.name === "SYSTEM" || msg.name === "시스템" || msg.type === "system";
               const isMemberJoinMessage = msg.name === "MEMBER_JOIN" || msg.userName === "MEMBER_JOIN";
+              const isDeletedMessage = msg.message === "삭제된 메시지입니다" || msg.userName === "DELETED" || msg.isDeleted === true;
               const shouldShowProfile = true; // 고정 메시지는 항상 프로필 표시
               const shouldShowTime = true; // 고정 메시지는 항상 시간 표시
               
               return (
-                <div className={`pinned-message-item ${msg.name == userData?.userId ? 'myChatStyle' : 'otherChatStyle'}`}>
+                <div className={`pinned-message-item ${msg.name == userData?.userId ? 'myChatStyle' : 'otherChatStyle'} ${isDeletedMessage ? 'deleted-message' : ''}`}>
                   
                   {!isSystemMessage && !isMemberJoinMessage && (
                     <div className={`message-content-wrapper ${msg.name !== userData?.userId && !shouldShowProfile ? 'no-profile' : ''}`}>
-                      {/* 프로필 아이콘과 사용자 이름 */}
-                      {msg.name !== userData?.userId && shouldShowProfile && (
+                      {/* 프로필 아이콘과 사용자 이름 (삭제된 메시지 제외) */}
+                      {msg.name !== userData?.userId && shouldShowProfile && !isDeletedMessage && (
                         <div className="message-header">
                           <div className="profile-icon">
                             <div className="profile-avatar">
@@ -298,6 +310,8 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
         regularMessages.map((msg, i) => {
           // 멤버 입장 메시지인지 먼저 확인
           const isMemberJoinMessage = msg.name === "MEMBER_JOIN" || msg.userName === "MEMBER_JOIN";
+          // 삭제된 메시지인지 확인 (일반 채팅: userName === "DELETED", 친구 채팅: isDeleted === true)
+          const isDeletedMessage = msg.message === "삭제된 메시지입니다" || msg.userName === "DELETED" || msg.isDeleted === true;
           // 시스템 메시지인지 확인 (멤버 입장 메시지가 아닌 경우에만)
           const isSystemMessage = !isMemberJoinMessage && (msg.name === "SYSTEM" || msg.name === "시스템" || msg.type === "system");
           
@@ -308,7 +322,7 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
           
           return (
             <div key={i}
-              className={`message-wrapper ${isSystemMessage ? 'system-message' : isMemberJoinMessage ? 'member-join-message' : (msg.name == userData?.userId ? 'myChatStyle' : 'otherChatStyle')}`}>
+              className={`message-wrapper ${isSystemMessage ? 'system-message' : isMemberJoinMessage ? 'member-join-message' : (msg.name == userData?.userId ? 'myChatStyle' : 'otherChatStyle')} ${isDeletedMessage ? 'deleted-message' : ''}`}>
 
               {/* 시스템 메시지인 경우 특별한 표시 */}
               {isSystemMessage && (
@@ -325,8 +339,8 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
               {/* 일반 채팅 메시지 레이아웃 */}
               {!isSystemMessage && !isMemberJoinMessage && (
                 <div className={`message-content-wrapper ${msg.name !== userData?.userId && !shouldShowProfile ? 'no-profile' : ''}`}>
-                  {/* 프로필 아이콘과 사용자 이름 (다른 사용자 메시지의 첫 번째만) */}
-                  {msg.name !== userData?.userId && shouldShowProfile && (
+                  {/* 프로필 아이콘과 사용자 이름 (다른 사용자 메시지의 첫 번째만, 삭제된 메시지 제외) */}
+                  {msg.name !== userData?.userId && shouldShowProfile && !isDeletedMessage && (
                     <div className="message-header">
                       <div className="profile-icon">
                         <div className="profile-avatar">
@@ -356,9 +370,9 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
                     <div 
                       className={`chatStyle ${isSystemMessage ? 'system-chat-content' : ''} ${isMemberJoinMessage ? 'member-join-content' : ''}`}
                       onContextMenu={(e) => {
-                        // 시스템 메시지나 멤버 입장 메시지는 우클릭 비활성화
+                        // 시스템 메시지, 멤버 입장 메시지, 삭제된 메시지는 우클릭 비활성화
                         // 실시간 메시지는 senderId로, DB 저장 메시지는 id로 식별
-                        if (!isSystemMessage && !isMemberJoinMessage && (msg.id || msg.senderId)) {
+                        if (!isSystemMessage && !isMemberJoinMessage && !isDeletedMessage && (msg.id || msg.senderId)) {
                           const messageId = msg.id || msg.senderId; // 실시간 메시지는 senderId 사용
                           handleContextMenu(e, messageId, msg.isPinned || false, msg.message, msg); // 메시지 전체 데이터 전달
                         } else {
@@ -442,9 +456,11 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
         roomId={roomId}
         isPinned={contextMenu.isPinned}
         onTogglePin={handleTogglePin}
+        onDeleteMessage={handleDeleteMessage}
         messageContent={contextMenu.messageContent}
         messageData={contextMenu.messageData}
         isFriendChat={isFriendChat}
+        currentUserId={userData?.userId}
       />
     </div>
   );

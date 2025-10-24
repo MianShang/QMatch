@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -119,6 +120,42 @@ public class FriendShipChatMessageService {
         
         // 브로드캐스트: 채팅방 참여자에게 메시지 고정 상태 변경 알림
         messagingTemplate.convertAndSend("/topic/friends/chat/" + roomId, dto);
+        
+        return dto;
+    }
+    
+    //메시지 삭제
+    @Transactional
+    public FriendChatMessageResponseDto deleteMessage(Long messageId, Long roomId, String userId) {
+        FriendShipChatMessage message = friendShipChatMessageRepository.findById(messageId)
+                .orElseThrow(() -> new IllegalArgumentException("메시지를 찾을 수 없습니다: " + messageId));
+        
+        // 같은 채팅방의 메시지인지 확인
+        if (message.getFriendShipChatRoom().getId() != roomId) {
+            throw new IllegalArgumentException("해당 채팅방의 메시지가 아닙니다.");
+        }
+        
+        // 본인이 보낸 메시지인지 확인
+        if (message.getUser() == null || !message.getUser().getUserId().equals(userId)) {
+            throw new IllegalArgumentException("본인이 보낸 메시지만 삭제할 수 있습니다.");
+        }
+        
+        // 메시지 내용을 "삭제된 메시지입니다"로 변경하고 실제 삭제하지 않음
+        message.setMessage("삭제된 메시지입니다");
+        // 사용자 정보는 보존 (FriendShipChatMessage는 User 엔티티를 통해 사용자 정보 관리)
+        FriendShipChatMessage saved = friendShipChatMessageRepository.save(message);
+        
+        // 응답 DTO 생성
+        FriendChatMessageResponseDto dto = new FriendChatMessageResponseDto(saved);
+        
+        // 브로드캐스트: 채팅방 참여자에게 메시지 삭제 알림
+        Map<String, Object> result = new HashMap<>();
+        result.put("type", "friend-message-deleted");
+        result.put("messageId", messageId);
+        result.put("roomId", roomId);
+        result.put("deletedBy", userId);
+        
+        messagingTemplate.convertAndSend("/topic/friends/chat/" + roomId, result);
         
         return dto;
     }

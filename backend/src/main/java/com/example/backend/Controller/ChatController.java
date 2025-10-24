@@ -702,5 +702,93 @@ public class ChatController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
+
+    //메시지 삭제 (DB 저장된 메시지)
+    @DeleteMapping("/rooms/{roomId}/messages/{messageId}")
+    public ResponseEntity<?> deleteMessage(@PathVariable String roomId, @PathVariable Long messageId, @RequestParam String userId) {
+        try {
+            System.out.println("🟢 메시지 삭제: " + messageId + " in room: " + roomId + " by user: " + userId);
+            
+            // 메시지 조회 및 권한 확인
+            ChatList message = chatListRepository.findById(messageId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "메시지를 찾을 수 없습니다."));
+            
+            // 본인이 보낸 메시지인지 확인
+            if (message.getUser() == null || !message.getUser().getUserId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "본인이 보낸 메시지만 삭제할 수 있습니다."));
+            }
+            
+            // 메시지 내용을 "삭제된 메시지입니다"로 변경하고 실제 삭제하지 않음
+            message.setChatContent("삭제된 메시지입니다");
+            // 사용자 정보는 보존하되 삭제된 메시지임을 표시
+            message.setUserName("DELETED"); // 삭제된 메시지임을 표시
+            chatListRepository.save(message);
+            
+            // 브로드캐스트: 채팅방 참여자에게 메시지 삭제 알림
+            Map<String, Object> result = new HashMap<>();
+            result.put("type", "message-deleted");
+            result.put("messageId", messageId);
+            result.put("roomId", roomId);
+            result.put("deletedBy", userId);
+            
+            simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId, result);
+            
+            return ResponseEntity.ok(Map.of("success", true, "message", "메시지가 삭제되었습니다."));
+        } catch (Exception e) {
+            System.err.println("메시지 삭제 실패: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    //실시간 메시지 삭제 (senderId와 timestamp 기반)
+    @DeleteMapping("/rooms/{roomId}/realtime-messages")
+    public ResponseEntity<?> deleteRealtimeMessage(@PathVariable String roomId, @RequestBody Map<String, Object> body) {
+        try {
+            String senderId = (String) body.get("senderId");
+            Long timestamp = ((Number) body.get("timestamp")).longValue();
+            String userId = (String) body.get("userId");
+            
+            System.out.println("🟢 실시간 메시지 삭제: senderId=" + senderId + ", timestamp=" + timestamp + " in room: " + roomId + " by user: " + userId);
+            
+            // 본인이 보낸 메시지인지 확인
+            if (!senderId.equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "본인이 보낸 메시지만 삭제할 수 있습니다."));
+            }
+            
+            // 해당 메시지가 DB에 저장되어 있는지 확인하고 삭제 처리
+            List<ChatList> recentMessages = chatListRepository.findTop10ByChatRoom_IdOrderByChatDateDesc(roomId);
+            for (ChatList message : recentMessages) {
+                if (message.getUser() != null && 
+                    message.getUser().getUserId().equals(senderId) &&
+                    Math.abs(message.getChatDate().getTime() - timestamp) < 5000) { // 5초 이내의 메시지
+                    
+                    // 메시지 내용을 "삭제된 메시지입니다"로 변경
+                    message.setChatContent("삭제된 메시지입니다");
+                    // 사용자 정보는 보존하되 삭제된 메시지임을 표시
+                    message.setUserName("DELETED"); // 삭제된 메시지임을 표시
+                    chatListRepository.save(message);
+                    
+                    System.out.println("🟢 DB 메시지 삭제 완료: " + message.getId());
+                    break;
+                }
+            }
+            
+            // 실시간 메시지 삭제를 위한 브로드캐스트
+            Map<String, Object> result = new HashMap<>();
+            result.put("type", "realtime-message-deleted");
+            result.put("senderId", senderId);
+            result.put("timestamp", timestamp);
+            result.put("roomId", roomId);
+            result.put("deletedBy", userId);
+            
+            // 브로드캐스트: 채팅방 참여자에게 실시간 메시지 삭제 알림
+            simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId, result);
+            
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            System.err.println("실시간 메시지 삭제 실패: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
 }
 

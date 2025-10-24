@@ -9,9 +9,11 @@ const MessageContextMenu = ({
     roomId, 
     isPinned, 
     onTogglePin,
+    onDeleteMessage,
     messageContent,
     messageData,
-    isFriendChat = false 
+    isFriendChat = false,
+    currentUserId
 }) => {
     const menuRef = useRef(null);
     const [showToast, setShowToast] = useState(false);
@@ -40,9 +42,8 @@ const MessageContextMenu = ({
         };
     }, [isVisible, onClose]);
 
-    const handlePinToggle = () => {
-        onTogglePin(messageId, roomId, isFriendChat, messageData);
-        onClose();
+    const handleDeleteMessage = () => {
+        onDeleteMessage(messageId, roomId, isFriendChat, messageData);
     };
 
     const handleCopyMessage = async () => {
@@ -105,12 +106,29 @@ const MessageContextMenu = ({
                     </div>
                     <span>복사하기</span>
                 </div>
-                <div className="context-menu-item" onClick={handlePinToggle}>
+                <div className="context-menu-item" onClick={() => {
+                    onTogglePin(messageId, roomId, isFriendChat, messageData);
+                    onClose();
+                }}>
                     <div className="context-menu-icon">
                         {isPinned ? '📌' : '📌'}
                     </div>
                     <span>{isPinned ? '고정 해제' : '상단 고정'}</span>
                 </div>
+                {/* 본인 메시지에만 삭제 옵션 표시 */}
+                {messageData && (
+                    (messageData.name === currentUserId || messageData.senderId === currentUserId)
+                ) && (
+                    <div className="context-menu-item" onClick={() => {
+                        onDeleteMessage(messageId, roomId, isFriendChat, messageData);
+                        onClose();
+                    }}>
+                        <div className="context-menu-icon">
+                            🗑️
+                        </div>
+                        <span>삭제하기</span>
+                    </div>
+                )}
             </div>
             
             {showToast && (

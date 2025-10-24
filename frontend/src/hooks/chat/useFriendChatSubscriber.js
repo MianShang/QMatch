@@ -21,6 +21,24 @@ export function useFriendChatSubscriber(selectedFriendRoom, setFriendMessages, g
                 try {
                     const body = JSON.parse(msg.body);
 
+                    // 친구 메시지 삭제인지 확인
+                    if (body.type === 'friend-message-deleted') {
+                        setFriendMessages(prev => {
+                            return prev.map(msg => {
+                                if (msg.id === body.messageId) {
+                                    return { 
+                                        ...msg, 
+                                        message: "삭제된 메시지입니다",
+                                        isDeleted: true
+                                        // name과 userName은 원래 작성자 정보로 유지
+                                    };
+                                }
+                                return msg;
+                            });
+                        });
+                        return;
+                    }
+
                     // 메시지 고정 상태 변경인지 확인 (고정 상태가 true인 경우만)
                     if (body.id && body.isPinned === true) {
                         setFriendMessages(prev => {

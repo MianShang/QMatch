@@ -63,6 +63,7 @@ function ChatRoom({
     const [showRoomSettings, setShowRoomSettings] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [showImageUpload, setShowImageUpload] = useState(false);
+    const [isPinnedMessageHidden, setIsPinnedMessageHidden] = useState(false);
 
     const [showFriendInvite, setShowFriendInvite] = useState(false);
 
@@ -82,9 +83,10 @@ function ChatRoom({
         friends
     } = useContext(LogContext);
 
-    // 채팅방이 변경될 때 친구 초대 모달 닫기
+    // 채팅방이 변경될 때 친구 초대 모달 닫기 및 고정 메시지 숨김 상태 초기화
     useEffect(() => {
         setShowFriendInvite(false);
+        setIsPinnedMessageHidden(false); // 채팅방 변경 시 고정 메시지 다시 표시
     }, [selectedRoom, selectedFriendRoom]);
 
     const handleSend = () => {
@@ -309,9 +311,23 @@ function ChatRoom({
             {/* 메시지 영역 */}
             <div ref={messageContainerRef} className="scroll-container chatDivStyle">
                 {selectedRoom ? (
-                    <MessageList messages={messages} userData={userData} roomId={selectedRoom.id} isFriendChat={false} />
+                    <MessageList 
+                        messages={messages} 
+                        userData={userData} 
+                        roomId={selectedRoom.id} 
+                        isFriendChat={false}
+                        isPinnedMessageHidden={isPinnedMessageHidden}
+                        onHidePinnedMessage={() => setIsPinnedMessageHidden(true)}
+                    />
                 ) : selectedFriendRoom ? (
-                    <MessageList messages={friendMessages} userData={userData} roomId={selectedFriendRoom.roomId} isFriendChat={true} />
+                    <MessageList 
+                        messages={friendMessages} 
+                        userData={userData} 
+                        roomId={selectedFriendRoom.roomId} 
+                        isFriendChat={true}
+                        isPinnedMessageHidden={isPinnedMessageHidden}
+                        onHidePinnedMessage={() => setIsPinnedMessageHidden(true)}
+                    />
                 ) : (
                     <div className="empty-chat-container">
                         <div className="empty-chat-logo">

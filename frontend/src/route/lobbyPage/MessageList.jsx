@@ -9,7 +9,7 @@ import { useMessageDelete } from "../../hooks/chat/useMessageDelete";
 import axios from "axios";
 
 
-const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) => {
+const MessageList = memo(({ messages, userData, roomId, isFriendChat = false, isPinnedMessageHidden = false, onHidePinnedMessage }) => {
   const [userProfiles, setUserProfiles] = useState({});
   const [userNames, setUserNames] = useState({});
   const [contextMenu, setContextMenu] = useState({
@@ -193,11 +193,18 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
   return (
     <div className='chatContentStyle'>
       {/* 고정된 메시지 영역 (하나만) */}
-      {pinnedMessage && (
+      {pinnedMessage && !isPinnedMessageHidden && (
         <div className="pinned-messages-container">
           <div className="pinned-header">
             <span className="pin-icon">📌</span>
             <span className="pinned-title">고정된 메시지</span>
+            <button 
+              className="pinned-close-btn"
+              onClick={onHidePinnedMessage}
+              title="고정 메시지 숨기기"
+            >
+              ✕
+            </button>
           </div>
           <div className="pinned-messages-list">
             {(() => {

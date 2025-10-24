@@ -2249,11 +2249,34 @@
   font-size: 13px;
   color: #856404;
   border-left: 3px solid #ffc107;
+  position: relative;
 }
 
 .pinned-title {
   font-size: 13px;
   font-weight: 500;
+  flex: 1;
+}
+
+.pinned-close-btn {
+  background: none;
+  border: none;
+  color: #856404;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  transition: all 0.2s ease;
+}
+
+.pinned-close-btn:hover {
+  background-color: rgba(133, 100, 4, 0.1);
+  color: #6c5a00;
 }
 
 
@@ -2314,6 +2337,15 @@
   background-color: #fce7f3;
   color: #be185d;
   border-left-color: #e91e63;
+}
+
+[data-theme="pink"] .pinned-close-btn {
+  color: #be185d;
+}
+
+[data-theme="pink"] .pinned-close-btn:hover {
+  background-color: rgba(190, 24, 93, 0.1);
+  color: #9d174d;
 }
 
 [data-theme="pink"] .pinned-message-item {

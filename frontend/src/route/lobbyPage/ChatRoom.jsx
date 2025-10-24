@@ -1,7 +1,7 @@
 import MessageList from "./MessageList";
 import RoomSettingsModal from "../../modal/RoomSettingsModal/RoomSettingsModal";
 import FriendInviteModal from "../../modal/FriendInviteModal/FriendInviteModal";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { LogContext } from "../../App.jsx";
 import { toast } from "react-toastify";
 import { FaPhone, FaPhoneSlash } from "react-icons/fa6";
@@ -81,6 +81,11 @@ function ChatRoom({
         setCurrentGroupVoiceChat,
         friends
     } = useContext(LogContext);
+
+    // 채팅방이 변경될 때 친구 초대 모달 닫기
+    useEffect(() => {
+        setShowFriendInvite(false);
+    }, [selectedRoom, selectedFriendRoom]);
 
     const handleSend = () => {
         if (selectedRoom) {

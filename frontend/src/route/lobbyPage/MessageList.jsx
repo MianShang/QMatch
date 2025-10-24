@@ -16,20 +16,22 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
     position: { x: 0, y: 0 },
     messageId: null,
     isPinned: false,
-    messageContent: ''
+    messageContent: '',
+    messageData: null
   });
   
   const { togglePinMessage } = useMessagePin();
 
   // 우클릭 핸들러
-  const handleContextMenu = (e, messageId, isPinned, messageContent) => {
+  const handleContextMenu = (e, messageId, isPinned, messageContent, messageData) => {
     e.preventDefault();
     setContextMenu({
       isVisible: true,
       position: { x: e.clientX, y: e.clientY },
       messageId,
       isPinned,
-      messageContent
+      messageContent,
+      messageData
     });
   };
 
@@ -40,14 +42,15 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
       position: { x: 0, y: 0 },
       messageId: null,
       isPinned: false,
-      messageContent: ''
+      messageContent: '',
+      messageData: null
     });
   };
 
   // 메시지 고정/해제 핸들러
-  const handleTogglePin = async (messageId, roomId, isFriendChat) => {
+  const handleTogglePin = async (messageId, roomId, isFriendChat, messageData = null) => {
     try {
-      await togglePinMessage(messageId, roomId, isFriendChat);
+      await togglePinMessage(messageId, roomId, isFriendChat, messageData);
     } catch (error) {
       console.error('메시지 고정/해제 실패:', error);
     }
@@ -354,8 +357,10 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
                       className={`chatStyle ${isSystemMessage ? 'system-chat-content' : ''} ${isMemberJoinMessage ? 'member-join-content' : ''}`}
                       onContextMenu={(e) => {
                         // 시스템 메시지나 멤버 입장 메시지는 우클릭 비활성화
-                        if (!isSystemMessage && !isMemberJoinMessage && msg.id) {
-                          handleContextMenu(e, msg.id, msg.isPinned || false, msg.message);
+                        // 실시간 메시지는 senderId로, DB 저장 메시지는 id로 식별
+                        if (!isSystemMessage && !isMemberJoinMessage && (msg.id || msg.senderId)) {
+                          const messageId = msg.id || msg.senderId; // 실시간 메시지는 senderId 사용
+                          handleContextMenu(e, messageId, msg.isPinned || false, msg.message, msg); // 메시지 전체 데이터 전달
                         } else {
                           console.log('메시지 버블 우클릭 무시됨');
                         }
@@ -438,6 +443,7 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false }) 
         isPinned={contextMenu.isPinned}
         onTogglePin={handleTogglePin}
         messageContent={contextMenu.messageContent}
+        messageData={contextMenu.messageData}
         isFriendChat={isFriendChat}
       />
     </div>

@@ -61,10 +61,11 @@ public class ChatController {
     // 구독된 채팅방에 메세지 보내는 API
     @MessageMapping("/chat/{roomId}")
     @SendTo("/topic/chat/{roomId}")
-    public Map<String, Object> sendMessage(@DestinationVariable String roomId, @Payload Map<String, String> payload) {
+    public Map<String, Object> sendMessage(@DestinationVariable String roomId, @Payload Map<String, Object> payload) {
 
-        String name = payload.get("name");
-        String message = payload.get("message");
+        String name = (String) payload.get("name");
+        String message = (String) payload.get("message");
+        Boolean isPinned = (Boolean) payload.get("isPinned"); // 고정 상태 받기
 
         // 메세지가 전송된 채팅방의 ID로 그 방을 저장한 유저 목록을 리스트에 담음
         List<UserChatRoom> userChatRooms = userChatRoomRepository.findByChatRoom_Id(roomId);
@@ -90,10 +91,14 @@ public class ChatController {
         // 메세지로 유저 ID, 메세지 내용, 시간 보냄
         Map<String, Object> response = new HashMap<>();
         response.put("id", null); // 실시간 메시지는 ID가 없음 (DB 저장 후 생성됨)
+        response.put("senderId", name); // 보낸 유저 ID 저장
+        response.put("senderName", name); // 보낸 유저 이름도 저장
         response.put("name", name);
         response.put("message", message);
         response.put("chatDate", currentTime);
-        response.put("isPinned", false); // 새 메시지는 기본적으로 고정되지 않음
+        response.put("timestamp", System.currentTimeMillis()); // 타임스탬프 추가
+        response.put("isRealTime", true); // 실시간 메시지임을 표시
+        response.put("isPinned", isPinned != null ? isPinned : false); // 전송된 고정 상태 사용, 없으면 기본값 false
 
         return response;
     }
@@ -631,7 +636,7 @@ public class ChatController {
         ));
     }
     
-    //메시지 고정/해제
+    //메시지 고정/해제 (DB 저장된 메시지)
     @PutMapping("/rooms/{roomId}/messages/{messageId}/pin")
     public ResponseEntity<?> togglePinMessage(@PathVariable String roomId, @PathVariable Long messageId) {
         try {
@@ -644,6 +649,56 @@ public class ChatController {
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             System.err.println("메시지 고정/해제 실패: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    //실시간 메시지 고정/해제 (senderId와 timestamp 기반)
+    @PutMapping("/rooms/{roomId}/realtime-messages/pin")
+    public ResponseEntity<?> toggleRealtimePinMessage(@PathVariable String roomId, @RequestBody Map<String, Object> body) {
+        try {
+            String senderId = (String) body.get("senderId");
+            Long timestamp = ((Number) body.get("timestamp")).longValue();
+            Boolean isPinned = (Boolean) body.get("isPinned");
+            
+            System.out.println("🟢 실시간 메시지 고정/해제: senderId=" + senderId + ", timestamp=" + timestamp + " in room: " + roomId);
+            
+            // 해당 메시지가 DB에 저장되어 있는지 확인하고 고정 처리
+            if (isPinned) {
+                // 최근 메시지 중에서 senderId와 시간이 일치하는 메시지 찾기
+                List<ChatList> recentMessages = chatListRepository.findTop10ByChatRoom_IdOrderByChatDateDesc(roomId);
+                for (ChatList message : recentMessages) {
+                    if (message.getUser() != null && 
+                        message.getUser().getUserId().equals(senderId) &&
+                        Math.abs(message.getChatDate().getTime() - timestamp) < 5000) { // 5초 이내의 메시지
+                        
+                        // 다른 메시지들의 고정 해제
+                        chatListRepository.updateAllPinnedToFalse(roomId);
+                        
+                        // 해당 메시지 고정
+                        message.setIsPinned(true);
+                        chatListRepository.save(message);
+                        
+                        System.out.println("🟢 DB 메시지 고정 완료: " + message.getId());
+                        break;
+                    }
+                }
+            }
+            
+            // 실시간 메시지 고정 상태 변경을 위한 브로드캐스트
+            Map<String, Object> result = new HashMap<>();
+            result.put("type", "realtime-pin-toggle");
+            result.put("senderId", senderId);
+            result.put("timestamp", timestamp);
+            result.put("isPinned", isPinned);
+            result.put("roomId", roomId);
+            
+            // 브로드캐스트: 채팅방 참여자에게 실시간 메시지 고정 상태 변경 알림
+            simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId, result);
+            
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            System.err.println("실시간 메시지 고정/해제 실패: " + e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }

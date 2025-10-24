@@ -10,6 +10,7 @@ const MessageContextMenu = ({
     isPinned, 
     onTogglePin,
     messageContent,
+    messageData,
     isFriendChat = false 
 }) => {
     const menuRef = useRef(null);
@@ -40,7 +41,7 @@ const MessageContextMenu = ({
     }, [isVisible, onClose]);
 
     const handlePinToggle = () => {
-        onTogglePin(messageId, roomId, isFriendChat);
+        onTogglePin(messageId, roomId, isFriendChat, messageData);
         onClose();
     };
 

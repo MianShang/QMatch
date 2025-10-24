@@ -49,6 +49,7 @@ public class ChatListService {
         chatList.setChatRoom(chatRoom.get());
         chatList.setUser(user.get());
         chatList.setUserName(user.get().getUserName());
+        chatList.setIsPinned(chatListRequestDto.getIsPinned() != null ? chatListRequestDto.getIsPinned() : false);
 
 
         // DB 저장

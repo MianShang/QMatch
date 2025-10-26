@@ -82,6 +82,12 @@ function App() {
   const [localMuted, setLocalMuted] = useState(false); // 로컬 음소거 상태
   const [joinedVoice, setJoinedVoice] = useState(false); // 음성채팅 참여 여부
   const [currentVoiceRoomId, setCurrentVoiceRoomId] = useState(null); // 현재 음성채팅 룸 ID
+  const [voiceSettings, setVoiceSettings] = useState({
+    inputDeviceId: '',
+    outputDeviceId: '',
+    micVolume: 80,
+  });
+
   
   // 드래그 가능한 음성채팅 UI 위치 관리
   const [voiceChatPosition, setVoiceChatPosition] = useState({ x: 20, y: 20 }); // UI 위치 좌표
@@ -92,6 +98,59 @@ function App() {
   const [currentFriendVoiceChat, setCurrentFriendVoiceChat] = useState(null);
   const [currentGroupVoiceChat, setCurrentGroupVoiceChat] = useState(null);
   const voiceChatRef = useRef(null);
+  const dragStartPos = useRef({ x: 0, y: 0 });    // 클릭 vs 드래그 구분용 Ref
+  const [dragMoved, setDragMoved] = useState(false);
+
+  // 마우스로 VoiceChat UI 드래그
+  const handleMouseDown = (e) => {
+    // 내부 버튼(음소거, 종료) 클릭 시 드래그 금지
+    if (e.target.closest('.voice-chat-controls')) return;
+
+    setIsDragging(true);
+    setDragMoved(false); // 새 드래그 시작 시 이동 여부 초기화
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    setDragOffset({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+
+    // 드래그 시작 좌표 저장
+    dragStartPos.current = { x: e.clientX, y: e.clientY };
+  };
+
+  const handleMouseMove = useCallback((e) => {
+    if (!isDragging) return;
+
+    const newX = e.clientX - dragOffset.x;
+    const newY = e.clientY - dragOffset.y;
+
+    // 이동량이 3px 이상이면 드래그로 간주
+    if (
+      Math.abs(e.clientX - dragStartPos.current.x) > 3 ||
+      Math.abs(e.clientY - dragStartPos.current.y) > 3
+    ) {
+      setDragMoved(true);
+    }
+
+    // UI 위치 이동
+    setVoiceChatPosition({
+      x: Math.max(0, Math.min(newX, window.innerWidth - 300)),
+      y: Math.max(0, Math.min(newY, window.innerHeight - 100)),
+    });
+  }, [isDragging, dragOffset]);
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  useEffect(() => {
+    if (!isDragging) return;
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isDragging, handleMouseMove]);
+
 
 
   // 테마 상태
@@ -102,33 +161,6 @@ function App() {
     setTheme(themes[(themes.indexOf(theme) + 1) % themes.length]);
     localStorage.setItem('theme', theme);
   };
-
-  // 마우스로 VoiceChat UI 드래그
-  const handleMouseDown = (e) => {
-    if (e.target.closest('.voice-chat-controls')) return;
-    setIsDragging(true);
-    const rect = e.currentTarget.getBoundingClientRect();
-    setDragOffset({ x: e.clientX - rect.left, y: e.clientY - rect.top });
-  };
-  const handleMouseMove = useCallback((e) => {
-    if (!isDragging) return;
-    const newX = e.clientX - dragOffset.x;
-    const newY = e.clientY - dragOffset.y;
-    setVoiceChatPosition({
-      x: Math.max(0, Math.min(newX, window.innerWidth - 300)),
-      y: Math.max(0, Math.min(newY, window.innerHeight - 100))
-    });
-  }, [isDragging, dragOffset]);
-  const handleMouseUp = () => setIsDragging(false);
-  useEffect(() => {
-    if (!isDragging) return;
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, handleMouseMove]);
 
   // Electron 환경에서 실행 중인 프로세스 감지
   useEffect(() => {
@@ -210,6 +242,7 @@ function App() {
     friendVoiceChatActive, setFriendVoiceChatActive,
     currentFriendVoiceChat, setCurrentFriendVoiceChat,
     currentGroupVoiceChat, setCurrentGroupVoiceChat,
+    voiceSettings, setVoiceSettings,
     voiceChatRef,
     currentSelectedRoom, setCurrentSelectedRoom,
     listRefreshTick, setListRefreshTick,
@@ -473,6 +506,43 @@ function App() {
           } />
           <Route path="/lobby" element={<LobbyPage />} />
         </Routes>
+        
+        {isLogIn && userData && (
+          <VoiceChat
+            uid={userData.userId}
+            roomId={currentSelectedRoom?.id}
+            channelId={currentVoiceRoomId}
+            globalStomp={{ publish, subscribe, isConnected }}
+            onSpeakers={setVoiceSpeakers}
+            onLocalMuteChange={setLocalMuted}
+            onJoinChange={setJoinedVoice}
+            onParticipantsChange={(list) => setVoiceParticipants(list)}
+            onVoiceChatSwitch={(data) => {
+              // 음성채팅 전환 시 전역 상태 업데이트
+              if (data.type === 'join') {
+                // 그룹 채팅방 음성채팅인 경우
+                if (currentSelectedRoom && !data.channelId.startsWith('friend_')) {
+                  setCurrentGroupVoiceChat({
+                    roomId: currentSelectedRoom.id,
+                    roomName: currentSelectedRoom.name,
+                    gameName: currentSelectedRoom.gameName,
+                    tagNames: currentSelectedRoom.tagNames || [],
+                    channelId: data.channelId
+                  });
+                  // 친구 음성채팅 상태 초기화
+                  setFriendVoiceChatActive(false);
+                  setCurrentFriendVoiceChat(null);
+                }
+              } else if (data.type === 'leave') {
+                // 음성채팅 퇴장 시 모든 상태 초기화
+                setCurrentGroupVoiceChat(null);
+                setFriendVoiceChatActive(false);
+                setCurrentFriendVoiceChat(null);
+              }
+            }}
+            ref={voiceChatRef}
+          />
+        )}
       </LogContext.Provider>
 
       {/* 친구 초대 알림 모달 */}
@@ -499,43 +569,6 @@ function App() {
         }}
       />
 
-      {/* VoiceChat 컴포넌트를 App.jsx에서 전역 렌더링 */}
-      {isLogIn && userData && (
-        <VoiceChat
-          uid={userData.userId}
-          roomId={currentSelectedRoom?.id}
-          channelId={currentVoiceRoomId}
-          globalStomp={{ publish, subscribe, isConnected }}
-          onSpeakers={setVoiceSpeakers}
-          onLocalMuteChange={setLocalMuted}
-          onJoinChange={setJoinedVoice}
-          onParticipantsChange={(list) => setVoiceParticipants(list)}
-          onVoiceChatSwitch={(data) => {
-            // 음성채팅 전환 시 전역 상태 업데이트
-            if (data.type === 'join') {
-              // 그룹 채팅방 음성채팅인 경우
-              if (currentSelectedRoom && !data.channelId.startsWith('friend_')) {
-                setCurrentGroupVoiceChat({
-                  roomId: currentSelectedRoom.id,
-                  roomName: currentSelectedRoom.name,
-                  gameName: currentSelectedRoom.gameName,
-                  tagNames: currentSelectedRoom.tagNames || [],
-                  channelId: data.channelId
-                });
-                // 친구 음성채팅 상태 초기화
-                setFriendVoiceChatActive(false);
-                setCurrentFriendVoiceChat(null);
-              }
-            } else if (data.type === 'leave') {
-              // 음성채팅 퇴장 시 모든 상태 초기화
-              setCurrentGroupVoiceChat(null);
-              setFriendVoiceChatActive(false);
-              setCurrentFriendVoiceChat(null);
-            }
-          }}
-          ref={voiceChatRef}
-        />
-      )}
 
       {/* 전역 음성채팅 상태 UI */}
       {((friendVoiceChatActive && currentFriendVoiceChat) || (joinedVoice && currentGroupVoiceChat)) && (
@@ -549,7 +582,8 @@ function App() {
           }}
           onMouseDown={handleMouseDown}
           onClick={(e) => {
-            if (isDragging) {
+            // 드래그로 이동했으면 클릭 무시
+            if (dragMoved) {
               e.preventDefault();
               return;
             }

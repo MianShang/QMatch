@@ -18,6 +18,7 @@ public class FriendChatMessageResponseDto {
     private String message;
     private String name;
     private String userName;
+    private Boolean isPinned;
 
     public FriendChatMessageResponseDto(FriendShipChatMessage message) {
         this.id = message.getId();
@@ -26,6 +27,7 @@ public class FriendChatMessageResponseDto {
         this.message = message.getMessage();
         this.name = message.getUser().getUserId();
         this.userName = message.getUser().getUserName();
+        this.isPinned = message.getIsPinned();
     }
 
 }

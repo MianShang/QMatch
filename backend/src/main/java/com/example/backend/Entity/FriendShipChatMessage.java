@@ -29,4 +29,7 @@ public class FriendShipChatMessage {
 
     @Column(nullable = false)
     private LocalDateTime sendTime;
+    
+    @Column(nullable = false)
+    private Boolean isPinned = false;
 }

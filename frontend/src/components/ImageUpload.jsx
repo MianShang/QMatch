@@ -141,15 +141,15 @@ const ImageUpload = ({ onImageSelect, onClose, isOpen }) => {
         </div>
         
         <div className="image-upload-actions">
-          <button className="cancel-button" onClick={handleCancel}>
-            취소
-          </button>
           <button 
             className="upload-button" 
             onClick={handleUpload}
             disabled={!selectedFile}
           >
             업로드
+          </button>
+          <button className="cancel-button" onClick={handleCancel}>
+            취소
           </button>
         </div>
       </div>

@@ -19,7 +19,8 @@ export function useChatSender(client, selectedRoom, userData, input, setInput) {
 
         body: JSON.stringify({ 
           name: userData.userId, 
-          message: input 
+          message: input,
+          isPinned: false // 기본적으로 고정되지 않음, 필요시 동적으로 변경 가능
         }),
       });
 
@@ -29,7 +30,8 @@ export function useChatSender(client, selectedRoom, userData, input, setInput) {
       axios.post('/api/user/add/userchatlist', {
         chatRoom : selectedRoom.id,   // 해당 채팅방 ID
         chatContent : input,          // 입력 내용
-        userId : userData.userId      // 유저 ID
+        userId : userData.userId,     // 유저 ID
+        isPinned : false             // 기본적으로 고정되지 않음, 필요시 동적으로 변경 가능
       })
       .then((res) => {
         console.log('메세지 저장 성공');

@@ -645,6 +645,7 @@ function LobbyPage() {
           onRoomUpdated={handleRoomUpdated}
           sendFriendMessage={sendFriendMessage}
           client={client}
+          setFriendMessages={setFriendMessages}
         />
 
           <div style={{ display: "flex" }}>

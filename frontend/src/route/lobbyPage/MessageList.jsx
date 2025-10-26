@@ -9,7 +9,7 @@ import { useMessageDelete } from "../../hooks/chat/useMessageDelete";
 import axios from "axios";
 
 
-const MessageList = memo(({ messages, userData, roomId, isFriendChat = false, isPinnedMessageHidden = false, onHidePinnedMessage }) => {
+const MessageList = memo(({ messages, userData, roomId, isFriendChat = false, isPinnedMessageHidden = false, onHidePinnedMessage, setFriendMessages }) => {
   const [userProfiles, setUserProfiles] = useState({});
   const [userNames, setUserNames] = useState({});
   const [contextMenu, setContextMenu] = useState({
@@ -60,8 +60,20 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false, is
 
   // 메시지 삭제 핸들러
   const handleDeleteMessage = async (messageId, roomId, isFriendChat, messageData = null) => {
+    if (!messages || !Array.isArray(messages)) return;
+    
     try {
       await deleteMessage(messageId, roomId, isFriendChat, messageData, userData.userId);
+      
+      // 삭제 성공 시 즉시 UI 업데이트
+      if (isFriendChat && setFriendMessages) {
+        setFriendMessages(prev => prev.map(msg => {
+          if (msg.id === messageId) {
+            return { ...msg, message: "삭제된 메시지입니다", isDeleted: true };
+          }
+          return msg;
+        }));
+      }
     } catch (error) {
       console.error('메시지 삭제 실패:', error);
     }

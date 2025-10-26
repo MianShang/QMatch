@@ -55,6 +55,7 @@ function ChatRoom({
     messageContainerRef,
     onRoomUpdated,
     client,
+    setFriendMessages,
 }) {
 
     // 테마 컨텍스트 가져오기
@@ -327,6 +328,7 @@ function ChatRoom({
                         isFriendChat={true}
                         isPinnedMessageHidden={isPinnedMessageHidden}
                         onHidePinnedMessage={() => setIsPinnedMessageHidden(true)}
+                        setFriendMessages={setFriendMessages}
                     />
                 ) : (
                     <div className="empty-chat-container">

@@ -54,9 +54,6 @@ const MessageContextMenu = ({
 
         try {
             await navigator.clipboard.writeText(messageContent);
-            // 복사 성공 토스트 표시
-            setShowToast(true);
-            setTimeout(() => setShowToast(false), 2000);
         } catch (err) {
             console.error('클립보드 복사 실패:', err);
             // 폴백 방법
@@ -130,12 +127,6 @@ const MessageContextMenu = ({
                     </div>
                 )}
             </div>
-            
-            {showToast && (
-                <div className="copy-toast">
-                    메시지가 복사되었습니다
-                </div>
-            )}
         </>
     );
 };

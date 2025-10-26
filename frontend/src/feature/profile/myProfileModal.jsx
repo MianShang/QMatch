@@ -17,7 +17,6 @@ function MyProfile({ viewUserId, onClose }) {
   
   const [showGameModal, setShowGameModal] = useState(false);       // 게임 추가 모달 표시 여부
   const [showTagModal, setShowTagModal] = useState(false);         // 태그 추가 모달 표시 여부
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false); // 로그아웃 확인 모달 표시 여부
   const [showSpecModal, setShowSpecModal] = useState(false);       // 전적 검색 모달 표시 여부
 
   const [editNickName, setEditNickName] = useState(false);    // 닉네임 수정 모드 여부
@@ -240,7 +239,7 @@ function MyProfile({ viewUserId, onClose }) {
               <div className="profile-header-actions">
                 <button className="close-btn" onClick={onClose}><span>✕</span></button>
                 {isMe && (
-                  <button className="logout-btn" onClick={() => setShowLogoutConfirm(true)}>로그아웃</button>
+                  <button className="logout-btn" onClick={() => logoutFunc(setIsLogIn)}>로그아웃</button>
                 )}
               </div>
               <div className="profile-user-info">
@@ -443,26 +442,6 @@ function MyProfile({ viewUserId, onClose }) {
           </div>
         </div>,
         document.body
-      )}
-
-      {showLogoutConfirm && (
-        <div className="logout-confirm-overlay" onClick={() => setShowLogoutConfirm(false)}>
-          <div className="logout-confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <h3>로그아웃 확인</h3>
-            <p>정말 로그아웃 하시겠습니까?</p>
-            <button className="confirm-btn" onClick={() => {
-                logoutFunc(setIsLogIn);
-                onClose();
-              }}>
-                로그아웃
-              </button>
-            <div className="logout-confirm-buttons">
-              <button className="cancel-btn" onClick={() => setShowLogoutConfirm(false)}>
-                취소
-              </button>
-            </div>
-          </div>
-        </div>
       )}
       
       {showGameModal && (

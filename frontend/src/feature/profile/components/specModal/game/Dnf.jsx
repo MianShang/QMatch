@@ -9,8 +9,6 @@ function Dnf({dnfStats}){
     const { characterName, level, jobName, guildName, adventureFame} = dnfStats
     const imageUrl = `https://img-api.neople.co.kr/df/servers/${dnfStats.serverId}/characters/${dnfStats.characterId}?zoom=2`
 
-    
-
     return(
         <>
         <div className='character-image'>
@@ -27,8 +25,6 @@ function Dnf({dnfStats}){
         <p>모험가 명성: {adventureFame}</p>
         </div>
         </>
-
-
     )
 }
 export default Dnf

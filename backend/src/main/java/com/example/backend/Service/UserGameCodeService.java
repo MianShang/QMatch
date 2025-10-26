@@ -59,7 +59,14 @@ public class UserGameCodeService {
     public Optional<UserGameCode> findUserGameData(String userId, String gameName) {
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
-        return userGameCodeRepository.findByUserAndGameName(user, gameName);
+
+        Optional<UserGameCode> mainAccount = userGameCodeRepository.findByUserAndGameNameAndIsMainTrue(user, gameName);
+
+        if (mainAccount.isPresent()) {
+            return mainAccount;
+        }
+
+        return userGameCodeRepository.findByUserAndGameName(user, gameName).stream().findFirst();
     }
 
     @Transactional
@@ -70,5 +77,33 @@ public class UserGameCodeService {
         } else {
             throw new IllegalArgumentException("삭제할 데이터를 찾을 수 없습니다. ID: " + gameCodeId);
         }
+    }
+
+    @Transactional
+    public void setMainGameCode(String userId, Long gameCode) {
+
+        //유저 찾기
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("유저를 찾을 수 없습니다."));
+        //대표로 설정할 게임 찾기
+        UserGameCode newMainAccount = userGameCodeRepository.findById(gameCode)
+                .orElseThrow(() -> new IllegalArgumentException("게임 계정을 찾을 수 없습니다."));
+
+        //요청한 게정이 본인인지
+        if (!newMainAccount.getUser().equals(user)) {
+            throw new SecurityException("계정을 변경할 권한이 없습니다.");
+        }
+
+        String gameName = newMainAccount.getGameName();
+
+        //같은 게임을 모두 false로 초기화
+        List<UserGameCode> allAccountsForGame = userGameCodeRepository.findByUserAndGameName(user, gameName);
+        for (UserGameCode account : allAccountsForGame) {
+            account.setMain(false);
+        }
+
+        //선택한 대표 게정만 메인 계정으로
+        newMainAccount.setMain(true);
+
     }
 }

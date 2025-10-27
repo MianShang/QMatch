@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import { useEffect, useState, useRef } from 'react';
 
 export default function useUserStatusReporter(userId) {
   // 초기값 한글로 통일
@@ -40,10 +40,20 @@ export default function useUserStatusReporter(userId) {
     checkInterval = setInterval(checkStatus, 1000);
     checkStatus();
 
+    // 창 닫기/새로고침 시 오프라인 처리
+    const handleBeforeUnload = () => {
+      navigator.sendBeacon(
+        '/api/user/status',
+        JSON.stringify({ userId, status: '오프라인' })
+      );
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
     return () => {
       clearInterval(checkInterval);
       window.removeEventListener('mousemove', updateActivity);
       window.removeEventListener('keydown', updateActivity);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [userId, status]);
 

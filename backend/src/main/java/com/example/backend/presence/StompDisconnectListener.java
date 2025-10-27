@@ -36,5 +36,11 @@ public class StompDisconnectListener implements ApplicationListener<SessionDisco
                 "/topic/presence",
                 new PresenceEvent(userId, "오프라인", System.currentTimeMillis())
         );
+
+        // 친구목록이 구독하는 friends/status 토픽에도 같이 쏘기
+        messagingTemplate.convertAndSend(
+                "/topic/friends/status",
+                java.util.Map.of("userId", userId, "status", "오프라인")
+        );
     }
 }

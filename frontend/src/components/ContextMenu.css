@@ -1,0 +1,200 @@
+/* ContextMenu.css - Discord 스타일 적용 */
+.context-menu {
+  list-style: none;
+  position: fixed;
+  background: var(--discord-bg-primary);
+  border: 1px solid var(--discord-bg-tertiary);
+  border-radius: var(--discord-radius);
+  padding: 6px 0;
+  min-width: 180px;
+  max-width: 240px;
+  color: var(--discord-text-normal);
+  z-index: 999999 !important;
+  pointer-events: auto;
+  box-shadow: var(--discord-elevation-high);
+  backdrop-filter: blur(12px);
+  font-family: var(--discord-font-family);
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  animation: contextMenuSlideIn 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  /* 동적 위치는 인라인 스타일로 처리 */
+}
+
+@keyframes contextMenuSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.context-menu li {
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.context-menu li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: var(--discord-accent);
+  transition: width 0.2s ease;
+}
+
+.context-menu li:hover {
+  background: var(--discord-bg-modifier-hover);
+  color: var(--discord-text-normal);
+  transform: translateX(2px);
+}
+
+.context-menu li:hover::before {
+  width: 3px;
+}
+
+.context-menu li:active {
+  background: var(--discord-bg-modifier-active);
+  transform: translateX(1px);
+}
+
+/* 위험한 액션 (삭제 등) 스타일 */
+.context-menu li.danger {
+  color: var(--discord-text-danger);
+}
+
+.context-menu li.danger:hover {
+  background: var(--discord-text-danger);
+  color: white;
+}
+
+.context-menu li.danger:hover::before {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* 구분선 */
+.context-menu li.separator {
+  height: 1px;
+  background: var(--discord-bg-tertiary);
+  margin: 4px 0;
+  padding: 0;
+  cursor: default;
+}
+
+.context-menu li.separator:hover {
+  background: var(--discord-bg-tertiary);
+  transform: none;
+}
+
+.context-menu li.separator::before {
+  display: none;
+}
+
+/* 테마별 색상 적용 */
+[data-theme="dark"] .context-menu {
+  background: linear-gradient(135deg, #2f3136, #36393f);
+  border-color: #40444b;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .context-menu li:hover {
+  background: #3a3d44;
+}
+
+[data-theme="dark"] .context-menu li.danger:hover {
+  background: #f04747;
+}
+
+[data-theme="light"] .context-menu {
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  border-color: #e1e5e9;
+  box-shadow: 
+    0 8px 24px rgba(0, 0, 0, 0.15),
+    0 0 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+[data-theme="light"] .context-menu li:hover {
+  background: #f0f2f5;
+}
+
+[data-theme="light"] .context-menu li.danger:hover {
+  background: #f04747;
+}
+
+[data-theme="pink"] .context-menu {
+  background: linear-gradient(135deg, #ffd6ec, #ffb3d9, #ff99cc);
+  border-color: #ff1493;
+  box-shadow: 
+    0 8px 24px rgba(233, 30, 99, 0.35),
+    0 0 20px rgba(255, 20, 147, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="pink"] .context-menu li {
+  color: #ad1457;
+  font-weight: 600;
+}
+
+[data-theme="pink"] .context-menu li:hover {
+  background: rgba(255, 20, 147, 0.2);
+  color: #880e4f;
+}
+
+[data-theme="pink"] .context-menu li.danger {
+  color: #d32f2f;
+}
+
+[data-theme="pink"] .context-menu li.danger:hover {
+  background: #d32f2f;
+  color: white;
+}
+
+[data-theme="blue"] .context-menu {
+  background: linear-gradient(135deg, #e3f2fd, #bbdefb, #90caf9);
+  border-color: #2196f3;
+  box-shadow: 
+    0 8px 24px rgba(33, 150, 243, 0.3),
+    0 0 20px rgba(33, 150, 243, 0.25),
+    inset 0 2px 0 rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="blue"] .context-menu li {
+  color: #0d47a1;
+  font-weight: 600;
+}
+
+[data-theme="blue"] .context-menu li:hover {
+  background: rgba(33, 150, 243, 0.2);
+  color: #0277bd;
+}
+
+[data-theme="blue"] .context-menu li.danger {
+  color: #d32f2f;
+}
+
+[data-theme="blue"] .context-menu li.danger:hover {
+  background: #d32f2f;
+  color: white;
+}
+
+/* 강제 표시용 */
+.members-content-area,
+.voice-chat-container {
+  overflow: visible !important;
+}

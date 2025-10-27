@@ -22,6 +22,85 @@ export function useChatSubscriber(selectedRoom, setMessages, setClient, userData
       (msg) => {
         try {
           const messageData = JSON.parse(msg.body);
+          
+          // 실시간 메시지 삭제인지 확인
+          if (messageData.type === 'realtime-message-deleted') {
+            setMessages(prev => {
+              return prev.map(msg => {
+                // senderId와 timestamp가 일치하는 실시간 메시지 찾기
+                if (msg.senderId === messageData.senderId && msg.timestamp === messageData.timestamp) {
+                  return { 
+                    ...msg, 
+                    message: "삭제된 메시지입니다",
+                    userName: "DELETED"
+                    // name(senderId)는 원래 작성자 정보로 유지
+                  };
+                }
+                return msg;
+              });
+            });
+            return;
+          }
+
+          // DB 메시지 삭제인지 확인
+          if (messageData.type === 'message-deleted') {
+            setMessages(prev => {
+              return prev.map(msg => {
+                if (msg.id === messageData.messageId) {
+                  return { 
+                    ...msg, 
+                    message: "삭제된 메시지입니다",
+                    userName: "DELETED"
+                    // name은 원래 작성자 정보로 유지
+                  };
+                }
+                return msg;
+              });
+            });
+            return;
+          }
+
+          // 실시간 메시지 고정 상태 변경인지 확인
+          if (messageData.type === 'realtime-pin-toggle') {
+            setMessages(prev => {
+              return prev.map(msg => {
+                // senderId와 timestamp가 일치하는 실시간 메시지 찾기
+                if (msg.senderId === messageData.senderId && msg.timestamp === messageData.timestamp) {
+                  return { ...msg, isPinned: messageData.isPinned };
+                }
+                // 다른 메시지들은 고정 해제 (한 번에 하나만 고정 가능)
+                if (messageData.isPinned) {
+                  return { ...msg, isPinned: false };
+                }
+                return msg;
+              });
+            });
+            return;
+          }
+
+          // DB 메시지 고정 상태 변경인지 확인 (ID가 있고 기존 메시지 업데이트)
+          if (messageData.id && messageData.isPinned !== undefined) {
+            setMessages(prev => {
+              // 새로운 메시지가 고정되면 다른 모든 메시지의 고정 상태를 해제
+              if (messageData.isPinned) {
+                return prev.map(msg => 
+                  msg.id === messageData.id 
+                    ? { ...msg, isPinned: true }
+                    : { ...msg, isPinned: false }
+                );
+              } else {
+                // 메시지가 해제되면 해당 메시지만 해제
+                return prev.map(msg => 
+                  msg.id === messageData.id 
+                    ? { ...msg, isPinned: false }
+                    : msg
+                );
+              }
+            });
+            return;
+          }
+          
+          // 새 메시지인 경우
           // 시간 정보가 없으면 현재 시간 추가
           if (!messageData.chatDate) {
             messageData.chatDate = new Date().toISOString();

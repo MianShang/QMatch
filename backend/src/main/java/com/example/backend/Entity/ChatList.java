@@ -30,4 +30,7 @@ public class ChatList {
     private User user;                  // 메세지 전송자 (시스템 메시지의 경우 null)
     
     private String userName;            //메세지 전송자 이름
+    
+    @Column(nullable = false)
+    private Boolean isPinned = false;   //메시지 고정 여부
 }

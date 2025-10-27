@@ -18,5 +18,7 @@ public interface FriendShipChatMessageRepository extends JpaRepository<FriendShi
     //카카오톡 처럼 미리보기 조회 임시코드
     List<FriendShipChatMessage> findByFriendShipChatRoom_IdAndIdGreaterThanOrderByIdAsc(Long roomId, Long lastReadMessageId);
 
+    // 채팅방에서 고정된 메시지들 찾기
+    List<FriendShipChatMessage> findByFriendShipChatRoomIdAndIsPinnedTrue(Long roomId);
 
 }

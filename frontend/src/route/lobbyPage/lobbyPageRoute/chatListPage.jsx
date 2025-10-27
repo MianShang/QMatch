@@ -18,6 +18,8 @@ import { useFriendRequest } from '../../../hooks/friends/useFriendRequest.js';
 import { useChatListGet } from '../../../hooks/chatList/useChatListGet.js'
 import { blockUser } from '../../../hooks/friends/userBlock.js';
 
+import ContextMenu from '../../../components/ContextMenu.jsx';
+
 //포털
 import DropdownPortal from './dropDownPotal.jsx'
 
@@ -122,6 +124,8 @@ function ChatListPage({
   const [showCreateVoiceChannelModal, setShowCreateVoiceChannelModal] = useState(false);
   // 음성 채널 목록
   const [voiceChannels, setVoiceChannels] = useState([]);
+  // 우클릭
+  const [rigthMenu, setRightMenu] = useState(null);
 
   // 커스텀훅
   useChatGetRooms(userData, setChatList);              // 로그인한 유저의 채팅방
@@ -1441,6 +1445,16 @@ function ChatListPage({
                           key={`voice-channel-${selectedRoom?.id}-${channel.id}`}
                           className={`voice-channel-item ${isJoined ? 'joined' : ''}`}
                           onClick={() => !isJoined && handleJoinVoice(channel.id)}
+                          onContextMenu={(e) => {
+                            e.preventDefault();
+                            console.log('🎯 우클릭 감지됨', channel.voiceChannelName, e.clientX, e.clientY);
+                            setRightMenu({
+                              x: e.clientX,
+                              y: e.clientY,
+                              channelId: channel.id,
+                              channelName: channel.voiceChannelName,
+                            });
+                          }}
                         >
                           <div className="voice-channel-header">
                             <div className="voice-channel-info">
@@ -1488,6 +1502,34 @@ function ChatListPage({
                     <div className="no-voice-channels">아직 생성된 음성채널이 없습니다.</div>
                   )}
                 </div>
+                {rigthMenu && (
+                  <>
+                  <ContextMenu
+                    x={rigthMenu.x}
+                    y={rigthMenu.y}
+                    items={[
+                      {
+                        label: "채널 삭제",
+                        className: "danger",
+                        onClick: async () => {
+                          try {
+                            await axios.delete(`/api/voice/channels/delete/${rigthMenu.channelId}`);
+                            setVoiceChannels((prev) =>
+                              prev.filter((ch) => ch.id !== rigthMenu.channelId)
+                            );
+                            toast.success(`"${rigthMenu.channelName}" 채널이 삭제되었습니다.`);
+                          } catch (err) {
+                            toast.error("채널 삭제 실패");
+                            console.error(err);
+                          }
+                          setRightMenu(null);
+                        },
+                      },
+                    ]}
+                    onClose={() => setRightMenu(null)}
+                  />
+                  </>
+                )}
 
                 {showCreateVoiceChannelModal && (
                   <CreateVoiceChannelModal

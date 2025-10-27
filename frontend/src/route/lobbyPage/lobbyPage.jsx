@@ -128,7 +128,8 @@ function LobbyPage() {
 
   // 음성설정 모달
   const [showVoiceChatModal, setShowVoiceChatModal] = useState(false);
-  const [localAudioTrack, setLocalAudioTrack] = useState(null);
+  const localAudioTrackRef = useRef(null);
+  const { voiceSettings, setVoiceSettings } = useContext(LogContext);
 
   // 입장 신청 관리 상태 제거 - 기존 UI에 통합
 
@@ -162,18 +163,20 @@ function LobbyPage() {
   // 음성 설정 열기 함수
   async function openVoiceSettings() {
     try {
-      if (!localAudioTrack) {
+      if (!localAudioTrackRef.current) {
         const track = await AgoraRTC.createMicrophoneAudioTrack();
-        setLocalAudioTrack(track);
+        localAudioTrackRef.current = track;
       }
       setShowVoiceChatModal(true);
     } catch (err) {
-      console.error("마이크 초기화 실패:", err);
+      console.error("agora 초기화 실패:", err);
     }
   }
 
   // 스크롤 하단 자동 이동 Effect
   const messageContainerRef = useRef(null);
+  const previousMessageCountRef = useRef(0);
+  const previousFriendMessageCountRef = useRef(0);
   
   //채팅방 설정 업데이트 핸들러
   const handleRoomUpdated = (updatedRoom) => {
@@ -184,11 +187,30 @@ function LobbyPage() {
     setListRefreshTick(t => t + 1);
   };
 
+  // 스크롤 위치 관리 - 새로운 메시지가 추가될 때만 맨 아래로 스크롤
   useEffect(() => {
     const container = messageContainerRef.current;
-    if (container) {
+    if (!container) return;
+
+    const currentMessageCount = messages.length;
+    const currentFriendMessageCount = friendMessages.length;
+    
+    // 새로운 메시지가 추가된 경우에만 맨 아래로 스크롤
+    const hasNewMessages = currentMessageCount > previousMessageCountRef.current;
+    const hasNewFriendMessages = currentFriendMessageCount > previousFriendMessageCountRef.current;
+    
+    // 메시지 개수가 증가한 경우에만 스크롤 (고정/해제는 개수 변화 없음)
+    if (hasNewMessages || hasNewFriendMessages) {
+      console.log('새 메시지 감지 - 스크롤을 맨 아래로 이동');
       container.scrollTop = container.scrollHeight;
+    } else if (currentMessageCount > 0 || currentFriendMessageCount > 0) {
+      // 메시지 고정/해제 등의 경우 스크롤 위치 유지 (개수 변화 없음)
+      console.log('메시지 상태 변경 감지 - 스크롤 위치 유지');
     }
+    
+    // 현재 메시지 개수 업데이트
+    previousMessageCountRef.current = currentMessageCount;
+    previousFriendMessageCountRef.current = currentFriendMessageCount;
   }, [messages, friendMessages]);
 
   //프로필 정보 DB에서 불러오기
@@ -623,6 +645,7 @@ function LobbyPage() {
           onRoomUpdated={handleRoomUpdated}
           sendFriendMessage={sendFriendMessage}
           client={client}
+          setFriendMessages={setFriendMessages}
         />
 
           <div style={{ display: "flex" }}>
@@ -654,7 +677,9 @@ function LobbyPage() {
       {showVoiceChatModal && (
         <VoiceChatModal
           onClose={() => setShowVoiceChatModal(false)}
-          localAudioTrack={localAudioTrack}
+          localAudioTrack={localAudioTrackRef.current}
+          voiceSettings={voiceSettings}
+          onChangeSettings={setVoiceSettings}
         />
       )}
 

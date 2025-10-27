@@ -20,4 +20,7 @@ public class UserGameCode {
     private String gameCode;
     private String gameName;
 
+    @Column(nullable = false)
+    private boolean isMain = false; //대표 게정
+
 }

@@ -3,6 +3,7 @@ package com.example.backend.Controller;
 
 import com.example.backend.Dto.Request.ChatRoomRequestDto;
 import com.example.backend.Dto.Request.ChatListRequestDto;
+import com.example.backend.Dto.Response.ChatListResponseDto;
 import com.example.backend.Entity.*;
 import com.example.backend.Constants.ChatConstants;
 import com.example.backend.Repository.*;
@@ -60,10 +61,11 @@ public class ChatController {
     // 구독된 채팅방에 메세지 보내는 API
     @MessageMapping("/chat/{roomId}")
     @SendTo("/topic/chat/{roomId}")
-    public Map<String, Object> sendMessage(@DestinationVariable String roomId, @Payload Map<String, String> payload) {
+    public Map<String, Object> sendMessage(@DestinationVariable String roomId, @Payload Map<String, Object> payload) {
 
-        String name = payload.get("name");
-        String message = payload.get("message");
+        String name = (String) payload.get("name");
+        String message = (String) payload.get("message");
+        Boolean isPinned = (Boolean) payload.get("isPinned"); // 고정 상태 받기
 
         // 메세지가 전송된 채팅방의 ID로 그 방을 저장한 유저 목록을 리스트에 담음
         List<UserChatRoom> userChatRooms = userChatRoomRepository.findByChatRoom_Id(roomId);
@@ -88,9 +90,15 @@ public class ChatController {
 
         // 메세지로 유저 ID, 메세지 내용, 시간 보냄
         Map<String, Object> response = new HashMap<>();
+        response.put("id", null); // 실시간 메시지는 ID가 없음 (DB 저장 후 생성됨)
+        response.put("senderId", name); // 보낸 유저 ID 저장
+        response.put("senderName", name); // 보낸 유저 이름도 저장
         response.put("name", name);
         response.put("message", message);
         response.put("chatDate", currentTime);
+        response.put("timestamp", System.currentTimeMillis()); // 타임스탬프 추가
+        response.put("isRealTime", true); // 실시간 메시지임을 표시
+        response.put("isPinned", isPinned != null ? isPinned : false); // 전송된 고정 상태 사용, 없으면 기본값 false
 
         return response;
     }
@@ -626,6 +634,161 @@ public class ChatController {
                 "message", "host transferred",
                 "newHost", toUserId
         ));
+    }
+    
+    //메시지 고정/해제 (DB 저장된 메시지)
+    @PutMapping("/rooms/{roomId}/messages/{messageId}/pin")
+    public ResponseEntity<?> togglePinMessage(@PathVariable String roomId, @PathVariable Long messageId) {
+        try {
+            System.out.println("🟢 메시지 고정/해제: " + messageId + " in room: " + roomId);
+            ChatListResponseDto result = chatListService.togglePinMessage(messageId, roomId);
+            
+            // 브로드캐스트: 채팅방 참여자에게 메시지 고정 상태 변경 알림
+            simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId, result);
+            
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            System.err.println("메시지 고정/해제 실패: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    //실시간 메시지 고정/해제 (senderId와 timestamp 기반)
+    @PutMapping("/rooms/{roomId}/realtime-messages/pin")
+    public ResponseEntity<?> toggleRealtimePinMessage(@PathVariable String roomId, @RequestBody Map<String, Object> body) {
+        try {
+            String senderId = (String) body.get("senderId");
+            Long timestamp = ((Number) body.get("timestamp")).longValue();
+            Boolean isPinned = (Boolean) body.get("isPinned");
+            
+            System.out.println("🟢 실시간 메시지 고정/해제: senderId=" + senderId + ", timestamp=" + timestamp + " in room: " + roomId);
+            
+            // 해당 메시지가 DB에 저장되어 있는지 확인하고 고정 처리
+            if (isPinned) {
+                // 최근 메시지 중에서 senderId와 시간이 일치하는 메시지 찾기
+                List<ChatList> recentMessages = chatListRepository.findTop10ByChatRoom_IdOrderByChatDateDesc(roomId);
+                for (ChatList message : recentMessages) {
+                    if (message.getUser() != null && 
+                        message.getUser().getUserId().equals(senderId) &&
+                        Math.abs(message.getChatDate().getTime() - timestamp) < 5000) { // 5초 이내의 메시지
+                        
+                        // 다른 메시지들의 고정 해제
+                        chatListRepository.updateAllPinnedToFalse(roomId);
+                        
+                        // 해당 메시지 고정
+                        message.setIsPinned(true);
+                        chatListRepository.save(message);
+                        
+                        System.out.println("🟢 DB 메시지 고정 완료: " + message.getId());
+                        break;
+                    }
+                }
+            }
+            
+            // 실시간 메시지 고정 상태 변경을 위한 브로드캐스트
+            Map<String, Object> result = new HashMap<>();
+            result.put("type", "realtime-pin-toggle");
+            result.put("senderId", senderId);
+            result.put("timestamp", timestamp);
+            result.put("isPinned", isPinned);
+            result.put("roomId", roomId);
+            
+            // 브로드캐스트: 채팅방 참여자에게 실시간 메시지 고정 상태 변경 알림
+            simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId, result);
+            
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            System.err.println("실시간 메시지 고정/해제 실패: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    //메시지 삭제 (DB 저장된 메시지)
+    @DeleteMapping("/rooms/{roomId}/messages/{messageId}")
+    public ResponseEntity<?> deleteMessage(@PathVariable String roomId, @PathVariable Long messageId, @RequestParam String userId) {
+        try {
+            System.out.println("🟢 메시지 삭제: " + messageId + " in room: " + roomId + " by user: " + userId);
+            
+            // 메시지 조회 및 권한 확인
+            ChatList message = chatListRepository.findById(messageId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "메시지를 찾을 수 없습니다."));
+            
+            // 본인이 보낸 메시지인지 확인
+            if (message.getUser() == null || !message.getUser().getUserId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "본인이 보낸 메시지만 삭제할 수 있습니다."));
+            }
+            
+            // 메시지 내용을 "삭제된 메시지입니다"로 변경하고 실제 삭제하지 않음
+            message.setChatContent("삭제된 메시지입니다");
+            // 사용자 정보는 보존하되 삭제된 메시지임을 표시
+            message.setUserName("DELETED"); // 삭제된 메시지임을 표시
+            chatListRepository.save(message);
+            
+            // 브로드캐스트: 채팅방 참여자에게 메시지 삭제 알림
+            Map<String, Object> result = new HashMap<>();
+            result.put("type", "message-deleted");
+            result.put("messageId", messageId);
+            result.put("roomId", roomId);
+            result.put("deletedBy", userId);
+            
+            simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId, result);
+            
+            return ResponseEntity.ok(Map.of("success", true, "message", "메시지가 삭제되었습니다."));
+        } catch (Exception e) {
+            System.err.println("메시지 삭제 실패: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    //실시간 메시지 삭제 (senderId와 timestamp 기반)
+    @DeleteMapping("/rooms/{roomId}/realtime-messages")
+    public ResponseEntity<?> deleteRealtimeMessage(@PathVariable String roomId, @RequestBody Map<String, Object> body) {
+        try {
+            String senderId = (String) body.get("senderId");
+            Long timestamp = ((Number) body.get("timestamp")).longValue();
+            String userId = (String) body.get("userId");
+            
+            System.out.println("🟢 실시간 메시지 삭제: senderId=" + senderId + ", timestamp=" + timestamp + " in room: " + roomId + " by user: " + userId);
+            
+            // 본인이 보낸 메시지인지 확인
+            if (!senderId.equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "본인이 보낸 메시지만 삭제할 수 있습니다."));
+            }
+            
+            // 해당 메시지가 DB에 저장되어 있는지 확인하고 삭제 처리
+            List<ChatList> recentMessages = chatListRepository.findTop10ByChatRoom_IdOrderByChatDateDesc(roomId);
+            for (ChatList message : recentMessages) {
+                if (message.getUser() != null && 
+                    message.getUser().getUserId().equals(senderId) &&
+                    Math.abs(message.getChatDate().getTime() - timestamp) < 5000) { // 5초 이내의 메시지
+                    
+                    // 메시지 내용을 "삭제된 메시지입니다"로 변경
+                    message.setChatContent("삭제된 메시지입니다");
+                    // 사용자 정보는 보존하되 삭제된 메시지임을 표시
+                    message.setUserName("DELETED"); // 삭제된 메시지임을 표시
+                    chatListRepository.save(message);
+                    
+                    System.out.println("🟢 DB 메시지 삭제 완료: " + message.getId());
+                    break;
+                }
+            }
+            
+            // 실시간 메시지 삭제를 위한 브로드캐스트
+            Map<String, Object> result = new HashMap<>();
+            result.put("type", "realtime-message-deleted");
+            result.put("senderId", senderId);
+            result.put("timestamp", timestamp);
+            result.put("roomId", roomId);
+            result.put("deletedBy", userId);
+            
+            // 브로드캐스트: 채팅방 참여자에게 실시간 메시지 삭제 알림
+            simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId, result);
+            
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            System.err.println("실시간 메시지 삭제 실패: " + e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }
 

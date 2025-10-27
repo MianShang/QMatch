@@ -1,34 +1,36 @@
 import React, { useState } from 'react';
+import { toast } from 'react-toastify'; // alert 대신 toast를 사용하기 위해 import
 import './inputModal.css';
 
+// 던전앤파이터 서버 목록
 const dnfServers = ['카인', '디레지에', '시로코', '프레이', '카시야스', '힐더', '안톤', '바칼'];
 
+// 게임 또는 태그를 추가하는 모달창 컴포넌트
 function InputModal({ type, onClose, sendUserGameCode, sendUserTag }) {
   const [gameName, setGameName] = useState('');
   const [gameCode, setGameCode] = useState('');
   const [tag, setTag] = useState('');
   const [server, setServer] = useState('');
 
+  // '저장' 버튼 클릭 시 입력된 데이터를 부모 컴포넌트로 전송하는 함수
   const handleSave = () => {
     if (type === 'game') {
-      if (!gameName || !gameCode) {
-        alert("게임 이름과 코드를 입력해주세요.");
+      if (!gameName || !gameCode || (gameName === 'dnf' && !server)) {
+        toast.warn("모든 항목을 입력해주세요.");
         return;
       }
       const finalCode = gameName === 'dnf' ? `${server}-${gameCode}` : gameCode;
       sendUserGameCode(gameName, finalCode);
     } else if (type === 'tag') {
       if (!tag) {
-        alert("#태그를 입력해주세요.");
+        toast.warn("#태그를 입력해주세요.");
         return;
       }
       sendUserTag(tag);
     }
-
     onClose(); 
   };
 
-  
   return (
     <div className="input-modal-overlay" onClick={onClose}>
       <div className="input-modal-content"  onClick={(e) => e.stopPropagation()} style={{ maxWidth: "400px", padding: "1.5rem" }}>

@@ -851,17 +851,111 @@
     flex-direction: column;
 }
 
+/* 새로운 채팅 메시지 레이아웃 스타일 */
+.message-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.profile-icon {
+  margin-right: 8px;
+}
+
+.profile-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #4A9EFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  overflow: hidden;
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.default-profile-icon {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.default-profile-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
 .message-author {
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--discord-text-normal);
-    margin-bottom: 4px;
-    margin-left: 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--discord-text-normal);
+  margin: 0;
+  display: block; /* 명시적으로 블록 요소로 설정 */
+  visibility: visible; /* 보이도록 설정 */
+  opacity: 1; /* 투명도 설정 */
+}
+
+.message-bubble-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+/* 다른 사용자 메시지 - 모든 메시지가 첫 번째 메시지와 동일한 위치에서 시작 */
+.message-wrapper.otherChatStyle .message-bubble-wrapper {
+  margin-left: 0; /* 기본적으로 마진 없음 */
+}
+
+.message-time {
+  font-size: 12px;
+  color: #999;
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+/* 내 메시지의 경우 오른쪽 정렬 */
+.message-wrapper.myChatStyle .message-content-wrapper {
+  align-items: flex-end;
+}
+
+.message-wrapper.myChatStyle .message-bubble-wrapper {
+  flex-direction: row-reverse;
+}
+
+/* 다른 사용자 메시지의 경우 왼쪽 정렬 */
+.message-wrapper.otherChatStyle .message-content-wrapper {
+  align-items: flex-start;
+}
+
+.message-wrapper.otherChatStyle .message-header {
+  flex-direction: row;
+}
+
+.message-wrapper.otherChatStyle .message-bubble-wrapper {
+  flex-direction: row;
 }
 
 .chatStyle{
     display: inline-block;
-    max-width: 70%;
+    max-width: 400px; /* 고정 픽셀 값으로 변경 */
     padding: 8px 12px;
     margin: 2px 0;
     border-radius: 18px;
@@ -887,14 +981,14 @@
     line-height: 1.5;
 }
 
-.myChatStyle{
+.message-wrapper.myChatStyle {
     display: flex;
     margin-right: 0;
     flex-direction: column;
     align-items: flex-end;
 }
 
-.otherChatStyle {
+.message-wrapper.otherChatStyle {
     display: flex;
     margin-left: 0;
     flex-direction: column;
@@ -902,13 +996,13 @@
 }
 
 /* 내 채팅 스타일 */
-.myChatStyle .chatStyle {
+.message-wrapper.myChatStyle .chatStyle {
     background: var(--discord-accent);
     color: white;
 }
 
 /* 다른 사용자 채팅 스타일 */
-.otherChatStyle .chatStyle {
+.message-wrapper.otherChatStyle .chatStyle {
     background: var(--discord-bg-quaternary);
     color: var(--discord-text-normal);
 }
@@ -932,6 +1026,22 @@
     font-size: 14px;
     font-weight: 600;
     color: var(--discord-accent);
+}
+
+.system-message-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.system-chat-content {
+    background-color: var(--discord-bg-tertiary);
+    color: var(--discord-text-normal);
+    border: 1px solid var(--discord-accent);
+    max-width: 80%;
+    text-align: center;
+    white-space: pre-line;
 }
 
 .system-icon {
@@ -980,12 +1090,11 @@
 /* ================================Discord 입력 스타일============================= */
 .inputSize{
     display: flex;
-    align-items: center;
+    align-items: flex-end; /* 하단 정렬로 변경 */
     padding: 16px;
     background: transparent; /* 기본적으로 투명 */
     border-top: 1px solid var(--discord-bg-primary);
-    height: 80px; /* 고정 높이 설정 */
-    min-height: 80px; /* 최소 높이 보장 */
+    min-height: 80px; /* 최소 높이만 설정 */
     width: 100%; /* 명시적 너비 설정 */
     transition: width 0.3s ease; /* 부드러운 전환 효과 */
     gap: 8px; /* 요소 간 간격 추가 */
@@ -1012,9 +1121,11 @@
     font-size: 16px;
     transition: all 0.2s ease;
     resize: none;
-    height: 40px;
     min-height: 40px;
-    max-height: 40px;
+    max-height: 120px; /* 최대 높이 설정 */
+    overflow-y: auto; /* 스크롤 가능하도록 */
+    white-space: nowrap; /* 자동 줄바꿈 방지 */
+    overflow-x: hidden; /* 가로 스크롤 숨김 */
 }
 
 .chatInputStyle:focus {
@@ -1036,11 +1147,11 @@
     font-weight: 500;
     font-size: 14px;
     transition: all 0.2s ease;
-    height: 40px;
     min-height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
+    align-self: flex-end; /* 하단 정렬 */
 }
 
 .chatButtonStyle:hover {
@@ -1065,7 +1176,8 @@
     align-items: center;
     justify-content: center;
     min-width: 40px;
-    height: 40px;
+    min-height: 40px;
+    align-self: flex-end; /* 하단 정렬 */
 }
 
 .emoji-button:hover {
@@ -1091,7 +1203,8 @@
     align-items: center;
     justify-content: center;
     min-width: 40px;
-    height: 40px;
+    min-height: 40px;
+    align-self: flex-end; /* 하단 정렬 */
 }
 
 .image-upload-button:hover {
@@ -2011,4 +2124,245 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* 고정된 메시지 스타일 - 카톡 스타일 */
+.pinned-message {
+  background-color: rgba(255, 193, 7, 0.1);
+  border-left: 4px solid #ffc107;
+  border-radius: 12px;
+  margin: 6px 0;
+  padding: 8px 12px;
+  position: relative;
+}
+
+.pinned-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  padding: 4px 8px;
+  background-color: rgba(255, 193, 7, 0.15);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #f57c00;
+}
+
+.pin-icon {
+  font-size: 14px;
+  color: #ffc107;
+}
+
+.pinned-text {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #f57c00;
+}
+
+.pinned-chat-style {
+  background-color: rgba(255, 193, 7, 0.08);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+  border-radius: 8px;
+  padding: 8px;
+}
+
+/* 고정된 메시지 호버 효과 */
+.pinned-message:hover {
+  background-color: rgba(255, 193, 7, 0.15);
+}
+
+/* 핑크 테마에서 고정 메시지 스타일 */
+[data-theme="pink"] .pinned-message {
+  background-color: rgba(233, 30, 99, 0.1);
+  border-left-color: #e91e63;
+}
+
+[data-theme="pink"] .pinned-indicator {
+  background-color: rgba(233, 30, 99, 0.15);
+  color: #ad1457;
+}
+
+[data-theme="pink"] .pin-icon {
+  color: #e91e63;
+}
+
+[data-theme="pink"] .pinned-text {
+  color: #ad1457;
+}
+
+[data-theme="pink"] .pinned-chat-style {
+  background-color: rgba(233, 30, 99, 0.08);
+  border-color: rgba(233, 30, 99, 0.2);
+}
+
+[data-theme="pink"] .pinned-message:hover {
+  background-color: rgba(233, 30, 99, 0.15);
+}
+
+/* 삭제된 메시지 스타일 */
+.deleted-message .chatStyle {
+  background-color: #f5f5f5 !important;
+  color: #999 !important;
+  font-style: italic;
+  opacity: 0.7;
+  border: 1px dashed #ddd;
+}
+
+.deleted-message .message-author {
+  color: #999 !important;
+  font-style: italic;
+}
+
+.deleted-message .message-time {
+  color: #ccc !important;
+}
+
+/* 삭제된 메시지는 프로필과 사용자명 숨김 */
+.deleted-message .message-header {
+  display: none !important;
+}
+
+/* 고정된 메시지 컨테이너 - 카톡 스타일 */
+.pinned-messages-container {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  margin: 8px 12px;
+  padding: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+}
+
+.pinned-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  padding: 6px 8px;
+  background-color: #fff3cd;
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 13px;
+  color: #856404;
+  border-left: 3px solid #ffc107;
+  position: relative;
+}
+
+.pinned-title {
+  font-size: 13px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.pinned-close-btn {
+  background: none;
+  border: none;
+  color: #856404;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  transition: all 0.2s ease;
+}
+
+.pinned-close-btn:hover {
+  background-color: rgba(133, 100, 4, 0.1);
+  color: #6c5a00;
+}
+
+
+.pinned-messages-list {
+  max-height: 120px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+}
+
+.pinned-messages-list::-webkit-scrollbar {
+  width: 3px;
+}
+
+.pinned-messages-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pinned-messages-list::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+.pinned-message-item {
+  margin-bottom: 6px;
+  padding: 6px 8px;
+  background-color: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  color: #212529;
+}
+
+.pinned-message-item .chatStyle {
+  color: #212529 !important;
+}
+
+.pinned-message-item .message-author {
+  color: #495057 !important;
+  font-weight: 500;
+}
+
+.pinned-message-item .message-time {
+  color: #6c757d !important;
+}
+
+.pinned-message-item:last-child {
+  margin-bottom: 0;
+}
+
+/* 핑크 테마에서 고정 메시지 컨테이너 */
+[data-theme="pink"] .pinned-messages-container {
+  background-color: #fdf2f8;
+  border-color: #fce7f3;
+}
+
+[data-theme="pink"] .pinned-header {
+  background-color: #fce7f3;
+  color: #be185d;
+  border-left-color: #e91e63;
+}
+
+[data-theme="pink"] .pinned-close-btn {
+  color: #be185d;
+}
+
+[data-theme="pink"] .pinned-close-btn:hover {
+  background-color: rgba(190, 24, 93, 0.1);
+  color: #9d174d;
+}
+
+[data-theme="pink"] .pinned-message-item {
+  background-color: #ffffff;
+  border-color: #fce7f3;
+  color: #212529;
+}
+
+[data-theme="pink"] .pinned-message-item .chatStyle {
+  color: #212529 !important;
+}
+
+[data-theme="pink"] .pinned-message-item .message-author {
+  color: #495057 !important;
+  font-weight: 500;
+}
+
+[data-theme="pink"] .pinned-message-item .message-time {
+  color: #6c757d !important;
 }

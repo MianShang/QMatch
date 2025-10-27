@@ -86,4 +86,6 @@ public class AdminController {
         adminService.activateUser(userId);
         return ResponseEntity.ok(userId + " 정지가 풀렸습니다.");
     }
+
+
 }

@@ -2,10 +2,12 @@ package com.example.backend.Controller;
 
 import com.example.backend.Dto.Request.GameCodeRequestDto;
 import com.example.backend.Entity.UserGameCode;
-import com.example.backend.Service.UserGameCodeService; // 새로 만든 Service import
+import com.example.backend.Service.UserGameCodeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,13 +16,13 @@ import java.util.Optional;
 @RestController
 @RequiredArgsConstructor
 public class UserGameCodeController {
-    // Repository 대신 Service를 주입받습니다.
+
     private final UserGameCodeService userGameCodeService;
 
     // 유저 전적 저장을 위한 API
     @PostMapping("/api/save/gamecode")
     public ResponseEntity<?> saveUserGameCode(@RequestBody GameCodeRequestDto gameCodeRequestDto) {
-        // 복잡한 로지은 Service의 메소드 호출 한 줄로 끝납니다.
+
         String message = userGameCodeService.addGameCode(gameCodeRequestDto);
         return ResponseEntity.ok(message);
     }
@@ -54,4 +56,22 @@ public class UserGameCodeController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
     }
+
+    // 대표 캐릭터 설정을 위한 API
+    @PutMapping("/api/user-game-codes/{gameCode}/set-main")
+    @PreAuthorize("isAuthenticated()") // 로그인한 사용자만 호출 가능
+    public ResponseEntity<String> setMainGameCode(@PathVariable Long gameCode, Authentication authentication) {
+        try {
+            // 현재 로그인한 사용자의 id를 가져옴
+            String userId = authentication.getName();
+            userGameCodeService.setMainGameCode(userId, gameCode);
+            return ResponseEntity.ok("대표 계정이 성공적으로 설정되었습니다.");
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+
 }

@@ -1,7 +1,7 @@
 import MessageList from "./MessageList";
 import RoomSettingsModal from "../../modal/RoomSettingsModal/RoomSettingsModal";
 import FriendInviteModal from "../../modal/FriendInviteModal/FriendInviteModal";
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { LogContext } from "../../App.jsx";
 import { toast } from "react-toastify";
 import { FaPhone, FaPhoneSlash } from "react-icons/fa6";
@@ -55,6 +55,7 @@ function ChatRoom({
     messageContainerRef,
     onRoomUpdated,
     client,
+    setFriendMessages,
 }) {
 
     // 테마 컨텍스트 가져오기
@@ -63,6 +64,7 @@ function ChatRoom({
     const [showRoomSettings, setShowRoomSettings] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [showImageUpload, setShowImageUpload] = useState(false);
+    const [isPinnedMessageHidden, setIsPinnedMessageHidden] = useState(false);
 
     const [showFriendInvite, setShowFriendInvite] = useState(false);
 
@@ -81,6 +83,12 @@ function ChatRoom({
         setCurrentGroupVoiceChat,
         friends
     } = useContext(LogContext);
+
+    // 채팅방이 변경될 때 친구 초대 모달 닫기 및 고정 메시지 숨김 상태 초기화
+    useEffect(() => {
+        setShowFriendInvite(false);
+        setIsPinnedMessageHidden(false); // 채팅방 변경 시 고정 메시지 다시 표시
+    }, [selectedRoom, selectedFriendRoom]);
 
     const handleSend = () => {
         if (selectedRoom) {
@@ -220,21 +228,12 @@ function ChatRoom({
                     // 친구 채팅도 동일하게 처리
                     if (client && imageMessage.trim()) {
                         client.publish({
-                            destination: `/app/friend-chat/${selectedFriendRoom.friendId}`,
+                            destination: `/app/friends/chat/${selectedFriendRoom.roomId}`,
                             body: JSON.stringify({ 
-                                name: userData.userId, 
-                                message: imageMessage 
+                                sendId: userData.userId,
+                                message: imageMessage,
+                                receiveId: selectedFriendRoom.friendId
                             }),
-                        });
-
-                        axios.post('/api/friendship-chat/send', {
-                            friendshipChatRoomId: selectedFriendRoom.friendshipChatRoomId,
-                            chatContent: imageMessage,
-                            userId: userData.userId
-                        }).then((res) => {
-                            console.log('친구 이미지 메세지 저장 성공');
-                        }).catch((err) => {
-                            console.error('친구 이미지 메세지 저장 실패:', err);
                         });
                     }
                 }
@@ -313,9 +312,24 @@ function ChatRoom({
             {/* 메시지 영역 */}
             <div ref={messageContainerRef} className="scroll-container chatDivStyle">
                 {selectedRoom ? (
-                    <MessageList messages={messages} userData={userData} />
+                    <MessageList 
+                        messages={messages} 
+                        userData={userData} 
+                        roomId={selectedRoom.id} 
+                        isFriendChat={false}
+                        isPinnedMessageHidden={isPinnedMessageHidden}
+                        onHidePinnedMessage={() => setIsPinnedMessageHidden(true)}
+                    />
                 ) : selectedFriendRoom ? (
-                    <MessageList messages={friendMessages} userData={userData} />
+                    <MessageList 
+                        messages={friendMessages} 
+                        userData={userData} 
+                        roomId={selectedFriendRoom.roomId} 
+                        isFriendChat={true}
+                        isPinnedMessageHidden={isPinnedMessageHidden}
+                        onHidePinnedMessage={() => setIsPinnedMessageHidden(true)}
+                        setFriendMessages={setFriendMessages}
+                    />
                 ) : (
                     <div className="empty-chat-container">
                         <div className="empty-chat-logo">

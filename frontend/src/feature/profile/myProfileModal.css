@@ -1,5 +1,4 @@
 /* Discord 스타일 프로필 모달 */
-
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -51,7 +50,6 @@
   }
 }
 
-
 .modal-content-scrollable {
   overflow-y: auto;
   overflow-x: hidden;
@@ -66,24 +64,17 @@
 .modal-content-scrollable::-webkit-scrollbar {
   width: 8px;
 }
-
 .modal-content-scrollable::-webkit-scrollbar-track {
   background: var(--discord-bg-secondary);
   border-radius: 4px;
 }
-
 .modal-content-scrollable::-webkit-scrollbar-thumb {
   background: var(--discord-bg-tertiary);
   border-radius: 4px;
   border: 1px solid var(--discord-bg-quaternary);
 }
-
 .modal-content-scrollable::-webkit-scrollbar-thumb:hover {
   background: var(--discord-bg-modifier-hover);
-}
-
-.modal-content-scrollable::-webkit-scrollbar-corner {
-  background: var(--discord-bg-secondary);
 }
 
 /* 프로필 상단 영역 */
@@ -466,18 +457,15 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 16px 20px;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .game-item-container:hover {
   background: rgba(88, 101, 242, 0.1);
   border-color: rgba(88, 101, 242, 0.3);
-  transform: translateX(8px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  transform: translateX(4px);
 }
 
 .game-item-container::before {
@@ -498,6 +486,16 @@
 
 .game-item {
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 16px 0 16px 20px;
+  flex-grow: 1;
+}
+
+.main-account-badge {
+  color: #ffd700;
+  margin-right: 10px;
+  font-size: 1.1rem;
 }
 
 .game-name {
@@ -516,15 +514,42 @@
   border-radius: 6px;
 }
 
+.game-item-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 15px;
+  flex-shrink: 0; /* 버튼 영역이 줄어들지 않도록 설정 */
+}
+
+.set-main-btn {
+  background: rgba(88, 101, 242, 0.15);
+  color: var(--discord-accent);
+  border: 1px solid rgba(88, 101, 242, 0.3);
+  padding: 6px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.set-main-btn:hover {
+  background: var(--discord-accent);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(88, 101, 242, 0.2);
+}
+
 .delete-game-btn {
   background-color: transparent;
   color: #a0a0a0;
   border: none;
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   font-size: 20px;
-  font-weight: bold;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -532,14 +557,12 @@
   padding: 0;
   line-height: 1;
   transition: color 0.2s, background-color 0.2s;
-  flex-shrink: 0;
 }
 
 .delete-game-btn:hover {
   color: #ff4d4d;
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 77, 77, 0.1);
 }
-
 /* ======================================================== */
 /* ▲▲▲▲▲▲▲▲▲▲▲▲▲▲ 게임 목록 관련 CSS 끝 ▲▲▲▲▲▲▲▲▲▲▲▲▲▲ */
 /* ======================================================== */
@@ -640,104 +663,6 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
-
-/* ======== 로그아웃 확인 모달 ======== */
-.logout-confirm-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000; /* 프로필 모달보다 위에 있도록 z-index 조정 */
-  backdrop-filter: blur(4px);
-}
-
-.logout-confirm-modal {
-  background: var(--discord-bg-primary);
-  border-radius: var(--discord-radius);
-  padding: 32px;
-  max-width: 420px;
-  width: 90%;
-  box-shadow: var(--discord-elevation-high);
-  border: 1px solid var(--discord-bg-tertiary);
-  animation: modalSlideIn 0.3s ease-out;
-  position: relative;
-  overflow: hidden;
-}
-
-.logout-confirm-modal::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--discord-text-danger), #e74c3c);
-}
-
-.logout-confirm-modal h3 {
-  color: var(--discord-text-normal);
-  font-size: 20px;
-  font-weight: 600;
-  margin: 0 0 16px 0;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.logout-confirm-modal h3::before {
-  content: '⚠️';
-  font-size: 18px;
-}
-
-.logout-confirm-modal p {
-  color: var(--discord-text-muted);
-  font-size: 15px;
-  margin: 0 0 24px 0;
-  text-align: center;
-  line-height: 1.5;
-  padding: 0 8px;
-}
-
-.logout-confirm-buttons {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-}
-
-.logout-confirm-buttons .cancel-btn {
-  background: var(--discord-bg-secondary);
-  color: var(--discord-text-normal);
-  border: 1px solid var(--discord-bg-tertiary);
-}
-
-.logout-confirm-buttons .cancel-btn:hover {
-  background: var(--discord-bg-modifier-hover);
-  border-color: var(--discord-bg-modifier-active);
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-}
-
-.logout-confirm-buttons .confirm-btn {
-  background: var(--discord-text-danger);
-  color: white;
-  border: 1px solid var(--discord-text-danger);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.logout-confirm-buttons .confirm-btn:hover {
-  background: #e74c3c;
-  border-color: #e74c3c;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(231, 76, 60, 0.4);
-}
-
 
 /* ======== 반응형 디자인 ======== */
 @media (max-width: 768px) {

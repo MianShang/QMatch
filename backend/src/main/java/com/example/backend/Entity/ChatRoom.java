@@ -41,6 +41,11 @@ public class ChatRoom {
     @JsonManagedReference
     private List<ChatRoomTag> chatRoomTags = new ArrayList<>();
 
+    // 채팅방, 음성채팅 매핑
+    @OneToMany(mappedBy = "chatRoom", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<VoiceChannel> voiceChannels = new ArrayList<>();
+
     protected ChatRoom() {}
 
     public ChatRoom(String id, String name, int maxUsers, User owner) {

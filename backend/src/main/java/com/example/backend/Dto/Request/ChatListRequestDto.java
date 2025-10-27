@@ -15,4 +15,5 @@ public class ChatListRequestDto {
     private String chatRoom;        // 해당 채팅방
     private String userId;          // 메세지 전송 유저
     private String userName;        // 메세지 전송 유저 이름
+    private Boolean isPinned = false; // 메시지 고정 여부
 }

@@ -56,20 +56,20 @@ function LogInRoutePage() {
     // HTML 폼 형식 (x-www-form-urlencoded)
     // username=입력한아이디&password=입력한비밀번호 이런식으로 드감
     axios.post('/api/loginProc', params, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'},
       withCredentials: true
     })
     .then(async (res) => {
       // 로그인 성공시 반환 데이터 출력
       console.log(res);
 
-      //로그인 성공시 100ms 정도 기다려서 Electron이 Set-Cookie를 반영할 시간 확보
-      await new Promise(r => setTimeout(r, 150));
+      //로그인 성공시 150ms 정도 기다려서 Electron이 Set-Cookie를 반영할 시간 확보
+      await new Promise(r => setTimeout(r, 300));
 
       // 로그인 성공시 유저 정보를 전역 유저 데이터 State Set
         const userRes = await axios.get('/api/user/get-data', { withCredentials: true });
+        console.log(userRes.data);
         const { userId, userName, userEmail } = userRes.data;
-          //console.log(res.data);
           // 전역으로 관리할 유저 데이터 State Set
         setUserData({ userId, userName, userEmail }); 
 

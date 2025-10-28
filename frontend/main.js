@@ -9,7 +9,7 @@ const Module = require('module');
 const originalRequire = Module.createRequire(__filename);
 
 // ✅ 환경변수 로드
-const FRONT_DOMAIN = process.env.FRONT_DOMAIN || 'yjs0511.synology.me';
+const FRONT_DOMAIN = process.env.FRONT_DOMAIN;
 console.log(`🌐 FRONT_DOMAIN: ${FRONT_DOMAIN}`);
 
 let psList;
@@ -42,11 +42,8 @@ function configureSession() {
       let c = cookie
         .replace(/SameSite=Lax/gi, 'SameSite=None')
         .replace(/SameSite=Strict/gi, 'SameSite=None')
-        .replace(/;\s*Secure/gi, ''); // Secure 제거
-
-      // Domain 강제 지정
-      if (/Domain=/i.test(c)) c = c.replace(/Domain=[^;]+/i, `Domain=${FRONT_DOMAIN}`);
-      else c += `; Domain=${FRONT_DOMAIN}`;
+        .replace(/;\s*Secure/gi, '')          // Secure 제거
+        .replace(/Domain=[^;]+/gi, '');       // Domain 완전 제거
 
       // Path 기본값 추가
       if (!/Path=/i.test(c)) c += '; Path=/';

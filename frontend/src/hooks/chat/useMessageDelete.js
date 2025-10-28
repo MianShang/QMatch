@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
+import axios from '@axios';
 
 export function useMessageDelete() {
     const [isLoading, setIsLoading] = useState(false);

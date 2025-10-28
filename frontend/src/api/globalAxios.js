@@ -27,27 +27,24 @@ const globalAxios = axios.create({
   baseURL: BASE_URL,
   withCredentials: true, // 세션 쿠키 전송 허용
   timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json'
-  },
 });
 
 // -----------------------------------------------------
 // 4️ Electron 환경에서 쿠키 수동 주입 (빌드 시)
 // -----------------------------------------------------
-// if (isElectron && !isDev) {
-//   // Electron 쿠키를 axios 요청 헤더에 자동 추가
-//   (async () => {
-//     try {
-//       const cookies = await window.electron.cookies.get({ url: BASE_URL });
-//       const cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ');
-//       globalAxios.defaults.headers.Cookie = cookieHeader;
-//       console.log('[Electron] 쿠키 헤더 주입 완료:', cookieHeader);
-//     } catch (err) {
-//       console.error('[Electron] 쿠키 불러오기 실패:', err);
-//     }
-//   })();
-// }
+if (isElectron && !isDev) {
+  // Electron 쿠키를 axios 요청 헤더에 자동 추가
+  (async () => {
+    try {
+      const cookies = await window.electron.cookies.get({ url: BASE_URL });
+      const cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ');
+      globalAxios.defaults.headers.Cookie = cookieHeader;
+      console.log('[Electron] 쿠키 헤더 주입 완료:', cookieHeader);
+    } catch (err) {
+      console.error('[Electron] 쿠키 불러오기 실패:', err);
+    }
+  })();
+}
 
 // -----------------------------------------------------
 // 5️ 요청/응답 인터셉터
@@ -59,10 +56,7 @@ globalAxios.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    console.error('[Axios Request Error]', error);
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 globalAxios.interceptors.response.use(
@@ -73,10 +67,8 @@ globalAxios.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('[Axios Error]', error);
     if (error.response) {
-      const { status, config } = error.response;
-      console.error(`❌ HTTP ${status} @ ${config.url}`);
+      console.error(`❌ HTTP ${error.response.status} @ ${error.response.config.url}`);
     } else {
       console.error('❌ Network or CORS error:', error.message);
     }

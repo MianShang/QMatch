@@ -34,10 +34,18 @@ public class AuthController {
 
     // 유저 정보 반환 API
     @GetMapping("/api/user/get-data")
-    public ResponseEntity<UserResponseDto> getData(Authentication auth) {
+    public ResponseEntity<?> getData(Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
 
-        UserResponseDto userResponseDto = authService.getUserData(auth);
-
-        return ResponseEntity.ok(userResponseDto);
+        try {
+            UserResponseDto userResponseDto = authService.getUserData(auth);
+            return ResponseEntity.ok(userResponseDto);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body("서버 내부 오류: " + e.getMessage());
+        }
     }
 }

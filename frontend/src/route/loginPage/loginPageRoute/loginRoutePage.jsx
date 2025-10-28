@@ -59,19 +59,19 @@ function LogInRoutePage() {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       withCredentials: true
     })
-    .then((res) => {
-
+    .then(async (res) => {
       // 로그인 성공시 반환 데이터 출력
-      console.log(res)
+      console.log(res);
+
+      //로그인 성공시 100ms 정도 기다려서 Electron이 Set-Cookie를 반영할 시간 확보
+      await new Promise(r => setTimeout(r, 150));
 
       // 로그인 성공시 유저 정보를 전역 유저 데이터 State Set
-      axios.get('/api/user/get-data', { withCredentials: true })
-        .then((res) => {
+        const userRes = await axios.get('/api/user/get-data', { withCredentials: true });
+        const { userId, userName, userEmail } = userRes.data;
           //console.log(res.data);
           // 전역으로 관리할 유저 데이터 State Set
-          const { userId, userName, userEmail } = res.data;
-          setUserData({ userId, userName, userEmail }); 
-        })
+        setUserData({ userId, userName, userEmail }); 
 
       // 로그인 여부 Context API TRUE
       setIsLogIn(true);

@@ -28,23 +28,16 @@ public class AuthService {
 
     // 유저 정보 반환 Service
     public UserResponseDto getUserData(Authentication auth){
-        // UserDetailService
-        MyUserDetailsService.CustomUserDetails user = (MyUserDetailsService.CustomUserDetails) auth.getPrincipal();
+        if (auth == null) {
+            throw new IllegalArgumentException("Authentication 정보가 없습니다.");
+        }
 
-        // UserDTO
-        //UserResponseDto userResponseDto = new UserResponseDto();
+        Object principal = auth.getPrincipal();
+        if (!(principal instanceof MyUserDetailsService.CustomUserDetails)) {
+            throw new IllegalStateException("잘못된 사용자 정보입니다.");
+        }
 
-
-        // 데이터 Set
-
-//        userResponseDto.setUserId(user.userId);
-//        userResponseDto.setUserName(user.getUsername());
-//        userResponseDto.setUserEmail(user.userEmail);
-//        userResponseDto.setUserProfile(user.userProfile);
-//        userResponseDto.setUserStatusMessage(user.userStatusMessage);
-//        userResponseDto.setUserIntro(user.userIntro);
-//        userResponseDto.setJoinStatus(null); // 인증 서비스에서는 joinStatus는 null
-
+        MyUserDetailsService.CustomUserDetails user = (MyUserDetailsService.CustomUserDetails) principal;
 
         return UserResponseDto.from(user);
     }

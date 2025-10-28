@@ -1,6 +1,7 @@
 package com.example.backend.Security;
 
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -10,15 +11,15 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
 
 import javax.sql.DataSource;
+import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
@@ -28,11 +29,11 @@ public class SecurityConfig {
     private final DataSource dataSource; //자동로그인을 위한 의존성 주입(spring security)
     private final UserDetailsService myUserDetailsService;
 
-    @Value("${front_URL}")
+    @Value("${front_url}")
     private String front_url;
 
+    // ✅ remember-me 토큰 저장소
     @Bean
-    //토근을 DB에 저장하기 위함
     public PersistentTokenRepository tokenRepository() {
         JdbcTokenRepositoryImpl repository = new JdbcTokenRepositoryImpl();
         repository.setDataSource(dataSource);
@@ -40,68 +41,80 @@ public class SecurityConfig {
     }
 
     @Bean
-    // BCrypt 인코더
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // Security에 직접 연결되는 CORS 설정
     @Bean
-    // CORS 설정
-    public CorsFilter corsFilter() {
+    public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
 
-        // 정확한 Origin만 허용 (Electron, Vite, 서버 주소)
-        config.addAllowedOrigin("http://localhost:5173"); // React 개발 서버
-        config.addAllowedOrigin("http://localhost");      // Electron 개발 모드
-        config.addAllowedOrigin("app://.");               // Electron 패키지 모드
-        config.addAllowedOrigin(front_url); // 실제 서버 주소
+        // ✅ Electron(app://) + 개발서버 + 배포서버 모두 허용
+        config.setAllowedOriginPatterns(List.of(
+                "app://*",
+                "null",                 // Electron이 origin:null 로 보낼 때도 허용
+                "http://localhost:*",   // Vite dev
+                "http://127.0.0.1:*",
+                front_url               // 실제 배포 주소
+        ));
 
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
         config.addExposedHeader("Set-Cookie");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
-
-        return new CorsFilter(source);
+        return source;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // csrf off
-                .csrf(
-                        csrf -> csrf.disable())
-                .addFilterBefore(corsFilter(), UsernamePasswordAuthenticationFilter.class)
+                // CORS 통합
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(csrf -> csrf.disable())
+
                 .sessionManagement(session -> session
-                        .sessionFixation(fix -> fix.changeSessionId()) //로그인 시 새로운 세션ID 발급
-                        .maximumSessions(1) //동시접속 가능한 세션 수
-                        .maxSessionsPreventsLogin(false) //중복 로그인 시 세션 만료
+                        .sessionFixation(fix -> fix.changeSessionId())
+                        .maximumSessions(1)
+                        .maxSessionsPreventsLogin(false)
                 )
+
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/user/**").authenticated()
+                        .requestMatchers("/api/**").permitAll()  // ✅ API 엔드포인트 접근 허용
                         .anyRequest().permitAll()
                 )
-                // 로그인 api
+
+                // 로그인 설정
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/api/loginProc")
-                        .defaultSuccessUrl("/loginOk", true)
+                        .successHandler((request, response, authentication) -> {
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.getWriter().write("로그인 성공");
+                        })
+                        .failureHandler((request, response, exception) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("로그인 실패");
+                        })
                         .permitAll()
                 )
-                //자동 로그인 설정
+
+                // 자동 로그인 (remember-me)
                 .rememberMe(remember -> remember
                         .key("asdasdasddaasdaddada")
-                        .rememberMeParameter("remember-me") //프론트에 보낼 파라미터 이름
-                        .tokenValiditySeconds(60 * 60 * 24 * 7)  //시간 단위(초)
-                        .userDetailsService(myUserDetailsService) //유저 정보를 조회 시 사용할 서비스
-                        .tokenRepository(tokenRepository()) //DB 토근 저장소 연결
-                        .useSecureCookie(false) //http 환경에서도 테스트
+                        .rememberMeParameter("remember-me")
+                        .tokenValiditySeconds(60 * 60 * 24 * 7)
+                        .userDetailsService(myUserDetailsService)
+                        .tokenRepository(tokenRepository())
+                        .useSecureCookie(false)
                 )
-                // 로그아웃 api
+
+                // 로그아웃
                 .logout(logout -> logout
                         .logoutUrl("/api/logout")
                         .logoutSuccessUrl("/logoutOk")
@@ -110,6 +123,8 @@ public class SecurityConfig {
 
         return http.build();
     }
+
+
     //중복 로그인 방지를 위한 세션 관리
     @Bean
     public HttpSessionEventPublisher httpSessionEventPublisher(){

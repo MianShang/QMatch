@@ -13,12 +13,23 @@ export function useLogout(){
     setCurrentGroupVoiceChat,
     setVoiceChatRoomId,
     setCurrentVoiceRoomId,
+    globalStomp, // ✅ 전역 STOMP 클라이언트 추가
   } = useContext(LogContext);
 
   // 로그아웃 처리 API
   async function logoutFunc() {
 
     try {
+      // ✅ STOMP 세션 종료 (로그아웃 시 PresenceEvent 오프라인 반영)
+      if (globalStomp && globalStomp.isConnected()) {
+        try {
+          await globalStomp.deactivate();
+          console.log("STOMP 세션이 정상적으로 종료되었습니다.");
+        } catch (e) {
+          console.warn("STOMP 세션 종료 중 오류:", e);
+        }
+      }
+
       // 백엔드 로그아웃 요청
       await axios.post(BASE_URL+"/api/logout");
 

@@ -532,7 +532,7 @@ function SearchPage() {
                     <div className="chatRoomInfo">
                       <div className="chatRoomName">{room.chatName || room.name}</div>
                       <div className="chatRoomUsers">
-                        👥 <span>{room.currentUsers || 0}</span> / {room.maxUsers || 100}
+                        <span>{room.currentUsers || 0}</span> / {room.maxUsers || 100}
                       </div>
                     </div>
                   </div>

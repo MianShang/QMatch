@@ -4,7 +4,7 @@ import axios from 'axios';
 import './searchPage.css';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaHome } from 'react-icons/fa';
+import { FaHome, FaSearch } from 'react-icons/fa';
 
 // 로그인 체크용 Context API import
 import { LogContext } from '../../App.jsx';
@@ -32,6 +32,8 @@ function SearchPage() {
   const [selectedTags, setSelectedTags] = useState([]); // number[]
   const [groupedTags, setGroupedTags] = useState({});
   const [subscribedRooms, setSubscribedRooms] = useState([]);
+  const [showTagPanel, setShowTagPanel] = useState(false);
+  const [panelGameTag, setPanelGameTag] = useState('ALL');
 
   const { isLogIn, setIsLogIn, userData, hasUnreadMessages, theme } = useContext(LogContext);
   useLoginCheck(isLogIn); // 로그인 체크
@@ -57,6 +59,68 @@ function SearchPage() {
       default: return "https://placehold.co/45";
     }
   }
+
+  // 태그 패널 토글 (같은 게임이면 닫기, 다른 게임이면 열기)
+  function handleToggleTagPanel(gameTag) {
+    if (gameTag === 'ALL') {
+      // 전체 게임은 패널을 열지 않고 필터만 적용
+      setGameTag(gameTag);
+      setSelectedTags([]);
+      setShowTagPanel(false);
+    } else if (showTagPanel && panelGameTag === gameTag) {
+      // 같은 게임이면 닫기
+      setShowTagPanel(false);
+    } else {
+      // 다른 게임이면 열기
+      setPanelGameTag(gameTag);
+      setGameTag(gameTag);
+      setSelectedTags([]); // 패널 열 때 태그 초기화
+      setShowTagPanel(true);
+    }
+  }
+
+  // 태그 패널 닫기
+  function handleCloseTagPanel() {
+    setShowTagPanel(false);
+  }
+
+  // 외부 클릭 감지
+  useEffect(() => {
+    function handleClickOutside(event) {
+      const panel = document.querySelector('.tag-panel-overlay');
+      const triggerButtons = document.querySelectorAll('.chat_tag');
+      
+      if (showTagPanel) {
+        let clickedInsidePanel = false;
+        let clickedOnTrigger = false;
+        
+        // 패널 내부 클릭 확인
+        if (panel && panel.contains(event.target)) {
+          clickedInsidePanel = true;
+        }
+        
+        // 버튼 클릭 확인
+        triggerButtons.forEach(btn => {
+          if (btn.contains(event.target)) {
+            clickedOnTrigger = true;
+          }
+        });
+        
+        // 패널 외부 클릭이고 버튼도 아니면 패널 닫기
+        if (!clickedInsidePanel && !clickedOnTrigger) {
+          setShowTagPanel(false);
+        }
+      }
+    }
+
+    if (showTagPanel) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showTagPanel]);
 
   // 처음 url에 입장할때 목록 가져오기 실행 및 채팅방 검색
   useEffect(() => {
@@ -154,6 +218,10 @@ function SearchPage() {
     setSelectedTags([]);
   }, [gametag]);
 
+  // 필터링된 채팅방 개수 가져오기
+  const filteredRooms = getFilteredRooms();
+  const resultCount = filteredRooms.length;
+
   ///임시
   useEffect(() => {
     if (!gametag) return;
@@ -204,26 +272,41 @@ function SearchPage() {
 
   function chatTagRoom() {  
     if (!groupedTags || Object.keys(groupedTags).length === 0) {
-      return null; // 아무것도 렌더링하지 않음
+      return (
+        <div className="tag-empty-state">
+          <div className="tag-empty-icon">🏷️</div>
+          <div className="tag-empty-message">
+            태그를 불러오는 중...
+          </div>
+        </div>
+      );
     }
 
     return (
-      <form className="tag-form">
+      <div className="tag-form">
         {Object.keys(groupedTags).map(category => (
           <div key={category} className="tag-section">
-          <p className="tag-title">{category}</p>
-          {groupedTags[category].map(tag => (
-            <label key={tag.id}>
-              <input
-                type="checkbox"
-                value={tag.id}
-                checked={selectedTags.includes(Number(tag.id))}
-                onChange={handleTagChange} />
-                {" "}
-                {tag.tagName}
-            </label> ))}
-          </div> ))}
-      </form>
+            <p className="tag-title">{category}</p>
+            <div className="tag-list">
+              {groupedTags[category].map(tag => (
+                <label 
+                  key={tag.id}
+                  className={`tag-item ${selectedTags.includes(Number(tag.id)) ? 'active' : ''}`}
+                >
+                  <input
+                    type="checkbox"
+                    value={tag.id}
+                    checked={selectedTags.includes(Number(tag.id))}
+                    onChange={handleTagChange}
+                    className="tag-checkbox"
+                  />
+                  <span className="tag-name">{tag.tagName}</span>
+                </label> 
+              ))}
+            </div>
+          </div> 
+        ))}
+      </div>
     );
   }
 
@@ -356,14 +439,14 @@ function SearchPage() {
         </div>
       )}
 
-      <div className='fullscreen' style={{ display: "flex", padding: "0" }}>
+      <div className={`fullscreen ${showTagPanel ? 'has-tag-panel' : ''}`} style={{ display: "flex", padding: "0" }}>
 
         {/* 좌측 사이드바 */}
         <div className='contentStyle leftSize'>
           {/* 여긴 카테고리 */}
-          <p style={{color:"var(--discord-text-normal)", fontSize:"20px", margin:"3px"}}>검색 태그</p>
+          <p>검색 태그</p>
           <div className='Category_tag'>
-                <button className='chat_tag' onClick={()=> setGameTag('ALL')}>
+                <button className={`chat_tag ${gametag === 'ALL' ? 'active' : ''}`} onClick={()=> handleToggleTagPanel('ALL')}>
                   <div style={{
                     width: '32px',
                     height: '32px',
@@ -379,35 +462,30 @@ function SearchPage() {
                   <p>전체 게임</p>
                 </button>
 
-                <button className='chat_tag' onClick={()=> setGameTag('lol')}>
+                <button className={`chat_tag ${gametag === 'lol' ? 'active' : ''}`} onClick={()=> handleToggleTagPanel('lol')}>
                   <img src="./public/gameIcons/lol_Icon.png" alt="LOL" />
                   <p>League of Legends</p>
                 </button>
 
-                <button className='chat_tag' onClick={()=> setGameTag('maplestory')}>
-                  <img src="./public/gameIcons/maplestory_Icon.png" alt="MapleStory" />
-                  <p>MapleStory</p>
-                </button>
-
-                <button className='chat_tag' onClick={()=> setGameTag('tft')}>
+                <button className={`chat_tag ${gametag === 'tft' ? 'active' : ''}`} onClick={()=> handleToggleTagPanel('tft')}>
                   <img src="./public/gameIcons/tft_Icon.png" alt="TFT"/>
                   <p>Teamfight Tactics</p>
                 </button>
 
-                <button className='chat_tag' onClick={()=> setGameTag('dnf')}>
+                <button className={`chat_tag ${gametag === 'maplestory' ? 'active' : ''}`} onClick={()=> handleToggleTagPanel('maplestory')}>
+                  <img src="./public/gameIcons/maplestory_Icon.png" alt="MapleStory" />
+                  <p>MapleStory</p>
+                </button>
+
+                <button className={`chat_tag ${gametag === 'dnf' ? 'active' : ''}`} onClick={()=> handleToggleTagPanel('dnf')}>
                   <img src="./public/gameIcons/dnf_Icon.png" alt="Dnf"/>
                   <p>던전앤파이터</p>
                 </button>
 
-                <button className='chat_tag' onClick={()=> setGameTag('lostark')}>
+                <button className={`chat_tag ${gametag === 'lostark' ? 'active' : ''}`} onClick={()=> handleToggleTagPanel('lostark')}>
                   <img src="./public/gameIcons/lostark_Icon.png" alt="lostark"/>
                   <p>로스트아크</p>
                 </button>
-
-                <hr style={{width:"280px", margin:"3px"}}></hr>
-
-                {/* 태그 목록 */}
-                {chatTagRoom()}
             </div>
 
 
@@ -417,19 +495,31 @@ function SearchPage() {
         <div className='rightSize'>
           {/* 검색 바 */}
           <div className='contentStyle searchBarSize'>
-            <input
-              type="text"
-              placeholder="방 이름 검색"
-              value={searchKeyword}
-              onChange={(e) => setSearchKeyword(e.target.value)}
-              className="searchInput"
-            />
+            <div className="searchBarContainer">
+              <FaSearch className="searchIcon" />
+              <input
+                type="text"
+                placeholder="방 이름으로 검색..."
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                className="searchInput"
+              />
+            </div>
           </div>
 
           {/* 채팅방 리스트 */}
           <div className='contentStyle chatListSize'>
             <div className='chatListScroll'>
-              {
+              {resultCount === 0 ? (
+                <div className='empty-state'>
+                  <div className='empty-state-icon'>🔍</div>
+                  <div className='empty-state-title'>채팅방을 찾을 수 없습니다</div>
+                  <div className='empty-state-message'>
+                    다른 검색 키워드를 입력하거나 필터를 변경해보세요.<br/>
+                    또는 새로운 채팅방을 만들어보세요!
+                  </div>
+                </div>
+              ) : (
                 getFilteredRooms().map((room) => (
                   <div className='chatRoomList'
                     key={room.id}
@@ -439,10 +529,15 @@ function SearchPage() {
                       alt="게임 아이콘" 
                       className="chatRoomIcon"
                     />
-                    <div>{room.chatName || room.name}</div>
+                    <div className="chatRoomInfo">
+                      <div className="chatRoomName">{room.chatName || room.name}</div>
+                      <div className="chatRoomUsers">
+                        👥 <span>{room.currentUsers || 0}</span> / {room.maxUsers || 100}
+                      </div>
+                    </div>
                   </div>
                 ))
-              }
+              )}
             </div>
 
             {/* 채팅방 생성 */}
@@ -471,6 +566,24 @@ function SearchPage() {
             </Link>
           </div>
         </div>
+
+        {/* 태그 패널 오버레이 */}
+        {showTagPanel && (
+          <div className="tag-panel-overlay">
+            <div className="tag-panel-content">
+              <div className="tag-panel-header">
+                <span>필터 태그</span>
+                <button className="tag-panel-close-btn" onClick={handleCloseTagPanel}>
+                  ×
+                </button>
+              </div>
+              
+              <div className="tag-panel-body">
+                {chatTagRoom()}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

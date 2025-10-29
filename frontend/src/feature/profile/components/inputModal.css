@@ -258,6 +258,21 @@
     user-select: none;
 }
 
+.check-btn {
+     color:  var(--discord-text-normal);
+     
+}
+.check-btn:hover{
+    cursor: pointer;
+    transform: translateY(-2px);
+}
+.input-text {
+    color: var(--discord-text-normal)
+}
+
+
+
+
 /* Discord 스타일 반응형 디자인 */
 @media (max-width: 480px) {
     .input-modal-content {

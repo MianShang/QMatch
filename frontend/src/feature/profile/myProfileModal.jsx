@@ -237,7 +237,6 @@ function MyProfile({ viewUserId, onClose }) {
             </div>
             <div className="right-box">
               <div className="profile-header-actions">
-                <button className="close-btn" onClick={onClose}><span>✕</span></button>
                 {isMe && (
                   <button className="logout-btn" onClick={() => logoutFunc(setIsLogIn)}>로그아웃</button>
                 )}
@@ -245,15 +244,11 @@ function MyProfile({ viewUserId, onClose }) {
               <div className="profile-user-info">
                 {!editNickName ? (
                   <div className="nickname-section">
-                    <h2 className="profile-nickname">{profileData?.userNickName || profileData?.userId}</h2>
-                    {isMe && (
-                      <button className="edit-nickname-btn" onClick={() => {
-                        setTempNickName(profileData?.userNickName || '');
-                        setEditNickName(true);
-                      }}>
-                        수정
-                      </button>
-                    )}
+                    <h2 className={`profile-nickname ${isMe ? 'editable' : ''}`}
+                    onClick={() => { if (!isMe) return; 
+                      setTempNickName(profileData?.userNickName || '');
+                      setEditNickName(true);
+                    }}>{profileData?.userNickName || profileData?.userId}</h2>
                   </div>
                 ) : (
                   <div className="nickname-edit-form">
@@ -276,7 +271,7 @@ function MyProfile({ viewUserId, onClose }) {
                       setTempStatus(profileData?.userStatusMessage || '');
                       setEditStatus(true);
                     }}>
-                      상태 메시지 수정
+                      ✏️
                     </button>
                   )}
                   {!editStatus && (
@@ -305,9 +300,9 @@ function MyProfile({ viewUserId, onClose }) {
                 <div className="section-header">
                   <h3 className="section-title">자주 사용하는 태그</h3>
                   {isMe && (
-                    <button className="add-tag-btn" onClick={() => setShowTagModal(true)}>
-                      <span>+</span> 태그 추가
-                    </button>
+                    <span className="add-tag-btn" onClick={() => setShowTagModal(true)}>
+                    ✏️
+                    </span>
                   )}
                 </div>
                 <div className="frequent-tags">
@@ -327,9 +322,9 @@ function MyProfile({ viewUserId, onClose }) {
             <div className="section-header">
               <h3 className="section-title">자주 하는 게임</h3>
               {isMe && (
-                <button className="add-game-btn" onClick={() => setShowGameModal(true)}>
-                  <span>+</span> 게임 추가
-                </button>
+                <span className="add-game-btn" onClick={() => setShowGameModal(true)}>
+                  🕹️
+                </span>
               )}
             </div>
             <div className="games-list">
@@ -387,15 +382,15 @@ function MyProfile({ viewUserId, onClose }) {
             <div className="section-header">
               <h3 className="section-title">소개</h3>
               {isMe && (
-                <button
+                <span
                   className="edit-bio-btn"
                   onClick={() => {
                     setTempIntro(profileData?.userIntro || '');
                     setEdit(true);
                   }}
                 >
-                  수정
-                </button>
+                  ✏️
+                </span>
               )}
             </div>
             <div className="bio-content">

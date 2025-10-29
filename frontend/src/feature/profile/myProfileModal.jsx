@@ -298,7 +298,7 @@ function MyProfile({ viewUserId, onClose }) {
               </div>
               <div className="profile-tags-section">
                 <div className="section-header">
-                  <h3 className="section-title">자주 사용하는 태그</h3>
+                  <h3 className="section-title">나만의 태그</h3>
                   {isMe && (
                     <span className="add-tag-btn" onClick={() => setShowTagModal(true)}>
                     ✏️

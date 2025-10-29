@@ -29,24 +29,30 @@ public class GameTagInitializer implements CommandLineRunner {
         insertIfNotExists("lol", "마스터", "tier");
         insertIfNotExists("lol", "그랜드마스터", "tier");
         insertIfNotExists("lol", "챌린저", "tier");
-        
 
-        insertIfNotExists("maplestory", "스우", "class");
-        insertIfNotExists("maplestory", "데미안", "class");
-        insertIfNotExists("maplestory", "가엔슬", "class");
-        insertIfNotExists("maplestory", "가엔슬", "class");
-        insertIfNotExists("maplestory", "루시드", "class");
-        insertIfNotExists("maplestory", "윌", "class");
-        insertIfNotExists("maplestory", "더스크", "class");
-        insertIfNotExists("maplestory", "진 힐라", "class");
-        insertIfNotExists("maplestory", "듄켈", "class");
-        insertIfNotExists("maplestory", "검은마법사", "class");
-        insertIfNotExists("maplestory", "세렌", "class");
-        insertIfNotExists("maplestory", "칼로스", "class");
-        insertIfNotExists("maplestory", "최초의 대적자", "class");
-        insertIfNotExists("maplestory", "카링", "class");
-        insertIfNotExists("maplestory", "림보", "class");
-        insertIfNotExists("maplestory", "발드릭스", "class");
+        insertIfNotExists("lol", "솔로랭크", "gamemode");
+        insertIfNotExists("lol", "자유랭크", "gamemode");
+        insertIfNotExists("lol", "칼바람나락", "gamemode");
+        insertIfNotExists("lol", "우르프", "gamemode");
+        insertIfNotExists("lol", "아레나", "gamemode");
+        insertIfNotExists("lol", "그 외 모드", "gamemode");
+
+        insertIfNotExists("maplestory", "스우", "Boss");
+        insertIfNotExists("maplestory", "데미안", "Boss");
+        insertIfNotExists("maplestory", "가엔슬", "Boss");
+        insertIfNotExists("maplestory", "가엔슬", "Boss");
+        insertIfNotExists("maplestory", "루시드", "Boss");
+        insertIfNotExists("maplestory", "윌", "Boss");
+        insertIfNotExists("maplestory", "더스크", "Boss");
+        insertIfNotExists("maplestory", "진 힐라", "Boss");
+        insertIfNotExists("maplestory", "듄켈", "Boss");
+        insertIfNotExists("maplestory", "검은마법사", "Boss");
+        insertIfNotExists("maplestory", "세렌", "Boss");
+        insertIfNotExists("maplestory", "칼로스", "Boss");
+        insertIfNotExists("maplestory", "최초의 대적자", "Boss");
+        insertIfNotExists("maplestory", "카링", "Boss");
+        insertIfNotExists("maplestory", "림보", "Boss");
+        insertIfNotExists("maplestory", "발드릭스", "Boss");
 
         insertIfNotExists("lostark", "사멸",  "포지션");
         insertIfNotExists("lostark", "타대", "포지션");

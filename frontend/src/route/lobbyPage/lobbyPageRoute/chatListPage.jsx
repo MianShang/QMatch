@@ -1446,14 +1446,16 @@ function ChatListPage({
                           className={`voice-channel-item ${isJoined ? 'joined' : ''}`}
                           onClick={() => !isJoined && handleJoinVoice(channel.id)}
                           onContextMenu={(e) => {
-                            e.preventDefault();
-                            console.log('🎯 우클릭 감지됨', channel.voiceChannelName, e.clientX, e.clientY);
-                            setRightMenu({
-                              x: e.clientX,
-                              y: e.clientY,
-                              channelId: channel.id,
-                              channelName: channel.voiceChannelName,
-                            });
+                            if(selectedRoom?.hostUserId === userData.userId){
+                              e.preventDefault();
+                              console.log('🎯 우클릭 감지됨', channel.voiceChannelName, e.clientX, e.clientY);
+                              setRightMenu({
+                                x: e.clientX,
+                                y: e.clientY,
+                                channelId: channel.id,
+                                channelName: channel.voiceChannelName,
+                              });
+                            }
                           }}
                         >
                           <div className="voice-channel-header">
@@ -1517,12 +1519,16 @@ function ChatListPage({
                             setVoiceChannels((prev) =>
                               prev.filter((ch) => ch.id !== rigthMenu.channelId)
                             );
+                            if (joinedVoice && voiceChatRoomId === rigthMenu.channelId) {
+                              handleLeaveVoice();
+                            }                            
                             toast.success(`"${rigthMenu.channelName}" 채널이 삭제되었습니다.`);
                           } catch (err) {
                             toast.error("채널 삭제 실패");
                             console.error(err);
+                          } finally {
+                            setRightMenu(null);
                           }
-                          setRightMenu(null);
                         },
                       },
                     ]}

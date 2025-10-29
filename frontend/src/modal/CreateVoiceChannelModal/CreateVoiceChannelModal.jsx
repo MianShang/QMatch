@@ -9,6 +9,7 @@ function CreateVoiceChannelModal({ setShowCreateVoiceChannelModal, chatRoomId, o
     const [maxUsers, setMaxUsers] = useState('unlimited');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+    const [isCreating, setIsCreating] = useState(false);  // 방 생성 중 상태
 
     // 드롭다운 옵션 생성: 인원 제한 없음 ~ 방 최대인원-1
     const maxUserOptions = [
@@ -39,6 +40,11 @@ function CreateVoiceChannelModal({ setShowCreateVoiceChannelModal, chatRoomId, o
     };
 
     const createVoiceChannel = async () => {
+        // 이미 생성 중이면 중복 요청 방지
+        if (isCreating) {
+            return;
+        }
+        
         // 유효성 검사
         if (!channelName || channelName.trim() === '') {
             toast.error('음성 채널 이름을 입력해주세요.');
@@ -49,6 +55,9 @@ function CreateVoiceChannelModal({ setShowCreateVoiceChannelModal, chatRoomId, o
             toast.error('채팅방 정보가 없습니다.');
             return;
         }
+
+        // 생성 시작 - 로딩 상태 활성화
+        setIsCreating(true);
 
         try {
             const requestData = {
@@ -81,6 +90,9 @@ function CreateVoiceChannelModal({ setShowCreateVoiceChannelModal, chatRoomId, o
             });
             toast.error(`음성 채널 생성 중 문제가 발생했습니다. (${error.response?.status || 'Unknown Error'})`);
             handleClose();
+        } finally {
+            // 생성 완료 후 로딩 상태 해제
+            setIsCreating(false);
         }
     };
 
@@ -135,7 +147,9 @@ function CreateVoiceChannelModal({ setShowCreateVoiceChannelModal, chatRoomId, o
                         </div>
                     </div>
                     <div className="modalFooter">
-                        <button className="createBtn" onClick={createVoiceChannel}>생성</button>
+                        <button className="createBtn" onClick={createVoiceChannel} disabled={isCreating}>
+                            {isCreating ? '생성 중...' : '방 만들기'}
+                        </button>
                     </div>
                 </div>
             </div>

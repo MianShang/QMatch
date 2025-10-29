@@ -121,8 +121,8 @@ export function useChatSubscriber(selectedRoom, setMessages, setClient, userData
     // 방나가기 로직이 ChatList페이지에 따로 있음으로 임시 삭제 추후 채팅방 전체 나가기 알림시 이용 가능할 것으로 보임
       if (globalStomp.isConnected()) {
         globalStomp.publish('/app/disconnect', {
-          userId: userData.userId,
-          roomId: selectedRoom.id,
+          userId: userData?.userId,
+          roomId: selectedRoom?.id,
         });
       }
 

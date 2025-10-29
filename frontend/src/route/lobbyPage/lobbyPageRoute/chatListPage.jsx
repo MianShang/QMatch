@@ -124,6 +124,7 @@ function ChatListPage({
   const [showCreateVoiceChannelModal, setShowCreateVoiceChannelModal] = useState(false);
   // 음성 채널 목록
   const [voiceChannels, setVoiceChannels] = useState([]);
+  const { listRefreshTick } = useContext(LogContext);
   // 우클릭
   const [rigthMenu, setRightMenu] = useState(null);
 
@@ -815,11 +816,23 @@ function ChatListPage({
   }
 
   useEffect(() => {
-    if (selectedRoom?.id) {
-      openMembers(selectedRoom.id);
-      fetchVoiceChannels(selectedRoom.id);
-    }
-  }, [selectedRoom?.id]);
+    if (!selectedRoom?.id) return;
+    (async () => {
+      try {
+        const res = await axios.get(`/api/voice/channels/${selectedRoom.id}`);
+        if (res.status === 200) {
+          console.log("새로 받은 채널 목록:", res.data);
+          setVoiceChannels(res.data);
+          // React 렌더링 보정 (즉시 반영 안 될 경우 대비)
+          setTimeout(() => setVoiceChannels([...res.data]), 150);
+        }
+      } catch (error) {
+        console.error("채널 목록 새로고침 실패:", error);
+        setVoiceChannels([]);
+      }
+    })();
+  }, [selectedRoom?.id, listRefreshTick]);
+
 
   // 음성 채널 생성 알림 구독
   useEffect(() => {
@@ -1433,7 +1446,6 @@ function ChatListPage({
                 <div className="voice-channels-list">
                   {voiceChannels.length > 0 ? (
                     voiceChannels.map((channel) => {
-                      // voiceChannelId를 문자열과 숫자 모두 비교
                       const participantsInChannel = (Array.isArray(voiceParticipants) ? voiceParticipants : []).filter(
                         p => p.voiceChannelId == channel.id || p.voiceChannelId === String(channel.id) || p.voiceChannelId === Number(channel.id)
                       );
@@ -1448,7 +1460,6 @@ function ChatListPage({
                           onContextMenu={(e) => {
                             if(selectedRoom?.hostUserId === userData.userId){
                               e.preventDefault();
-                              console.log('🎯 우클릭 감지됨', channel.voiceChannelName, e.clientX, e.clientY);
                               setRightMenu({
                                 x: e.clientX,
                                 y: e.clientY,

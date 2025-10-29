@@ -61,7 +61,7 @@ function InputModal({ type, onClose, sendUserGameCode, sendUserTag }) {
             )}
 
             <label>게임 코드</label>
-            <input
+            <input className="input-text"
               type="text"
               placeholder="게임 코드를 입력하세요"
               value={gameCode}
@@ -73,7 +73,7 @@ function InputModal({ type, onClose, sendUserGameCode, sendUserTag }) {
         {type === 'tag' && (
           <>
             <label>#태그 입력</label>
-            <input
+            <input className="input-text"
               type="text"
               placeholder="#태그를 입력하세요"
               value={tag}
@@ -83,8 +83,8 @@ function InputModal({ type, onClose, sendUserGameCode, sendUserTag }) {
         )}
 
         <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-          <button onClick={onClose}>취소</button>
-          <button onClick={handleSave}>저장</button>
+          <span className="check-btn" onClick={onClose}>취소</span>
+          <span className="check-btn" onClick={handleSave}>저장</span>
         </div>
       </div>
     </div>

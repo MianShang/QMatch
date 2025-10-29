@@ -131,7 +131,7 @@
 /* 프로필 헤더 액션 */
 .profile-header-actions {
   display: flex;
-  justify-content: flex-end; /* 오른쪽 정렬로 통일 */
+  justify-content: flex-end;
   align-items: center;
   gap: 12px;
   position: relative;
@@ -199,23 +199,29 @@
 /* ======== 닉네임 & 아이디 표시 (최종) ======== */
 .nickname-section {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-direction: row;
+  align-items: center;
   gap: 12px;
-}
+
+  }
 
 .profile-nickname {
   font-size: 28px;
   font-weight: 800;
   color: var(--discord-text-normal);
   margin: 0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  
+}
+
+.profile-nickname:hover{
+  cursor: pointer;
+  transform: translateY(-2px);
 }
 
 .profile-userid {
   font-size: 14px;
   color: var(--discord-text-muted);
-  margin-top: -16px;
+  margin-top: -16px;  
 }
 
 /* ======== 닉네임 수정 폼 (최종) ======== */
@@ -233,13 +239,13 @@
 }
 
 .nickname-input {
-  background: var(--discord-bg-secondary);
-  border: 1px solid var(--discord-bg-tertiary);
   border-radius: var(--discord-radius-small);
   padding: 12px;
   color: var(--discord-text-normal);
   font-size: 14px;
   font-family: inherit;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
 }
 
 .nickname-input:focus {
@@ -256,8 +262,9 @@
 /* ======== 상태 메시지 ======== */
 .profile-status-section {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
 }
 
 .edit-status-btn {
@@ -275,68 +282,82 @@
   gap: 8px;
   width: fit-content;
   backdrop-filter: blur(10px);
+  order: 2;
+  flex-shrink: 0
 }
 
-.edit-status-btn:hover {
-  background: rgba(88, 101, 242, 0.2);
+.edit-status-btn:hover,
+.edit-nickname-btn:hover {
+  background: linear-gradient(135deg, #5865f2 0%, var(--discord-accent) 100%);
   border-color: var(--discord-accent);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(88, 101, 242, 0.2);
 }
 
 .status-message {
-  color: var(--discord-text-muted);
+  color: var(--discord-text-normal);
   font-size: 15px;
   margin: 0;
-  font-style: italic;
   padding: 12px 16px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
-  border-left: 3px solid var(--discord-accent);
+  border-left: 4px solid var(--discord-accent);
+  order: 1;
+  flex-grow: 1;
 }
 
 .status-edit-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
 }
 
 .status-textarea {
-  background: var(--discord-bg-secondary);
-  border: 1px solid var(--discord-bg-tertiary);
-  border-radius: var(--discord-radius-small);
-  padding: 12px;
+  
   color: var(--discord-text-normal);
-  font-size: 14px;
-  resize: vertical;
+  resize: none;
   min-height: 60px;
   font-family: inherit;
+  font-size: 15px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border-left: 4px solid var(--discord-accent);
+  border-top:none;
+  border-right: none;
+  border-bottom: none;
+  
 }
 
 .status-textarea:focus {
   outline: none;
-  border-color: var(--discord-accent);
   box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.2);
 }
 
 .status-edit-actions {
   display: flex;
   gap: 8px;
+  justify-content: flex-end;
 }
 
 /* ======== 섹션 공통 스타일 ======== */
 .profile-tags-section,
 .profile-games-section,
 .profile-bio-section {
-  background: linear-gradient(135deg, var(--discord-bg-secondary) 0%, rgba(255, 255, 255, 0.02) 100%);
+  background: linear-gradient(135deg, var(--discord-bg-secondary) 0%, rgba(201, 132, 132, 0.02) 100%);
   border-radius: 16px;
   padding: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
   margin: 0 20px 20px 20px;
   flex-shrink: 0;
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(10px);
+}
+.profile-tags-section{
+  margin: 0 0px 20px 0px;
 }
 
 .profile-tags-section::before,
@@ -347,13 +368,12 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--discord-accent), transparent);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--discord-accent) 20%, var(--discord-accent) 80%, transparent);
 }
 
 .section-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
   position: relative;
@@ -372,30 +392,29 @@
 .add-tag-btn,
 .add-game-btn,
 .edit-bio-btn, 
-.edit-nickname-btn {
-  background: linear-gradient(135deg, var(--discord-accent) 0%, #5865f2 100%);
+.edit-nickname-btn,
+.edit-status-btn {
+  
   color: white;
   border: none;
-  padding: 10px 16px;
-  border-radius: 20px;
+  padding: 9px 15px;
+  border-radius: 18px;
   cursor: pointer;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 400;
   transition: all 0.3s ease;
   display: flex;
-  align-items: center;
+  align-items: center;  
   gap: 6px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  box-shadow: 0 4px 16px rgba(88, 101, 242, 0.3);
+  /* box-shadow: 0 4px 16px rgba(255, 255, 255, 0.3); */
 }
 
 .add-tag-btn:hover,
 .add-game-btn:hover,
 .edit-bio-btn:hover {
-  background: linear-gradient(135deg, #5865f2 0%, var(--discord-accent) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(88, 101, 242, 0.4);
 }
 
 /* 태그 스타일 */
@@ -460,12 +479,12 @@
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
+  border-left: 4px solid var(--discord-accent);
 }
 
 .game-item-container:hover {
   background: rgba(88, 101, 242, 0.1);
-  border-color: rgba(88, 101, 242, 0.3);
-  transform: translateX(4px);
+  border-color: var(--discord-accent);
 }
 
 .game-item-container::before {
@@ -480,9 +499,7 @@
   transition: transform 0.3s ease;
 }
 
-.game-item-container:hover::before {
-  transform: scaleY(1);
-}
+
 
 .game-item {
   cursor: pointer;
@@ -584,7 +601,6 @@
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   border-left: 4px solid var(--discord-accent);
-  font-style: italic;
 }
 
 .bio-edit-form {
@@ -600,7 +616,7 @@
   padding: 16px;
   color: var(--discord-text-normal);
   font-size: 15px;
-  resize: vertical;
+  resize: none;
   min-height: 100px;
   font-family: inherit;
   backdrop-filter: blur(10px);
@@ -621,15 +637,16 @@
 }
 
 /* ======== 버튼 공통 스타일 ======== */
-.save-btn {
+.save-btn
+{
   background: linear-gradient(135deg, var(--discord-accent) 0%, #5865f2 100%);
   color: white;
   border: none;
-  padding: 12px 24px;
-  border-radius: 20px;
+  padding: 7px 15px;
+  border-radius: 18px;
   cursor: pointer;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 400;
   transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -643,25 +660,24 @@
 }
 
 .cancel-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--discord-text-normal);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 12px 24px;
-  border-radius: 20px;
+  background: linear-gradient(135deg, var(--discord-accent) 0%, #5865f2 100%);
+  color: white;
+  border: none;
+  padding: 7px 15px;
+  border-radius: 18px;
   cursor: pointer;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 400;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  box-shadow: 0 4px 16px rgba(88, 101, 242, 0.3);
 }
 
 .cancel-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, #5865f2 0%, var(--discord-accent) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 24px rgba(88, 101, 242, 0.4);
 }
 
 /* ======== 반응형 디자인 ======== */
@@ -689,8 +705,8 @@
     }
     
     .profile-header-actions {
-        flex-direction: row; /* 컬럼에서 다시 로우로 */
-        justify-content: space-between; /* 양 끝으로 정렬 */
+        flex-direction: row; 
+        justify-content: space-between; 
         width: 100%;
     }
     

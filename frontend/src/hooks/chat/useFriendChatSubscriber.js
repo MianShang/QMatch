@@ -39,31 +39,43 @@ export function useFriendChatSubscriber(selectedFriendRoom, setFriendMessages, g
                         return;
                     }
 
-                    // 메시지 고정 상태 변경인지 확인 (고정 상태가 true인 경우만)
-                    if (body.id && body.isPinned === true) {
-                        setFriendMessages(prev => {
-                            // 새로운 메시지가 고정되면 다른 모든 메시지의 고정 상태를 해제
-                            return prev.map(msg => 
-                                msg.id === body.id 
-                                    ? { ...msg, isPinned: true }
-                                    : { ...msg, isPinned: false }
-                            );
-                        });
-                        return;
+                    // DB 메시지 고정 상태 변경 또는 새 메시지 처리
+                    // 시간 정보가 없으면 현재 시간 추가
+                    if (!body.chatDate) {
+                        body.chatDate = new Date().toISOString();
                     }
-
-                    // 새 메시지인 경우 (ID가 있고 고정 상태가 true가 아닌 경우)
-                    if (body.id && body.isPinned !== true) {
-                        setFriendMessages((prev) => {
-                            // 이미 존재하는 메시지인지 확인
-                            if (prev.some((m) => m.id === body.id)) {
-                                return prev;
+                    
+                    setFriendMessages((prev) => {
+                        // 기존 메시지 목록에 해당 ID가 있는지 확인
+                        const existingMessage = prev.find(msg => msg.id === body.id);
+                        
+                        if (existingMessage) {
+                            // 기존 메시지인 경우
+                            // 고정 상태 변경인지 확인
+                            if (body.isPinned !== undefined) {
+                                // 새로운 메시지가 고정되면 다른 모든 메시지의 고정 상태를 해제
+                                if (body.isPinned) {
+                                    return prev.map(msg => 
+                                        msg.id === body.id 
+                                            ? { ...msg, isPinned: true }
+                                            : { ...msg, isPinned: false }
+                                    );
+                                } else {
+                                    // 메시지가 해제되면 해당 메시지만 해제
+                                    return prev.map(msg => 
+                                        msg.id === body.id 
+                                            ? { ...msg, isPinned: false }
+                                            : msg
+                                    );
+                                }
                             }
-                            // 새 메시지 추가
+                            // 고정 상태 변경이 아니면 기존 메시지 유지
+                            return prev;
+                        } else {
+                            // 새 메시지인 경우 추가
                             return [...prev, body];
-                        });
-                        return;
-                    }
+                        }
+                    });
 
                 } catch (error) {
                     console.error('친구 채팅 메시지 오류:', error);

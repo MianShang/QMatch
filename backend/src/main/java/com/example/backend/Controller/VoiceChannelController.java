@@ -30,6 +30,7 @@ public class VoiceChannelController {
     // 음성 채널 삭제
     @DeleteMapping("/delete/{channelId}")
     public ResponseEntity<Void> delete(@PathVariable Long channelId) {
+        System.out.println("[VoiceChannelController] delete 요청 도착: " + channelId);
         voiceChannelService.deleteVoiceChannel(channelId);
         return ResponseEntity.noContent().build();
     }

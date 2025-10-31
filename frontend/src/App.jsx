@@ -19,6 +19,8 @@ import VoiceChat from './route/lobbyPage/lobbyPageRoute/VoiceChat.jsx';
 import { useGlobalStomp } from './hooks/stomp/useGlobalStomp.js';
 import { useGameStatus } from './hooks/status/useGameStatus.js';
 import { useFriendRequestCount } from './hooks/friends/useFriendRequestCount.js';
+import { useVoiceChannelSubscriber } from './hooks/voiceChat/useVoiceChannelSubscriber';
+
 
 // 로그인 체크용 Context API 생성
 export const LogContext = createContext();
@@ -82,13 +84,13 @@ function App() {
   const [localMuted, setLocalMuted] = useState(false); // 로컬 음소거 상태
   const [joinedVoice, setJoinedVoice] = useState(false); // 음성채팅 참여 여부
   const [currentVoiceRoomId, setCurrentVoiceRoomId] = useState(null); // 현재 음성채팅 룸 ID
+  const [voiceChannels, setVoiceChannels] = useState([]); // 음성 채널 목록
   const [voiceSettings, setVoiceSettings] = useState({
     inputDeviceId: '',
     outputDeviceId: '',
     micVolume: 80,
   });
 
-  
   // 드래그 가능한 음성채팅 UI 위치 관리
   const [voiceChatPosition, setVoiceChatPosition] = useState({ x: 20, y: 20 }); // UI 위치 좌표
   const [isDragging, setIsDragging] = useState(false); // 드래그 중인지 여부
@@ -466,7 +468,7 @@ function App() {
     
     // 음성 채널 참여자 구독
     subscribe(`/topic/voice-participants`, (frame) => {
-      console.log("📡 STOMP RECEIVE: /topic/voice-participants", frame.body);
+      console.log("STOMP RECEIVE: /topic/voice-participants", frame.body);
       try {
         const payload = JSON.parse(frame.body);
         if (payload.roomId && Array.isArray(payload.participants)) {
@@ -480,6 +482,31 @@ function App() {
       }
     }, { id: 'global-voice-participants' });
   }, [userData?.userId, subscribe]);
+
+  // 음성채널 삭제 실시간 반영 구독
+  useVoiceChannelSubscriber(
+    { subscribe, isConnected },
+    joinedVoice,
+    voiceChatRoomId,
+    () => {
+      if (voiceChatRef?.current) {
+        voiceChatRef.current.leaveChannel();
+        setJoinedVoice(false);
+        setVoiceChatRoomId(null);
+        setCurrentVoiceRoomId(null);
+      }
+    },
+    null,
+    (roomId) => {
+      console.log("채널 삭제 이벤트 감지됨, 방 ID:", roomId);
+      // listRefreshTick을 올리면서 방 ID를 명시적으로 전달
+      setListRefreshTick((prev) => {
+        console.log("listRefreshTick 증가:", prev + 1);
+        return prev + 1;
+      });
+    },
+    setVoiceParticipants
+  );
 
   // 로그인 중이 아닐 때 로딩 UI
   if (isLoading) {

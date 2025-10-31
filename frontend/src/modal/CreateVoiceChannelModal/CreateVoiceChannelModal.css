@@ -289,3 +289,15 @@
     padding: 16px 20px;
   }
 }
+
+.errorText {
+  color: #ff4d4f;
+  font-size: 13px;
+  font-weight: 500;
+
+}
+
+.inputError {
+  border: 1.5px solid #ff4d4f !important;
+  background-color: rgba(255, 77, 79, 0.05);
+}

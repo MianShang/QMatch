@@ -21,7 +21,7 @@
   --discord-interactive-active: #fff;
   --discord-interactive-muted: #4f545c;
   
-  --discord-accent: #7289da;
+  --discord-accent: #5c70b4;
   --discord-accent-hover: #677bc4;
   --discord-accent-active: #5b6eae;
   
@@ -63,9 +63,9 @@
   --discord-interactive-muted: #b9bbbe;
   
   /* 라이트모드 액센트 (동일) */
-  --discord-accent: #7289da;
-  --discord-accent-hover: #677bc4;
-  --discord-accent-active: #5b6eae;
+  --discord-accent: #5865f2;
+  --discord-accent-hover: #4752c4;
+  --discord-accent-active: #3c45a0;
   
   /* 라이트모드 그림자 */
   --discord-elevation-low: 0 1px 0 rgba(0,0,0,0.1), 0 1.5px 0 rgba(0,0,0,0.05), 0 2px 0 rgba(0,0,0,0.05);

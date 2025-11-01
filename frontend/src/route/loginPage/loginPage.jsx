@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext  } from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
-import axios from '@axios';
+//import axios from 'axios';
 import './loginPage.css'
 import { LogContext } from '../../App.jsx';
 
@@ -36,8 +36,8 @@ function LoginPage() {
         <div className="brand-logo">
           <img 
             src={
-              theme === 'dark' ? "/qmatchLogoBlue.png" : 
-              theme === 'pink' ? "/qmatchLogoPink.png" : 
+              theme === 'dark' ? "./qmatchLogoBlue.png" : 
+              theme === 'pink' ? "./qmatchLogoPink.png" : 
               "/qmatchLogo.png"
             } 
             alt="QMatch" 

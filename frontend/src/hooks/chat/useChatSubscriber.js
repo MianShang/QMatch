@@ -1,5 +1,6 @@
 // hooks/useChatSubscriber.js
 import { useEffect } from 'react';
+import axios from 'axios';
 
 /**
  * 채팅방을 구독하고, 실시간 메시지를 수신하는 커스텀 훅
@@ -15,6 +16,20 @@ export function useChatSubscriber(selectedRoom, setMessages, setClient, userData
     if (!selectedRoom || !globalStomp) return;
 
     const subscriptionId = `chat-messages-${selectedRoom.id}`;
+    
+    // 채팅방 구독 시 읽음 처리 (일렉트론 재연결 시 읽음 상태 재확인)
+    if (userData?.userId && selectedRoom?.id) {
+      axios.post('/api/chat/read', {
+        userId: userData.userId,
+        chatRoom: selectedRoom.id
+      })
+      .then(() => {
+        console.log('채팅방 재입장 읽음 처리 성공');
+      })
+      .catch((err) => {
+        console.error('채팅방 재입장 읽음 처리 실패:', err);
+      });
+    }
     
     // 채팅 메시지 구독
     globalStomp.subscribe(
@@ -105,6 +120,22 @@ export function useChatSubscriber(selectedRoom, setMessages, setClient, userData
           if (!messageData.chatDate) {
             messageData.chatDate = new Date().toISOString();
           }
+          
+          // 실시간 메시지인 경우 (자신이 보낸 메시지가 아닌 경우) 읽음 처리
+          // 채팅방에 입장해있는 상태에서 받은 실시간 메시지는 자동으로 읽음 처리
+          if (messageData.isRealTime && messageData.senderId !== userData?.userId && selectedRoom?.id) {
+            axios.post('/api/chat/read', {
+              userId: userData?.userId,
+              chatRoom: selectedRoom.id
+            })
+            .then(() => {
+              console.log('실시간 메시지 읽음 처리 성공');
+            })
+            .catch((err) => {
+              console.error('실시간 메시지 읽음 처리 실패:', err);
+            });
+          }
+          
           // Message State Set
           setMessages(prev => [...prev, messageData]);
         } catch (error) {
@@ -121,8 +152,8 @@ export function useChatSubscriber(selectedRoom, setMessages, setClient, userData
     // 방나가기 로직이 ChatList페이지에 따로 있음으로 임시 삭제 추후 채팅방 전체 나가기 알림시 이용 가능할 것으로 보임
       if (globalStomp.isConnected()) {
         globalStomp.publish('/app/disconnect', {
-          userId: userData.userId,
-          roomId: selectedRoom.id,
+          userId: userData?.userId,
+          roomId: selectedRoom?.id,
         });
       }
 

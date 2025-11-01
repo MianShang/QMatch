@@ -60,11 +60,44 @@ function LogInRoutePage() {
       withCredentials: true
     })
     .then(async (res) => {
-      // 로그인 성공시 반환 데이터 출력
-      console.log(res);
+      // Electron 환경에서 JSESSIONID를 받아서 쿠키로 저장
+      if (window?.require && typeof window.require === 'function') {
+        try {
+          const { ipcRenderer } = window.require('electron');
+          
+          // 응답에서 sessionId 추출
+          let sessionId = null;
+          try {
+            const responseData = typeof res.data === 'string' ? JSON.parse(res.data) : res.data;
+            sessionId = responseData?.sessionId;
+          } catch (e) {
+            // JSON 파싱 실패 시 무시
+          }
+          
+          if (sessionId) {
+            // Electron 세션에 쿠키 저장
+            const BASE_URL = import.meta.env.VITE_API_URL;
+            const baseUrl = BASE_URL.includes('://') 
+              ? BASE_URL.split('/').slice(0, 3).join('/')
+              : BASE_URL;
+            
+            const cookieString = `JSESSIONID=${sessionId}; Path=/; HttpOnly`;
+            const result = await ipcRenderer.invoke('set-cookies', baseUrl, [cookieString]);
+            
+            if (!result.success) {
+              console.error('[Login] JSESSIONID 쿠키 저장 실패:', result.error);
+            }
+            
+            // 저장 완료 대기
+            await new Promise(r => setTimeout(r, 200));
+          }
+        } catch (err) {
+          console.error('[Login] Electron IPC 실패:', err);
+        }
+      }
 
-      //로그인 성공시 150ms 정도 기다려서 Electron이 Set-Cookie를 반영할 시간 확보
-      await new Promise(r => setTimeout(r, 300));
+      // 약간의 지연 후 유저 정보 가져오기 (쿠키 저장 완료 대기)
+      await new Promise(r => setTimeout(r, 500));
 
       // 로그인 성공시 유저 정보를 전역 유저 데이터 State Set
         const userRes = await axios.get('/api/user/get-data', { withCredentials: true });

@@ -2,6 +2,7 @@ package com.example.backend.Security;
 
 
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -94,12 +95,18 @@ public class SecurityConfig {
                         .loginPage("/login")
                         .loginProcessingUrl("/api/loginProc")
                         .successHandler((request, response, authentication) -> {
+                            // Electron 환경을 위해 JSESSIONID를 응답 본문에 포함
+                            HttpSession session = request.getSession();
+                            String sessionId = session != null ? session.getId() : "";
+                            
                             response.setStatus(HttpServletResponse.SC_OK);
-                            response.getWriter().write("로그인 성공");
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"message\":\"로그인 성공\",\"sessionId\":\"" + sessionId + "\"}");
                         })
                         .failureHandler((request, response, exception) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.getWriter().write("로그인 실패");
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"message\":\"로그인 실패\"}");
                         })
                         .permitAll()
                 )

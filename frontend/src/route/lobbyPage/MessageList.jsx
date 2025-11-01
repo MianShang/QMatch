@@ -6,7 +6,7 @@ import LinkPreview from "../../components/LinkPreview";
 import MessageContextMenu from "../../components/MessageContextMenu";
 import { useMessagePin } from "../../hooks/chat/useMessagePin";
 import { useMessageDelete } from "../../hooks/chat/useMessageDelete";
-import axios from "axios";
+import axios from "@axios";
 
 
 const MessageList = memo(({ messages, userData, roomId, isFriendChat = false, isPinnedMessageHidden = false, onHidePinnedMessage, setFriendMessages }) => {

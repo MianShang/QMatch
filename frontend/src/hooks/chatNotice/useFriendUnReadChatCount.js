@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "@axios";
 
 /**
  * 특정 친구 채팅방의 안읽은 메시지 개수 조회

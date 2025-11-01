@@ -31,7 +31,7 @@ export function useLogout(){
       }
 
       // 백엔드 로그아웃 요청
-      await axios.post(BASE_URL+"/api/logout");
+      await axios.post("/api/logout");
 
       // 음성채팅 종료
       if (voiceChatRef?.current) {

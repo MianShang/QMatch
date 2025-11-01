@@ -384,9 +384,9 @@ function LobbyPage() {
         console.log('방 설정 업데이트 알림 수신:', payload);
         
         // 방 정보 새로고침
-        fetch(`/api/chat/rooms/${selectedRoom.id}`)
-          .then(res => res.json())
-          .then(roomData => {
+        axios.get(`/api/chat/rooms/${selectedRoom.id}`)
+          .then(res => {
+            const roomData = res.data;
             setSelectedRoom(prev => prev ? {
               ...prev,
               name: roomData.name,

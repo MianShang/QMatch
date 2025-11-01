@@ -21,7 +21,7 @@ export function useGlobalStomp(userData) {
       return connectionPromiseRef.current;
     }
 
-    const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
+    const BASE_URL = import.meta.env?.VITE_API_URL;
     
     const stomp = new Client({
       webSocketFactory: () => new SockJS(`${BASE_URL}/gs-guide-websocket`),

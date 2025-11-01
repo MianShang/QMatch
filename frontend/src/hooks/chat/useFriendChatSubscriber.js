@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import axios from "axios";
+import axios from "@axios";
 
 /**
  * @param {object} globalStomp - STOMP 클라이언트

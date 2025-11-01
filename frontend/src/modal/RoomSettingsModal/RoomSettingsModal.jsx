@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import axios from '@axios';
 import { LogContext } from '../../App.jsx';
 import './RoomSettingsModal.css';
 
@@ -42,9 +43,9 @@ function RoomSettingsModal({ open, onClose, room, onRoomUpdated }) {
   // 게임 선택 시 태그 불러오기
   useEffect(() => {
     if (!gameName) return;
-    fetch(`/api/tags/${gameName}`)
-      .then(res => res.json())
-      .then(data => {
+    axios.get(`/api/tags/${gameName}`)
+      .then(res => {
+        const data = res.data;
         setTags(data);
         const grouped = data.reduce((acc, tag) => {
           const category = tag.category || '기타';
@@ -104,28 +105,11 @@ function RoomSettingsModal({ open, onClose, room, onRoomUpdated }) {
     console.log("📦 updateRoom payload:", payload);
 
     try {
-      const res = await fetch(`/api/chat/rooms/${room.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        // 백엔드가 ResponseStatusException으로 보낸 바디 읽기
-        let msg = '방 설정 업데이트 실패';
-        try {
-          const errBody = await res.json();
-          console.log("🔎 error body:", errBody);
-          msg = errBody?.error || errBody?.message || msg;
-        } catch (_) {}
-        throw new Error(msg);
-      }
-
-      const data = await res.json();
-      console.log("방 설정 업데이트 완료:", data);
+      const res = await axios.put(`/api/chat/rooms/${room.id}`, payload);
+      console.log("방 설정 업데이트 완료:", res.data);
       
       // 부모 컴포넌트에 업데이트 알림
-      onRoomUpdated?.(data);
+      onRoomUpdated?.(res.data);
       
       handleClose();
     } catch (err) {

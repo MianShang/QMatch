@@ -1,5 +1,5 @@
 
-//  QMatch Electron Main Process (2025-10 최신 안정 버전)
+//  QMatch Electron Main Process (2025-11-1 최신 안정 버전)
 
 require('dotenv').config(); // .env 파일 로드
 const { app, BrowserWindow, session, protocol, ipcMain } = require('electron');
@@ -250,8 +250,8 @@ app.whenReady().then(() => {
 
   // 2️⃣ app:// 프로토콜 핸들러
   const webBuildPath = app.isPackaged
-    ? path.join(app.getAppPath(), 'web-build')
-    : path.join(__dirname, 'web-build');
+    ? path.join(app.getAppPath(), 'web-build') // 패키징 시 app.asar/web-build
+    : path.join(__dirname, 'web-build'); // 개발 시 web-build 폴더
 
   console.log('📦 정적 파일 경로:', webBuildPath);
 

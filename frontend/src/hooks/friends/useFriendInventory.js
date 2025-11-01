@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-import axios from "axios";
+import axios from "@axios";
 import { LogContext } from "../../App.jsx";
 
 export function useFriendsinventory(userId, bottomToggle) {

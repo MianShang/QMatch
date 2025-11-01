@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react";
-import axios from "axios";
+import axios from "@axios";
 
 /**
  * 친구 채팅 읽음 처리 훅

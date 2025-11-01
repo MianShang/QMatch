@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { FaPhone, FaPhoneSlash } from "react-icons/fa6";
 import EmojiPicker from "../../components/EmojiPicker";
 import ImageUpload from "../../components/ImageUpload";
-import axios from "axios";
+import axios from "@axios";
 
 
 // 확인 / 취소 토스트 모달
@@ -179,15 +179,12 @@ function ChatRoom({
             formData.append('userId', userData.userId);
             
             // 서버에 이미지 업로드
-            const response = await fetch('/api/upload/image', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (response.ok) {
-                const result = await response.json();
-                const imageUrl = result.url;
-
+            try {
+                const response = await axios.post('/api/upload/image', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' }
+                });
+                const imageUrl = response.data.url;
+                
                 // 이미지 URL을 바로 전송 (입력창 거치지 않음)
                 const imageMessage = `![이미지](${imageUrl})`;
                 if (selectedRoom) {
@@ -237,12 +234,13 @@ function ChatRoom({
                         });
                     }
                 }
-            } else {
-                alert('이미지 업로드에 실패했습니다.');
+            } catch (error) {
+                console.error('이미지 업로드 오류:', error);
+                alert('이미지 업로드 중 오류가 발생했습니다.');
             }
         } catch (error) {
-            console.error('이미지 업로드 오류:', error);
-            alert('이미지 업로드 중 오류가 발생했습니다.');
+            console.error('이미지 선택 오류:', error);
+            alert('이미지 선택 중 오류가 발생했습니다.');
         }
     };
 

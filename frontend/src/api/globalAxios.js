@@ -21,7 +21,7 @@ let BASE_URL = '';
 
 if (isDev) {
   // Vite 개발 서버 실행 중일 때 (npm run dev)
-  BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+  BASE_URL = import.meta.env.VITE_API_URL;
 } else {
   // 배포된 Electron exe일 때
   // 실제 백엔드 서버 주소로 고정
@@ -60,10 +60,11 @@ async function injectElectronCookies(config) {
       
       const cookies = await ipcRenderer.invoke('get-cookies', cookieUrl);
       
+      // Electron 환경에서는 webRequest.onBeforeSendHeaders에서 쿠키를 주입하므로
+      // 여기서는 withCredentials만 설정
+      // 브라우저에서는 Cookie 헤더를 직접 설정할 수 없음 (보안 정책)
       if (cookies && Array.isArray(cookies) && cookies.length > 0) {
-        const cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ');
-        config.headers.Cookie = cookieHeader;
-        config.headers['Cookie'] = cookieHeader;
+        config.withCredentials = true;
       }
     } catch (err) {
       console.error('[Electron] 쿠키 불러오기 실패:', err);

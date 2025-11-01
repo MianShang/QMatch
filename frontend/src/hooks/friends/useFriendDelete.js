@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "@axios";
 
 export function useFriendDelete() {
   // 친구 삭제 함수 반환

@@ -62,7 +62,7 @@ function ChatListPage({
   sendToModalGameName,
   setSendToModalGameName
 }) {
-  const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
+  const BASE_URL = import.meta.env?.VITE_API_URL;
   const navigate = useNavigate();
   
   // State 보관함 해체
@@ -187,13 +187,7 @@ function ChatListPage({
     if (!ok) return; // 취소 시 그냥 return
 
     try {
-      const res = await fetch(`/api/chat/rooms/${roomId}?requesterUserId=${userId}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        toast.error("삭제 실패");
-        return;
-      }
+      await axios.delete(`/api/chat/rooms/${roomId}?requesterUserId=${userId}`);
       toast.success("방이 삭제되었습니다.");
       setSelectedRoom(null);
       setMessages([]); // 메시지 목록 초기화
@@ -301,12 +295,14 @@ function ChatListPage({
         // hostUserId가 없으면 방 정보를 다시 가져와서 hostUserId 획득
         let ownerId = selectedRoom?.hostUserId;
         if (!ownerId) {
-          const res = await fetch(`/api/chat/rooms/${selectedRoom.id}`);
-          if (res.ok) {
-            const roomData = await res.json();
+          try {
+            const res = await axios.get(`/api/chat/rooms/${selectedRoom.id}`);
+            const roomData = res.data;
             ownerId = roomData.hostUserId;
             // selectedRoom 업데이트
             setSelectedRoom(prev => prev ? { ...prev, hostUserId: ownerId } : null);
+          } catch (err) {
+            console.error("방 정보 불러오기 실패", err);
           }
         }
 
@@ -315,11 +311,8 @@ function ChatListPage({
           return;
         }
 
-        const res = await fetch(`/api/chat/rooms/${selectedRoom.id}/pending-requests?ownerId=${ownerId}`);
-        if (res.ok) {
-          const data = await res.json();
-          setPendingUsers(data.pendingRequests || []);
-        }
+        const res = await axios.get(`/api/chat/rooms/${selectedRoom.id}/pending-requests?ownerId=${ownerId}`);
+        setPendingUsers(res.data.pendingRequests || []);
       } catch (err) {
         console.error("대기자 목록 불러오기 실패", err);
       }
@@ -583,9 +576,8 @@ function ChatListPage({
       try {
         const params = new URLSearchParams();
         Array.from(new Set(ids)).forEach(id => params.append('ids', id)); // ids=a&ids=b…
-        const res = await fetch(`/api/user/status/batch?` + params.toString());
-        if (!res.ok) return;
-        const map = await res.json(); // { userId: status }
+        const res = await axios.get(`/api/user/status/batch?` + params.toString());
+        const map = res.data; // { userId: status }
         setStatusByUser(prev => ({ ...prev, ...map }));
       } catch (e) {
         // no-op
@@ -730,10 +722,9 @@ function ChatListPage({
         // 해당 채팅방을 선택된 방으로 설정
         if (!selectedRoom || selectedRoom.id !== roomId) {
           // 채팅방 정보를 가져와서 selectedRoom 설정
-          fetch(`/api/chat/rooms/${roomId}`)
-            .then(res => res.json())
-            .then(roomData => {
-              setSelectedRoom(roomData);
+          axios.get(`/api/chat/rooms/${roomId}`)
+            .then(res => {
+              setSelectedRoom(res.data);
             })
             .catch(err => console.error('채팅방 정보 가져오기 실패:', err));
         }
@@ -760,10 +751,9 @@ function ChatListPage({
         // 해당 채팅방을 선택된 방으로 설정
         if (!selectedRoom || selectedRoom.id !== payload.roomId) {
           // 채팅방 정보를 가져와서 selectedRoom 설정
-          fetch(`/api/chat/rooms/${payload.roomId}`)
-            .then(res => res.json())
-            .then(roomData => {
-              setSelectedRoom(roomData);
+          axios.get(`/api/chat/rooms/${payload.roomId}`)
+            .then(res => {
+              setSelectedRoom(res.data);
             })
             .catch(err => console.error('채팅방 정보 가져오기 실패:', err));
         } else {
@@ -1571,13 +1561,9 @@ function ChatListPage({
                 {(selectedRoom?.hostUserId === userData.userId) && (menu.userId !== userData.userId) && (
                   <p onClick={async () => {
                     try {
-                      await fetch(`/api/chat/rooms/${selectedRoom.id}/kick`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          targetUserId: menu.userId,
-                          requesterUserId: userData.userId
-                        })
+                      await axios.post(`/api/chat/rooms/${selectedRoom.id}/kick`, {
+                        targetUserId: menu.userId,
+                        requesterUserId: userData.userId
                       });
 
                       // 즉시 UI 업데이트 (WebSocket 이벤트와 중복 방지를 위해 selectedRoom만 업데이트)
@@ -1603,13 +1589,9 @@ function ChatListPage({
                 {(selectedRoom?.hostUserId === userData.userId) && (menu.userId !== userData.userId) && (
                   <p onClick={async () => {
                     try {
-                      await fetch(`/api/chat/rooms/${selectedRoom.id}/transfer`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                          fromUserId: userData.userId,
-                          toUserId: menu.userId
-                        })
+                      await axios.post(`/api/chat/rooms/${selectedRoom.id}/transfer`, {
+                        fromUserId: userData.userId,
+                        toUserId: menu.userId
                       });
 
                       // 즉시 UI 업데이트
@@ -1637,10 +1619,8 @@ function ChatListPage({
                       if (!ok) return;
 
                       try {
-                        await fetch(
-                          // item 대신 selectedRoom을 사용
-                          `/api/chat/rooms/${selectedRoom.id}/leave?userId=${userData.userId}`,
-                          { method: "DELETE" }
+                        await axios.delete(
+                          `/api/chat/rooms/${selectedRoom.id}/leave?userId=${userData.userId}`
                         );
 
                         // 즉시 UI 업데이트

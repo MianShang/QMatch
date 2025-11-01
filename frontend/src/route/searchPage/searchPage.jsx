@@ -158,9 +158,9 @@ function SearchPage() {
   useEffect(() => {
     if (!gametag) return;
 
-  fetch(`/api/tags/${gametag}`)
-      .then(res => res.json())
-      .then(data => {
+  axios.get(`/api/tags/${gametag}`)
+      .then(res => {
+        const data = res.data;
         //console.log('태그 응답 데이터:', data);
         const grouped = data.reduce((acc, tag) => {
           const category = tag.category;

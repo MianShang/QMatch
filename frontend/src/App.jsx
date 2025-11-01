@@ -24,7 +24,7 @@ import { useFriendRequestCount } from './hooks/friends/useFriendRequestCount.js'
 export const LogContext = createContext();
 
 function App() {
-  const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
+  const BASE_URL = import.meta.env?.VITE_API_URL;
   const navigate = useNavigate();
 
   // 로딩 State

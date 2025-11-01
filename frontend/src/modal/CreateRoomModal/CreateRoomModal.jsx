@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import axios from '@axios';
 import { LogContext } from '../../App.jsx';
 import './CreateRoomModal.css';
 
@@ -42,9 +43,9 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
   // 게임 선택 시 태그 불러오기
   useEffect(() => {
     if (!gameName) return;
-    fetch(`/api/tags/${gameName}`)
-      .then(res => res.json())
-      .then(data => {
+    axios.get(`/api/tags/${gameName}`)
+      .then(res => {
+        const data = res.data;
         setTags(data);
         // 카테고리 기준 그룹화
         const grouped = data.reduce((acc, tag) => {
@@ -108,32 +109,11 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
     console.log("📦 createRoom payload:", payload);
 
     try {
-      const res = await fetch('/api/chat/rooms', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        // 백엔드가 ResponseStatusException으로 보낸 바디 읽기
-        let msg = '방 생성 실패';
-        try {
-          const errBody = await res.json();
-          console.log("🔎 error body:", errBody);
-          msg = errBody?.error || errBody?.message || msg;
-        } catch (_) {}
-        if (res.status === 409) {
-          setErrorMsg(msg || '이미 동일한 이름의 방이 존재합니다.');
-          return; // 에러 토스트만 표시하고 종료
-        }
-        throw new Error(msg);
-      }
-
-      const data = await res.json();
-      console.log("방 생성 완료:", data);
+      const res = await axios.post('/api/chat/rooms', payload);
+      console.log("방 생성 완료:", res.data);
       
       // 방장은 모든 방에서 자동으로 입장 (자유 입장 방과 방장 승인 방 모두)
-      onRoomCreated?.(data);
+      onRoomCreated?.(res.data);
       
       // 방장이 자동으로 입장하도록 바로 채팅방으로 이동
       if (window.location.pathname !== '/') {

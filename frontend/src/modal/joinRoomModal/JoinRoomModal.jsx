@@ -1,4 +1,5 @@
 import React, { useMemo, useEffect, useState, useRef } from 'react';
+import axios from '@axios';
 import './JoinRoomModal.css';
 
 function JoinRoomModal({ open, onClose, room, onJoin }) {
@@ -23,9 +24,8 @@ function JoinRoomModal({ open, onClose, room, onJoin }) {
     let active = true;
     async function load() {
       try {
-        const res = await fetch(`/api/chat/rooms/${room.id ?? room.roomId}`);
-        if (!res.ok) throw new Error('room detail fetch failed');
-        const data = await res.json(); // 기대: { id, name, chatName, gameName, tagNames: [...] }
+        const res = await axios.get(`/api/chat/rooms/${room.id ?? room.roomId}`);
+        const data = res.data; // 기대: { id, name, chatName, gameName, tagNames: [...] }
         if (active) setDetail(data);
       } catch (e) {
         console.warn('방 상세 조회 실패, props로 표시:', e);

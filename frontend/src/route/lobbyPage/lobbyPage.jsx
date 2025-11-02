@@ -550,7 +550,7 @@ function LobbyPage() {
               {/* 프로필 이미지 버튼 */}
               <div className="profile-button-wrapper">
                 <img
-                  src={userData?.userProfile ? `${userData.userProfile}` : "https://placehold.co/250x250"}
+                  src={userData?.userProfile ? import.meta.env?.VITE_API_URL + `/${userData.userProfile}` : "https://placehold.co/250x250"}
                   onClick={() => { setProfileUserId(userData?.userId); setShowProfileModal(true); }}
                   className="profile-button"
                   alt="프로필"
@@ -653,7 +653,7 @@ function LobbyPage() {
               <span style={{ color: 'var(--discord-text-muted)', fontSize: '14px' }}>
                 QMatch - 게임 팀원 모집 플랫폼
               </span>
-              <img src="../김용빈산악회2.png" alt="" style={{ position: 'flex', width: '220px', height: '75px' }} />
+              <img src="./yongbinHikingClub.png" alt="" style={{ position: 'flex', width: '220px', height: '75px' }} />
             </div>
             <Link to="/search">
               <div className='searchSize'>

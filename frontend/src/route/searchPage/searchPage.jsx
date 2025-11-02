@@ -49,13 +49,13 @@ function SearchPage() {
   // 게임 아이콘 설정 함수
   function setGameIcon(gameName) {
     switch (gameName) {
-      case "overwatch": return "/gameIcons/overwatch_Icon.png";
-      case "lol": return "/gameIcons/lol_Icon.png";
-      case "dnf": return "/gameIcons/dnf_Icon.png";
-      case "maplestory": return "/gameIcons/maplestory_Icon.png";
-      case "lostark": return "/gameIcons/lostark_Icon.png";
-      case "tft": return "/gameIcons/tft_Icon.png";
-      case "valorant": return "/gameIcons/valorant_Icon.png";
+      case "overwatch": return "gameIcons/overwatch_Icon.png";
+      case "lol": return "gameIcons/lol_Icon.png";
+      case "dnf": return "gameIcons/dnf_Icon.png";
+      case "maplestory": return "gameIcons/maplestory_Icon.png";
+      case "lostark": return "gameIcons/lostark_Icon.png";
+      case "tft": return "gameIcons/tft_Icon.png";
+      case "valorant": return "gameIcons/valorant_Icon.png";
       default: return "https://placehold.co/45";
     }
   }
@@ -463,27 +463,27 @@ function SearchPage() {
                 </button>
 
                 <button className={`chat_tag ${gametag === 'lol' ? 'active' : ''}`} onClick={()=> handleToggleTagPanel('lol')}>
-                  <img src="./public/gameIcons/lol_Icon.png" alt="LOL" />
+                  <img src="./gameIcons/lol_Icon.png" alt="LOL" />
                   <p>League of Legends</p>
                 </button>
 
                 <button className={`chat_tag ${gametag === 'tft' ? 'active' : ''}`} onClick={()=> handleToggleTagPanel('tft')}>
-                  <img src="./public/gameIcons/tft_Icon.png" alt="TFT"/>
+                  <img src="./gameIcons/tft_Icon.png" alt="TFT"/>
                   <p>Teamfight Tactics</p>
                 </button>
 
                 <button className={`chat_tag ${gametag === 'maplestory' ? 'active' : ''}`} onClick={()=> handleToggleTagPanel('maplestory')}>
-                  <img src="./public/gameIcons/maplestory_Icon.png" alt="MapleStory" />
+                  <img src="./gameIcons/maplestory_Icon.png" alt="MapleStory" />
                   <p>MapleStory</p>
                 </button>
 
                 <button className={`chat_tag ${gametag === 'dnf' ? 'active' : ''}`} onClick={()=> handleToggleTagPanel('dnf')}>
-                  <img src="./public/gameIcons/dnf_Icon.png" alt="Dnf"/>
+                  <img src="./gameIcons/dnf_Icon.png" alt="Dnf"/>
                   <p>던전앤파이터</p>
                 </button>
 
                 <button className={`chat_tag ${gametag === 'lostark' ? 'active' : ''}`} onClick={()=> handleToggleTagPanel('lostark')}>
-                  <img src="./public/gameIcons/lostark_Icon.png" alt="lostark"/>
+                  <img src="./gameIcons/lostark_Icon.png" alt="lostark"/>
                   <p>로스트아크</p>
                 </button>
             </div>

@@ -1,6 +1,6 @@
 // hooks/useChatSubscriber.js
 import { useEffect } from 'react';
-import axios from 'axios';
+import axios from '@axios';
 
 /**
  * 채팅방을 구독하고, 실시간 메시지를 수신하는 커스텀 훅

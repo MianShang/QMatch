@@ -46,7 +46,7 @@ public class ImageUploadController {
             }
 
             // 업로드 디렉토리 생성
-            String uploadPath = new File("uploads/chat").getAbsolutePath();
+            String uploadPath = new File("/app/uploads/chat").getAbsolutePath();
             File uploadDir = new File(uploadPath);
             if (!uploadDir.exists()) {
                 uploadDir.mkdirs();

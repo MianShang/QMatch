@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.example'
-version = 'qmatch-0.0.21'
+version = 'qmatch-0.0.23'
 
 java {
 	toolchain {

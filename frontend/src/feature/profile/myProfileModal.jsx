@@ -210,7 +210,7 @@ function MyProfile({ viewUserId, onClose }) {
                 <>
                   <label htmlFor="image-upload" style={{ cursor: 'pointer' }}>
                     <img
-                      src={profileData?.userProfile ? `${profileData.userProfile}` : 'https://placehold.co/250x250'}
+                      src={profileData?.userProfile ? import.meta.env?.VITE_API_URL + `${profileData.userProfile}` : 'https://placehold.co/250x250'}
                       alt="프로필"
                     />
                   </label>
@@ -230,7 +230,7 @@ function MyProfile({ viewUserId, onClose }) {
                 </>
               ) : (
                 <img
-                  src={profileData?.userProfile ? `${profileData.userProfile}` : 'https://placehold.co/250x250'}
+                  src={profileData?.userProfile ? import.meta.env?.VITE_API_URL + `${profileData.userProfile}` : 'https://placehold.co/250x250'}
                   alt="프로필"
                 />
               )}

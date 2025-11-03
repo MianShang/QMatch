@@ -550,7 +550,7 @@ function LobbyPage() {
               {/* 프로필 이미지 버튼 */}
               <div className="profile-button-wrapper">
                 <img
-                  src={userData?.userProfile ? import.meta.env?.VITE_API_URL + `/${userData.userProfile}` : "https://placehold.co/250x250"}
+                  src={userData?.userProfile ? import.meta.env?.VITE_API_URL + `${userData.userProfile}` : "https://placehold.co/250x250"}
                   onClick={() => { setProfileUserId(userData?.userId); setShowProfileModal(true); }}
                   className="profile-button"
                   alt="프로필"

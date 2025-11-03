@@ -27,7 +27,7 @@ public class UserProfileService {
 
 
         // 실제 절대 경로를 반환하고 없다면 파일 생성
-        String uploadPath = new File("/app/"+relativePath).getAbsolutePath();
+        String uploadPath = new File(relativePath).getAbsolutePath();
         File uploadDir = new File(uploadPath);
         if (!uploadDir.exists()) uploadDir.mkdirs();
 

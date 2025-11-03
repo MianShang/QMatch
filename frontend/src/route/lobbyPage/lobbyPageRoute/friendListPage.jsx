@@ -116,7 +116,7 @@ function FriendListPage() {
                 <div className="chatCardHeader">
                   <div className="profile-image-container">
                     <img
-                      src={friend.userProfile || "https://placehold.co/45"}
+                      src={import.meta.env?.VITE_API_URL + friend.userProfile || "https://placehold.co/45"}
                       alt="프로필 이미지"
                       className="chatCardImage"
                     />

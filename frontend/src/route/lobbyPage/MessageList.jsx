@@ -90,7 +90,7 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false, is
       
       setUserProfiles(prev => ({
         ...prev,
-        [userId]: response.data.userProfile || null
+        [userId]:response.data.userProfile || null
       }));
       
       setUserNames(prev => ({
@@ -239,7 +239,7 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false, is
                             <div className="profile-avatar">
                               {userProfiles[msg.name] ? (
                                 <img 
-                                  src={userProfiles[msg.name]} 
+                                  src={import.meta.env?.VITE_API_URL +userProfiles[msg.name]} 
                                   alt={msg.userName || '프로필'} 
                                   className="profile-image"
                                 />
@@ -265,11 +265,11 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false, is
                         >
                           {parseMessageWithImages(msg.message).map((part) => {
                             if (part.type === 'image') {
-                              const isGif = isGifImage(part.url);
+                              const isGif = isGifImage(import.meta.env?.VITE_API_URL + part.url);
                               return (
                                 <ImageMessage
-                                  key={part.key}
-                                  url={part.url}
+                                  key={import.meta.env?.VITE_API_URL + part.key}
+                                  url={import.meta.env?.VITE_API_URL + part.url}
                                   alt={part.alt}
                                   isGif={isGif}
                                 />
@@ -365,7 +365,7 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false, is
                         <div className="profile-avatar">
                           {userProfiles[msg.name] ? (
                             <img 
-                              src={userProfiles[msg.name]} 
+                              src={import.meta.env?.VITE_API_URL + userProfiles[msg.name]} 
                               alt={msg.userName || '프로필'} 
                               className="profile-image"
                             />
@@ -401,11 +401,11 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false, is
                     >
                       {parseMessageWithImages(msg.message).map((part) => {
                         if (part.type === 'image') {
-                          const isGif = isGifImage(part.url);
+                          const isGif = isGifImage(import.meta.env?.VITE_API_URL + part.url);
                           return (
                             <ImageMessage
-                              key={part.key}
-                              url={part.url}
+                              key={import.meta.env?.VITE_API_URL + part.key}
+                              url={import.meta.env?.VITE_API_URL + part.url}
                               alt={part.alt}
                               isGif={isGif}
                             />

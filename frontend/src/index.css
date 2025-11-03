@@ -196,31 +196,6 @@
 /* 핑크 테마 특별 애니메이션 - 푸딩같은 느낌 */
 [data-theme="pink"] * {
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  border-radius: 12px !important;
-}
-
-/* 핑크 테마 기본 요소들 둥글둥글하게 */
-[data-theme="pink"] .chatCard,
-[data-theme="pink"] .chatListStyle,
-[data-theme="pink"] .contentStyle,
-[data-theme="pink"] .LogComponentStyle,
-[data-theme="pink"] .LogChangeButtonStyle,
-[data-theme="pink"] .theme-toggle-button,
-[data-theme="pink"] .profile-button,
-[data-theme="pink"] .bottom-button,
-[data-theme="pink"] input,
-[data-theme="pink"] textarea,
-[data-theme="pink"] button {
-  border-radius: 16px !important;
-}
-
-/* 핑크 테마 작은 요소들 더 둥글게 */
-[data-theme="pink"] .status-indicator,
-[data-theme="pink"] .gameName,
-[data-theme="pink"] .hostBadge,
-[data-theme="pink"] .chatCardBadge,
-[data-theme="pink"] .CheckBox {
-  border-radius: 20px !important;
 }
 
 /* 푸딩같은 말랑말랑 호버 효과 */

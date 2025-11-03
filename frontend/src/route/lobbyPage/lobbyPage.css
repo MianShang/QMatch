@@ -350,6 +350,18 @@
     z-index: 1002;
 }
 
+/* 로고 이미지 */
+.qlogo-image {
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+}
+
+/* 관리자 버튼 링크 */
+.bottom-buttons-container a {
+    text-decoration: none;
+}
+
 /* 테마 전환 버튼 */
 .theme-toggle-wrapper {
   display: flex;
@@ -966,15 +978,7 @@
     line-height: 1.375;
 }
 
-/* 이모지 스타일링 */
-.chatStyle {
-    font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Android Emoji', 'EmojiSymbols', sans-serif;
-}
-
-/* 이모지 크기 조정 */
-.chatStyle span {
-    font-family: inherit;
-}
+/* 이모지 스타일링 - 폰트는 * 선택자에서 상속받음 */
 
 /* 이모지가 포함된 메시지의 줄 높이 조정 */
 .chatStyle:has(span[style*="font-size"]) {
@@ -1023,7 +1027,7 @@
     align-items: center;
     gap: 8px;
     margin-bottom: 8px;
-    font-size: 14px;
+    font-size: 18px;
     font-weight: 600;
     color: var(--discord-accent);
 }

@@ -545,7 +545,7 @@ function LobbyPage() {
             {/* 하단 버튼 영역 */}
             <div className="bottom-buttons-container">
               {userData?.authorities?.some(auth => auth.authority === 'ROLE_ADMIN') && (
-                <button><Link to="/admin"><MdOutlineConstruction style={{ fontSize: "28px", padding: "0px" }} /></Link></button>
+                <button className="bottom-button"><Link to="/admin"><MdOutlineConstruction/></Link></button>
               )}
               {/* 프로필 이미지 버튼 */}
               <div className="profile-button-wrapper">

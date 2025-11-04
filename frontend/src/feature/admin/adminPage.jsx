@@ -78,7 +78,6 @@ function AdminPage() {
     //회원 상세정보 기록 모달 열닫
     const handleOpenDetailInfoModal = async (user) => {
         try {
-            toast.info(`${user.userId}님의 상세 정보를 불러오는 중...`);
             const response = await axios.get(`/api/admin/users/${user.userId}`, { withCredentials: true }); 
             setSelectedUser(response.data);
             setIsDetailInfoModalOpen(true);
@@ -159,7 +158,7 @@ function AdminPage() {
         <div className="admin-page-container">
             <div className="admin-header">
                 <h1>관리자 페이지</h1>
-                <button  onClick={() => navigate(-1)} className="button-color">
+                <button  onClick={() => navigate(-1)} className="button-base button-secondary">
                     나가기
                 </button>
             </div>
@@ -185,11 +184,21 @@ function AdminPage() {
                                     <td>{user.userId}</td>
                                     <td>{user.userName}</td>
                                     <td>{user.userEmail}</td>   
-                                    <td>{user.status}</td> 
-                                    <td><button className="button-color" onClick={() => handleOpenDetailInfoModal(user)}>상세보기</button></td>
+                                    <td>
+                                        <span
+                                            className={`status-badge ${
+                                                user.status === '활성 상태' ? 'status-active' :
+                                                user.status === '영구 정지' ? 'status-banned' :
+                                                user.status.includes('정지') ? 'status-suspended' : ''
+                                            }`}
+                                            >
+                                            {user.status}
+                                        </span>
+                                        </td> 
+                                    <td><button className="button-base button-primary" onClick={() => handleOpenDetailInfoModal(user)}>상세보기</button></td>
                                     <td>
                                         {user.status !== '활성 상태' && (
-                                            <button className = "button-color" onClick={() => handleActivate(user.userId)}>해제</button>
+                                            <button className = "button-base button-safe" onClick={() => handleActivate(user.userId)}>해제</button>
                                         )}
                                     </td>
                                 </tr>
@@ -210,6 +219,7 @@ function AdminPage() {
                                 <th>신고자</th>
                                 <th>피신고자</th>
                                 <th>신고 사유</th>
+                                <th>상세 보기</th>
                                 <th>처리 상태</th>
                                 <th>조치</th>
                             </tr>
@@ -221,9 +231,12 @@ function AdminPage() {
                                     <td>{report.reporterId}</td>
                                     <td>{report.reportedUserId}</td>
                                     <td>{report.reason}</td>
+                                    <td><button className="button-base button-primary"
+                                    onClick={()=> handleOpenDetailModal(report)}>상세 보기</button></td>
                                     <td>{report.status}</td>
                                     <td>
-                                        <button className="button-color" onClick={() => handleOpenSuspendModal(report.id, { userId: report.reportedUserId })}>정지</button> 
+                                    <button className="button-base button-danger" onClick={() => handleOpenSuspendModal(report.id, { userId: report.reportedUserId })}>임시정지</button> 
+                                    <button className="button-base button-danger" onClick={() => handleBan(report.id, report.reportedUserId)} style={{backgroundColor: '#b22222'}}>영구정지</button>
                                     </td>
                                 </tr>
                             ))}

@@ -3,12 +3,113 @@
 .fullscreen {
     height: 100vh;
     width: 100vw;
-    background: linear-gradient(135deg, var(--discord-bg-tertiary) 0%, #1a1d23 100%);
+    background: 
+        radial-gradient(ellipse at top, #1a1d23 0%, #0f1115 50%, #000000 100%),
+        radial-gradient(ellipse at bottom, #2d1b3d 0%, #1a1d23 50%, #000000 100%),
+        linear-gradient(135deg, #0a0c10 0%, #1a1d23 50%, #0f1115 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
     overflow: hidden;
+}
+
+/* 화이트 모드 - 구름 낀 하늘 그림 느낌 */
+[data-theme="light"] .fullscreen {
+    background: 
+        /* 기본 하늘 배경 - 맑은 하늘에서 흰색으로 */
+        linear-gradient(to bottom, 
+            #87ceeb 0%, 
+            #b0e0e6 25%,
+            #add8e6 50%,
+            #e0f2ff 70%,
+            #f0f8ff 85%,
+            #ffffff 100%),
+        /* 구름들 - 하단에 겹겹이 쌓인 구름 그림 느낌 */
+        radial-gradient(ellipse 1200px 800px at 20% 70%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.95) 15%, rgba(255, 255, 255, 0.85) 30%, rgba(255, 255, 255, 0.65) 50%, rgba(255, 255, 255, 0.4) 65%, rgba(255, 255, 255, 0.15) 80%, transparent 90%),
+        radial-gradient(ellipse 1100px 750px at 75% 75%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.94) 16%, rgba(255, 255, 255, 0.84) 32%, rgba(255, 255, 255, 0.63) 52%, rgba(255, 255, 255, 0.38) 67%, rgba(255, 255, 255, 0.13) 82%, transparent 92%),
+        radial-gradient(ellipse 1000px 700px at 50% 85%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.93) 18%, rgba(255, 255, 255, 0.83) 34%, rgba(255, 255, 255, 0.62) 54%, rgba(255, 255, 255, 0.37) 69%, rgba(255, 255, 255, 0.12) 84%, transparent 94%),
+        radial-gradient(ellipse 950px 680px at 15% 80%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.94) 17%, rgba(255, 255, 255, 0.84) 33%, rgba(255, 255, 255, 0.63) 53%, rgba(255, 255, 255, 0.38) 68%, rgba(255, 255, 255, 0.13) 83%, transparent 93%),
+        radial-gradient(ellipse 1050px 720px at 85% 65%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.92) 19%, rgba(255, 255, 255, 0.82) 35%, rgba(255, 255, 255, 0.61) 55%, rgba(255, 255, 255, 0.36) 70%, rgba(255, 255, 255, 0.11) 85%, transparent 95%),
+        radial-gradient(ellipse 900px 650px at 35% 90%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.91) 20%, rgba(255, 255, 255, 0.81) 36%, rgba(255, 255, 255, 0.6) 56%, rgba(255, 255, 255, 0.35) 71%, rgba(255, 255, 255, 0.1) 86%, transparent 96%),
+        radial-gradient(ellipse 980px 700px at 70% 85%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.94) 18%, rgba(255, 255, 255, 0.84) 34%, rgba(255, 255, 255, 0.63) 54%, rgba(255, 255, 255, 0.38) 69%, rgba(255, 255, 255, 0.13) 84%, transparent 94%),
+        radial-gradient(ellipse 880px 630px at 25% 75%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.9) 21%, rgba(255, 255, 255, 0.8) 37%, rgba(255, 255, 255, 0.59) 57%, rgba(255, 255, 255, 0.34) 72%, rgba(255, 255, 255, 0.09) 87%, transparent 97%),
+        radial-gradient(ellipse 920px 660px at 90% 80%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.93) 19%, rgba(255, 255, 255, 0.83) 35%, rgba(255, 255, 255, 0.62) 55%, rgba(255, 255, 255, 0.37) 70%, rgba(255, 255, 255, 0.12) 85%, transparent 95%),
+        radial-gradient(ellipse 850px 610px at 10% 85%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.89) 22%, rgba(255, 255, 255, 0.79) 38%, rgba(255, 255, 255, 0.58) 58%, rgba(255, 255, 255, 0.33) 73%, rgba(255, 255, 255, 0.08) 88%, transparent 98%);
+}
+
+/* 블루 테마 배경 */
+[data-theme="blue"] .fullscreen {
+    background: 
+        radial-gradient(ellipse at top, #0d1b2a 0%, #1b263b 50%, #0a0e1a 100%),
+        radial-gradient(ellipse at bottom, #1e3a5f 0%, #0d1b2a 50%, #08141f 100%),
+        linear-gradient(135deg, #050810 0%, #0d1b2a 50%, #1b263b 100%);
+}
+
+/* 핑크 오로라 배경 */
+[data-theme="pink"] .fullscreen {
+    background: 
+        linear-gradient(180deg, #0a0c10 0%, #1a1d23 30%, #2d1b3d 60%, #1a0f26 100%);
+}
+
+/* 화이트 모드일 때 우주 배경 효과 제거하고 반짝이는 별 효과 추가 */
+[data-theme="light"] .fullscreen::before {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* 화이트 모드 - 맑은 하늘의 반짝이는 별들 */
+[data-theme="light"] .fullscreen::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        /* 작은 반짝임들 - 상단 하늘 부분 */
+        radial-gradient(2px 2px at 20% 30%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 50%, transparent 70%),
+        radial-gradient(1px 1px at 60% 20%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+        radial-gradient(2px 2px at 50% 25%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+        radial-gradient(1px 1px at 80% 15%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+        radial-gradient(2px 2px at 40% 20%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+        radial-gradient(1px 1px at 10% 25%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+        radial-gradient(1px 1px at 90% 30%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 70% 22%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+        radial-gradient(1px 1px at 30% 18%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+        radial-gradient(2px 2px at 85% 25%, rgba(255, 255, 255, 0.85) 0%, transparent 60%),
+        radial-gradient(1px 1px at 12% 22%, rgba(255, 255, 255, 0.75) 0%, transparent 60%),
+        radial-gradient(1px 1px at 55% 18%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+        radial-gradient(2px 2px at 88% 20%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+        radial-gradient(1px 1px at 35% 28%, rgba(255, 255, 255, 0.75) 0%, transparent 60%),
+        radial-gradient(1px 1px at 65% 15%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+        radial-gradient(1px 1px at 8% 30%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+        radial-gradient(1px 1px at 92% 18%, rgba(255, 255, 255, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 45% 22%, rgba(255, 255, 255, 0.85) 0%, transparent 60%),
+        radial-gradient(1px 1px at 78% 28%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+        radial-gradient(1px 1px at 22% 20%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+        radial-gradient(1px 1px at 68% 35%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+        radial-gradient(1px 1px at 38% 26%, rgba(255, 255, 255, 0.75) 0%, transparent 60%),
+        radial-gradient(1px 1px at 82% 32%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+        radial-gradient(1px 1px at 15% 35%, rgba(255, 255, 255, 0.65) 0%, transparent 60%),
+        radial-gradient(1px 1px at 95% 22%, rgba(255, 255, 255, 0.7) 0%, transparent 60%);
+    background-size: 
+        200% 200%, 180% 180%, 150% 150%, 220% 220%, 190% 190%, 170% 170%, 210% 210%, 160% 160%, 200% 200%, 175% 175%,
+        165% 165%, 185% 185%, 195% 195%, 205% 205%, 155% 155%, 225% 225%,
+        178% 178%, 192% 192%, 188% 188%, 172% 172%, 168% 168%, 182% 182%,
+        158% 158%, 198% 198%, 162% 162%, 202% 202%;
+    background-position: 
+        0% 0%, 10% 10%, 30% 15%, 50% 8%, 70% 12%, 20% 18%, 80% 10%, 40% 14%, 90% 16%, 60% 9%,
+        15% 12%, 85% 8%, 25% 20%, 75% 14%, 5% 15%, 95% 11%,
+        12% 22%, 48% 18%, 72% 16%, 28% 13%, 82% 19%,
+        15% 25%, 85% 12%, 25% 21%, 75% 17%, 5% 28%, 95% 14%,
+        68% 22%, 38% 19%, 82% 25%, 15% 18%, 95% 16%;
+    animation: starTwinkle 8s ease-in-out infinite;
+    z-index: 1;
+    pointer-events: none;
 }
 
 /* 로그인 페이지 테마 전환 버튼 */
@@ -70,7 +171,7 @@
   box-shadow: 0 8px 25px rgba(233, 30, 99, 0.4);
 }
 
-/* 배경 애니메이션 효과 */
+/* 우주 테마 배경 효과 - 행성과 성운 (더 많이) */
 .fullscreen::before {
     content: '';
     position: absolute;
@@ -79,19 +180,423 @@
     right: 0;
     bottom: 0;
     background: 
-        radial-gradient(circle at 20% 80%, rgba(88, 101, 242, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(114, 137, 218, 0.1) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, rgba(88, 101, 242, 0.05) 0%, transparent 50%);
-    animation: backgroundShift 20s ease-in-out infinite;
+        /* 행성처럼 큰 원형 요소들 - 더 많이 추가 */
+        radial-gradient(ellipse 800px 600px at 15% 30%, rgba(88, 101, 242, 0.25) 0%, rgba(88, 101, 242, 0.1) 40%, transparent 70%),
+        radial-gradient(ellipse 700px 500px at 85% 70%, rgba(114, 137, 218, 0.22) 0%, rgba(114, 137, 218, 0.08) 35%, transparent 65%),
+        radial-gradient(ellipse 600px 450px at 50% 80%, rgba(138, 43, 226, 0.2) 0%, rgba(138, 43, 226, 0.08) 38%, transparent 60%),
+        radial-gradient(ellipse 900px 700px at 70% 20%, rgba(75, 0, 130, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse 750px 550px at 30% 60%, rgba(138, 43, 226, 0.2) 0%, transparent 62%),
+        radial-gradient(ellipse 650px 480px at 90% 40%, rgba(88, 101, 242, 0.18) 0%, transparent 58%),
+        radial-gradient(ellipse 850px 650px at 25% 15%, rgba(123, 104, 238, 0.16) 0%, transparent 60%),
+        radial-gradient(ellipse 720px 520px at 60% 90%, rgba(75, 0, 130, 0.19) 0%, transparent 63%),
+        radial-gradient(ellipse 780px 580px at 45% 25%, rgba(88, 101, 242, 0.17) 0%, transparent 61%),
+        radial-gradient(ellipse 680px 490px at 75% 55%, rgba(138, 43, 226, 0.19) 0%, transparent 59%),
+        radial-gradient(ellipse 820px 610px at 35% 75%, rgba(123, 104, 238, 0.18) 0%, transparent 64%),
+        radial-gradient(ellipse 760px 560px at 55% 12%, rgba(75, 0, 130, 0.16) 0%, transparent 57%),
+        /* 성운 같은 부드러운 패턴 - 더 많이 */
+        radial-gradient(circle 1000px at 20% 50%, rgba(75, 0, 130, 0.3) 0%, rgba(75, 0, 130, 0.1) 40%, transparent 60%),
+        radial-gradient(circle 900px at 80% 20%, rgba(138, 43, 226, 0.25) 0%, rgba(138, 43, 226, 0.08) 45%, transparent 60%),
+        radial-gradient(circle 850px at 40% 70%, rgba(123, 104, 238, 0.2) 0%, transparent 50%),
+        radial-gradient(circle 950px at 65% 85%, rgba(88, 101, 242, 0.22) 0%, transparent 52%),
+        radial-gradient(circle 880px at 10% 80%, rgba(138, 43, 226, 0.18) 0%, transparent 55%),
+        radial-gradient(circle 920px at 75% 50%, rgba(75, 0, 130, 0.2) 0%, transparent 58%),
+        radial-gradient(circle 1100px at 50% 30%, rgba(88, 101, 242, 0.18) 0%, transparent 53%),
+        radial-gradient(circle 1050px at 28% 65%, rgba(138, 43, 226, 0.19) 0%, transparent 56%),
+        radial-gradient(circle 980px at 72% 75%, rgba(123, 104, 238, 0.17) 0%, transparent 54%),
+        /* 운석 효과 - 긴 타원형 */
+        radial-gradient(ellipse 200px 20px at 25% 40%, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 30%, transparent 60%),
+        radial-gradient(ellipse 180px 18px at 65% 60%, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.08) 35%, transparent 65%),
+        radial-gradient(ellipse 150px 15px at 45% 80%, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.06) 40%, transparent 70%),
+        radial-gradient(ellipse 220px 22px at 75% 25%, rgba(255, 255, 255, 0.28) 0%, transparent 55%),
+        radial-gradient(ellipse 190px 19px at 15% 70%, rgba(255, 255, 255, 0.22) 0%, transparent 58%),
+        radial-gradient(ellipse 210px 21px at 85% 45%, rgba(255, 255, 255, 0.26) 0%, transparent 62%);
     z-index: 0;
     pointer-events: none;
 }
 
-@keyframes backgroundShift {
-    0%, 100% { transform: translateX(0) translateY(0); }
-    25% { transform: translateX(-10px) translateY(-5px); }
-    50% { transform: translateX(5px) translateY(-10px); }
-    75% { transform: translateX(-5px) translateY(5px); }
+/* 별들 효과 - 훨씬 더 많이 추가 */
+.fullscreen::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        /* 매우 큰 별들 (4-5px) */
+        radial-gradient(5px 5px at 25% 35%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.7) 50%, transparent 70%),
+        radial-gradient(4px 4px at 65% 65%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.6) 50%, transparent 70%),
+        radial-gradient(5px 5px at 45% 55%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.8) 50%, transparent 70%),
+        radial-gradient(4px 4px at 75% 25%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.65) 50%, transparent 70%),
+        radial-gradient(5px 5px at 35% 75%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.7) 50%, transparent 70%),
+        radial-gradient(4px 4px at 85% 55%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.75) 50%, transparent 70%),
+        /* 큰 별들 (3px) - 더 많이 */
+        radial-gradient(3px 3px at 20% 30%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.8) 50%, transparent 70%),
+        radial-gradient(3px 3px at 60% 70%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 50%, transparent 70%),
+        radial-gradient(3px 3px at 50% 50%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.8) 50%, transparent 70%),
+        radial-gradient(3px 3px at 80% 20%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+        radial-gradient(3px 3px at 40% 80%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+        radial-gradient(3px 3px at 10% 60%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+        radial-gradient(3px 3px at 90% 80%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+        radial-gradient(3px 3px at 70% 40%, rgba(255, 255, 255, 1) 0%, transparent 60%),
+        radial-gradient(3px 3px at 30% 10%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+        radial-gradient(3px 3px at 85% 50%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+        radial-gradient(3px 3px at 12% 75%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+        radial-gradient(3px 3px at 55% 25%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+        radial-gradient(3px 3px at 88% 65%, rgba(255, 255, 255, 1) 0%, transparent 60%),
+        radial-gradient(3px 3px at 35% 85%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+        radial-gradient(3px 3px at 65% 15%, rgba(255, 255, 255, 0.85) 0%, transparent 60%),
+        radial-gradient(3px 3px at 15% 45%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+        radial-gradient(3px 3px at 55% 70%, rgba(255, 255, 255, 0.85) 0%, transparent 60%),
+        radial-gradient(3px 3px at 95% 35%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+        /* 중간 크기 별들 (2px) - 더 많이 */
+        radial-gradient(2px 2px at 18% 45%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 45% 60%, rgba(255, 255, 255, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 72% 75%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 28% 35%, rgba(255, 255, 255, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 82% 35%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+        radial-gradient(2px 2px at 22% 65%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 68% 55%, rgba(255, 255, 255, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 92% 70%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 38% 20%, rgba(255, 255, 255, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 58% 90%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 48% 40%, rgba(255, 255, 255, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 78% 60%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+        /* 작은 별들 (1px) - 더 많이 추가 */
+        radial-gradient(1px 1px at 25% 45%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 75% 25%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 35% 75%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 65% 55%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 15% 15%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 95% 65%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 5% 40%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 95% 10%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 45% 90%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 85% 90%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 22% 20%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 52% 80%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 78% 55%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 38% 25%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 68% 85%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 58% 35%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 42% 65%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 88% 75%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 32% 50%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 62% 90%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 48% 15%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 18% 55%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 92% 40%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 72% 30%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 28% 70%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 8% 50%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 98% 30%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 33% 60%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 67% 20%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 53% 95%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 47% 5%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 77% 85%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 23% 95%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 87% 5%, rgba(255, 255, 255, 0.6), transparent);
+    background-size: 
+        /* 매우 큰 별들 (6개) */
+        200% 200%, 180% 180%, 150% 150%, 220% 220%, 190% 190%, 170% 170%,
+        /* 큰 별들 (19개) */
+        210% 210%, 160% 160%, 200% 200%, 175% 175%, 165% 165%, 185% 185%, 195% 195%, 205% 205%, 155% 155%, 225% 225%,
+        178% 178%, 192% 192%, 188% 188%, 172% 172%, 168% 168%, 182% 182%, 206% 206%, 216% 216%, 174% 174%,
+        /* 중간 크기 별들 (12개) */
+        184% 184%, 194% 194%, 164% 164%, 177% 177%, 187% 187%, 197% 197%, 167% 167%, 179% 179%, 189% 189%, 199% 199%, 169% 169%, 181% 181%,
+        /* 작은 별들 (30개) */
+        191% 191%, 201% 201%, 158% 158%, 198% 198%, 162% 162%, 202% 202%, 166% 166%, 176% 176%, 186% 186%, 196% 196%,
+        206% 206%, 216% 216%, 174% 174%, 184% 184%, 194% 194%, 164% 164%, 177% 177%, 187% 187%, 197% 197%, 167% 167%,
+        179% 179%, 189% 189%, 199% 199%, 169% 169%, 181% 181%, 191% 191%, 201% 201%, 203% 203%, 193% 193%, 183% 183%;
+    background-position: 
+        /* 매우 큰 별들 */
+        0% 0%, 10% 20%, 30% 40%, 50% 10%, 70% 60%, 20% 70%,
+        /* 큰 별들 */
+        80% 30%, 40% 80%, 90% 50%, 60% 90%, 15% 35%, 85% 15%, 25% 85%, 75% 45%, 5% 55%, 95% 75%,
+        12% 25%, 48% 65%, 72% 75%, 28% 35%, 82% 35%, 15% 45%, 55% 70%, 95% 35%,
+        /* 중간 크기 별들 */
+        18% 45%, 45% 60%, 72% 75%, 28% 35%, 82% 35%, 22% 65%, 68% 55%, 92% 70%, 38% 20%, 58% 90%, 48% 40%, 78% 60%,
+        /* 작은 별들 */
+        25% 45%, 75% 25%, 35% 75%, 65% 55%, 15% 15%, 95% 65%, 5% 40%, 95% 10%, 45% 90%, 85% 90%,
+        22% 20%, 52% 80%, 78% 55%, 38% 25%, 68% 85%, 58% 35%, 42% 65%, 88% 75%, 32% 50%, 62% 90%,
+        48% 15%, 18% 55%, 92% 40%, 72% 30%, 28% 70%, 8% 50%, 98% 30%, 33% 60%, 67% 20%, 53% 95%,
+        47% 5%, 77% 85%, 23% 95%, 87% 5%;
+    animation: starTwinkle 8s ease-in-out infinite;
+    z-index: 1;
+    pointer-events: none;
+}
+
+@keyframes starTwinkle {
+    0%, 100% { 
+        opacity: 0.8;
+        transform: scale(1);
+    }
+    25% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+    50% { 
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
+    75% {
+        opacity: 0.9;
+        transform: scale(1.02);
+    }
+}
+
+/* 블루 테마 배경 효과 */
+[data-theme="blue"] .fullscreen::before {
+    background: 
+        /* 파란색 행성들 */
+        radial-gradient(ellipse 800px 600px at 15% 30%, rgba(33, 150, 243, 0.25) 0%, rgba(33, 150, 243, 0.1) 40%, transparent 70%),
+        radial-gradient(ellipse 700px 500px at 85% 70%, rgba(66, 165, 245, 0.22) 0%, rgba(66, 165, 245, 0.08) 35%, transparent 65%),
+        radial-gradient(ellipse 600px 450px at 50% 80%, rgba(21, 101, 192, 0.2) 0%, rgba(21, 101, 192, 0.08) 38%, transparent 60%),
+        radial-gradient(ellipse 900px 700px at 70% 20%, rgba(13, 71, 161, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse 750px 550px at 30% 60%, rgba(66, 165, 245, 0.2) 0%, transparent 62%),
+        radial-gradient(ellipse 650px 480px at 90% 40%, rgba(33, 150, 243, 0.18) 0%, transparent 58%),
+        radial-gradient(ellipse 850px 650px at 25% 15%, rgba(25, 118, 210, 0.16) 0%, transparent 60%),
+        radial-gradient(ellipse 720px 520px at 60% 90%, rgba(13, 71, 161, 0.19) 0%, transparent 63%),
+        radial-gradient(ellipse 780px 580px at 45% 25%, rgba(33, 150, 243, 0.17) 0%, transparent 61%),
+        radial-gradient(ellipse 680px 490px at 75% 55%, rgba(66, 165, 245, 0.19) 0%, transparent 59%),
+        radial-gradient(ellipse 820px 610px at 35% 75%, rgba(25, 118, 210, 0.18) 0%, transparent 64%),
+        radial-gradient(ellipse 760px 560px at 55% 12%, rgba(13, 71, 161, 0.16) 0%, transparent 57%),
+        /* 파란색 성운 */
+        radial-gradient(circle 1000px at 20% 50%, rgba(13, 71, 161, 0.3) 0%, rgba(13, 71, 161, 0.1) 40%, transparent 60%),
+        radial-gradient(circle 900px at 80% 20%, rgba(66, 165, 245, 0.25) 0%, rgba(66, 165, 245, 0.08) 45%, transparent 60%),
+        radial-gradient(circle 850px at 40% 70%, rgba(33, 150, 243, 0.2) 0%, transparent 50%),
+        radial-gradient(circle 950px at 65% 85%, rgba(21, 101, 192, 0.22) 0%, transparent 52%),
+        radial-gradient(circle 880px at 10% 80%, rgba(66, 165, 245, 0.18) 0%, transparent 55%),
+        radial-gradient(circle 920px at 75% 50%, rgba(13, 71, 161, 0.2) 0%, transparent 58%),
+        radial-gradient(circle 1100px at 50% 30%, rgba(33, 150, 243, 0.18) 0%, transparent 53%),
+        radial-gradient(circle 1050px at 28% 65%, rgba(66, 165, 245, 0.19) 0%, transparent 56%),
+        radial-gradient(circle 980px at 72% 75%, rgba(25, 118, 210, 0.17) 0%, transparent 54%),
+        /* 운석 효과 */
+        radial-gradient(ellipse 200px 20px at 25% 40%, rgba(135, 206, 250, 0.3) 0%, rgba(135, 206, 250, 0.1) 30%, transparent 60%),
+        radial-gradient(ellipse 180px 18px at 65% 60%, rgba(173, 216, 230, 0.25) 0%, rgba(173, 216, 230, 0.08) 35%, transparent 65%),
+        radial-gradient(ellipse 150px 15px at 45% 80%, rgba(135, 206, 250, 0.2) 0%, rgba(135, 206, 250, 0.06) 40%, transparent 70%),
+        radial-gradient(ellipse 220px 22px at 75% 25%, rgba(173, 216, 230, 0.28) 0%, transparent 55%),
+        radial-gradient(ellipse 190px 19px at 15% 70%, rgba(135, 206, 250, 0.22) 0%, transparent 58%),
+        radial-gradient(ellipse 210px 21px at 85% 45%, rgba(173, 216, 230, 0.26) 0%, transparent 62%);
+}
+
+[data-theme="blue"] .fullscreen::after {
+    background-image: 
+        /* 매우 큰 파란색 별들 (4-5px) */
+        radial-gradient(5px 5px at 25% 35%, rgba(135, 206, 250, 1) 0%, rgba(135, 206, 250, 0.7) 50%, transparent 70%),
+        radial-gradient(4px 4px at 65% 65%, rgba(173, 216, 230, 0.95) 0%, rgba(173, 216, 230, 0.6) 50%, transparent 70%),
+        radial-gradient(5px 5px at 45% 55%, rgba(135, 206, 250, 1) 0%, rgba(135, 206, 250, 0.8) 50%, transparent 70%),
+        radial-gradient(4px 4px at 75% 25%, rgba(173, 216, 230, 0.9) 0%, rgba(173, 216, 230, 0.65) 50%, transparent 70%),
+        radial-gradient(5px 5px at 35% 75%, rgba(135, 206, 250, 0.95) 0%, rgba(135, 206, 250, 0.7) 50%, transparent 70%),
+        radial-gradient(4px 4px at 85% 55%, rgba(173, 216, 230, 1) 0%, rgba(173, 216, 230, 0.75) 50%, transparent 70%),
+        /* 큰 파란색 별들 (3px) - 더 많이 */
+        radial-gradient(3px 3px at 20% 30%, rgba(135, 206, 250, 1) 0%, rgba(135, 206, 250, 0.8) 50%, transparent 70%),
+        radial-gradient(3px 3px at 60% 70%, rgba(173, 216, 230, 0.9) 0%, rgba(173, 216, 230, 0.7) 50%, transparent 70%),
+        radial-gradient(3px 3px at 50% 50%, rgba(135, 206, 250, 1) 0%, rgba(135, 206, 250, 0.8) 50%, transparent 70%),
+        radial-gradient(3px 3px at 80% 20%, rgba(173, 216, 230, 0.8) 0%, transparent 60%),
+        radial-gradient(3px 3px at 40% 80%, rgba(135, 206, 250, 0.9) 0%, transparent 60%),
+        radial-gradient(3px 3px at 10% 60%, rgba(173, 216, 230, 0.8) 0%, transparent 60%),
+        radial-gradient(3px 3px at 90% 80%, rgba(135, 206, 250, 0.7) 0%, transparent 60%),
+        radial-gradient(3px 3px at 70% 40%, rgba(173, 216, 230, 1) 0%, transparent 60%),
+        radial-gradient(3px 3px at 30% 10%, rgba(135, 206, 250, 0.9) 0%, transparent 60%),
+        radial-gradient(3px 3px at 85% 50%, rgba(173, 216, 230, 0.8) 0%, transparent 60%),
+        radial-gradient(3px 3px at 15% 45%, rgba(135, 206, 250, 0.9) 0%, transparent 60%),
+        radial-gradient(3px 3px at 55% 70%, rgba(173, 216, 230, 0.85) 0%, transparent 60%),
+        radial-gradient(3px 3px at 95% 35%, rgba(135, 206, 250, 0.9) 0%, transparent 60%),
+        /* 중간 크기 파란색 별들 (2px) - 더 많이 */
+        radial-gradient(2px 2px at 18% 45%, rgba(135, 206, 250, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 45% 60%, rgba(173, 216, 230, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 72% 75%, rgba(135, 206, 250, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 28% 35%, rgba(173, 216, 230, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 82% 35%, rgba(135, 206, 250, 0.8) 0%, transparent 60%),
+        radial-gradient(2px 2px at 22% 65%, rgba(173, 216, 230, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 68% 55%, rgba(135, 206, 250, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 92% 70%, rgba(173, 216, 230, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 38% 20%, rgba(135, 206, 250, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 58% 90%, rgba(173, 216, 230, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 48% 40%, rgba(135, 206, 250, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 78% 60%, rgba(173, 216, 230, 0.7) 0%, transparent 60%),
+        /* 작은 파란색 별들 (1px) - 더 많이 */
+        radial-gradient(1px 1px at 25% 45%, rgba(173, 216, 230, 0.6), transparent),
+        radial-gradient(1px 1px at 75% 25%, rgba(135, 206, 250, 0.6), transparent),
+        radial-gradient(1px 1px at 35% 75%, rgba(173, 216, 230, 0.5), transparent),
+        radial-gradient(1px 1px at 65% 55%, rgba(135, 206, 250, 0.6), transparent),
+        radial-gradient(1px 1px at 15% 15%, rgba(173, 216, 230, 0.5), transparent),
+        radial-gradient(1px 1px at 95% 65%, rgba(135, 206, 250, 0.6), transparent),
+        radial-gradient(1px 1px at 58% 35%, rgba(173, 216, 230, 0.6), transparent),
+        radial-gradient(1px 1px at 42% 65%, rgba(135, 206, 250, 0.5), transparent),
+        radial-gradient(1px 1px at 88% 75%, rgba(173, 216, 230, 0.6), transparent),
+        radial-gradient(1px 1px at 32% 50%, rgba(135, 206, 250, 0.5), transparent),
+        radial-gradient(1px 1px at 62% 90%, rgba(173, 216, 230, 0.6), transparent),
+        radial-gradient(1px 1px at 48% 15%, rgba(135, 206, 250, 0.5), transparent),
+        radial-gradient(1px 1px at 18% 55%, rgba(173, 216, 230, 0.6), transparent),
+        radial-gradient(1px 1px at 92% 40%, rgba(135, 206, 250, 0.5), transparent),
+        radial-gradient(1px 1px at 72% 30%, rgba(173, 216, 230, 0.6), transparent),
+        radial-gradient(1px 1px at 28% 70%, rgba(135, 206, 250, 0.5), transparent),
+        radial-gradient(1px 1px at 8% 50%, rgba(173, 216, 230, 0.6), transparent),
+        radial-gradient(1px 1px at 98% 30%, rgba(135, 206, 250, 0.5), transparent),
+        radial-gradient(1px 1px at 33% 60%, rgba(173, 216, 230, 0.6), transparent),
+        radial-gradient(1px 1px at 67% 20%, rgba(135, 206, 250, 0.5), transparent),
+        radial-gradient(1px 1px at 53% 95%, rgba(173, 216, 230, 0.6), transparent),
+        radial-gradient(1px 1px at 47% 5%, rgba(135, 206, 250, 0.5), transparent),
+        radial-gradient(1px 1px at 77% 85%, rgba(173, 216, 230, 0.6), transparent),
+        radial-gradient(1px 1px at 23% 95%, rgba(135, 206, 250, 0.5), transparent),
+        radial-gradient(1px 1px at 87% 5%, rgba(173, 216, 230, 0.6), transparent);
+    background-size: 
+        /* 매우 큰 별들 (6개) */
+        200% 200%, 180% 180%, 150% 150%, 220% 220%, 190% 190%, 170% 170%,
+        /* 큰 별들 (13개) */
+        210% 210%, 160% 160%, 200% 200%, 175% 175%, 165% 165%, 185% 185%, 195% 195%, 205% 205%, 155% 155%, 225% 225%,
+        178% 178%, 192% 192%, 188% 188%,
+        /* 중간 크기 별들 (12개) */
+        172% 172%, 168% 168%, 182% 182%, 206% 206%, 216% 216%, 174% 174%, 184% 184%, 194% 194%, 164% 164%, 177% 177%, 187% 187%, 197% 197%,
+        /* 작은 별들 (24개) */
+        167% 167%, 179% 179%, 189% 189%, 199% 199%, 169% 169%, 181% 181%, 191% 191%, 201% 201%, 158% 158%, 198% 198%, 162% 162%, 202% 202%,
+        166% 166%, 176% 176%, 186% 186%, 196% 196%, 203% 203%, 193% 193%, 183% 183%, 173% 173%, 163% 163%, 153% 153%, 213% 213%, 223% 223%;
+    background-position: 
+        /* 매우 큰 별들 */
+        0% 0%, 10% 20%, 30% 40%, 50% 10%, 70% 60%, 20% 70%,
+        /* 큰 별들 */
+        80% 30%, 40% 80%, 90% 50%, 60% 90%, 15% 35%, 85% 15%, 25% 85%, 75% 45%, 5% 55%, 95% 75%,
+        15% 45%, 55% 70%, 95% 35%,
+        /* 중간 크기 별들 */
+        18% 45%, 45% 60%, 72% 75%, 28% 35%, 82% 35%, 22% 65%, 68% 55%, 92% 70%, 38% 20%, 58% 90%, 48% 40%, 78% 60%,
+        /* 작은 별들 */
+        25% 45%, 75% 25%, 35% 75%, 65% 55%, 15% 15%, 95% 65%, 58% 35%, 42% 65%, 88% 75%, 32% 50%, 62% 90%, 48% 15%,
+        18% 55%, 92% 40%, 72% 30%, 28% 70%, 8% 50%, 98% 30%, 33% 60%, 67% 20%, 53% 95%, 47% 5%, 77% 85%, 23% 95%, 87% 5%;
+}
+
+/* 핑크 테마 배경 효과 */
+[data-theme="pink"] .fullscreen::before {
+    background: 
+        /* 핑크 오로라 기둥들 - 채도 조금 올림 (적절한 핑크) */
+        linear-gradient(180deg, transparent 0%, rgba(250, 90, 155, 0.35) 20%, rgba(250, 120, 180, 0.4) 50%, rgba(250, 90, 155, 0.35) 80%, transparent 100%),
+        linear-gradient(180deg, transparent 0%, rgba(235, 80, 145, 0.3) 25%, rgba(250, 110, 170, 0.35) 55%, rgba(235, 80, 145, 0.3) 85%, transparent 100%),
+        linear-gradient(180deg, transparent 0%, rgba(200, 100, 180, 0.25) 30%, rgba(250, 90, 155, 0.3) 60%, rgba(200, 100, 180, 0.25) 90%, transparent 100%),
+        linear-gradient(180deg, transparent 0%, rgba(250, 110, 170, 0.3) 22%, rgba(250, 120, 180, 0.35) 52%, rgba(250, 110, 170, 0.3) 82%, transparent 100%),
+        linear-gradient(180deg, transparent 0%, rgba(250, 90, 155, 0.25) 28%, rgba(235, 80, 145, 0.3) 58%, rgba(250, 90, 155, 0.25) 88%, transparent 100%),
+        /* 오로라 빛의 퍼짐 효과 - 채도 조금 올림 */
+        radial-gradient(ellipse 300px 800px at 20% 20%, rgba(250, 90, 155, 0.3) 0%, rgba(250, 120, 180, 0.25) 30%, transparent 60%),
+        radial-gradient(ellipse 250px 900px at 60% 15%, rgba(250, 120, 180, 0.35) 0%, rgba(250, 90, 155, 0.3) 35%, transparent 65%),
+        radial-gradient(ellipse 350px 1000px at 80% 25%, rgba(235, 80, 145, 0.3) 0%, rgba(250, 110, 170, 0.25) 40%, transparent 70%),
+        radial-gradient(ellipse 280px 850px at 40% 30%, rgba(200, 100, 180, 0.25) 0%, rgba(250, 90, 155, 0.2) 45%, transparent 75%),
+        radial-gradient(ellipse 320px 950px at 70% 20%, rgba(250, 110, 170, 0.3) 0%, rgba(235, 80, 145, 0.25) 38%, transparent 68%),
+        radial-gradient(ellipse 290px 880px at 35% 25%, rgba(250, 90, 155, 0.28) 0%, rgba(250, 120, 180, 0.22) 42%, transparent 72%);
+    background-size: 
+        30% 100%, 25% 100%, 20% 100%, 28% 100%, 22% 100%,
+        100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    background-position: 
+        15% 0%, 45% 0%, 70% 0%, 85% 0%, 25% 0%,
+        0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%;
+    pointer-events: none;
+    animation: auroraFloat 12s ease-in-out infinite;
+    opacity: 0.7;
+}
+
+@keyframes auroraFloat {
+    0%, 100% { 
+        transform: translateY(0px);
+        opacity: 0.8;
+    }
+    25% { 
+        transform: translateY(-10px);
+        opacity: 0.9;
+    }
+    50% { 
+        transform: translateY(-15px);
+        opacity: 1;
+    }
+    75% { 
+        transform: translateY(-10px);
+        opacity: 0.9;
+    }
+}
+
+[data-theme="pink"] .fullscreen::after {
+    background-image: 
+        /* 매우 큰 핑크 별들 (4-5px) */
+        radial-gradient(5px 5px at 25% 35%, rgba(255, 192, 203, 1) 0%, rgba(255, 192, 203, 0.7) 50%, transparent 70%),
+        radial-gradient(4px 4px at 65% 65%, rgba(255, 182, 193, 0.95) 0%, rgba(255, 182, 193, 0.6) 50%, transparent 70%),
+        radial-gradient(5px 5px at 45% 55%, rgba(255, 192, 203, 1) 0%, rgba(255, 192, 203, 0.8) 50%, transparent 70%),
+        radial-gradient(4px 4px at 75% 25%, rgba(255, 182, 193, 0.9) 0%, rgba(255, 182, 193, 0.65) 50%, transparent 70%),
+        radial-gradient(5px 5px at 35% 75%, rgba(255, 192, 203, 0.95) 0%, rgba(255, 192, 203, 0.7) 50%, transparent 70%),
+        radial-gradient(4px 4px at 85% 55%, rgba(255, 182, 193, 1) 0%, rgba(255, 182, 193, 0.75) 50%, transparent 70%),
+        /* 큰 핑크 별들 (3px) - 더 많이 */
+        radial-gradient(3px 3px at 20% 30%, rgba(255, 192, 203, 1) 0%, rgba(255, 192, 203, 0.8) 50%, transparent 70%),
+        radial-gradient(3px 3px at 60% 70%, rgba(255, 182, 193, 0.9) 0%, rgba(255, 182, 193, 0.7) 50%, transparent 70%),
+        radial-gradient(3px 3px at 50% 50%, rgba(255, 192, 203, 1) 0%, rgba(255, 192, 203, 0.8) 50%, transparent 70%),
+        radial-gradient(3px 3px at 80% 20%, rgba(255, 182, 193, 0.8) 0%, transparent 60%),
+        radial-gradient(3px 3px at 40% 80%, rgba(255, 192, 203, 0.9) 0%, transparent 60%),
+        radial-gradient(3px 3px at 10% 60%, rgba(255, 182, 193, 0.8) 0%, transparent 60%),
+        radial-gradient(3px 3px at 90% 80%, rgba(255, 192, 203, 0.7) 0%, transparent 60%),
+        radial-gradient(3px 3px at 70% 40%, rgba(255, 182, 193, 1) 0%, transparent 60%),
+        radial-gradient(3px 3px at 30% 10%, rgba(255, 192, 203, 0.9) 0%, transparent 60%),
+        radial-gradient(3px 3px at 85% 50%, rgba(255, 182, 193, 0.8) 0%, transparent 60%),
+        radial-gradient(3px 3px at 15% 45%, rgba(255, 192, 203, 0.9) 0%, transparent 60%),
+        radial-gradient(3px 3px at 55% 70%, rgba(255, 182, 193, 0.85) 0%, transparent 60%),
+        radial-gradient(3px 3px at 95% 35%, rgba(255, 192, 203, 0.9) 0%, transparent 60%),
+        /* 중간 크기 핑크 별들 (2px) - 더 많이 */
+        radial-gradient(2px 2px at 18% 45%, rgba(255, 192, 203, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 45% 60%, rgba(255, 182, 193, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 72% 75%, rgba(255, 192, 203, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 28% 35%, rgba(255, 182, 193, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 82% 35%, rgba(255, 192, 203, 0.8) 0%, transparent 60%),
+        radial-gradient(2px 2px at 22% 65%, rgba(255, 182, 193, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 68% 55%, rgba(255, 192, 203, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 92% 70%, rgba(255, 182, 193, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 38% 20%, rgba(255, 192, 203, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 58% 90%, rgba(255, 182, 193, 0.7) 0%, transparent 60%),
+        radial-gradient(2px 2px at 48% 40%, rgba(255, 192, 203, 0.75) 0%, transparent 60%),
+        radial-gradient(2px 2px at 78% 60%, rgba(255, 182, 193, 0.7) 0%, transparent 60%),
+        /* 작은 핑크 별들 (1px) - 더 많이 */
+        radial-gradient(1px 1px at 25% 45%, rgba(255, 182, 193, 0.6), transparent),
+        radial-gradient(1px 1px at 75% 25%, rgba(255, 192, 203, 0.6), transparent),
+        radial-gradient(1px 1px at 35% 75%, rgba(255, 182, 193, 0.5), transparent),
+        radial-gradient(1px 1px at 65% 55%, rgba(255, 192, 203, 0.6), transparent),
+        radial-gradient(1px 1px at 15% 15%, rgba(255, 182, 193, 0.5), transparent),
+        radial-gradient(1px 1px at 95% 65%, rgba(255, 192, 203, 0.6), transparent),
+        radial-gradient(1px 1px at 58% 35%, rgba(255, 182, 193, 0.6), transparent),
+        radial-gradient(1px 1px at 42% 65%, rgba(255, 192, 203, 0.5), transparent),
+        radial-gradient(1px 1px at 88% 75%, rgba(255, 182, 193, 0.6), transparent),
+        radial-gradient(1px 1px at 32% 50%, rgba(255, 192, 203, 0.5), transparent),
+        radial-gradient(1px 1px at 62% 90%, rgba(255, 182, 193, 0.6), transparent),
+        radial-gradient(1px 1px at 48% 15%, rgba(255, 192, 203, 0.5), transparent),
+        radial-gradient(1px 1px at 18% 55%, rgba(255, 182, 193, 0.6), transparent),
+        radial-gradient(1px 1px at 92% 40%, rgba(255, 192, 203, 0.5), transparent),
+        radial-gradient(1px 1px at 72% 30%, rgba(255, 182, 193, 0.6), transparent),
+        radial-gradient(1px 1px at 28% 70%, rgba(255, 192, 203, 0.5), transparent),
+        radial-gradient(1px 1px at 8% 50%, rgba(255, 182, 193, 0.6), transparent),
+        radial-gradient(1px 1px at 98% 30%, rgba(255, 192, 203, 0.5), transparent),
+        radial-gradient(1px 1px at 33% 60%, rgba(255, 182, 193, 0.6), transparent),
+        radial-gradient(1px 1px at 67% 20%, rgba(255, 192, 203, 0.5), transparent),
+        radial-gradient(1px 1px at 53% 95%, rgba(255, 182, 193, 0.6), transparent),
+        radial-gradient(1px 1px at 47% 5%, rgba(255, 192, 203, 0.5), transparent),
+        radial-gradient(1px 1px at 77% 85%, rgba(255, 182, 193, 0.6), transparent),
+        radial-gradient(1px 1px at 23% 95%, rgba(255, 192, 203, 0.5), transparent),
+        radial-gradient(1px 1px at 87% 5%, rgba(255, 182, 193, 0.6), transparent);
+    background-size: 
+        /* 매우 큰 별들 (6개) */
+        200% 200%, 180% 180%, 150% 150%, 220% 220%, 190% 190%, 170% 170%,
+        /* 큰 별들 (13개) */
+        210% 210%, 160% 160%, 200% 200%, 175% 175%, 165% 165%, 185% 185%, 195% 195%, 205% 205%, 155% 155%, 225% 225%,
+        178% 178%, 192% 192%, 188% 188%,
+        /* 중간 크기 별들 (12개) */
+        172% 172%, 168% 168%, 182% 182%, 206% 206%, 216% 216%, 174% 174%, 184% 184%, 194% 194%, 164% 164%, 177% 177%, 187% 187%, 197% 197%,
+        /* 작은 별들 (24개) */
+        167% 167%, 179% 179%, 189% 189%, 199% 199%, 169% 169%, 181% 181%, 191% 191%, 201% 201%, 158% 158%, 198% 198%, 162% 162%, 202% 202%,
+        166% 166%, 176% 176%, 186% 186%, 196% 196%, 203% 203%, 193% 193%, 183% 183%, 173% 173%, 163% 163%, 153% 153%, 213% 213%, 223% 223%;
+    background-position: 
+        /* 매우 큰 별들 */
+        0% 0%, 10% 20%, 30% 40%, 50% 10%, 70% 60%, 20% 70%,
+        /* 큰 별들 */
+        80% 30%, 40% 80%, 90% 50%, 60% 90%, 15% 35%, 85% 15%, 25% 85%, 75% 45%, 5% 55%, 95% 75%,
+        15% 45%, 55% 70%, 95% 35%,
+        /* 중간 크기 별들 */
+        18% 45%, 45% 60%, 72% 75%, 28% 35%, 82% 35%, 22% 65%, 68% 55%, 92% 70%, 38% 20%, 58% 90%, 48% 40%, 78% 60%,
+        /* 작은 별들 */
+        25% 45%, 75% 25%, 35% 75%, 65% 55%, 15% 15%, 95% 65%, 58% 35%, 42% 65%, 88% 75%, 32% 50%, 62% 90%, 48% 15%,
+        18% 55%, 92% 40%, 72% 30%, 28% 70%, 8% 50%, 98% 30%, 33% 60%, 67% 20%, 53% 95%, 47% 5%, 77% 85%, 23% 95%, 87% 5%;
 }
 
 .getLine{
@@ -100,40 +605,61 @@
 
 .position{
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
     align-items: center;
-    gap: 20px;
     position: relative;
     z-index: 10;
-    padding-top: 20px;
+    padding: 40px 0;
     min-height: 100vh;
+}
+
+/* 왼쪽: 로고 영역 - 너비의 40% */
+.login-left-section {
+    flex: 0 0 40%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0px 0px 50px 150px;
+    position: relative;
+    z-index: 20;
+}
+
+/* 오른쪽: 로그인 폼 영역 - 나머지 60% */
+.login-right-section {
+    flex: 0 0 60%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 40px 60px 40px 0px;
+    position: relative;
+    z-index: 20;
 }
 
 /* 브랜드 헤더 */
 .brand-header {
     text-align: center;
-    margin-bottom: 8px;
     animation: fadeInUp 0.8s ease-out;
     position: relative;
-    z-index: 20;
 }
 
 .brand-logo {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 4px;
 }
 
 .qmatch-logo-image {
-    height: 60px;
+    height: 120px;
     width: auto;
     object-fit: contain;
-    opacity: 0.9;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    opacity: 0.95;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
     animation: logoGlow 2s ease-in-out infinite alternate;
+    transition: transform 0.3s ease;
 }
+
 
 @keyframes logoGlow {
     0% { filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2)); }
@@ -171,6 +697,8 @@
     padding: 40px;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: 28px;
     backdrop-filter: blur(10px);
     position: relative;
@@ -178,6 +706,7 @@
     animation: slideInUp 0.6s ease-out 0.2s both;
     z-index: 20;
 }
+
 
 @keyframes slideInUp {
     0% {
@@ -192,13 +721,22 @@
 
 /* 카드 내부 그라데이션 효과 */
 .LogComponentStyle::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+.LogRoutePageStyle::before,
+.LogRoutePageStyle::after,
+.login-form::before,
+.login-form::after {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
 }
 
 .LogChangeButtonStyle{
@@ -210,7 +748,7 @@
     width: 420px;
     height: 48px;
     border-radius: 8px;
-    background: linear-gradient(135deg, var(--discord-bg-secondary) 0%, #3c4043 100%);
+    background: var(--discord-bg-secondary);
     box-shadow: 
         0 4px 16px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -238,7 +776,7 @@
 }
 
 .LogChangeButtonStyle:hover {
-    background: linear-gradient(135deg, var(--discord-bg-modifier-hover) 0%, #4a4d52 100%);
+    background: var(--discord-bg-modifier-hover);
     transform: translateY(-2px);
     box-shadow: 
         0 8px 24px rgba(0, 0, 0, 0.3),
@@ -456,6 +994,26 @@
 
 /* ================================반응형 디자인============================= */
 
+@media (max-width: 1024px) {
+    .position {
+        flex-direction: column;
+        gap: 30px;
+        padding: 30px 20px;
+    }
+
+    .login-left-section {
+        padding: 20px;
+    }
+
+    .login-right-section {
+        padding: 20px;
+    }
+
+    .qmatch-logo-image {
+        height: 120px;
+    }
+}
+
 @media (max-width: 768px) {
     .LogComponentStyle {
         width: 90vw;
@@ -481,7 +1039,12 @@
     }
     
     .position {
-        padding-top: 15px;
+        padding: 20px 15px;
+        gap: 24px;
+    }
+
+    .qmatch-logo-image {
+        height: 100px;
     }
 }
 

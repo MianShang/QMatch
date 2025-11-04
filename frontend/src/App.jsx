@@ -684,7 +684,7 @@ function App() {
       
       <ToastContainer
         position="top-right"
-        autoClose={3000}   // 3초 뒤 자동 닫힘
+        autoClose={1800}   // 1.8초 뒤 자동 닫힘
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick

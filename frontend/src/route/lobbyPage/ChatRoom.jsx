@@ -335,7 +335,6 @@ function ChatRoom({
                         <div className="empty-chat-logo">
                             <img
                                 src={
-                                    theme === 'dark' ? "/qmatchLogoBlue.png" :
                                         theme === 'pink' ? "/qmatchLogoPink.png" :
                                             "/qmatchLogo.png"
                                 }

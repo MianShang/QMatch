@@ -189,6 +189,75 @@
   box-shadow: 0 4px 16px rgba(231, 76, 60, 0.3);
 }
 
+/* 로그아웃 확인 모달 */
+.logout-confirm-modal {
+  background: var(--discord-bg-secondary);
+  color: var(--discord-text-normal);
+  padding: 24px;
+  border-radius: var(--discord-radius);
+  width: 400px;
+  max-width: 90vw;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.3s ease;
+}
+
+.logout-confirm-modal h3 {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--discord-text-normal);
+  text-align: center;
+}
+
+.logout-modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.logout-confirm-btn,
+.logout-cancel-btn {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  min-width: 100px;
+}
+
+.logout-confirm-btn {
+  background: linear-gradient(135deg, var(--discord-text-danger) 0%, #e74c3c 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+}
+
+.logout-confirm-btn:hover {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(231, 76, 60, 0.4);
+}
+
+.logout-confirm-btn:active {
+  transform: translateY(0);
+}
+
+.logout-cancel-btn {
+  background: var(--discord-bg-tertiary);
+  color: var(--discord-text-normal);
+  border: 1px solid var(--discord-border);
+}
+
+.logout-cancel-btn:hover {
+  background: var(--discord-bg-modifier-hover);
+  transform: translateY(-2px);
+}
+
+.logout-cancel-btn:active {
+  transform: translateY(0);
+}
+
 /* 사용자 정보 */
 .profile-user-info {
   display: flex;

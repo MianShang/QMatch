@@ -226,6 +226,12 @@
   font-weight: 500;
 }
 
+/* 핑크, 블루 모드에서 채팅 목록 인원수 색상 변경 */
+[data-theme="pink"] .selectCardHeaderStyle span,
+[data-theme="blue"] .selectCardHeaderStyle span {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
 /* ================================Discord 확장 가능한 콘텐츠============================= */
 
 .extendable-content-wrapper {

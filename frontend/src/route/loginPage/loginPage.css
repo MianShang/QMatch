@@ -11,6 +11,11 @@
     overflow: hidden;
 }
 
+/* 화이트 모드일 때 그라데이션 제거 */
+[data-theme="light"] .fullscreen {
+    background: var(--discord-bg-tertiary);
+}
+
 /* 로그인 페이지 테마 전환 버튼 */
 .login-theme-toggle {
   position: absolute;
@@ -100,40 +105,61 @@
 
 .position{
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
     align-items: center;
-    gap: 20px;
     position: relative;
     z-index: 10;
-    padding-top: 20px;
+    padding: 40px 0;
     min-height: 100vh;
+}
+
+/* 왼쪽: 로고 영역 - 너비의 40% */
+.login-left-section {
+    flex: 0 0 40%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0px 0px 50px 150px;
+    position: relative;
+    z-index: 20;
+}
+
+/* 오른쪽: 로그인 폼 영역 - 나머지 60% */
+.login-right-section {
+    flex: 0 0 60%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 40px 60px 40px 0px;
+    position: relative;
+    z-index: 20;
 }
 
 /* 브랜드 헤더 */
 .brand-header {
     text-align: center;
-    margin-bottom: 8px;
     animation: fadeInUp 0.8s ease-out;
     position: relative;
-    z-index: 20;
 }
 
 .brand-logo {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 4px;
 }
 
 .qmatch-logo-image {
-    height: 60px;
+    height: 120px;
     width: auto;
     object-fit: contain;
-    opacity: 0.9;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+    opacity: 0.95;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
     animation: logoGlow 2s ease-in-out infinite alternate;
+    transition: transform 0.3s ease;
 }
+
 
 @keyframes logoGlow {
     0% { filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2)); }
@@ -171,6 +197,8 @@
     padding: 40px;
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: 28px;
     backdrop-filter: blur(10px);
     position: relative;
@@ -192,13 +220,22 @@
 
 /* 카드 내부 그라데이션 효과 */
 .LogComponentStyle::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+.LogRoutePageStyle::before,
+.LogRoutePageStyle::after,
+.login-form::before,
+.login-form::after {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
 }
 
 .LogChangeButtonStyle{
@@ -210,7 +247,7 @@
     width: 420px;
     height: 48px;
     border-radius: 8px;
-    background: linear-gradient(135deg, var(--discord-bg-secondary) 0%, #3c4043 100%);
+    background: var(--discord-bg-secondary);
     box-shadow: 
         0 4px 16px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -238,7 +275,7 @@
 }
 
 .LogChangeButtonStyle:hover {
-    background: linear-gradient(135deg, var(--discord-bg-modifier-hover) 0%, #4a4d52 100%);
+    background: var(--discord-bg-modifier-hover);
     transform: translateY(-2px);
     box-shadow: 
         0 8px 24px rgba(0, 0, 0, 0.3),
@@ -456,6 +493,26 @@
 
 /* ================================반응형 디자인============================= */
 
+@media (max-width: 1024px) {
+    .position {
+        flex-direction: column;
+        gap: 30px;
+        padding: 30px 20px;
+    }
+
+    .login-left-section {
+        padding: 20px;
+    }
+
+    .login-right-section {
+        padding: 20px;
+    }
+
+    .qmatch-logo-image {
+        height: 120px;
+    }
+}
+
 @media (max-width: 768px) {
     .LogComponentStyle {
         width: 90vw;
@@ -481,7 +538,12 @@
     }
     
     .position {
-        padding-top: 15px;
+        padding: 20px 15px;
+        gap: 24px;
+    }
+
+    .qmatch-logo-image {
+        height: 100px;
     }
 }
 

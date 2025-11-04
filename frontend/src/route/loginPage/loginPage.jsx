@@ -30,32 +30,37 @@ function LoginPage() {
           {theme === 'blue' && '💙'}
         </button>
       </div>
-      
-      {/* 브랜드 로고 및 타이틀 */}
-      <div className="brand-header">
-        <div className="brand-logo">
-          <img 
-            src={
-              theme === 'dark' ? "/qmatchLogoBlue.png" : 
-              theme === 'pink' ? "/qmatchLogoPink.png" : 
-              "/qmatchLogo.png"
-            } 
-            alt="QMatch" 
-            className="qmatch-logo-image" 
-          />
+
+      {/* 왼쪽: 로고 영역 */}
+      <div className="login-left-section">
+        <div className="brand-header">
+          <div className="brand-logo">
+            <img 
+              src={
+                theme === 'dark' ? "/qmatchLogoBlue.png" : 
+                theme === 'pink' ? "/qmatchLogoPink.png" : 
+                "/qmatchLogo.png"
+              } 
+              alt="QMatch" 
+              className="qmatch-logo-image" 
+            />
+          </div>
         </div>
       </div>
 
-      <div className='LogComponentStyle'>
-          {isResister 
-          ? <SignUpRoutePage onSuccess={() => setIsRegister(false)} /> 
-          : <LogInRoutePage />}
-      </div>
+      {/* 오른쪽: 로그인 폼 영역 */}
+      <div className="login-right-section">
+        <div className='LogComponentStyle'>
+            {isResister 
+            ? <SignUpRoutePage onSuccess={() => setIsRegister(false)} /> 
+            : <LogInRoutePage />}
+        </div>
 
-      <div className='LogChangeButtonStyle' onClick={()=>{ setIsRegister(!isResister) }}>
-        {
-          isResister ? <h2>Login</h2> : <h2>Signup</h2>
-        }
+        <div className='LogChangeButtonStyle' onClick={()=>{ setIsRegister(!isResister) }}>
+          {
+            isResister ? <h2>로그인</h2> : <h2>회원가입</h2>
+          }
+        </div>
       </div>
       
     </div>

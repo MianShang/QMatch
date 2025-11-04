@@ -1,57 +1,208 @@
+/*  기본 페이지 설정 */
 .admin-page-container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #000000e7;
-    border-radius: 10px;
+  width: 90%;
+  max-width: 1400px; 
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #242424; 
+  border-radius: 12px;
+  color: #f0f0f0; 
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
 
- 
-  }
+/* 헤더 */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #444;  
+  margin-bottom: 30px;
+}
 
-  .button-color {
-    color: white;
-  }
-  
-  .section-container {
-    margin-top: 30px;
-    padding: 20px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    background-color: #000000;
-    max-height: 400px; 
-    overflow-y: auto;
-  }
-  
-  .content-box {
-    border: 1px solid #444;
-    padding: 20px;
-    border-radius: 8px;
-    background-color: #2c2c2c;
+.admin-header h1 {
+  margin: 0;
+  font-size: 2.2rem;
+  color: #ffffff; 
+  font-weight: 600;
+}
 
-    
-   
-  }
-  
-  .report-table {
-    width: 100%;
-    border-collapse: collapse; 
-    margin-top: 10px;
-    
+/* 섹션 (h2 스타일 포함) */
+.section-container {
+  margin-top: 30px;
+}
 
-    
-  }
-  
-  .report-table th,
-  .report-table td {
-    border: 1px solid #dddddd;
-    padding: 8px;
-    text-align: left;
-  }
-  
-  .report-table th {
-    background-color: #000000;
-    font-weight: bold;
-  }
+.section-container h2 {
+  font-size: 1.6rem;
+  color: #eee;
+  font-weight: 500;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #3a3a3a;
+  margin-bottom: 20px;
+}
 
- 
+/* 콘텐츠 박스 (스크롤바 커스텀) */
+.content-box {
+  border: 1px solid #3a3a3a; 
+  padding: 0;
+  border-radius: 8px;
+  background-color: #2c2c2c;
+  max-height: 400px;
+  overflow-y: auto;
+  
+  /* 박스 자체에 그림자  */
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 테이블 스타일  */
+.report-table {
+  width: 100%;
+  border-collapse: collapse; 
+  margin-top: 0;
+}
+
+.report-table th,
+.report-table td {
+  padding: 14px 18px; 
+  text-align: center;
+  border-bottom: 1px solid #444; 
+  border-left: none;
+  border-right: none;
+  
+}
+
+.report-table th {
+  background-color: #333; 
+  font-weight: 600;
+  color: #ffffff; 
+}
+
+
+.report-table tbody tr {
+  transition: background-color 0.2s ease-in-out;
+}
+
+.report-table tbody tr:hover {
+  background-color: #3a3a3a;
+}
+
+/* 마지막 행의 하단 테두리 */
+.report-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+
+
+/* 기본 버튼 스타일 (공통) */
+.button-base {
+  border: none;
+  border-radius: 5px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: white;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin: 0 4px; 
+}
+
+.button-base:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.button-base:active {
+  transform: translateY(0);
+}
+
+/* 파란색: 상세보기, 확인 등 */
+.button-primary {
+  background-color: #007bff;
+}
+.button-primary:hover {
+  background-color: #0069d9;
+}
+
+/* 회색: 나가기, 취소 등 */
+.button-secondary {
+  background-color: #6c757d;
+}
+.button-secondary:hover {
+  background-color: #5a6268;
+}
+
+/* 초록색: 정지 해제, 활성화 등 */
+.button-safe {
+  background-color: #28a745;
+}
+.button-safe:hover {
+  background-color: #218838;
+}
+
+/* 빨간색: 정지, 영구정지 등 */
+.button-danger {
+  background-color: #dc3545;
+}
+.button-danger:hover {
+  background-color: #c82333;
+}
+
+
+/* 커스텀 스크롤바 (다크테마) */
+.content-box::-webkit-scrollbar {
+  width: 10px;
+}
+
+.content-box::-webkit-scrollbar-track {
+  background: #2c2c2c;
+  border-radius: 10px;
+}
+
+.content-box::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 10px;
+}
+
+.content-box::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+/* 상태 배지 스타일  */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #fff;
+}
+
+.status-active {
+  background-color: #28a745; 
+}
+
+.status-suspended {
+  background-color: #ffc107; 
+  color: #333;
+}
+
+.status-banned {
+  background-color: #dc3545; 
+}
+
+/* 기존 */
+.button-color {
+  border: none;
+  border-radius: 5px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: white;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin: 0 4px;
+  background-color: #6c757d;
+}
+.button-color:hover {
+  background-color: #5a6268;
+  transform: translateY(-1px);
+}

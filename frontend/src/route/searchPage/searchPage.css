@@ -9,6 +9,7 @@
     padding: 0 !important; /* 패딩 강제 제거 */
     margin: 0;
     box-sizing: border-box; /* padding과 border를 포함한 크기 계산 */
+
 }
 
 .getLine{
@@ -34,6 +35,16 @@
     border-right: 1px solid var(--discord-bg-tertiary);
     padding: 20px 16px;
     overflow-y: auto;
+    position: relative;
+    z-index: 100;
+}
+
+/* 모든 테마에 동일한 z-index 적용 */
+[data-theme="dark"] .leftSize,
+[data-theme="light"] .leftSize,
+[data-theme="pink"] .leftSize,
+[data-theme="blue"] .leftSize {
+    z-index: 100;
 }
 
 .leftSize > p {
@@ -53,6 +64,16 @@
   gap: 8px;
   justify-content: flex-start;
   color: var(--discord-text-normal);
+  position: relative;
+  z-index: 101;
+}
+
+/* 모든 테마에 동일한 z-index 적용 */
+[data-theme="dark"] .Category_tag,
+[data-theme="light"] .Category_tag,
+[data-theme="pink"] .Category_tag,
+[data-theme="blue"] .Category_tag {
+    z-index: 101;
 }
 
 .chat_tag {
@@ -72,6 +93,16 @@
   gap: 12px;
   font-weight: 500;
   color: var(--discord-text-normal);
+  position: relative;
+  z-index: 102;
+}
+
+/* 모든 테마에 동일한 z-index 적용 */
+[data-theme="dark"] .chat_tag,
+[data-theme="light"] .chat_tag,
+[data-theme="pink"] .chat_tag,
+[data-theme="blue"] .chat_tag {
+    z-index: 102;
 }
 
 .chat_tag:hover {
@@ -147,6 +178,7 @@
   font-size: 14px;
   font-weight: 500;
   user-select: none;
+
 }
 
 .tag-item:hover {
@@ -188,6 +220,13 @@
     transition: margin-left 0.3s ease-in-out;
 }
 
+/* 다크모드를 제외한 나머지 테마에서 오른쪽 레이아웃 배경 제거 */
+[data-theme="light"] .rightSize,
+[data-theme="pink"] .rightSize,
+[data-theme="blue"] .rightSize {
+    background: transparent;
+}
+
 /* 태그 패널이 열렸을 때 우측 사이드바 조정 */
 .fullscreen.has-tag-panel .rightSize {
     margin-left: 300px;
@@ -203,6 +242,7 @@
     padding: 16px 20px;
     display: flex;
     align-items: center;
+
 }
 
 .searchBarContainer {
@@ -233,6 +273,7 @@
   outline: none;
   box-sizing: border-box;
   transition: all 0.2s ease;
+
 }
 
 .searchInput::placeholder {
@@ -253,6 +294,13 @@
   background: var(--discord-bg-tertiary);
 }
 
+/* 다크모드를 제외한 나머지 테마에서 채팅 리스트 영역 배경 제거 */
+[data-theme="light"] .chatListSize,
+[data-theme="pink"] .chatListSize,
+[data-theme="blue"] .chatListSize {
+    background: transparent;
+}
+
 .chatRoomList {
   background: var(--discord-bg-primary);
   color: var(--discord-text-normal);
@@ -267,6 +315,8 @@
   transition: all 0.2s ease;
   cursor: pointer;
   gap: 14px; /* 아이콘과 텍스트 사이 간격 */
+  position: relative;
+  z-index: 1;
 }
 
 .chatRoomList:hover {
@@ -320,6 +370,7 @@
   overflow-y: auto;
   flex-grow: 1;
   padding-top: 0;
+
 }
 
 /* Discord 스타일 스크롤바 */
@@ -355,6 +406,14 @@
   top: 0;
   z-index: 10;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* 모든 테마에 동일한 z-index 적용 */
+[data-theme="dark"] .search-count,
+[data-theme="light"] .search-count,
+[data-theme="pink"] .search-count,
+[data-theme="blue"] .search-count {
+    z-index: 10;
 }
 
 .search-count span {
@@ -401,9 +460,11 @@
   align-items: center;
   gap: 12px;
   padding: 16px;
-  background: var(--discord-bg-primary);
-  border-top: 1px solid var(--discord-bg-tertiary);
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
+
+
+
+  position: relative;
+  z-index: 1;
 }
 
 .chatCreate button {
@@ -415,22 +476,32 @@
   background: var(--discord-accent);
   color: white;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(114, 137, 218, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   font-size: 15px;
   display: flex;
   align-items: center;
   gap: 8px;
+  position: relative;
+  z-index: 2;
+}
+
+/* 모든 테마에 동일한 z-index 적용 */
+[data-theme="dark"] .chatCreate button,
+[data-theme="light"] .chatCreate button,
+[data-theme="pink"] .chatCreate button,
+[data-theme="blue"] .chatCreate button {
+    z-index: 2;
 }
 
 .chatCreate button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(114, 137, 218, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   background: var(--discord-accent-hover);
 }
 
 .chatCreate button:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(114, 137, 218, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   background: var(--discord-accent-active);
 }
 
@@ -450,8 +521,8 @@
     align-items: center;
     padding-left: 20px;
     color: var(--discord-text-normal);
-    border: 1px solid var(--discord-bg-tertiary);
-    border-right: none;
+
+
 }
 
 .noticeSize{
@@ -459,7 +530,7 @@
     width: 75px;
     margin-left: 0;
     background: var(--discord-bg-secondary);
-    border: 1px solid var(--discord-bg-tertiary);
+
     display: flex;
     align-items: center;
     justify-content: center;
@@ -507,31 +578,27 @@
 /* 화이트모드에서 하단바 스타일 조정 */
 [data-theme="light"] .searchAdSize {
     background: var(--discord-bg-primary);
-    border: 1px solid var(--discord-bg-quaternary);
-    border-right: none;
+    border: none;
     color: var(--discord-text-normal);
 }
 
 /* 핑크모드에서 하단바 스타일 조정 */
 [data-theme="pink"] .searchAdSize {
     background: var(--discord-bg-primary);
-    border: 1px solid var(--discord-bg-tertiary);
-    border-right: none;
+    border: none;
     color: var(--discord-text-normal);
 }
 
 /* 블루모드에서 하단바 스타일 조정 */
 [data-theme="blue"] .searchAdSize {
     background: var(--discord-bg-primary);
-    border: 1px solid var(--discord-bg-tertiary);
-    border-right: none;
+    border: none;
     color: var(--discord-text-normal);
 }
 
 [data-theme="light"] .noticeSize {
     background: var(--discord-bg-primary);
-    border: 1px solid var(--discord-bg-quaternary);
-    border-left: none;
+    border: none;
 }
 
 [data-theme="light"] .noticeSize:hover {
@@ -541,8 +608,7 @@
 /* 핑크모드에서 홈 버튼 스타일 */
 [data-theme="pink"] .noticeSize {
     background: var(--discord-bg-primary);
-    border: 1px solid var(--discord-bg-tertiary);
-    border-left: none;
+    border: none;
 }
 
 [data-theme="pink"] .noticeSize:hover {
@@ -552,8 +618,7 @@
 /* 블루모드에서 홈 버튼 스타일 */
 [data-theme="blue"] .noticeSize {
     background: var(--discord-bg-primary);
-    border: 1px solid var(--discord-bg-tertiary);
-    border-left: none;
+    border: none;
 }
 
 [data-theme="blue"] .noticeSize:hover {
@@ -788,6 +853,14 @@
   border-right: 1px solid var(--discord-bg-tertiary);
   animation: slideIn 0.3s ease-in-out;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 모든 테마에 동일한 z-index 적용 */
+[data-theme="dark"] .tag-panel-overlay,
+[data-theme="light"] .tag-panel-overlay,
+[data-theme="pink"] .tag-panel-overlay,
+[data-theme="blue"] .tag-panel-overlay {
+    z-index: 10;
 }
 
 @keyframes slideIn {

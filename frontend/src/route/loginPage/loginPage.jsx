@@ -37,7 +37,6 @@ function LoginPage() {
           <div className="brand-logo">
             <img 
               src={
-                theme === 'dark' ? "/qmatchLogoBlue.png" : 
                 theme === 'pink' ? "/qmatchLogoPink.png" : 
                 "/qmatchLogo.png"
               } 

@@ -196,31 +196,6 @@
 /* 핑크 테마 특별 애니메이션 - 푸딩같은 느낌 */
 [data-theme="pink"] * {
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  border-radius: 12px !important;
-}
-
-/* 핑크 테마 기본 요소들 둥글둥글하게 */
-[data-theme="pink"] .chatCard,
-[data-theme="pink"] .chatListStyle,
-[data-theme="pink"] .contentStyle,
-[data-theme="pink"] .LogComponentStyle,
-[data-theme="pink"] .LogChangeButtonStyle,
-[data-theme="pink"] .theme-toggle-button,
-[data-theme="pink"] .profile-button,
-[data-theme="pink"] .bottom-button,
-[data-theme="pink"] input,
-[data-theme="pink"] textarea,
-[data-theme="pink"] button {
-  border-radius: 16px !important;
-}
-
-/* 핑크 테마 작은 요소들 더 둥글게 */
-[data-theme="pink"] .status-indicator,
-[data-theme="pink"] .gameName,
-[data-theme="pink"] .hostBadge,
-[data-theme="pink"] .chatCardBadge,
-[data-theme="pink"] .CheckBox {
-  border-radius: 20px !important;
 }
 
 /* 푸딩같은 말랑말랑 호버 효과 */
@@ -291,9 +266,10 @@
   border-radius: 20px;
 }
 
-/* 푸딩같은 그라데이션 배경 */
+/* 핑크 오로라 배경 */
 [data-theme="pink"] .fullscreen {
-  background: var(--discord-bg-tertiary);
+  background: 
+    linear-gradient(180deg, #0a0c10 0%, #1a1d23 30%, #2d1b3d 60%, #1a0f26 100%);
   position: relative;
   overflow: hidden;
 }
@@ -306,12 +282,44 @@
   right: 0;
   bottom: 0;
   background: 
-    radial-gradient(ellipse at 20% 80%, rgba(255, 182, 193, 0.4) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 20%, rgba(255, 192, 203, 0.4) 0%, transparent 60%),
-    radial-gradient(ellipse at 40% 40%, rgba(255, 218, 233, 0.3) 0%, transparent 60%),
-    radial-gradient(ellipse at 60% 60%, rgba(255, 182, 193, 0.2) 0%, transparent 50%);
+    /* 핑크 오로라 기둥들 - 채도 조금 올림 (적절한 핑크) */
+    linear-gradient(180deg, transparent 0%, rgba(250, 90, 155, 0.35) 20%, rgba(250, 120, 180, 0.4) 50%, rgba(250, 90, 155, 0.35) 80%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, rgba(235, 80, 145, 0.3) 25%, rgba(250, 110, 170, 0.35) 55%, rgba(235, 80, 145, 0.3) 85%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, rgba(200, 100, 180, 0.25) 30%, rgba(250, 90, 155, 0.3) 60%, rgba(200, 100, 180, 0.25) 90%, transparent 100%),
+    /* 오로라 빛의 퍼짐 효과 - 채도 조금 올림 */
+    radial-gradient(ellipse 300px 800px at 20% 20%, rgba(250, 90, 155, 0.3) 0%, rgba(250, 120, 180, 0.25) 30%, transparent 60%),
+    radial-gradient(ellipse 250px 900px at 60% 15%, rgba(250, 120, 180, 0.35) 0%, rgba(250, 90, 155, 0.3) 35%, transparent 65%),
+    radial-gradient(ellipse 350px 1000px at 80% 25%, rgba(235, 80, 145, 0.3) 0%, rgba(250, 110, 170, 0.25) 40%, transparent 70%),
+    radial-gradient(ellipse 280px 850px at 40% 30%, rgba(200, 100, 180, 0.25) 0%, rgba(250, 90, 155, 0.2) 45%, transparent 75%),
+    radial-gradient(ellipse 320px 950px at 70% 20%, rgba(250, 110, 170, 0.3) 0%, rgba(235, 80, 145, 0.25) 38%, transparent 68%);
+  background-size: 
+    30% 100%, 25% 100%, 20% 100%,
+    100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  background-position: 
+    15% 0%, 50% 0%, 75% 0%,
+    0% 0%, 0% 0%, 0% 0%, 0% 0%, 0% 0%;
   pointer-events: none;
-  animation: puddingFloat 8s ease-in-out infinite;
+  animation: auroraFloat 12s ease-in-out infinite;
+  opacity: 0.7;
+}
+
+@keyframes auroraFloat {
+  0%, 100% { 
+    transform: translateY(0px);
+    opacity: 0.8;
+  }
+  25% { 
+    transform: translateY(-10px);
+    opacity: 0.9;
+  }
+  50% { 
+    transform: translateY(-15px);
+    opacity: 1;
+  }
+  75% { 
+    transform: translateY(-10px);
+    opacity: 0.9;
+  }
 }
 
 @keyframes puddingFloat {
@@ -361,35 +369,7 @@
   pointer-events: none;
 }
 
-/* 푸딩같은 입력창 특별 효과 */
-[data-theme="pink"] input,
-[data-theme="pink"] textarea {
-  background: rgba(255, 182, 193, 0.8) !important;
-  border: 2px solid rgba(255, 99, 150, 0.4) !important;
-  color: #8b1538 !important;
-  box-shadow: 
-    inset 0 2px 4px rgba(255, 182, 193, 0.2),
-    0 2px 8px rgba(233, 30, 99, 0.1);
-  transition: all 0.3s ease;
-}
-
-[data-theme="pink"] input::placeholder,
-[data-theme="pink"] textarea::placeholder {
-  color: #b84d6b !important;
-  opacity: 0.8;
-}
-
-[data-theme="pink"] input:focus,
-[data-theme="pink"] textarea:focus {
-  box-shadow: 
-    0 0 0 3px rgba(233, 30, 99, 0.3),
-    0 0 25px rgba(233, 30, 99, 0.15),
-    inset 0 2px 4px rgba(255, 182, 193, 0.3);
-  transform: scale(1.02);
-  border-color: rgba(233, 30, 99, 0.6) !important;
-  background: rgba(255, 182, 193, 0.9) !important;
-  color: #8b1538 !important;
-}
+/* 핑크모드 특별 효과 제거 - 다른 모드와 동일하게 */
 
 /* 핑크 모드 로그인/회원가입 버튼 특별 효과 */
 [data-theme="pink"] .LogChangeButtonStyle {
@@ -598,7 +578,7 @@
     radial-gradient(circle at 80% 20%, rgba(25, 118, 210, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 40% 40%, rgba(66, 165, 245, 0.05) 0%, transparent 50%);
   pointer-events: none;
-  animation: blueFloat 8s ease-in-out infinite;
+  /* animation: blueFloat 8s ease-in-out infinite; */
 }
 
 @keyframes blueFloat {

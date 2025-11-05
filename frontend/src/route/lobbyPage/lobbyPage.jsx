@@ -179,10 +179,33 @@ function LobbyPage() {
   const previousFriendMessageCountRef = useRef(0);
   
   //채팅방 설정 업데이트 핸들러
-  const handleRoomUpdated = (updatedRoom) => {
+  const handleRoomUpdated = async (updatedRoom) => {
     console.log('방 설정이 업데이트되었습니다:', updatedRoom);
-    //selectedRoom 상태 업데이트
-    setSelectedRoom(prev => prev ? { ...prev, ...updatedRoom } : null);
+    
+    // selectedRoom이 있으면 최신 방 정보를 다시 가져와서 UI 즉시 업데이트
+    if (selectedRoom?.id) {
+      try {
+        const res = await axios.get(`/api/chat/rooms/${selectedRoom.id}`);
+        const roomData = res.data;
+        setSelectedRoom(prev => prev ? {
+          ...prev,
+          name: roomData.name,
+          gameName: roomData.gameName,
+          tagNames: roomData.tagNames,
+          maxUsers: roomData.maxUsers,
+          joinType: roomData.joinType,
+          currentUsers: roomData.currentUsers || prev.currentUsers,
+          hostUserId: roomData.hostUserId || prev.hostUserId
+        } : null);
+      } catch (err) {
+        console.error('방 정보 새로고침 실패:', err);
+        // 실패해도 기본 업데이트는 시도
+        if (updatedRoom) {
+          setSelectedRoom(prev => prev ? { ...prev, ...updatedRoom } : null);
+        }
+      }
+    }
+    
     //채팅방 목록도 새로고침
     setListRefreshTick(t => t + 1);
   };
@@ -375,26 +398,38 @@ function LobbyPage() {
   useEffect(() => {
     if (!globalStomp || !selectedRoom?.id) return;
 
-    const subscriptionId = `room-updated-${selectedRoom.id}`;
+    const roomId = selectedRoom.id;
+    const subscriptionId = `room-updated-${roomId}`;
 
     // 방 설정 업데이트 이벤트 구독
-    globalStomp.subscribe(`/topic/chat/${selectedRoom.id}/room-updated`, (frame) => {
+    globalStomp.subscribe(`/topic/chat/${roomId}/room-updated`, (frame) => {
       try {
         const payload = JSON.parse(frame.body);
         console.log('방 설정 업데이트 알림 수신:', payload);
         
         // 방 정보 새로고침
-        axios.get(`/api/chat/rooms/${selectedRoom.id}`)
+        axios.get(`/api/chat/rooms/${roomId}`)
           .then(res => {
             const roomData = res.data;
-            setSelectedRoom(prev => prev ? {
-              ...prev,
-              name: roomData.name,
-              gameName: roomData.gameName,
-              tagNames: roomData.tagNames,
-              maxUsers: roomData.maxUsers,
-              joinType: roomData.joinType
-            } : null);
+            setSelectedRoom(prev => {
+              // 현재 선택된 방이 업데이트된 방인지 확인
+              if (prev?.id === roomId) {
+                return {
+                  ...prev,
+                  name: roomData.name,
+                  gameName: roomData.gameName,
+                  tagNames: roomData.tagNames,
+                  maxUsers: roomData.maxUsers,
+                  joinType: roomData.joinType,
+                  currentUsers: roomData.currentUsers || prev.currentUsers,
+                  hostUserId: roomData.hostUserId || prev.hostUserId
+                };
+              }
+              return prev;
+            });
+            
+            // 채팅방 목록도 새로고침 (다른 사용자들도 목록에서 변경사항을 볼 수 있도록)
+            setListRefreshTick(t => t + 1);
           })
           .catch(err => console.error('방 정보 새로고침 실패:', err));
       } catch (e) {
@@ -405,7 +440,7 @@ function LobbyPage() {
     return () => {
       globalStomp.unsubscribe(subscriptionId);
     };
-  }, [selectedRoom?.id, globalStomp]);
+  }, [selectedRoom?.id, globalStomp, setListRefreshTick]);
 
   // VoiceChat에서 참여자 변경을 감지했을 때 호출되는 함수
   const handleVoiceParticipantsChange = useCallback((participants) => {

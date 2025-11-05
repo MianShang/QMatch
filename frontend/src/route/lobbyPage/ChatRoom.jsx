@@ -1,7 +1,7 @@
 import MessageList from "./MessageList";
 import RoomSettingsModal from "../../modal/RoomSettingsModal/RoomSettingsModal";
 import FriendInviteModal from "../../modal/FriendInviteModal/FriendInviteModal";
-import { useState, useContext, useEffect } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { LogContext } from "../../App.jsx";
 import { toast } from "react-toastify";
 import { FaPhone, FaPhoneSlash } from "react-icons/fa6";
@@ -67,6 +67,9 @@ function ChatRoom({
     const [isPinnedMessageHidden, setIsPinnedMessageHidden] = useState(false);
 
     const [showFriendInvite, setShowFriendInvite] = useState(false);
+    
+    // 이전 고정 메시지 ID 추적 (새로운 고정 감지용)
+    const previousPinnedMessageId = useRef(null);
 
     const { 
         joinedVoice, 
@@ -88,7 +91,28 @@ function ChatRoom({
     useEffect(() => {
         setShowFriendInvite(false);
         setIsPinnedMessageHidden(false); // 채팅방 변경 시 고정 메시지 다시 표시
+        previousPinnedMessageId.current = null; // 이전 고정 메시지 ID 초기화
     }, [selectedRoom, selectedFriendRoom]);
+
+    // 새로운 고정 메시지가 추가되면 상단에 표시
+    useEffect(() => {
+        // 현재 메시지 목록에서 고정된 메시지 찾기
+        const currentMessages = selectedRoom ? messages : (selectedFriendRoom ? friendMessages : []);
+        const pinnedMessage = currentMessages.find(msg => msg.isPinned);
+        
+        if (pinnedMessage) {
+            // 고정된 메시지가 있고, 이전에 고정된 메시지와 다르면 (새로운 고정)
+            const currentPinnedId = pinnedMessage.id || pinnedMessage.senderId;
+            if (previousPinnedMessageId.current !== currentPinnedId) {
+                // 새로운 고정이면 상단에 표시
+                setIsPinnedMessageHidden(false);
+                previousPinnedMessageId.current = currentPinnedId;
+            }
+        } else {
+            // 고정된 메시지가 없으면 이전 ID 초기화
+            previousPinnedMessageId.current = null;
+        }
+    }, [messages, friendMessages, selectedRoom, selectedFriendRoom]);
 
     const handleSend = () => {
         if (selectedRoom) {

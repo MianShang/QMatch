@@ -10,7 +10,6 @@
 .dnf-top-row {
   display: flex;
   flex-direction: column;
-  gap: 20px;
   align-items: center;
   padding: 24px;
   background: var(--discord-bg-secondary);
@@ -107,7 +106,7 @@
   padding: 16px 20px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 11px;
   max-height: 400px;
   overflow-y: auto;
   flex: 1;

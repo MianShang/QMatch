@@ -6,6 +6,15 @@
     background-color: var(--discord-bg-tertiary);
 }
 
+/* 관리자 페이지를 위한 fullscreen 스타일 */
+.fullscreen:has(.admin-page-container) {
+    flex-direction: column;
+    overflow: hidden; /* 전체 화면 스크롤바 제거 */
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: 20px 0;
+}
+
 .getLine{
     border: 1px solid var(--discord-text-danger);
 }

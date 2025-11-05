@@ -48,6 +48,7 @@ function LobbyPage() {
 
   // 상태 패널 열림 여부
   const [isStatusPanelOpen, setIsStatusPanelOpen] = useState(false);
+  const statusPanelRef = useRef(null);
 
   // 사용자 전적 모달 상태
   const [isUserHistoryOpen, setIsUserHistoryOpen] = useState(false);
@@ -494,6 +495,23 @@ function LobbyPage() {
     fetchParticipants();
   }, [selectedRoom?.id, setGlobalVoiceParticipants]);
 
+  // 상태 패널 외부 클릭 감지
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (statusPanelRef.current && !statusPanelRef.current.contains(event.target)) {
+        setIsStatusPanelOpen(false);
+      }
+    };
+
+    if (isStatusPanelOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isStatusPanelOpen]);
+
   // userData가 로드될 때까지 로딩
   if (!userData) {
     return <div>userData 로딩중</div>;
@@ -603,30 +621,29 @@ function LobbyPage() {
                 {/* 상태 표시 - 프로필 이미지 우상단 */}
                 <div
                   className="status-indicator-wrapper"
-                  onMouseEnter={() => setIsStatusPanelOpen(true)}
-                  onMouseLeave={(e) => {
-                    if (!e.currentTarget.contains(e.relatedTarget)) {
-                      setIsStatusPanelOpen(false);
-                    }
-                  }}
+                  ref={statusPanelRef}
                 >
-                  <div className="status-indicator">
+                  <div 
+                    className="status-indicator"
+                    onClick={() => setIsStatusPanelOpen(!isStatusPanelOpen)}
+                  >
                     <span>{getStatusIcon(userStatus)}</span>
                   </div>
 
                   {isStatusPanelOpen && (
-                    <div
-                      className="status-side-panel"
-                      onMouseEnter={() => setIsStatusPanelOpen(true)}
-                      onMouseLeave={(e) => {
-                        if (!e.currentTarget.contains(e.relatedTarget)) {
-                          setIsStatusPanelOpen(false);
-                        }
-                      }}
-                    >
-                      <div className="status-item" onClick={() => manuallySetStatus('온라인')}>🟢 온라인</div>
-                      <div className="status-item" onClick={() => manuallySetStatus('자리비움')}>🟠 자리 비움</div>
-                      <div className="status-item" onClick={() => manuallySetStatus('오프라인')}>🔴 오프라인</div>
+                    <div className="status-side-panel">
+                      <div className="status-item" onClick={() => {
+                        manuallySetStatus('온라인');
+                        setIsStatusPanelOpen(false);
+                      }}>🟢 온라인</div>
+                      <div className="status-item" onClick={() => {
+                        manuallySetStatus('자리비움');
+                        setIsStatusPanelOpen(false);
+                      }}>🟠 자리 비움</div>
+                      <div className="status-item" onClick={() => {
+                        manuallySetStatus('오프라인');
+                        setIsStatusPanelOpen(false);
+                      }}>🔴 오프라인</div>
                     </div>
                   )}
                 </div>

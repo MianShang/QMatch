@@ -2,12 +2,22 @@
 .admin-page-container {
   width: 90%;
   max-width: 1400px; 
-  margin: 40px auto;
-  padding: 30px;
+  margin: 0 auto;
+  padding: 40px 30px;
   background-color: #242424; 
   border-radius: 12px;
   color: #f0f0f0; 
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  min-height: calc(100vh - 80px); /* 화면 높이에서 여백 제외 */
+  overflow-y: auto; /* 내용이 많을 경우 스크롤 가능 */
+}
+
+/* 다크모드 관리자 페이지 z-index */
+[data-theme="dark"] .admin-page-container,
+:root:not([data-theme="light"]):not([data-theme="pink"]):not([data-theme="blue"]) .admin-page-container {
+    position: relative;
+    z-index: 1000;
+    transform: translateZ(0); /* GPU 가속으로 stacking context 생성 */
 }
 
 /* 헤더 */

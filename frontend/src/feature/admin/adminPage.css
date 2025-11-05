@@ -5,9 +5,14 @@
     padding: 20px;
     background-color: #000000e7;
     border-radius: 10px;
+}
 
- 
-  }
+/* 다크모드 관리자 페이지 z-index */
+[data-theme="dark"] .admin-page-container,
+:root:not([data-theme="light"]):not([data-theme="pink"]):not([data-theme="blue"]) .admin-page-container {
+    position: relative;
+    z-index: 1000;
+}
 
   .button-color {
     color: white;

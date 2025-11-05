@@ -25,6 +25,13 @@
     box-shadow: var(--discord-elevation-low);
 }
 
+/* 다크모드 채팅방 헤더 z-index */
+[data-theme="dark"] .chatRoomHeader,
+:root:not([data-theme="light"]):not([data-theme="pink"]):not([data-theme="blue"]) .chatRoomHeader {
+    position: relative;
+    z-index: 1000;
+}
+
 
 .chatRoomInfo {
     flex: 1;

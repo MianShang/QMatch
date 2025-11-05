@@ -202,14 +202,7 @@
         radial-gradient(circle 920px at 75% 50%, rgba(75, 0, 130, 0.2) 0%, transparent 58%),
         radial-gradient(circle 1100px at 50% 30%, rgba(88, 101, 242, 0.18) 0%, transparent 53%),
         radial-gradient(circle 1050px at 28% 65%, rgba(138, 43, 226, 0.19) 0%, transparent 56%),
-        radial-gradient(circle 980px at 72% 75%, rgba(123, 104, 238, 0.17) 0%, transparent 54%),
-        /* 운석 효과 - 긴 타원형 */
-        radial-gradient(ellipse 200px 20px at 25% 40%, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 30%, transparent 60%),
-        radial-gradient(ellipse 180px 18px at 65% 60%, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.08) 35%, transparent 65%),
-        radial-gradient(ellipse 150px 15px at 45% 80%, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.06) 40%, transparent 70%),
-        radial-gradient(ellipse 220px 22px at 75% 25%, rgba(255, 255, 255, 0.28) 0%, transparent 55%),
-        radial-gradient(ellipse 190px 19px at 15% 70%, rgba(255, 255, 255, 0.22) 0%, transparent 58%),
-        radial-gradient(ellipse 210px 21px at 85% 45%, rgba(255, 255, 255, 0.26) 0%, transparent 62%);
+        radial-gradient(circle 980px at 72% 75%, rgba(123, 104, 238, 0.17) 0%, transparent 54%);
     z-index: 0;
     pointer-events: none;
 }
@@ -371,14 +364,7 @@
         radial-gradient(circle 920px at 75% 50%, rgba(13, 71, 161, 0.2) 0%, transparent 58%),
         radial-gradient(circle 1100px at 50% 30%, rgba(33, 150, 243, 0.18) 0%, transparent 53%),
         radial-gradient(circle 1050px at 28% 65%, rgba(66, 165, 245, 0.19) 0%, transparent 56%),
-        radial-gradient(circle 980px at 72% 75%, rgba(25, 118, 210, 0.17) 0%, transparent 54%),
-        /* 운석 효과 */
-        radial-gradient(ellipse 200px 20px at 25% 40%, rgba(135, 206, 250, 0.3) 0%, rgba(135, 206, 250, 0.1) 30%, transparent 60%),
-        radial-gradient(ellipse 180px 18px at 65% 60%, rgba(173, 216, 230, 0.25) 0%, rgba(173, 216, 230, 0.08) 35%, transparent 65%),
-        radial-gradient(ellipse 150px 15px at 45% 80%, rgba(135, 206, 250, 0.2) 0%, rgba(135, 206, 250, 0.06) 40%, transparent 70%),
-        radial-gradient(ellipse 220px 22px at 75% 25%, rgba(173, 216, 230, 0.28) 0%, transparent 55%),
-        radial-gradient(ellipse 190px 19px at 15% 70%, rgba(135, 206, 250, 0.22) 0%, transparent 58%),
-        radial-gradient(ellipse 210px 21px at 85% 45%, rgba(173, 216, 230, 0.26) 0%, transparent 62%);
+        radial-gradient(circle 980px at 72% 75%, rgba(25, 118, 210, 0.17) 0%, transparent 54%);
 }
 
 [data-theme="blue"] .fullscreen::after {

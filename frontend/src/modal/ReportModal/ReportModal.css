@@ -113,7 +113,7 @@
 }
 
 .btn-submit {
-    background-color: #d9534f;
+    background-color: var(--discord-bg-tertiary);
     color: white;
 }
 

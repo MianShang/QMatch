@@ -106,7 +106,7 @@
   padding: 16px 20px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 11px;
   max-height: 400px;
   overflow-y: auto;
   flex: 1;

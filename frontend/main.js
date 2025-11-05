@@ -217,7 +217,7 @@ function createWindow() {
   // 로그 파일 위치를 창에 표시
   console.log('📝 Electron 로그 파일 위치:', logFile);
 
-  if (app.isPackaged) {
+  if (!app.isPackaged) {
     win.webContents.openDevTools({ mode: 'detach' });
     
     // IPC로 로그 파일 위치 제공

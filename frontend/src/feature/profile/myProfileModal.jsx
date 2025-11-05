@@ -18,6 +18,7 @@ function MyProfile({ viewUserId, onClose }) {
   const [showGameModal, setShowGameModal] = useState(false);       // 게임 추가 모달 표시 여부
   const [showTagModal, setShowTagModal] = useState(false);         // 태그 추가 모달 표시 여부
   const [showSpecModal, setShowSpecModal] = useState(false);       // 전적 검색 모달 표시 여부
+  const [showLogoutModal, setShowLogoutModal] = useState(false);   // 로그아웃 확인 모달 표시 여부
 
   const [editNickName, setEditNickName] = useState(false);    // 닉네임 수정 모드 여부
   const [edit, setEdit] = useState(false);                    // 자기소개 수정 모드 여부
@@ -234,7 +235,7 @@ function MyProfile({ viewUserId, onClose }) {
             <div className="right-box">
               <div className="profile-header-actions">
                 {isMe && (
-                  <button className="logout-btn" onClick={() => logoutFunc(setIsLogIn)}>로그아웃</button>
+                  <button className="logout-btn" onClick={() => setShowLogoutModal(true)}>로그아웃</button>
                 )}
               </div>
               <div className="profile-user-info">
@@ -447,6 +448,32 @@ function MyProfile({ viewUserId, onClose }) {
 
       {showTagModal && (
         <InputModal type="tag" onClose={() => setShowTagModal(false)} sendUserTag={sendUserTag} />
+      )}
+
+      {/* 로그아웃 확인 모달 */}
+      {showLogoutModal && (
+        <div className="modal-overlay" onClick={() => setShowLogoutModal(false)}>
+          <div className="logout-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <h3>로그아웃 하시겠습니까?</h3>
+            <div className="logout-modal-buttons">
+              <button 
+                className="logout-confirm-btn" 
+                onClick={() => {
+                  logoutFunc(setIsLogIn);
+                  setShowLogoutModal(false);
+                }}
+              >
+                확인
+              </button>
+              <button 
+                className="logout-cancel-btn" 
+                onClick={() => setShowLogoutModal(false)}
+              >
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

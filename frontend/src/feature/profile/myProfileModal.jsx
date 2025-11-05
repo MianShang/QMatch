@@ -419,14 +419,13 @@ function MyProfile({ viewUserId, onClose }) {
 
       {/* 모달 영역 (포탈) */}
       {selectedGame && showSpecModal && createPortal(
-        <div className="spec-modal-overlay" onClick={() => {
+        <div onClick={() => {
           setShowSpecModal(false);
           setSelectedGame(null);
         }}>
-          <div className="spec-modal-panel" onClick={(e) => e.stopPropagation()}>
+          <div onClick={(e) => e.stopPropagation()}>
             <SpecModal
               setUserHistoryOpen={() => {
-                setShowSpecModal(false);
                 setSelectedGame(null);
               }}
               historyUserId={viewUserId}

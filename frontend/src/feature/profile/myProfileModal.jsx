@@ -4,7 +4,7 @@ import axios from 'axios';
 import { LogContext } from '../../App.jsx';
 import { useLogout } from '../../hooks/login/useLogout.js';
 import InputModal from './components/inputModal.jsx';
-import SpecModal from './components/specModal/specModal.jsx';
+import SpecModal from '../../modal/userHistory/UserHistoryModal.jsx';
 import { toast } from 'react-toastify';
 import './myProfileModal.css';
 
@@ -146,7 +146,10 @@ function MyProfile({ viewUserId, onClose }) {
     
     const fetchGameData = () => {
       return axios.get("/api/get/user/gamecode", { params: { userId: viewUserId } })
-        .then((res) => setGameData(res.data || []))
+        .then((res) => {
+          console.log("서버에서 받은 게임 데이터:", res.data);
+          setGameData(res.data || []);
+        })
         .catch((err) => console.error("게임 목록 불러오기 실패", err));
     };
   
@@ -181,14 +184,7 @@ function MyProfile({ viewUserId, onClose }) {
     if (!viewUserId) return;
 
     fetchProfileData();
-
-    
-    axios.get("/api/get/user/gamecode", { params: { userId: viewUserId } })
-    .then((res) => {
-      console.log("서버에서 받은 게임 데이터:", res.data); 
-      setGameData(res.data);
-    })
-    .catch((err) => console.error("게임코드 불러오기 실패", err));
+    fetchGameData();
 
   }, [viewUserId]);
 
@@ -311,7 +307,7 @@ function MyProfile({ viewUserId, onClose }) {
                       <span key={index} className="tag">#{tag}</span>
                     ))
                   ) : (
-                    <p className="no-tags">등록된 태그가 없습니다.</p>
+                    <p className="no-tags">등록된 해시 태그가 없습니다.</p>
                   )}
                 </div>
               </div>
@@ -428,11 +424,13 @@ function MyProfile({ viewUserId, onClose }) {
         }}>
           <div className="spec-modal-panel" onClick={(e) => e.stopPropagation()}>
             <SpecModal
-              game={selectedGame}
-              onClose={() => {
+              setUserHistoryOpen={() => {
                 setShowSpecModal(false);
                 setSelectedGame(null);
               }}
+              historyUserId={viewUserId}
+              sendToModalGameName={selectedGame?.gameName}
+              sendToModalGameCode={selectedGame?.gameCode}
             />
           </div>
         </div>,

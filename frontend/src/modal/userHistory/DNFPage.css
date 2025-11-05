@@ -10,7 +10,6 @@
 .dnf-top-row {
   display: flex;
   flex-direction: column;
-  gap: 20px;
   align-items: center;
   padding: 24px;
   background: var(--discord-bg-secondary);

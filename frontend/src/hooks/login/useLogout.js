@@ -14,6 +14,7 @@ export function useLogout(){
     setVoiceChatRoomId,
     setCurrentVoiceRoomId,
     globalStomp, // ✅ 전역 STOMP 클라이언트 추가
+    userData,
   } = useContext(LogContext);
 
   // 로그아웃 처리 API
@@ -31,7 +32,13 @@ export function useLogout(){
       }
 
       // 백엔드 로그아웃 요청
+      await axios.post('/api/user/status', {
+                      userId : userData?.userId,
+                      status: "오프라인"
+                    }).catch(() => {});
+
       await axios.post("/api/logout");
+      
 
       // 음성채팅 종료
       if (voiceChatRef?.current) {

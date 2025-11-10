@@ -53,7 +53,7 @@ export function FriendInventory({ bottomToggle, userId }) {
                             <div className="profile-image-container">
                                 {/* 백엔드 배포시 이미지 경로 수정으로인해 임시 하드코딩 수정 */}
                                 <img
-                                    src={import.meta.env?.VITE_API_URL + RequestUser.userProfile || "https://placehold.co/45"}
+                                    src={ RequestUser?.userProfile ? import.meta.env?.VITE_API_URL + RequestUser?.userProfile : "https://placehold.co/45"}
                                     alt="프로필 이미지"
                                     className="chatCardImage"
                                 />

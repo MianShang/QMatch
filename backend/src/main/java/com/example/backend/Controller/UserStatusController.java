@@ -34,7 +34,7 @@ public class UserStatusController {
         UserStatus us = repo.findByUserId(dto.getUserId())
                 .orElseGet(UserStatus::new);
         String prev = us.getStatus();
-
+    
         us.setUserId(dto.getUserId());
         us.setStatus(dto.getStatus());
         repo.save(us);

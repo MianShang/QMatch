@@ -602,11 +602,10 @@ function LobbyPage() {
                 <button
                   onClick={toggleTheme}
                   className="theme-toggle-button"
-                  title={`현재 테마: ${theme === 'dark' ? '다크' : theme === 'light' ? '라이트' : theme === 'pink' ? '핑크' : '블루'}`}
+                  title={`현재 테마: ${theme === 'dark' ? '다크' : theme === 'light' ? '라이트' : '블루'}`}
                 >
                   {theme === 'dark' && '🌙'}
                   {theme === 'light' && '☀️'}
-                  {theme === 'pink' && '💖'}
                   {theme === 'blue' && '💙'}
                 </button>
               </div>

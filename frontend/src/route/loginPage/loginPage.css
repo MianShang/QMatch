@@ -46,10 +46,10 @@
         linear-gradient(135deg, #050810 0%, #0d1b2a 50%, #1b263b 100%);
 }
 
-/* 핑크 오로라 배경 */
+/* 핑크 테마 - 핑크 톤 그라데이션 */
 [data-theme="pink"] .fullscreen {
-    background: 
-        linear-gradient(180deg, #0a0c10 0%, #1a1d23 30%, #2d1b3d 60%, #1a0f26 100%);
+    background:
+        linear-gradient(180deg, #934b63 0%, #75374c 35%, #582537 60%, #3a1823 80%, #17060c 100%);
 }
 
 /* 화이트 모드일 때 우주 배경 효과 제거하고 반짝이는 별 효과 추가 */
@@ -169,6 +169,39 @@
   background: linear-gradient(45deg, #ff66b3, #c2185b);
   transform: scale(1.15) rotate(5deg);
   box-shadow: 0 8px 25px rgba(233, 30, 99, 0.4);
+}
+
+/* 핑크 테마 - 부드러운 오로라 */
+[data-theme="pink"] .fullscreen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 85% at 18% 25%, rgba(80, 27, 41, 0.42) 0%, rgba(80, 27, 41, 0) 72%),
+    radial-gradient(ellipse 55% 80% at 78% 22%, rgba(110, 36, 54, 0.38) 0%, rgba(110, 36, 54, 0) 70%),
+    radial-gradient(ellipse 70% 90% at 35% 75%, rgba(132, 45, 66, 0.4) 0%, rgba(132, 45, 66, 0) 78%),
+    radial-gradient(ellipse 65% 88% at 72% 82%, rgba(51, 16, 24, 0.34) 0%, rgba(51, 16, 24, 0) 80%);
+  background-size: 100% 100%;
+  pointer-events: none;
+  animation: auroraFloat 15s ease-in-out infinite;
+  opacity: 0.75;
+}
+
+/* 핑크 테마 - 은은한 포인트 조명 */
+[data-theme="pink"] .fullscreen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(4px 4px at 28% 38%, rgba(132, 45, 66, 0.95) 0%, rgba(132, 45, 66, 0) 60%),
+    radial-gradient(3px 3px at 62% 68%, rgba(110, 36, 54, 0.88) 0%, rgba(110, 36, 54, 0) 60%),
+    radial-gradient(3px 3px at 78% 32%, rgba(80, 27, 41, 0.82) 0%, rgba(80, 27, 41, 0) 60%),
+    radial-gradient(2px 2px at 48% 22%, rgba(51, 16, 24, 0.78) 0%, rgba(51, 16, 24, 0) 60%),
+    radial-gradient(2px 2px at 15% 70%, rgba(80, 27, 41, 0.72) 0%, rgba(80, 27, 41, 0) 60%);
+  background-size: 150% 150%;
+  animation: puddingFloat 19s ease-in-out infinite;
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 /* 우주 테마 배경 효과 - 행성과 성운 (더 많이) */

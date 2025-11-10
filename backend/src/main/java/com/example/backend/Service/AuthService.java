@@ -28,6 +28,11 @@ public class AuthService {
 
     // 유저 정보 반환 Service
     public UserResponseDto getUserData(Authentication auth){
+        // 인증 정보가 null인 경우 예외 발생
+        if (auth == null) {
+            throw new IllegalArgumentException("인증 정보가 없습니다.");
+        }
+        
         // UserDetailService
         MyUserDetailsService.CustomUserDetails user = (MyUserDetailsService.CustomUserDetails) auth.getPrincipal();
 

@@ -34,7 +34,11 @@ public class AuthController {
 
     // 유저 정보 반환 API
     @GetMapping("/api/user/get-data")
-    public ResponseEntity<UserResponseDto> getData(Authentication auth) {
+    public ResponseEntity<?> getData(Authentication auth) {
+        // 인증되지 않은 사용자인 경우
+        if (auth == null) {
+            return ResponseEntity.status(401).body("인증되지 않은 사용자입니다.");
+        }
 
         UserResponseDto userResponseDto = authService.getUserData(auth);
 

@@ -37,6 +37,9 @@ public class LOLDto {
     // 숙련도 TOP3
     private List<ChampionMasteryDto> championMasteries;
 
+    // 매치 히스토리 (최근 10게임)
+    private List<MatchHistoryDto> matchHistory;
+
     // 큐 타입별 모스트 챔피언 정보
     // private Map<String, List<Map<String, Object>>> most; // solo, flex, normal, aram 별 챔피언 리스트
 }

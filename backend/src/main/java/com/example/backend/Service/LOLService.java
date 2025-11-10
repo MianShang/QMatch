@@ -3,6 +3,7 @@ package com.example.backend.Service;
 import com.example.backend.Config.RiotApiConfig;
 import com.example.backend.Dto.LOLDto;
 import com.example.backend.Dto.ChampionMasteryDto;
+import com.example.backend.Dto.MatchHistoryDto;
 import com.example.backend.Service.LOLCacheService; // 캐시 서비스 import 추가
 import com.jayway.jsonpath.JsonPath;
 import lombok.RequiredArgsConstructor;
@@ -112,48 +113,83 @@ public class LOLService {
 
             dto.setChampionMasteries(masteryDtos);
 
-            /*
-            // 🔴 Match ID 목록 가져오기
-            List<String> matchIds = getMatchIds(puuid, 30);
+            // 매치 히스토리 가져오기 (최근 10게임)
+            List<String> matchIds = getMatchIds(puuid, 10);
+            System.out.println("매치 ID 개수: " + (matchIds != null ? matchIds.size() : 0));
+            List<MatchHistoryDto> matchHistoryList = new ArrayList<>();
 
-            // 모드별 챔피언 기록 초기화
-            Map<String, List<String>> modeMap = new HashMap<>() {{
-                put("solo", new ArrayList<>());
-                put("flex", new ArrayList<>());
-                put("normal", new ArrayList<>());
-                put("aram", new ArrayList<>());
-            }};
-
-            // Match 상세 정보 분석 → 모드별 챔피언 기록 분류
             for (String matchId : matchIds) {
-                String matchUrl = "https://asia.api.riotgames.com/lol/match/v5/matches/" + matchId;
-                ResponseEntity<String> matchResponse = restTemplate.exchange(matchUrl, HttpMethod.GET, entity, String.class);
-                if (!matchResponse.getStatusCode().is2xxSuccessful()) continue;
+                try {
+                    String matchUrl = "https://asia.api.riotgames.com/lol/match/v5/matches/" + matchId;
+                    ResponseEntity<String> matchResponse = restTemplate.exchange(matchUrl, HttpMethod.GET, entity, String.class);
+                    if (!matchResponse.getStatusCode().is2xxSuccessful()) continue;
 
-                String matchJson = matchResponse.getBody();
-
-                int queueId = JsonPath.read(matchJson, "$.info.queueId");
-                List<String> champList = JsonPath.read(matchJson, "$.info.participants[?(@.puuid=='" + puuid + "')].championName");
-
-                if (champList.isEmpty()) continue;
-
-                String champ = champList.get(0);
-
-                switch (queueId) {
-                    case 420 -> modeMap.get("solo").add(champ);
-                    case 440 -> modeMap.get("flex").add(champ);
-                    case 430 -> modeMap.get("normal").add(champ);
-                    case 450 -> modeMap.get("aram").add(champ);
+                    String matchJson = matchResponse.getBody();
+                    if (matchJson == null || matchJson.isEmpty()) {
+                        System.err.println("매치 JSON이 비어있음: " + matchId);
+                        continue;
+                    }
+                    
+                    // 해당 유저의 참가자 정보 찾기
+                    List<Map<String, Object>> participants = JsonPath.read(matchJson, "$.info.participants[?(@.puuid=='" + puuid + "')]");
+                    if (participants == null || participants.isEmpty()) {
+                        System.err.println("참가자 정보를 찾을 수 없음: " + matchId);
+                        continue;
+                    }
+                    
+                    Map<String, Object> participant = participants.get(0);
+                    if (participant == null) {
+                        System.err.println("참가자 정보가 null: " + matchId);
+                        continue;
+                    }
+                    
+                    MatchHistoryDto matchHistory = new MatchHistoryDto();
+                    
+                    // 챔피언 이름
+                    Object champNameObj = participant.get("championName");
+                    matchHistory.setChampionName(champNameObj != null ? champNameObj.toString() : "Unknown");
+                    
+                    // 승/패
+                    Object winObj = participant.get("win");
+                    matchHistory.setWin(winObj instanceof Boolean ? (Boolean) winObj : Boolean.TRUE.equals(winObj));
+                    
+                    // KDA
+                    Object killsObj = participant.get("kills");
+                    matchHistory.setKills(killsObj instanceof Number ? ((Number) killsObj).intValue() : 0);
+                    
+                    Object deathsObj = participant.get("deaths");
+                    matchHistory.setDeaths(deathsObj instanceof Number ? ((Number) deathsObj).intValue() : 0);
+                    
+                    Object assistsObj = participant.get("assists");
+                    matchHistory.setAssists(assistsObj instanceof Number ? ((Number) assistsObj).intValue() : 0);
+                    
+                    Object queueIdObj = JsonPath.read(matchJson, "$.info.queueId");
+                    int queueId = queueIdObj instanceof Number ? ((Number) queueIdObj).intValue() : 0;
+                    matchHistory.setQueueId(queueId);
+                    
+                    // 큐 ID를 게임 모드로 변환
+                    String gameMode = getGameMode(queueId);
+                    matchHistory.setGameMode(gameMode);
+                    
+                    // gameDuration과 gameStartTimestamp는 Integer 또는 Long일 수 있으므로 Number로 처리
+                    Object gameDurationObj = JsonPath.read(matchJson, "$.info.gameDuration");
+                    long gameDuration = gameDurationObj instanceof Number ? ((Number) gameDurationObj).longValue() : 0L;
+                    matchHistory.setGameDuration(gameDuration);
+                    
+                    Object gameStartTimestampObj = JsonPath.read(matchJson, "$.info.gameStartTimestamp");
+                    long gameStartTimestamp = gameStartTimestampObj instanceof Number ? ((Number) gameStartTimestampObj).longValue() : 0L;
+                    matchHistory.setGameStartTimestamp(gameStartTimestamp);
+                    
+                    matchHistoryList.add(matchHistory);
+                } catch (Exception e) {
+                    System.err.println("매치 정보 가져오기 실패: " + matchId + " - " + e.getMessage());
+                    e.printStackTrace();
+                    continue;
                 }
             }
-
-            // 모드별 모스트 3 챔피언 정리
-            Map<String, List<Map<String, Object>>> mostMap = new HashMap<>();
-            for (String mode : modeMap.keySet()) {
-                mostMap.put(mode, getTop3(modeMap.get(mode)));
-            }
-            dto.setMost(mostMap);
-            */
+            
+            System.out.println("최종 매치 히스토리 개수: " + matchHistoryList.size());
+            dto.setMatchHistory(matchHistoryList);
 
             // 캐시에 결과 저장
             cacheService.put(cacheKey, dto);
@@ -165,35 +201,45 @@ public class LOLService {
         }
     }
 
-    /* 매치데이터 주석처리
-    // 최근 matchId 30개 가져오기
+    // 최근 matchId 가져오기 (최대 10개)
     private List<String> getMatchIds(String puuid, int count) {
         try {
             String url = "https://asia.api.riotgames.com/lol/match/v5/matches/by-puuid/" + puuid + "/ids?start=0&count=" + count;
             HttpHeaders headers = new HttpHeaders();
             headers.set("X-Riot-Token", config.getApiKey());
             HttpEntity<String> entity = new HttpEntity<>(headers);
-            String body = restTemplate.exchange(url, HttpMethod.GET, entity, String.class).getBody();
-            return JsonPath.read(body, "$[*]");
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.GET, entity, String.class);
+            
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                System.err.println("매치 ID API 응답 실패: " + response.getStatusCode());
+                return Collections.emptyList();
+            }
+            
+            String body = response.getBody();
+            if (body == null || body.isEmpty()) {
+                System.err.println("매치 ID 응답 본문이 비어있음");
+                return Collections.emptyList();
+            }
+            
+            List<String> matchIds = JsonPath.read(body, "$[*]");
+            return matchIds != null ? matchIds : Collections.emptyList();
         } catch (Exception e) {
             System.err.println("matchId 가져오기 실패: " + e.getMessage());
+            e.printStackTrace();
             return Collections.emptyList();
         }
     }
 
-    // 챔피언 리스트에서 모스트 3개 추출
-    private List<Map<String, Object>> getTop3(List<String> list) {
-        return list.stream()
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
-                .entrySet().stream()
-                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
-                .limit(3)
-                .map(e -> {
-                    Map<String, Object> m = new HashMap<>();
-                    m.put("championName", e.getKey());
-                    m.put("count", e.getValue());
-                    return m;
-                })
-                .collect(Collectors.toList());
-    } */
+    // 큐 ID를 게임 모드로 변환
+    private String getGameMode(int queueId) {
+        return switch (queueId) {
+            case 420 -> "솔로랭크";
+            case 440 -> "자유랭크";
+            case 430 -> "일반";
+            case 450 -> "칼바람";
+            case 700 -> "격전";
+            case 1700 -> "아레나";
+            default -> "기타";
+        };
+    }
 }

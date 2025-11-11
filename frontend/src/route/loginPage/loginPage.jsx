@@ -22,11 +22,10 @@ function LoginPage() {
         <button
           onClick={toggleTheme}
           className="theme-toggle-button"
-          title={`현재 테마: ${theme === 'dark' ? '다크' : theme === 'light' ? '라이트' : theme === 'pink' ? '핑크' : '블루'}`}
+          title={`현재 테마: ${theme === 'dark' ? '다크' : theme === 'light' ? '라이트' : '블루'}`}
         >
           {theme === 'dark' && '🌙'}
           {theme === 'light' && '☀️'}
-          {theme === 'pink' && '💖'}
           {theme === 'blue' && '💙'}
         </button>
       </div>
@@ -36,10 +35,7 @@ function LoginPage() {
         <div className="brand-header">
           <div className="brand-logo">
             <img 
-              src={
-                theme === 'pink' ? "/qmatchLogoPink.png" : 
-                "/qmatchLogo.png"
-              } 
+              src="/qmatchLogo.png"
               alt="QMatch" 
               className="qmatch-logo-image" 
             />

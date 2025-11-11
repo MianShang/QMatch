@@ -25,7 +25,7 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "qmatchLogo.png"
+      "icon": "assets/icon.ico"
     },
     "nsis": {
       "oneClick": false,

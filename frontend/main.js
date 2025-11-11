@@ -46,6 +46,8 @@ console.log(`📝 로그 파일 위치: ${logFile}`);
 const FRONT_DOMAIN = process.env.FRONT_DOMAIN;
 console.log(`🌐 FRONT_DOMAIN: ${FRONT_DOMAIN}`);
 
+app.setAppUserModelId('com.qmatch.app'); // build.appId와 동일하게
+
 let psList;
 
 // ps-list 안전 로드 (asar / unpacked 환경 호환)
@@ -76,7 +78,7 @@ function configureSession() {
         const urlObj = new URL(details.url);
         const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
         const cookies = await session.defaultSession.cookies.get({ url: baseUrl });
-        
+
         if (cookies.length > 0) {
           const cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ');
           details.requestHeaders.Cookie = cookieHeader;
@@ -91,7 +93,7 @@ function configureSession() {
   session.defaultSession.webRequest.onHeadersReceived(filter, async (details, callback) => {
     // 모든 헤더 키를 소문자로 확인 (Electron이 소문자로 변환할 수 있음)
     const responseHeaders = details.responseHeaders || {};
-    
+
     // set-cookie 헤더 찾기 (모든 가능한 변형 확인)
     let originalCookies = [];
     for (const key of Object.keys(responseHeaders)) {
@@ -124,20 +126,20 @@ function configureSession() {
       try {
         const urlObj = new URL(details.url);
         const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-        
+
         for (const cookieString of fixedCookies) {
           // 쿠키 문자열을 파싱하여 Electron Cookie 객체로 변환
           const cookieParts = cookieString.split(';').map(s => s.trim());
           const firstPart = cookieParts[0];
           const equalIndex = firstPart.indexOf('=');
-          
+
           if (equalIndex === -1) continue;
-          
+
           const name = firstPart.substring(0, equalIndex).trim();
           const value = firstPart.substring(equalIndex + 1).trim();
-          
+
           if (!name || !value) continue;
-          
+
           // Electron cookies.set()에서는 domain을 지정하지 않는 것이 더 안전함
           const cookieObj = {
             url: baseUrl, // 전체 URL (프로토콜 + 도메인 + 포트)
@@ -181,7 +183,7 @@ function configureSession() {
         const urlObj = new URL(details.url);
         const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
         const cookies = await session.defaultSession.cookies.get({ url: baseUrl });
-        
+
         if (cookies.length === 0) {
           console.warn(`⚠️ [onCompleted] 로그인 후 쿠키가 저장되지 않았습니다.`);
         }
@@ -194,6 +196,12 @@ function configureSession() {
 
 // BrowserWindow 생성
 function createWindow() {
+
+  const iconPath = app.isPackaged
+  ? path.join(process.resourcesPath, 'assets', 'icon.ico')
+  : path.join(__dirname, 'assets', 'icon.ico');          // 개발용
+
+
   const win = new BrowserWindow({
     width: 1200,
     height: 800,
@@ -205,7 +213,7 @@ function createWindow() {
       webSecurity: false, // Cross-Origin 쿠키 허용
       allowRunningInsecureContent: true, // app:// → http:// 허용
     },
-    icon: path.join(__dirname, 'assets', 'qmatchLogo.png'),
+    icon: iconPath,
   });
 
   win.setMenu(null);
@@ -213,13 +221,13 @@ function createWindow() {
   const startURL = app.isPackaged ? 'app://index.html' : 'http://localhost:5173';
   win.loadURL(startURL);
   console.log('🚀 로드 대상 URL:', startURL);
-  
+
   // 로그 파일 위치를 창에 표시
   console.log('📝 Electron 로그 파일 위치:', logFile);
 
   if (!app.isPackaged) {
     win.webContents.openDevTools({ mode: 'detach' });
-    
+
     // IPC로 로그 파일 위치 제공
     ipcMain.handle('get-log-file-path', () => {
       return logFile;
@@ -240,6 +248,7 @@ protocol.registerSchemesAsPrivileged([
     },
   },
 ]);
+
 
 // 초기화
 app.whenReady().then(() => {
@@ -303,27 +312,27 @@ ipcMain.handle('set-cookies', async (event, url, cookieStrings) => {
   try {
     const urlObj = new URL(url);
     const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-    
+
     for (const cookieString of cookieStrings) {
       try {
         // 쿠키 문자열 파싱
         const cookieParts = cookieString.split(';').map(s => s.trim());
         const firstPart = cookieParts[0];
         const equalIndex = firstPart.indexOf('=');
-        
+
         if (equalIndex === -1) {
           console.warn('⚠️ [IPC] 쿠키 파싱 실패 (등호 없음):', cookieString);
           continue;
         }
-        
+
         const name = firstPart.substring(0, equalIndex).trim();
         const value = firstPart.substring(equalIndex + 1).trim();
-        
+
         if (!name || !value) {
           console.warn('⚠️ [IPC] 쿠키 파싱 실패 (이름/값 없음):', cookieString);
           continue;
         }
-        
+
         // 여러 URL 형식으로 쿠키 저장 시도
         const cookieUrls = [
           baseUrl,  // http://host:port
@@ -332,7 +341,7 @@ ipcMain.handle('set-cookies', async (event, url, cookieStrings) => {
         ];
 
         let saved = false;
-        
+
         for (const cookieUrl of cookieUrls) {
           try {
             const cookieObj = {
@@ -358,10 +367,10 @@ ipcMain.handle('set-cookies', async (event, url, cookieStrings) => {
             }
 
             await session.defaultSession.cookies.set(cookieObj);
-            
+
             // 저장 확인 (약간의 지연)
             await new Promise(resolve => setTimeout(resolve, 100));
-            
+
             try {
               const verifyCookies = await session.defaultSession.cookies.get({ url: cookieUrl });
               if (verifyCookies.some(c => c.name === name && c.value === value)) {
@@ -375,7 +384,7 @@ ipcMain.handle('set-cookies', async (event, url, cookieStrings) => {
             // 쿠키 저장 실패 시 다음 URL 시도
           }
         }
-        
+
         if (!saved) {
           console.error(`❌ [IPC] 쿠키 저장 실패: ${name}`);
         }
@@ -383,11 +392,11 @@ ipcMain.handle('set-cookies', async (event, url, cookieStrings) => {
         console.error('❌ [IPC] 쿠키 저장 실패:', cookieErr);
       }
     }
-    
+
     // 최종 확인
     const finalCookies = await session.defaultSession.cookies.get({});
     const savedCount = finalCookies.filter(c => c.name === 'JSESSIONID').length;
-    
+
     if (savedCount > 0) {
       return { success: true, savedCount };
     } else {
@@ -415,7 +424,7 @@ ipcMain.handle('get-cookies', async (event, url) => {
   try {
     // 여러 URL 형식으로 시도
     const urlVariants = [url];
-    
+
     try {
       const urlObj = new URL(url);
       urlVariants.push(
@@ -426,9 +435,9 @@ ipcMain.handle('get-cookies', async (event, url) => {
     } catch (e) {
       // URL 파싱 실패 시 원본 URL만 사용
     }
-    
+
     let cookies = [];
-    
+
     // 각 URL 형식으로 시도
     for (const urlVariant of urlVariants) {
       try {
@@ -441,7 +450,7 @@ ipcMain.handle('get-cookies', async (event, url) => {
         // 해당 URL 형식으로 조회 실패 시 다음 시도
       }
     }
-    
+
     // 여전히 없으면 모든 쿠키에서 JSESSIONID만 필터링
     if (cookies.length === 0) {
       try {
@@ -449,20 +458,20 @@ ipcMain.handle('get-cookies', async (event, url) => {
         const jsessionCookies = allCookies.filter(c => c.name === 'JSESSIONID');
         if (jsessionCookies.length > 0) {
           cookies = jsessionCookies;
-          
+
           // URL과 일치하는 쿠키 우선 선택
           try {
             const urlObj = new URL(url);
             const host = urlObj.host;
             const hostname = urlObj.hostname;
-            
+
             const matchedCookies = jsessionCookies.filter(c => {
               if (!c.domain && !c.url) return true;
               if (c.domain && (host.includes(c.domain) || hostname.includes(c.domain))) return true;
               if (c.url && (c.url.includes(host) || c.url.includes(hostname))) return true;
               return false;
             });
-            
+
             if (matchedCookies.length > 0) {
               cookies = matchedCookies;
             }
@@ -474,7 +483,7 @@ ipcMain.handle('get-cookies', async (event, url) => {
         // 전체 쿠키 조회 실패
       }
     }
-    
+
     // 쿠키 객체 직렬화 (IPC 전달을 위해)
     return cookies.map(c => ({
       name: c.name,

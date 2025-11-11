@@ -156,12 +156,19 @@ function App() {
 
 
   // 테마 상태
-  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'dark');
-  useEffect(() => document.documentElement.setAttribute('data-theme', theme), [theme]);
-  const toggleTheme = () => {
-    const themes = ['dark', 'light', 'pink', 'blue'];
-    setTheme(themes[(themes.indexOf(theme) + 1) % themes.length]);
+  const themeOrder = ['dark', 'light', 'blue'];
+  const [theme, setTheme] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    return themeOrder.includes(saved) ? saved : 'dark';
+  });
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
+  }, [theme]);
+  const toggleTheme = () => {
+    const currentIndex = themeOrder.indexOf(theme);
+    const nextTheme = themeOrder[(currentIndex + 1) % themeOrder.length];
+    setTheme(nextTheme);
   };
 
   // Electron 환경에서 실행 중인 프로세스 감지

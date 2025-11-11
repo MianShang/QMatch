@@ -70,8 +70,8 @@ function UserHistoryModal({ setUserHistoryOpen, historyUserId, sendToModalGameNa
           const cached = riotCache[gameCode];
           const now = Date.now();
           
-          if (cached && (now - cached.timestamp < CACHE_DURATION)) {
-            console.log("캐시 사용됨");
+          // 캐시가 있더라도 매치 히스토리가 없으면 새로 가져오기
+          if (cached && (now - cached.timestamp < CACHE_DURATION) && cached.data?.riotStats?.matchHistory) {
             setUserGameCode(cached.data);
             return; 
           }

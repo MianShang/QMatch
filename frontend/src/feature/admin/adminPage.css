@@ -14,7 +14,7 @@
 
 /* 다크모드 관리자 페이지 z-index */
 [data-theme="dark"] .admin-page-container,
-:root:not([data-theme="light"]):not([data-theme="pink"]):not([data-theme="blue"]) .admin-page-container {
+:root:not([data-theme="light"]):not([data-theme="blue"]) .admin-page-container {
     position: relative;
     z-index: 1000;
     transform: translateZ(0); /* GPU 가속으로 stacking context 생성 */

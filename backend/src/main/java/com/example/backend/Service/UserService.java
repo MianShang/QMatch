@@ -49,6 +49,12 @@ public class UserService {
         userRepository.save(saveUser);
     }
 
-
+    // 비밀번호 업데이트
+    public void updatePassword(String userId, String newPassword) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        user.setUserPw(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
 
 }

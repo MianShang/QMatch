@@ -32,6 +32,8 @@ public class SecurityConfig {
     public PersistentTokenRepository tokenRepository() {
         JdbcTokenRepositoryImpl repository = new JdbcTokenRepositoryImpl();
         repository.setDataSource(dataSource);
+        // schema.sql에서 테이블을 생성하므로 자동 생성 비활성화
+        repository.setCreateTableOnStartup(false);
         return repository;
     }
 

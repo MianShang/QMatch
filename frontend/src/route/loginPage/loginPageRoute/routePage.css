@@ -165,3 +165,32 @@
 .login-form input.invalid {
   border-color: #f44336;
 }
+
+/* 아이디/비밀번호 찾기 링크 */
+.find-account-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.find-link {
+  background: none;
+  border: none;
+  color: var(--discord-text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+
+.find-link:hover {
+  color: var(--discord-accent);
+  text-decoration: underline;
+}
+
+.divider {
+  color: var(--discord-text-muted);
+}

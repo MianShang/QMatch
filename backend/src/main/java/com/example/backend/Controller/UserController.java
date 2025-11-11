@@ -81,6 +81,64 @@ public class UserController {
         return ResponseEntity.ok("로그아웃 성공");
     }
 
+    // 아이디 찾기 API (이메일 인증 후)
+    @PostMapping("/api/user/find-id")
+    public ResponseEntity<?> findUserId(@RequestParam String email, @RequestParam String code) {
+        try {
+            // 이메일 인증 확인
+            if (!emailService.verifyEmailCode(email, code)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 코드가 일치하지 않습니다.");
+            }
+            
+            // 이메일로 유저 찾기
+            User user = userRepository.findByUserEmail(email)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 이메일로 등록된 사용자가 없습니다."));
+            
+            return ResponseEntity.ok(user.getUserId());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("아이디 찾기 중 오류가 발생했습니다.");
+        }
+    }
 
+    // 비밀번호 찾기 API (아이디 + 이메일 확인 후 새 비밀번호로 변경)
+    @PostMapping("/api/user/find-password")
+    public ResponseEntity<String> findPassword(
+            @RequestParam String userId, 
+            @RequestParam String email, 
+            @RequestParam String newPassword) {
+        try {
+            // 이메일 인증 완료 여부 확인 (인증 코드 재확인 불필요)
+            if (!emailService.isEmailVerifiedForPasswordReset(email)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증을 먼저 완료해주세요.");
+            }
+            
+            // 아이디로 유저 찾기
+            User user = userRepository.findByUserId(userId)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 아이디로 등록된 사용자가 없습니다."));
+            
+            // 이메일 일치 확인
+            if (!user.getUserEmail().equals(email)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("아이디와 이메일이 일치하지 않습니다.");
+            }
+            
+            // 비밀번호 유효성 검사
+            String pwRegex = "^(?=.*[A-Z])(?=.*[!@#$%^&*()_+=~`]).{8,16}$";
+            if (!newPassword.matches(pwRegex)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("비밀번호는 8~16자, 대문자/특수문자를 각 1개 이상 포함해야 합니다.");
+            }
+            
+            // 비밀번호 업데이트
+            userService.updatePassword(userId, newPassword);
+            
+            return ResponseEntity.ok("비밀번호가 성공적으로 변경되었습니다.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("비밀번호 찾기 중 오류가 발생했습니다.");
+        }
+    }
 
 }

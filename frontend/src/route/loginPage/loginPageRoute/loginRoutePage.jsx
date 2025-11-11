@@ -4,6 +4,8 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import axios from 'axios';
 import './routePage.css'
+import FindIdModal from './FindIdModal';
+import FindPasswordModal from './FindPasswordModal';
 
 // 로그인 체크용 Context import
 import { LogContext } from '../../../App.jsx'
@@ -21,6 +23,10 @@ function LogInRoutePage() {
 
   //자동로그인 체크박스 
   const [rememberMe, setRememberMe] = useState(false);
+  
+  // 모달 상태
+  const [isFindIdModalOpen, setIsFindIdModalOpen] = useState(false);
+  const [isFindPasswordModalOpen, setIsFindPasswordModalOpen] = useState(false);
 
   // ID, PW 받을 State
   const [credentials, setCredentials] = useState({
@@ -114,7 +120,26 @@ function LogInRoutePage() {
                 </div>
 
         <button type="submit">로그인</button>
+        
+        <div className="find-account-links">
+          <button type="button" onClick={() => setIsFindIdModalOpen(true)} className="find-link">
+            아이디 찾기
+          </button>
+          <span className="divider">|</span>
+          <button type="button" onClick={() => setIsFindPasswordModalOpen(true)} className="find-link">
+            비밀번호 찾기
+          </button>
+        </div>
       </form>
+      
+      <FindIdModal 
+        isOpen={isFindIdModalOpen} 
+        onClose={() => setIsFindIdModalOpen(false)} 
+      />
+      <FindPasswordModal 
+        isOpen={isFindPasswordModalOpen} 
+        onClose={() => setIsFindPasswordModalOpen(false)} 
+      />
     </div>
   );
 }

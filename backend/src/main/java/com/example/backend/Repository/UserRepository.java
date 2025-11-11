@@ -12,4 +12,7 @@ public interface UserRepository extends CrudRepository<User, Long> {
 
     // 유저 Id 중복 체크
     boolean existsByUserId(String userId);
+    
+    // 이메일로 유저 검색
+    Optional<User> findByUserEmail(String userEmail);
 }

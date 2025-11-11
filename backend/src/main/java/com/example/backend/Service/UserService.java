@@ -21,7 +21,9 @@ public class UserService {
         if (user.getUserId() == null
                 || user.getUserEmail()  == null
                 || user.getUserPw()     == null
-                || user.getUserName()   == null) {
+                || user.getUserName()   == null
+                || user.getUserAge()    == null
+                || user.getUserPhone()  == null) {
 
             // input란이 하나라도 null일시 예외처리
             throw new IllegalArgumentException("필수 값 누락");
@@ -37,6 +39,8 @@ public class UserService {
         saveUser.setUserEmail(user.getUserEmail());
         saveUser.setUserPw(passwordEncoder.encode(user.getUserPw()));
         saveUser.setUserName(user.getUserName());
+        saveUser.setUserAge(user.getUserAge());
+        saveUser.setUserPhone(user.getUserPhone());
 
         // 비밀번호 해싱
         //user.setUserPw(passwordEncoder.encode(user.getUserPw()));

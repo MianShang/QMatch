@@ -6,6 +6,7 @@ import com.example.backend.Dto.UserDto;
 import com.example.backend.Entity.User;
 import com.example.backend.Repository.UserRepository;
 import com.example.backend.Security.MyUserDetailsService;
+import com.example.backend.Service.EmailService;
 import com.example.backend.Service.UserService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -24,6 +25,36 @@ public class UserController {
     private final PasswordEncoder passwordEncoder;
 
     private final UserService userService;
+    private final EmailService emailService;
+
+    // 아이디 중복 체크 API
+    @GetMapping("/api/user/check-id")
+    public ResponseEntity<String> checkUserId(@RequestParam String userId) {
+        if (userRepository.existsByUserId(userId)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 사용 중인 아이디입니다.");
+        }
+        return ResponseEntity.ok("사용 가능한 아이디입니다.");
+    }
+
+    // 이메일 인증 코드 발송 API
+    @PostMapping("/api/user/send-email-verification")
+    public ResponseEntity<String> sendEmailVerification(@RequestParam String email) {
+        try {
+            String result = emailService.sendVerificationEmail(email);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    // 이메일 인증 코드 검증 API
+    @PostMapping("/api/user/verify-email")
+    public ResponseEntity<String> verifyEmail(@RequestParam String email, @RequestParam String code) {
+        if (emailService.verifyEmailCode(email, code)) {
+            return ResponseEntity.ok("이메일 인증이 완료되었습니다.");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 코드가 일치하지 않습니다.");
+    }
 
     // 회원가입 API
     @PostMapping("/api/user/join")

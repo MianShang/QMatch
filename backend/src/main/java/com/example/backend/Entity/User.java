@@ -25,6 +25,8 @@ public class User {
     @Column(unique = true)
     private String userNickName; // 유저 닉네임
     private String userEmail;   // 유저 이메일
+    private Integer userAge;     // 유저 나이
+    private String userPhone;    // 유저 휴대폰번호
     private String userProfile; // 유저 프로필 이미지
     private String userStatusMessage; //유저 상태메시지
     private String userIntro; //유저 소개

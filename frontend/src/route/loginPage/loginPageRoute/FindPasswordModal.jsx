@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import './FindAccountModal.css';
@@ -14,30 +14,42 @@ function FindPasswordModal({ isOpen, onClose }) {
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [isCompleted, setIsCompleted] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const isSendingEmailRef = useRef(false); // 중복 클릭 방지를 위한 ref
 
   if (!isOpen) return null;
 
   // 이메일 인증 코드 발송
   const sendEmailVerification = async () => {
-    if (isSendingEmail || (isEmailCodeSent && emailTimer > 0)) {
+    // 중복 발송 방지 (즉시 체크 및 설정)
+    if (isSendingEmailRef.current || isSendingEmail || (isEmailCodeSent && emailTimer > 0)) {
       return; // 이미 발송 중이거나 타이머가 진행 중이면 중복 클릭 방지
     }
 
+    // 즉시 ref 설정하여 중복 요청 차단
+    isSendingEmailRef.current = true;
+    setIsSendingEmail(true);
+
     if (!userId) {
+      isSendingEmailRef.current = false;
+      setIsSendingEmail(false);
       toast.error('아이디를 입력해주세요.');
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
+      isSendingEmailRef.current = false;
+      setIsSendingEmail(false);
       toast.error('올바른 이메일 형식이 아닙니다.');
       return;
     }
 
-    setIsSendingEmail(true);
     try {
-      await axios.post('/api/user/send-email-verification', null, {
-        params: { email: email }
+      await axios.post('/api/user/send-password-reset-verification', null, {
+        params: { 
+          userId: userId,
+          email: email
+        }
       });
       setIsEmailCodeSent(true);
       setEmailTimer(300); // 5분 타이머
@@ -55,11 +67,25 @@ function FindPasswordModal({ isOpen, onClose }) {
       }, 1000);
     } catch (error) {
       if (error.response && error.response.data) {
-        toast.error(error.response.data);
+        const errorMessage = error.response.data;
+        toast.error(errorMessage);
+        
+        // 등록된 사용자가 없거나 아이디와 이메일이 일치하지 않는 경우 입력 필드 초기화
+        if (errorMessage.includes('등록된 사용자가 없습니다') || 
+            errorMessage.includes('일치하지 않습니다') ||
+            errorMessage.includes('등록된 사용자')) {
+          setUserId('');
+          setEmail('');
+          setEmailCode('');
+          setIsEmailCodeSent(false);
+          setIsEmailVerified(false);
+          setEmailTimer(0);
+        }
       } else {
         toast.error("이메일 발송 중 오류가 발생했습니다.");
       }
     } finally {
+      isSendingEmailRef.current = false;
       setIsSendingEmail(false);
     }
   };
@@ -72,7 +98,7 @@ function FindPasswordModal({ isOpen, onClose }) {
     }
 
     try {
-      await axios.post('/api/user/verify-email', null, {
+      await axios.post('/api/user/verify-email-account-recovery', null, {
         params: { 
           email: email,
           code: emailCode

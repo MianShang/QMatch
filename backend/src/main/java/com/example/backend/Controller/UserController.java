@@ -36,21 +36,60 @@ public class UserController {
         return ResponseEntity.ok("사용 가능한 아이디입니다.");
     }
 
-    // 이메일 인증 코드 발송 API
+    // 이메일 인증 코드 발송 API (회원가입용)
     @PostMapping("/api/user/send-email-verification")
     public ResponseEntity<String> sendEmailVerification(@RequestParam String email) {
         try {
             String result = emailService.sendVerificationEmail(email);
             return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+    
+    // 비밀번호 찾기용 이메일 인증 코드 발송 API
+    @PostMapping("/api/user/send-password-reset-verification")
+    public ResponseEntity<String> sendPasswordResetVerification(
+            @RequestParam String userId, 
+            @RequestParam String email) {
+        try {
+            String result = emailService.sendVerificationEmailForPasswordReset(userId, email);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+    
+    // 아이디 찾기용 이메일 인증 코드 발송 API
+    @PostMapping("/api/user/send-find-id-verification")
+    public ResponseEntity<String> sendFindIdVerification(@RequestParam String email) {
+        try {
+            String result = emailService.sendVerificationEmailForFindId(email);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
-    // 이메일 인증 코드 검증 API
+    // 이메일 인증 코드 검증 API (회원가입용)
     @PostMapping("/api/user/verify-email")
     public ResponseEntity<String> verifyEmail(@RequestParam String email, @RequestParam String code) {
         if (emailService.verifyEmailCode(email, code)) {
+            return ResponseEntity.ok("이메일 인증이 완료되었습니다.");
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 코드가 일치하지 않습니다.");
+    }
+    
+    // 이메일 인증 코드 검증 API (비밀번호 찾기/아이디 찾기용)
+    @PostMapping("/api/user/verify-email-account-recovery")
+    public ResponseEntity<String> verifyEmailForAccountRecovery(@RequestParam String email, @RequestParam String code) {
+        if (emailService.verifyEmailCodeForAccountRecovery(email, code)) {
             return ResponseEntity.ok("이메일 인증이 완료되었습니다.");
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 코드가 일치하지 않습니다.");
@@ -60,6 +99,11 @@ public class UserController {
     @PostMapping("/api/user/join")
     public ResponseEntity<String> userJoin(@Valid @RequestBody UserRequestDto user) {
         try {
+            // 이메일 인증 확인
+            if (!emailService.isEmailVerified(user.getUserEmail())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("이메일 인증을 먼저 완료해주세요.");
+            }
+            
             // Service 레이어 분리
             userService.saveUser(user);
             return ResponseEntity.ok("회원가입 성공");
@@ -85,8 +129,8 @@ public class UserController {
     @PostMapping("/api/user/find-id")
     public ResponseEntity<?> findUserId(@RequestParam String email, @RequestParam String code) {
         try {
-            // 이메일 인증 확인
-            if (!emailService.verifyEmailCode(email, code)) {
+            // 이메일 인증 확인 (비밀번호 찾기/아이디 찾기용)
+            if (!emailService.verifyEmailCodeForAccountRecovery(email, code)) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("인증 코드가 일치하지 않습니다.");
             }
             

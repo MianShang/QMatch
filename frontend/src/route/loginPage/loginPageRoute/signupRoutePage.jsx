@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify';
@@ -31,6 +31,8 @@ function SignUpRoutePage({ onSuccess }) {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isEmailCodeSent, setIsEmailCodeSent] = useState(false);
   const [emailTimer, setEmailTimer] = useState(0);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const isSendingEmailRef = useRef(false); // 중복 클릭 방지를 위한 ref
 
   // 입력창의 내용이 바뀔 때마다 실행하는 함수 
   const handleChange = (e) => {
@@ -71,8 +73,19 @@ function SignUpRoutePage({ onSuccess }) {
 
   // 이메일 인증 코드 발송
   const sendEmailVerification = async () => {
+    // 중복 발송 방지 (즉시 체크 및 설정)
+    if (isSendingEmailRef.current || isSendingEmail || (isEmailCodeSent && emailTimer > 0)) {
+      return;
+    }
+
+    // 즉시 ref 설정하여 중복 요청 차단
+    isSendingEmailRef.current = true;
+    setIsSendingEmail(true);
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(user.userEmail)) {
+      isSendingEmailRef.current = false;
+      setIsSendingEmail(false);
       toast.error('올바른 이메일 형식이 아닙니다.');
       return;
     }
@@ -101,6 +114,9 @@ function SignUpRoutePage({ onSuccess }) {
       } else {
         toast.error("이메일 발송 중 오류가 발생했습니다.");
       }
+    } finally {
+      isSendingEmailRef.current = false;
+      setIsSendingEmail(false);
     }
   };
 
@@ -237,8 +253,8 @@ function SignUpRoutePage({ onSuccess }) {
           <input type="email" id="userEmail" placeholder="이메일" required
             value={user.userEmail} onChange={handleChange}
             className={isEmailVerified ? 'valid' : ''}/>
-          <button type="button" onClick={sendEmailVerification} className="check-button" disabled={isEmailCodeSent && emailTimer > 0}>
-            {isEmailCodeSent && emailTimer > 0 ? `재발송(${formatTimer(emailTimer)})` : '인증코드 발송'}
+          <button type="button" onClick={sendEmailVerification} className="check-button" disabled={isSendingEmail || (isEmailCodeSent && emailTimer > 0)}>
+            {isSendingEmail ? '발송 중...' : (isEmailCodeSent && emailTimer > 0 ? `재발송(${formatTimer(emailTimer)})` : '인증코드 발송')}
           </button>
         </div>
         

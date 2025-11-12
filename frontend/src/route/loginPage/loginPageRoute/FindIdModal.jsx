@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import './FindAccountModal.css';
@@ -10,19 +10,32 @@ function FindIdModal({ isOpen, onClose }) {
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [emailTimer, setEmailTimer] = useState(0);
   const [foundUserId, setFoundUserId] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const isSendingEmailRef = useRef(false); // 중복 클릭 방지를 위한 ref
 
   if (!isOpen) return null;
 
   // 이메일 인증 코드 발송
   const sendEmailVerification = async () => {
+    // 중복 발송 방지 (즉시 체크 및 설정)
+    if (isSendingEmailRef.current || isSendingEmail || (isEmailCodeSent && emailTimer > 0)) {
+      return;
+    }
+
+    // 즉시 ref 설정하여 중복 요청 차단
+    isSendingEmailRef.current = true;
+    setIsSendingEmail(true);
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
+      isSendingEmailRef.current = false;
+      setIsSendingEmail(false);
       toast.error('올바른 이메일 형식이 아닙니다.');
       return;
     }
 
     try {
-      await axios.post('/api/user/send-email-verification', null, {
+      await axios.post('/api/user/send-find-id-verification', null, {
         params: { email: email }
       });
       setIsEmailCodeSent(true);
@@ -41,10 +54,24 @@ function FindIdModal({ isOpen, onClose }) {
       }, 1000);
     } catch (error) {
       if (error.response && error.response.data) {
-        toast.error(error.response.data);
+        const errorMessage = error.response.data;
+        toast.error(errorMessage);
+        
+        // 등록된 이메일이 없는 경우 입력 필드 초기화
+        if (errorMessage.includes('등록된 사용자가 없습니다') || 
+            errorMessage.includes('등록된 사용자')) {
+          setEmail('');
+          setEmailCode('');
+          setIsEmailCodeSent(false);
+          setIsEmailVerified(false);
+          setEmailTimer(0);
+        }
       } else {
         toast.error("이메일 발송 중 오류가 발생했습니다.");
       }
+    } finally {
+      isSendingEmailRef.current = false;
+      setIsSendingEmail(false);
     }
   };
 
@@ -67,7 +94,28 @@ function FindIdModal({ isOpen, onClose }) {
       toast.success('아이디를 찾았습니다.');
     } catch (error) {
       if (error.response && error.response.data) {
-        toast.error(error.response.data);
+        const errorMessage = String(error.response.data);
+        toast.error(errorMessage);
+        
+        // 등록된 사용자가 없는 경우 입력 필드 초기화
+        if (errorMessage.includes('등록된 사용자가 없습니다') || 
+            errorMessage.includes('해당 이메일로 등록된 사용자가 없습니다') ||
+            errorMessage.includes('등록된 사용자')) {
+          setEmail('');
+          setEmailCode('');
+          setIsEmailCodeSent(false);
+          setIsEmailVerified(false);
+          setEmailTimer(0);
+        }
+        // 인증 코드가 틀린 경우 인증 코드만 초기화 (재입력 가능하도록)
+        else if (errorMessage.includes('인증 코드가 일치하지 않습니다') ||
+                 errorMessage.includes('인증 코드')) {
+          setEmailCode('');
+        }
+        // 기타 400 에러의 경우도 인증 코드 초기화
+        else if (error.response.status === 400) {
+          setEmailCode('');
+        }
       } else {
         toast.error("아이디 찾기 중 오류가 발생했습니다.");
       }
@@ -115,9 +163,9 @@ function FindIdModal({ isOpen, onClose }) {
                     type="button" 
                     onClick={sendEmailVerification} 
                     className="send-button"
-                    disabled={isEmailCodeSent && emailTimer > 0}
+                    disabled={isSendingEmail || (isEmailCodeSent && emailTimer > 0)}
                   >
-                    {isEmailCodeSent && emailTimer > 0 ? `재발송(${formatTimer(emailTimer)})` : '인증코드 발송'}
+                    {isSendingEmail ? '발송 중...' : (isEmailCodeSent && emailTimer > 0 ? `재발송(${formatTimer(emailTimer)})` : '인증코드 발송')}
                   </button>
                 </div>
               </div>

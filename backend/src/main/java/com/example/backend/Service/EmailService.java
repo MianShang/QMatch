@@ -1,5 +1,6 @@
 package com.example.backend.Service;
 
+import com.example.backend.Repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -9,12 +10,15 @@ import org.springframework.stereotype.Service;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class EmailService {
     
     private final JavaMailSender mailSender;
+    private final UserRepository userRepository;
     
     @Value("${spring.mail.username}")
     private String fromEmail;
@@ -25,8 +29,20 @@ public class EmailService {
     // 인증 코드 저장 (이메일: 인증코드)
     private final ConcurrentHashMap<String, String> emailVerificationCodes = new ConcurrentHashMap<>();
     
+    // 인증 코드 발송 시간 저장 (이메일: 발송시간) - 중복 발송 방지용
+    private final ConcurrentHashMap<String, LocalDateTime> emailVerificationSendTimes = new ConcurrentHashMap<>();
+    
+    // 이메일별 발송 중 락 (동시성 제어용)
+    private final ConcurrentHashMap<String, ReentrantLock> emailLocks = new ConcurrentHashMap<>();
+    
     // 인증 완료된 이메일 저장 (비밀번호 찾기용, 10분 유효)
     private final Set<String> verifiedEmails = ConcurrentHashMap.newKeySet();
+    
+    // 회원가입용 인증 완료된 이메일 저장
+    private final Set<String> verifiedEmailsForSignup = ConcurrentHashMap.newKeySet();
+    
+    // 최소 재발송 대기 시간 (초) - 60초
+    private static final long MIN_RESEND_INTERVAL_SECONDS = 60;
     
     // 인증 코드 생성
     private String generateVerificationCode() {
@@ -35,42 +51,132 @@ public class EmailService {
         return String.valueOf(code);
     }
     
-    // 이메일 인증 코드 발송
+    // 이메일 인증 코드 발송 (회원가입용 - 이미 등록된 이메일이 아니어야 함)
     public String sendVerificationEmail(String email) {
-        String verificationCode = generateVerificationCode();
+        // 이미 등록된 이메일인지 확인
+        if (userRepository.findByUserEmail(email).isPresent()) {
+            throw new IllegalArgumentException("이미 등록된 이메일입니다.");
+        }
         
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(String.format("%s <%s>", fromName, fromEmail)); // 보낸 사람 이름 설정
-        message.setTo(email);
-        message.setSubject("이메일 인증");
-        message.setText("인증 코드: " + verificationCode + "\n\n이 코드를 입력하여 이메일을 인증해주세요.");
+        return sendVerificationEmailInternal(email);
+    }
+    
+    // 비밀번호 찾기용 이메일 인증 코드 발송 (아이디와 이메일이 일치해야 함)
+    public String sendVerificationEmailForPasswordReset(String userId, String email) {
+        // 아이디로 사용자 찾기
+        var user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아이디로 등록된 사용자가 없습니다."));
+        
+        // 아이디와 이메일이 일치하는지 확인
+        if (!user.getUserEmail().equals(email)) {
+            throw new IllegalArgumentException("아이디와 이메일이 일치하지 않습니다.");
+        }
+        
+        return sendVerificationEmailInternal(email);
+    }
+    
+    // 아이디 찾기용 이메일 인증 코드 발송 (등록된 이메일이어야 함)
+    public String sendVerificationEmailForFindId(String email) {
+        // 등록된 이메일인지 확인
+        if (userRepository.findByUserEmail(email).isEmpty()) {
+            throw new IllegalArgumentException("해당 이메일로 등록된 사용자가 없습니다.");
+        }
+        
+        return sendVerificationEmailInternal(email);
+    }
+    
+    // 내부 이메일 인증 코드 발송 메서드
+    private String sendVerificationEmailInternal(String email) {
+        // 이메일별 락 가져오기 (없으면 생성)
+        ReentrantLock lock = emailLocks.computeIfAbsent(email, k -> new ReentrantLock());
+        
+        // 락 획득 시도 (동시 요청 방지)
+        if (!lock.tryLock()) {
+            throw new IllegalArgumentException("인증 코드 발송이 이미 진행 중입니다. 잠시 후 다시 시도해주세요.");
+        }
         
         try {
-            mailSender.send(message);
-            // 인증 코드 저장 (5분 유효)
-            emailVerificationCodes.put(email, verificationCode);
+            // 중복 발송 방지: 이미 발송된 코드가 있고 아직 유효한 경우
+            if (emailVerificationCodes.containsKey(email)) {
+                LocalDateTime lastSendTime = emailVerificationSendTimes.get(email);
+                if (lastSendTime != null) {
+                    long secondsSinceLastSend = java.time.Duration.between(lastSendTime, LocalDateTime.now()).getSeconds();
+                    if (secondsSinceLastSend < MIN_RESEND_INTERVAL_SECONDS) {
+                        long remainingSeconds = MIN_RESEND_INTERVAL_SECONDS - secondsSinceLastSend;
+                        throw new IllegalArgumentException(String.format("인증 코드는 %d초 후에 다시 발송할 수 있습니다. (남은 시간: %d초)", 
+                            MIN_RESEND_INTERVAL_SECONDS, remainingSeconds));
+                    }
+                }
+            }
             
-            // 5분 후 자동 삭제를 위한 스레드
+            String verificationCode = generateVerificationCode();
+            
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(String.format("%s <%s>", fromName, fromEmail)); // 보낸 사람 이름 설정
+            message.setTo(email);
+            message.setSubject("이메일 인증");
+            message.setText("인증 코드: " + verificationCode + "\n\n이 코드를 입력하여 이메일을 인증해주세요.");
+            
+            try {
+                mailSender.send(message);
+                // 인증 코드 저장 (5분 유효)
+                emailVerificationCodes.put(email, verificationCode);
+                // 발송 시간 저장
+                emailVerificationSendTimes.put(email, LocalDateTime.now());
+                
+                // 5분 후 자동 삭제를 위한 스레드
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(300000); // 5분 = 300000ms
+                        emailVerificationCodes.remove(email);
+                        emailVerificationSendTimes.remove(email);
+                        // 락도 정리 (5분 후, 사용하지 않는 락 제거)
+                        emailLocks.remove(email);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                }).start();
+                
+                return "인증 코드가 발송되었습니다.";
+            } catch (Exception e) {
+                throw new RuntimeException("이메일 발송 실패: " + e.getMessage());
+            }
+        } finally {
+            // 락 해제
+            lock.unlock();
+        }
+    }
+    
+    // 인증 코드 검증 (회원가입용)
+    public boolean verifyEmailCode(String email, String code) {
+        String storedCode = emailVerificationCodes.get(email);
+        if (storedCode != null && storedCode.equals(code)) {
+            emailVerificationCodes.remove(email);
+            emailVerificationSendTimes.remove(email);
+            // 회원가입용 인증 완료된 이메일로 추가 (10분 유효)
+            verifiedEmailsForSignup.add(email);
+            
+            // 10분 후 자동 삭제를 위한 스레드
             new Thread(() -> {
                 try {
-                    Thread.sleep(300000); // 5분 = 300000ms
-                    emailVerificationCodes.remove(email);
+                    Thread.sleep(600000); // 10분 = 600000ms
+                    verifiedEmailsForSignup.remove(email);
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
             }).start();
             
-            return "인증 코드가 발송되었습니다.";
-        } catch (Exception e) {
-            throw new RuntimeException("이메일 발송 실패: " + e.getMessage());
+            return true;
         }
+        return false;
     }
     
-    // 인증 코드 검증
-    public boolean verifyEmailCode(String email, String code) {
+    // 인증 코드 검증 (비밀번호 찾기/아이디 찾기용)
+    public boolean verifyEmailCodeForAccountRecovery(String email, String code) {
         String storedCode = emailVerificationCodes.get(email);
         if (storedCode != null && storedCode.equals(code)) {
             emailVerificationCodes.remove(email);
+            emailVerificationSendTimes.remove(email);
             // 인증 완료된 이메일로 추가 (10분 유효)
             verifiedEmails.add(email);
             
@@ -96,9 +202,7 @@ public class EmailService {
     
     // 이메일 인증 완료 여부 확인 (회원가입 시)
     public boolean isEmailVerified(String email) {
-        // 인증 코드가 없으면 이미 인증 완료된 것으로 간주
-        // 실제로는 별도의 인증 완료 목록을 관리하는 것이 좋지만, 간단하게 구현
-        return !emailVerificationCodes.containsKey(email);
+        return verifiedEmailsForSignup.contains(email);
     }
     
     // 임시 비밀번호 생성

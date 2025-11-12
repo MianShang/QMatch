@@ -48,6 +48,7 @@ public class ChatController {
     private final UserChatRoomRepository userChatRoomRepository;
     private final GameTagRepository gameTagRepository;
     private final UserRepository userRepository;
+    private final UserGameCodeRepository userGameCodeRepository;
     private final ChatIsReadRepository chatIsReadRepository;
     private final ChatListService chatListService;
 
@@ -219,6 +220,14 @@ public class ChatController {
         if (roomName != null && gameName != null
                 && chatRoomRepository.existsByNameIgnoreCaseAndGameName(roomName.trim(), gameName.trim())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 동일한 이름의 방이 존재합니다.");
+        }
+
+        // (1-2) 해당 게임의 게임 코드가 있는지 확인
+        List<UserGameCode> userGameCodes = userGameCodeRepository.findByUserAndGameName(creator, gameName);
+        if (userGameCodes == null || userGameCodes.isEmpty()) {
+            String gameDisplayName = getGameDisplayName(gameName);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                gameDisplayName + " 게임 코드를 먼저 등록해주세요.");
         }
 
         // (2) 방 생성 + owner 설정
@@ -454,6 +463,15 @@ public class ChatController {
                     "error", "room is full",
                     "currentUsers", room.getCurrentUsers(),
                     "maxUsers", room.getMaxUsers()
+            ));
+        }
+
+        // 해당 게임의 게임 코드가 있는지 확인
+        List<UserGameCode> userGameCodes = userGameCodeRepository.findByUserAndGameName(user, room.getGameName());
+        if (userGameCodes == null || userGameCodes.isEmpty()) {
+            String gameDisplayName = getGameDisplayName(room.getGameName());
+            return ResponseEntity.status(403).body(Map.of(
+                    "error", gameDisplayName + " 게임 코드를 먼저 등록해주세요."
             ));
         }
 
@@ -788,6 +806,25 @@ public class ChatController {
         } catch (Exception e) {
             System.err.println("실시간 메시지 삭제 실패: " + e.getMessage());
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // 게임 이름을 한글 표시명으로 변환하는 헬퍼 메서드
+    private String getGameDisplayName(String gameName) {
+        if (gameName == null) return "게임";
+        switch (gameName.toLowerCase()) {
+            case "lol":
+                return "롤";
+            case "maplestory":
+                return "메이플스토리";
+            case "lostark":
+                return "로스트아크";
+            case "tft":
+                return "TFT";
+            case "dnf":
+                return "던전앤파이터";
+            default:
+                return gameName;
         }
     }
 }

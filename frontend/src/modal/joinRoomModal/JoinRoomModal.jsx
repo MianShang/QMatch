@@ -1,14 +1,52 @@
-import React, { useMemo, useEffect, useState, useRef } from 'react';
+import React, { useMemo, useEffect, useState, useRef, useContext } from 'react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { LogContext } from '../../App.jsx';
 import './JoinRoomModal.css';
 
 function JoinRoomModal({ open, onClose, room, onJoin }) {
   if (!open || !room) return null;
 
+  const { userData } = useContext(LogContext);
   const [detail, setDetail] = useState(null);      // 상세 데이터 (태그 포함)
   const joiningRef = useRef(false);
 
   const handleJoin = async () => { 
     if (joiningRef.current) return;
+    
+    // 게임 이름 확인
+    const currentGameName = detail?.gameName || room.gameName || room.game;
+    if (!currentGameName || currentGameName === '-') {
+      toast.error("게임 정보를 확인할 수 없습니다.");
+      return;
+    }
+
+    // 해당 게임의 게임 코드가 있는지 확인
+    try {
+      const gameCodeResponse = await axios.get("/api/get/user/gamecode", {
+        params: { userId: userData?.userId }
+      });
+      const gameCodes = gameCodeResponse.data || [];
+      const hasGameCode = gameCodes.some(code => code.gameName === currentGameName);
+      
+      if (!hasGameCode) {
+        const gameNameMap = {
+          'lol': '롤',
+          'maplestory': '메이플스토리',
+          'lostark': '로스트아크',
+          'tft': 'TFT',
+          'dnf': '던전앤파이터'
+        };
+        const gameDisplayName = gameNameMap[currentGameName] || currentGameName;
+        toast.error(`${gameDisplayName} 게임 코드를 먼저 등록해주세요.`);
+        return;
+      }
+    } catch (err) {
+      console.error("게임 코드 확인 실패:", err);
+      toast.error("게임 코드 확인 중 오류가 발생했습니다.");
+      return;
+    }
+
     joiningRef.current = true;
     try {
       await onJoin({ roomId: room.id ?? room.roomId, chatName, gameName, tagNames, joinType });

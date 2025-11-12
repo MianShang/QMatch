@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { LogContext } from '../../App.jsx';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 import './CreateRoomModal.css';
 
 function CreateRoomModal({ setOpenModal, onRoomCreated }) {
@@ -86,6 +88,33 @@ function CreateRoomModal({ setOpenModal, onRoomCreated }) {
 
     if (maxUsers < 2 || maxUsers > 20) {
       setErrorMsg("인원 수는 2명 이상 20명 이하만 가능합니다.");
+      return;
+    }
+
+    // 해당 게임의 게임 코드가 있는지 확인
+    try {
+      const gameCodeResponse = await axios.get("/api/get/user/gamecode", {
+        params: { userId: userData.userId }
+      });
+      const gameCodes = gameCodeResponse.data || [];
+      const hasGameCode = gameCodes.some(code => code.gameName === gameName);
+      
+      if (!hasGameCode) {
+        const gameNameMap = {
+          'lol': '롤',
+          'maplestory': '메이플스토리',
+          'lostark': '로스트아크',
+          'tft': 'TFT',
+          'dnf': '던전앤파이터'
+        };
+        const gameDisplayName = gameNameMap[gameName] || gameName;
+        toast.error(`${gameDisplayName} 게임 코드를 먼저 등록해주세요.`);
+        setErrorMsg(`${gameDisplayName} 게임 코드를 먼저 등록해주세요.`);
+        return;
+      }
+    } catch (err) {
+      console.error("게임 코드 확인 실패:", err);
+      toast.error("게임 코드 확인 중 오류가 발생했습니다.");
       return;
     }
 

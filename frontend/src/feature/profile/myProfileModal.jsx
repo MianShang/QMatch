@@ -197,7 +197,7 @@ function MyProfile({ viewUserId, onClose }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="profile-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-content-scrollable">
 
           {/* 상단 프로필 영역 */}

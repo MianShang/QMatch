@@ -41,7 +41,7 @@ function InputModal({ type, onClose, sendUserGameCode, sendUserTag }) {
             <label>게임 선택</label>
             <select value={gameName} onChange={(e) => setGameName(e.target.value)}>
               <option value="">-- 선택해주세요 --</option>
-              <option value="overwatch">오버워치</option>
+              <option value="overwatch">TFT</option>
               <option value="lol">롤</option>
               <option value="maplestory">메이플스토리</option>
               <option value="lostark">로스트아크</option>

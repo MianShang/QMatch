@@ -217,6 +217,7 @@
     display: flex;
     flex-direction: column;
     z-index: 999;
+    overflow: visible;
 }
 
 /* 채팅창 사이즈 */
@@ -360,6 +361,7 @@
     box-shadow: var(--discord-elevation-low);
     position: relative;
     z-index: 1002;
+    overflow: visible;
 }
 
 /* 로고 이미지 */
@@ -449,6 +451,53 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: visible !important;
+}
+
+/* 태그 입력 안내 말풍선 */
+.tag-hint-bubble {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #5865f2 !important;
+    color: #ffffff !important;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(88, 101, 242, 0.4);
+    z-index: 99999 !important;
+    animation: blink-bubble 1.5s ease-in-out infinite;
+    pointer-events: none;
+    min-width: 140px;
+    text-align: center;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.tag-hint-bubble::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #5865f2;
+}
+
+/* 깜빡이는 애니메이션 */
+@keyframes blink-bubble {
+    0%, 100% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+    50% {
+        opacity: 0.6;
+        transform: translateX(-50%) translateY(-3px);
+    }
 }
 
 /* 프로필 버튼 */

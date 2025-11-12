@@ -15,8 +15,9 @@ function SignUpRoutePage({ onSuccess }) {
   const [user, setUser] = useState({
     userId: '',
     userPw: '',
-    passwordConfirm: '', 
+    passwordConfirm: '',
     userName: '',
+    userNickName: '',
     userEmail: '',
     userAge: '',
     userPhone: '',
@@ -25,7 +26,11 @@ function SignUpRoutePage({ onSuccess }) {
   // 아이디 중복 검사 상태
   const [isIdChecked, setIsIdChecked] = useState(false);
   const [isIdAvailable, setIsIdAvailable] = useState(false);
-  
+
+  // 닉네임 중복 검사 상태
+  const [isNickNameChecked, setIsNickNameChecked] = useState(false);
+  const [isNickNameAvailable, setIsNickNameAvailable] = useState(false);
+
   // 이메일 인증 상태
   const [emailCode, setEmailCode] = useState('');
   const [isEmailVerified, setIsEmailVerified] = useState(false);
@@ -38,11 +43,17 @@ function SignUpRoutePage({ onSuccess }) {
   const handleChange = (e) => {
     const { id, value } = e.target;
     setUser(prev => ({ ...prev, [id]: value }));  //prev는 이전 상태를 의미, ...pev로 기존 값을 복사하고 현재 변경된 값만 덮어씌움
-    
+
     // 아이디가 변경되면 중복 검사 상태 초기화
     if (id === 'userId') {
       setIsIdChecked(false);
       setIsIdAvailable(false);
+    }
+
+    // 닉네임이 변경되면 중복 검사 상태 초기화
+    if (id === 'userNickName') {
+      setIsNickNameChecked(false);
+      setIsNickNameAvailable(false);
     }
   };
 
@@ -67,6 +78,31 @@ function SignUpRoutePage({ onSuccess }) {
         toast.error(error.response.data);
       } else {
         toast.error("아이디 중복 검사 중 오류가 발생했습니다.");
+      }
+    }
+  };
+
+  // 닉네임 중복 검사
+  const checkUserNickName = async () => {
+    if (!user.userNickName || user.userNickName.trim().length === 0) {
+      toast.warn('닉네임을 입력해주세요.');
+      return;
+    }
+
+    try {
+      const response = await axios.get('/api/user/check-nickname', {
+        params: { userNickName: user.userNickName }
+      });
+      setIsNickNameChecked(true);
+      setIsNickNameAvailable(true);
+      toast.success(response.data);
+    } catch (error) {
+      setIsNickNameChecked(true);
+      setIsNickNameAvailable(false);
+      if (error.response && error.response.data) {
+        toast.error(error.response.data);
+      } else {
+        toast.error("닉네임 중복 검사 중 오류가 발생했습니다.");
       }
     }
   };
@@ -97,7 +133,7 @@ function SignUpRoutePage({ onSuccess }) {
       setIsEmailCodeSent(true);
       setEmailTimer(300); // 5분 타이머
       toast.success('인증 코드가 발송되었습니다.');
-      
+
       // 타이머 시작
       const timerInterval = setInterval(() => {
         setEmailTimer(prev => {
@@ -129,7 +165,7 @@ function SignUpRoutePage({ onSuccess }) {
 
     try {
       await axios.post('/api/user/verify-email', null, {
-        params: { 
+        params: {
           email: user.userEmail,
           code: emailCode
         }
@@ -168,12 +204,22 @@ function SignUpRoutePage({ onSuccess }) {
       toast.error('비밀번호가 일치하지 않습니다.');
       return;
     }
-    
+
     if (!user.userName.trim()) {
       toast.error('이름을 입력해주세요.');
       return;
     }
-    
+
+    if (!user.userNickName.trim()) {
+      toast.error('닉네임을 입력해주세요.');
+      return;
+    }
+
+    if (!isNickNameChecked || !isNickNameAvailable) {
+      toast.warn('닉네임 중복 검사를 해주세요.');
+      return;
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(user.userEmail)) {
       toast.error('올바른 이메일 형식이 아닙니다.');
@@ -203,7 +249,7 @@ function SignUpRoutePage({ onSuccess }) {
       .then(response => {
         toast.success("회원가입이 성공적으로 완료되었습니다!");
         setTimeout(() => {
-          onSuccess?.(); 
+          onSuccess?.();
         }, 1000);
       })
       .catch(error => {
@@ -224,12 +270,12 @@ function SignUpRoutePage({ onSuccess }) {
 
   return (
     <div className='fullscreen LogRoutePageStyle'>
-        <form className="login-form" onSubmit={ userJoin } noValidate>
+      <form className="login-form" onSubmit={userJoin} noValidate>
 
         <div className="input-with-button">
           <input type="text" id="userId" placeholder="아이디(4자~20자)" required
-              value={user.userId} onChange={handleChange}
-              className={isIdChecked ? (isIdAvailable ? 'valid' : 'invalid') : ''}/>
+            value={user.userId} onChange={handleChange}
+            className={isIdChecked ? (isIdAvailable ? 'valid' : 'invalid') : ''} />
           <button type="button" onClick={checkUserId} className="check-button">
             중복확인
           </button>
@@ -241,28 +287,42 @@ function SignUpRoutePage({ onSuccess }) {
         )}
 
         <input type="password" id="userPw" placeholder="비밀번호" required
-          value={user.userPw} onChange={handleChange}/>
-        
+          value={user.userPw} onChange={handleChange} />
+
         <input type="password" id="passwordConfirm" placeholder="비밀번호 확인" required
-          value={user.passwordConfirm} onChange={handleChange}/>
+          value={user.passwordConfirm} onChange={handleChange} />
 
         <input type="text" id="userName" placeholder="이름" required
-         value={user.userName} onChange={handleChange}/>
+          value={user.userName} onChange={handleChange} />
+
+        <div className="input-with-button">
+          <input type="text" id="userNickName" placeholder="닉네임" required
+            value={user.userNickName} onChange={handleChange}
+            className={isNickNameChecked ? (isNickNameAvailable ? 'valid' : 'invalid') : ''} />
+          <button type="button" onClick={checkUserNickName} className="check-button">
+            중복확인
+          </button>
+        </div>
+        {isNickNameChecked && (
+          <div className={`validation-message ${isNickNameAvailable ? 'success' : 'error'}`}>
+            {isNickNameAvailable ? '✓ 사용 가능한 닉네임입니다.' : '✗ 이미 사용 중인 닉네임입니다.'}
+          </div>
+        )}
 
         <div className="input-with-button">
           <input type="email" id="userEmail" placeholder="이메일" required
             value={user.userEmail} onChange={handleChange}
-            className={isEmailVerified ? 'valid' : ''}/>
+            className={isEmailVerified ? 'valid' : ''} />
           <button type="button" onClick={sendEmailVerification} className="check-button" disabled={isSendingEmail || (isEmailCodeSent && emailTimer > 0)}>
             {isSendingEmail ? '발송 중...' : (isEmailCodeSent && emailTimer > 0 ? `재발송(${formatTimer(emailTimer)})` : '인증코드 발송')}
           </button>
         </div>
-        
+
         {isEmailCodeSent && !isEmailVerified && (
           <div className="email-verification">
-            <input type="text" placeholder="인증 코드 입력" 
+            <input type="text" placeholder="인증 코드 입력"
               value={emailCode} onChange={(e) => setEmailCode(e.target.value)}
-              maxLength={6}/>
+              maxLength={6} />
             <button type="button" onClick={verifyEmailCode} className="verify-button">
               인증하기
             </button>
@@ -275,10 +335,10 @@ function SignUpRoutePage({ onSuccess }) {
         )}
 
         <input type="number" id="userAge" placeholder="나이" required
-          value={user.userAge} onChange={handleChange} min="1" max="150"/>
+          value={user.userAge} onChange={handleChange} min="1" max="150" />
 
         <input type="tel" id="userPhone" placeholder="휴대폰번호 (예: 010-1234-5678)" required
-          value={user.userPhone} onChange={handleChange}/>
+          value={user.userPhone} onChange={handleChange} />
 
         <button type="submit">회원가입</button>
       </form>

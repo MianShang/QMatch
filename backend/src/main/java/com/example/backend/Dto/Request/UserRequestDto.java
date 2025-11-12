@@ -24,4 +24,5 @@ public class UserRequestDto {
     private String userProfile; // 유저 프로필 이미지
     private String userStatusMessage; //유저 상태메시지
     private String userIntro; //유저 소개
+    private String userNickName;
 }

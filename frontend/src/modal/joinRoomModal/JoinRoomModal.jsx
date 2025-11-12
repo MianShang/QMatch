@@ -79,6 +79,46 @@ function JoinRoomModal({ open, onClose, room, onJoin }) {
   const currentUsers = (typeof detail?.currentUsers === 'number') ? detail.currentUsers : room.currentUsers;
   const maxUsers = (typeof detail?.maxUsers === 'number') ? detail.maxUsers : room.maxUsers;
   const joinType = detail?.joinType || room.joinType || 'approval';
+  
+  // 방장 닉네임 가져오기
+  const [hostNickname, setHostNickname] = useState(null);
+  
+  useEffect(() => {
+    const hostUserId = detail?.hostUserId || room.hostUserId;
+    if (!hostUserId) {
+      setHostNickname(null);
+      return;
+    }
+    
+    // detail이나 room에서 hostNickname이 있으면 사용
+    if (detail?.hostNickname || room.hostNickname) {
+      setHostNickname(detail?.hostNickname || room.hostNickname);
+      return;
+    }
+    
+    // hostNickname이 없으면 프로필 API로 가져오기
+    const fetchHostNickname = async () => {
+      try {
+        const response = await axios.get("/api/profile/user/info", {
+          params: { userId: hostUserId }
+        });
+        const nickname = response.data.userNickname || response.data.userNickName;
+        if (nickname) {
+          setHostNickname(nickname);
+        }
+      } catch (error) {
+        console.error('방장 닉네임 가져오기 실패:', error);
+      }
+    };
+    
+    fetchHostNickname();
+  }, [detail?.hostUserId, room.hostUserId, detail?.hostNickname, room.hostNickname]);
+  
+  // 방장 표시 이름 가져오기
+  const getHostDisplayName = () => {
+    if (hostNickname) return hostNickname;
+    return detail?.hostName || room.hostName || '-';
+  };
 
   // 우선 상세(tagNames) > props(room.tags) > 빈 배열
   const tagNames = useMemo(() => {
@@ -109,7 +149,7 @@ function JoinRoomModal({ open, onClose, room, onJoin }) {
 
           <div className="formGroup">
             <label>방장</label>
-            <div className="infoText">{detail?.hostName || room.hostName || '-'}</div>
+            <div className="infoText">{getHostDisplayName()}</div>
           </div>
 
           <div className="formGroup">

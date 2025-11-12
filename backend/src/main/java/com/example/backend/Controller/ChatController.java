@@ -314,6 +314,9 @@ public class ChatController {
             String hostName = (cr.getOwner() != null)
                     ? cr.getOwner().getUserName()
                     : "알 수 없음";
+            String hostNickname = (cr.getOwner() != null && cr.getOwner().getUserNickName() != null)
+                    ? cr.getOwner().getUserNickName()
+                    : null;
 
             Map<String, Object> dto = new HashMap<>();
             dto.put("id", cr.getId());
@@ -321,6 +324,7 @@ public class ChatController {
             dto.put("gameName", cr.getGameName());
             dto.put("tagNames", tagNames);
             dto.put("hostName", hostName);
+            dto.put("hostNickname", hostNickname);
             dto.put("hostUserId", cr.getOwner() != null ? cr.getOwner().getUserId() : null);
             dto.put("currentUsers", cr.getCurrentUsers());
             dto.put("maxUsers", cr.getMaxUsers());

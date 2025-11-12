@@ -12,22 +12,23 @@
 }
 
 .detail-info-content {
-    background-color: #2f3136;
-    color: #dcddde;
+    background-color: var(--discord-bg-secondary);
+    color: var(--discord-text-normal);
     padding: 20px 30px;
-    border-radius: 8px;
+    border-radius: 12px;
     width: 90%;
     max-width: 700px;
     max-height: 80vh;
     overflow-y: auto;
-    border: 1px solid #1e1f22;
+    border: 1px solid var(--discord-bg-tertiary);
+    box-shadow: var(--discord-elevation-high);
 }
 
 .detail-info-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #40444b;
+    border-bottom: 1px solid var(--discord-bg-tertiary);
     padding-bottom: 15px;
     margin-bottom: 20px;
 }
@@ -44,17 +45,18 @@
 .detail-info-body h3 {
     margin-top: 0;
     margin-bottom: 10px;
-    color: #8e9297;
+    color: var(--discord-text-muted);
     font-size: 0.9rem;
     text-transform: uppercase;
     font-weight: 600;
 }
 
 .detail-info-body p {
-    background-color: #202225;
+    background-color: var(--discord-bg-primary);
     padding: 10px;
     border-radius: 4px;
     margin: 0;
+    border: 1px solid var(--discord-bg-tertiary);
 }
 
 .detail-info-body .info-list {
@@ -64,10 +66,11 @@
 }
 
 .detail-info-body .info-list li {
-    background-color: #202225;
+    background-color: var(--discord-bg-primary);
     padding: 10px 15px;
     border-radius: 4px;
     margin-bottom: 5px;
+    border: 1px solid var(--discord-bg-tertiary);
 }
 
 .detail-info-body .info-list.clickable li {
@@ -76,5 +79,27 @@
 }
 
 .detail-info-body .info-list.clickable li:hover {
-    background-color: #393c43;
+    background-color: var(--discord-bg-modifier-hover);
+}
+
+[data-theme="light"] .detail-info-content {
+    background-color: #ffffff;
+    border: 1px solid #d8deeb;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .detail-info-body p,
+[data-theme="light"] .detail-info-body .info-list li {
+    background-color: #f8fbff;
+    border: 1px solid #d8deeb;
+}
+
+[data-theme="pink"] .detail-info-content {
+    border: 1px solid rgba(249, 170, 170, 0.35);
+    box-shadow: 0 12px 30px rgba(249, 154, 154, 0.24);
+}
+
+[data-theme="blue"] .detail-info-content {
+    border: 1px solid rgba(33, 150, 243, 0.25);
+    box-shadow: 0 12px 28px rgba(33, 150, 243, 0.18);
 }

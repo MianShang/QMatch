@@ -12,20 +12,21 @@
 }
 
 .suspension-modal-content {
-    background-color: #2c2c2c;
+    background-color: var(--discord-bg-secondary);
     padding: 25px;
-    border-radius: 8px;
+    border-radius: 12px;
     width: 100%;
-    max-width: 400px;
-    color: #e0e0e0;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    max-width: 420px;
+    color: var(--discord-text-normal);
+    box-shadow: var(--discord-elevation-high);
+    border: 1px solid var(--discord-bg-tertiary);
 }
 
 .suspension-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #444;
+    border-bottom: 1px solid var(--discord-bg-tertiary);
     padding-bottom: 15px;
     margin-bottom: 20px;
 }
@@ -42,22 +43,24 @@
 .suspension-modal-body label {
     display: block;
     margin-bottom: 5px;
-    font-weight: bold;
+    font-weight: 600;
+    color: var(--discord-text-muted);
 }
 
 .suspension-modal-body input,
 .suspension-modal-body select {
     width: 100%;
     padding: 10px;
-    border: 1px solid #555;
-    border-radius: 4px;
-    background-color: #333;
-    color: #e0e0e0;
+    border: 1px solid var(--discord-bg-tertiary);
+    border-radius: 6px;
+    background-color: var(--discord-bg-primary);
+    color: var(--discord-text-normal);
     box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .suspension-modal-body input:disabled {
-    background-color: #444;
+    background-color: var(--discord-bg-secondary);
 }
 
 .suspension-modal-footer {
@@ -70,17 +73,53 @@
 .suspension-modal-footer button {
     padding: 10px 20px;
     border: none;
-    border-radius: 5px;
+    border-radius: 6px;
     cursor: pointer;
     font-weight: bold;
+    transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
 .btn-cancel {
-    background-color: #555;
-    color: white;
+    background-color: var(--discord-bg-quaternary);
+    color: var(--discord-text-normal);
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.btn-cancel:hover {
+    background-color: var(--discord-bg-modifier-hover);
 }
 
 .btn-submit {
-    background-color: #f0ad4e; /* 주황색 계열로 변경 */
-    color: white;
+    background-color: var(--discord-accent);
+    color: #ffffff;
+}
+
+.btn-submit:hover {
+    background-color: var(--discord-accent-hover);
+}
+
+.btn-submit:active {
+    transform: translateY(1px);
+}
+
+[data-theme="light"] .suspension-modal-content {
+    background-color: #ffffff;
+    border: 1px solid #d8deeb;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .suspension-modal-body input,
+[data-theme="light"] .suspension-modal-body select {
+    background-color: #f8fbff;
+    border: 1px solid #d8deeb;
+}
+
+[data-theme="pink"] .suspension-modal-content {
+    border: 1px solid rgba(249, 170, 170, 0.35);
+    box-shadow: 0 12px 30px rgba(249, 154, 154, 0.24);
+}
+
+[data-theme="blue"] .suspension-modal-content {
+    border: 1px solid rgba(33, 150, 243, 0.25);
+    box-shadow: 0 12px 28px rgba(33, 150, 243, 0.18);
 }

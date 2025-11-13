@@ -27,6 +27,8 @@ function MyProfile({ viewUserId, onClose }) {
   const [tempNickName, setTempNickName] = useState("");       // 임시 닉네임 저장
   const [tempIntro, setTempIntro] = useState("");             // 임시 자기소개 저장
   const [tempStatus, setTempStatus] = useState("");           // 임시 상태 메시지 저장
+  const [isNickNameChecked, setIsNickNameChecked] = useState(false);  // 닉네임 중복 확인 여부
+  const [isNickNameAvailable, setIsNickNameAvailable] = useState(false);  // 닉네임 사용 가능 여부
   
   const [selectedGame, setSelectedGame] = useState(null);     // 전적 검색 시 선택된 게임 정보
   const isMe = viewUserId === userData?.userId;               // 본인 프로필 여부 확인
@@ -57,9 +59,49 @@ function MyProfile({ viewUserId, onClose }) {
       .catch((err) => console.error("유저 프로필 불러오기 실패", err));
   };
 
+  // 닉네임 중복 확인
+  const checkUserNickName = async () => {
+    if (!tempNickName || tempNickName.trim().length === 0) {
+      toast.warn('닉네임을 입력해주세요.');
+      return;
+    }
+
+    // 현재 닉네임과 같으면 중복 확인 불필요
+    if (tempNickName === profileData?.userNickName) {
+      setIsNickNameChecked(true);
+      setIsNickNameAvailable(true);
+      toast.success('현재 사용 중인 닉네임입니다.');
+      return;
+    }
+
+    try {
+      const response = await axios.get('/api/user/check-nickname', {
+        params: { userNickName: tempNickName }
+      });
+      setIsNickNameChecked(true);
+      setIsNickNameAvailable(true);
+      toast.success(response.data);
+    } catch (error) {
+      setIsNickNameChecked(true);
+      setIsNickNameAvailable(false);
+      if (error.response && error.response.data) {
+        toast.error(error.response.data);
+      } else {
+        toast.error("닉네임 중복 검사 중 오류가 발생했습니다.");
+      }
+    }
+  };
+
   // 닉네임 저장
   const sendUserNickName = async () => {
     if (!isMe) return;
+    
+    // 중복 확인을 하지 않았거나 사용 불가능한 경우 저장 불가
+    if (!isNickNameChecked || !isNickNameAvailable) {
+      toast.warn('닉네임 중복 확인을 해주세요.');
+      return;
+    }
+
     try {
       await axios.post("/api/profile/usernickname", {
         userId: viewUserId,
@@ -67,8 +109,12 @@ function MyProfile({ viewUserId, onClose }) {
       });
       await fetchProfileData();
       setEditNickName(false);
+      setIsNickNameChecked(false);
+      setIsNickNameAvailable(false);
+      toast.success('닉네임이 변경되었습니다.');
     } catch (err) {
       console.log("닉네임 저장 실패", err);
+      toast.error('닉네임 저장에 실패했습니다.');
     }
   };
 
@@ -197,7 +243,7 @@ function MyProfile({ viewUserId, onClose }) {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div className="profile-modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-content-scrollable">
 
           {/* 상단 프로필 영역 */}
@@ -249,16 +295,34 @@ function MyProfile({ viewUserId, onClose }) {
                   </div>
                 ) : (
                   <div className="nickname-edit-form">
-                    <input
-                      type="text"
-                      className="nickname-input"
-                      value={tempNickName}
-                      onChange={(e) => setTempNickName(e.target.value)}
-                      placeholder="사용할 닉네임을 입력하세요"
-                    />
+                    <div className="input-with-button">
+                      <input
+                        type="text"
+                        className={`nickname-input ${isNickNameChecked ? (isNickNameAvailable ? 'valid' : 'invalid') : ''}`}
+                        value={tempNickName}
+                        onChange={(e) => {
+                          setTempNickName(e.target.value);
+                          setIsNickNameChecked(false);
+                          setIsNickNameAvailable(false);
+                        }}
+                        placeholder="사용할 닉네임을 입력하세요"
+                      />
+                      <button type="button" onClick={checkUserNickName} className="check-button">
+                        중복확인
+                      </button>
+                    </div>
+                    {isNickNameChecked && (
+                      <div className={`validation-message ${isNickNameAvailable ? 'success' : 'error'}`}>
+                        {isNickNameAvailable ? '✓ 사용 가능한 닉네임입니다.' : '✗ 이미 사용 중인 닉네임입니다.'}
+                      </div>
+                    )}
                     <div className="nickname-edit-actions">
-                      <button className="save-btn" onClick={sendUserNickName}>저장</button>
-                      <button className="cancel-btn" onClick={() => setEditNickName(false)}>취소</button>
+                      <button className="save-btn" onClick={sendUserNickName} disabled={!isNickNameChecked || !isNickNameAvailable}>저장</button>
+                      <button className="cancel-btn" onClick={() => {
+                        setEditNickName(false);
+                        setIsNickNameChecked(false);
+                        setIsNickNameAvailable(false);
+                      }}>취소</button>
                     </div>
                   </div>
                 )}

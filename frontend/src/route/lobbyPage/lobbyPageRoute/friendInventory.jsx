@@ -57,7 +57,7 @@ export function FriendInventory({ bottomToggle, userId }) {
                                     className="chatCardImage"
                                 />
                             </div>
-                            <span className="chatCardTitle ellipsis">{RequestUser.userName}</span>
+                            <span className="chatCardTitle ellipsis">{RequestUser.userNickname || RequestUser.userNickName || RequestUser.userName}</span>
                             {bottomToggle === "friends" && (
                                 <FaCheck
                                     size={20}

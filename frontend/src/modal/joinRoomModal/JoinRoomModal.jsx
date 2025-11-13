@@ -1,14 +1,52 @@
-import React, { useMemo, useEffect, useState, useRef } from 'react';
+import React, { useMemo, useEffect, useState, useRef, useContext } from 'react';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { LogContext } from '../../App.jsx';
 import './JoinRoomModal.css';
 
 function JoinRoomModal({ open, onClose, room, onJoin }) {
   if (!open || !room) return null;
 
+  const { userData } = useContext(LogContext);
   const [detail, setDetail] = useState(null);      // 상세 데이터 (태그 포함)
   const joiningRef = useRef(false);
 
   const handleJoin = async () => { 
     if (joiningRef.current) return;
+    
+    // 게임 이름 확인
+    const currentGameName = detail?.gameName || room.gameName || room.game;
+    if (!currentGameName || currentGameName === '-') {
+      toast.error("게임 정보를 확인할 수 없습니다.");
+      return;
+    }
+
+    // 해당 게임의 게임 코드가 있는지 확인
+    try {
+      const gameCodeResponse = await axios.get("/api/get/user/gamecode", {
+        params: { userId: userData?.userId }
+      });
+      const gameCodes = gameCodeResponse.data || [];
+      const hasGameCode = gameCodes.some(code => code.gameName === currentGameName);
+      
+      if (!hasGameCode) {
+        const gameNameMap = {
+          'lol': '롤',
+          'maplestory': '메이플스토리',
+          'lostark': '로스트아크',
+          'tft': 'TFT',
+          'dnf': '던전앤파이터'
+        };
+        const gameDisplayName = gameNameMap[currentGameName] || currentGameName;
+        toast.error(`${gameDisplayName} 게임 코드를 먼저 등록해주세요.`);
+        return;
+      }
+    } catch (err) {
+      console.error("게임 코드 확인 실패:", err);
+      toast.error("게임 코드 확인 중 오류가 발생했습니다.");
+      return;
+    }
+
     joiningRef.current = true;
     try {
       await onJoin({ roomId: room.id ?? room.roomId, chatName, gameName, tagNames, joinType });
@@ -41,6 +79,46 @@ function JoinRoomModal({ open, onClose, room, onJoin }) {
   const currentUsers = (typeof detail?.currentUsers === 'number') ? detail.currentUsers : room.currentUsers;
   const maxUsers = (typeof detail?.maxUsers === 'number') ? detail.maxUsers : room.maxUsers;
   const joinType = detail?.joinType || room.joinType || 'approval';
+  
+  // 방장 닉네임 가져오기
+  const [hostNickname, setHostNickname] = useState(null);
+  
+  useEffect(() => {
+    const hostUserId = detail?.hostUserId || room.hostUserId;
+    if (!hostUserId) {
+      setHostNickname(null);
+      return;
+    }
+    
+    // detail이나 room에서 hostNickname이 있으면 사용
+    if (detail?.hostNickname || room.hostNickname) {
+      setHostNickname(detail?.hostNickname || room.hostNickname);
+      return;
+    }
+    
+    // hostNickname이 없으면 프로필 API로 가져오기
+    const fetchHostNickname = async () => {
+      try {
+        const response = await axios.get("/api/profile/user/info", {
+          params: { userId: hostUserId }
+        });
+        const nickname = response.data.userNickname || response.data.userNickName;
+        if (nickname) {
+          setHostNickname(nickname);
+        }
+      } catch (error) {
+        console.error('방장 닉네임 가져오기 실패:', error);
+      }
+    };
+    
+    fetchHostNickname();
+  }, [detail?.hostUserId, room.hostUserId, detail?.hostNickname, room.hostNickname]);
+  
+  // 방장 표시 이름 가져오기
+  const getHostDisplayName = () => {
+    if (hostNickname) return hostNickname;
+    return detail?.hostName || room.hostName || '-';
+  };
 
   // 우선 상세(tagNames) > props(room.tags) > 빈 배열
   const tagNames = useMemo(() => {
@@ -71,7 +149,7 @@ function JoinRoomModal({ open, onClose, room, onJoin }) {
 
           <div className="formGroup">
             <label>방장</label>
-            <div className="infoText">{detail?.hostName || room.hostName || '-'}</div>
+            <div className="infoText">{getHostDisplayName()}</div>
           </div>
 
           <div className="formGroup">

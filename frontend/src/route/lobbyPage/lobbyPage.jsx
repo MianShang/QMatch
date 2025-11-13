@@ -54,6 +54,9 @@ function LobbyPage() {
   const [isUserHistoryOpen, setIsUserHistoryOpen] = useState(false);
   const [historyUserId, setHistoryUserId] = useState(null);
   const [sendToModalGameName, setSendToModalGameName] = useState('');
+  
+  // 게임 코드 데이터
+  const [userGameCodes, setUserGameCodes] = useState([]);
 
   
 
@@ -231,6 +234,17 @@ function LobbyPage() {
       .catch(err => console.error("유저 정보 불러오기 실패:", err));
 
   }, [userData?.userId, setUserData]);
+
+  // 게임 코드 데이터 불러오기
+  useEffect(() => {
+    if (!userData?.userId) return;
+
+    axios.get("/api/get/user/gamecode", { params: { userId: userData.userId } })
+      .then(res => {
+        setUserGameCodes(res.data || []);
+      })
+      .catch(err => console.error("게임 코드 불러오기 실패:", err));
+  }, [userData?.userId]);
 
   useEffect(() => {
     const s = location.state;
@@ -485,7 +499,7 @@ function LobbyPage() {
 
   return (
     <>
-      <div className='fullscreen'>
+      <div className='fullscreen cosmic-background'>
         {/* 좌측 친구/채팅 바 */}
         {showMidBar &&
           <div className='leftBarSize'>
@@ -577,6 +591,46 @@ function LobbyPage() {
               )}
               {/* 프로필 이미지 버튼 */}
               <div className="profile-button-wrapper">
+                  {/* 태그 입력 안내 말풍선 - 게임 코드가 없을 때만 표시 */}
+                {(!userGameCodes || userGameCodes.length === 0) && (
+                  <div 
+                    className="tag-hint-bubble"
+                    style={{
+                      position: 'absolute',
+                      top: '-50px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      background: '#5865f2',
+                      color: '#ffffff',
+                      padding: '10px 14px',
+                      borderRadius: '8px',
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      whiteSpace: 'nowrap',
+                      boxShadow: '0 4px 16px rgba(88, 101, 242, 0.4)',
+                      zIndex: 99999,
+                      minWidth: '140px',
+                      textAlign: 'center',
+                      pointerEvents: 'none',
+                      display: 'block',
+                      visibility: 'visible',
+                      opacity: 1,
+                      animation: 'blink-bubble 1.5s ease-in-out infinite'
+                    }}
+                  >
+                    게임 태그를 추가해주세요!
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 0,
+                      height: 0,
+                      border: '6px solid transparent',
+                      borderTopColor: '#5865f2'
+                    }}></div>
+                  </div>
+                )}
                 <img
                   src={userData?.userProfile ? `${userData.userProfile}` : "https://placehold.co/250x250"}
                   onClick={() => { setProfileUserId(userData?.userId); setShowProfileModal(true); }}
@@ -682,7 +736,17 @@ function LobbyPage() {
           isMyProfile={profileUserId === userData.userId} //내 프로필 여부 확인
           userData={userData} //내 프로필일 때만 사용
           setUserData={setUserData}
-          onClose={() => setShowProfileModal(false)}
+          onClose={() => {
+            setShowProfileModal(false);
+            // 프로필 모달 닫을 때 게임 코드 다시 불러오기 (내 프로필인 경우)
+            if (profileUserId === userData?.userId) {
+              axios.get("/api/get/user/gamecode", { params: { userId: userData.userId } })
+                .then(res => {
+                  setUserGameCodes(res.data || []);
+                })
+                .catch(err => console.error("게임 코드 불러오기 실패:", err));
+            }
+          }}
         />}
 
       {/* 음성 설정 모달 */}

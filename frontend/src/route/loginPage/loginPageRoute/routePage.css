@@ -26,8 +26,8 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  width: 80%;
-  padding: 40px;
+  width: 100%;
+  padding: 40px 32px 40px 24px;
   background: transparent !important;
   background-color: transparent !important;
 }
@@ -70,9 +70,17 @@
   color: var(--discord-text-muted);
 }
 
+.password-guideline {
+  margin: -12px 0 -10px 5px;
+  font-size: 12px;
+  color: var(--discord-text-muted);
+  text-align: left;
+  line-height: 1.4;
+}
+
 .login-form button {
   padding: 12px;
-  font-weight: bold;
+  font-weight: 300;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -90,4 +98,118 @@
 .login-form button:active {
   transform: translateY(0);
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* 입력 필드와 버튼이 함께 있는 경우 */
+.input-with-button {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+
+.input-with-button input {
+  flex: 1;
+}
+
+.check-button, .verify-button {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 300;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--discord-accent);
+  color: white;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 92px;
+}
+
+.check-button:hover, .verify-button:hover {
+  background: var(--discord-accent-hover);
+  transform: translateY(-1px);
+}
+
+.check-button:disabled, .verify-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 이메일 인증 영역 */
+.email-verification {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.email-verification input {
+  flex: 1;
+}
+
+/* 유효성 검사 메시지 */
+.validation-message {
+  font-size: 14px;
+  padding: 8px;
+  border-radius: 6px;
+  margin-top: -10px;
+}
+
+.validation-message.success {
+  color: #4caf50;
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.validation-message.error {
+  color: #f44336;
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
+/* 입력 필드 유효성 표시 */
+.login-form input.valid {
+  border-color: #4caf50;
+}
+
+.login-form input.invalid {
+  border-color: #f44336;
+}
+
+/* 아이디/비밀번호 찾기 링크 */
+.find-account-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.find-link {
+  flex: 0 1 180px;
+  background: none;
+  border: 1px solid var(--discord-bg-tertiary);
+  color: var(--discord-text-normal);
+  cursor: pointer;
+  padding: 6px 10px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.find-link:hover {
+  background: var(--discord-bg-modifier-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.18);
+}
+
+.divider {
+  color: var(--discord-text-muted);
 }

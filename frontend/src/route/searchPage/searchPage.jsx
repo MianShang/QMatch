@@ -469,7 +469,7 @@ function SearchPage() {
         </div>
       )}
 
-      <div className={`fullscreen ${showTagPanel ? 'has-tag-panel' : ''}`} style={{ display: "flex", padding: "0" }}>
+      <div className={`fullscreen cosmic-background ${showTagPanel ? 'has-tag-panel' : ''}`} style={{ display: "flex", padding: "0" }}>
 
         {/* 좌측 사이드바 */}
         <div className='contentStyle leftSize'>

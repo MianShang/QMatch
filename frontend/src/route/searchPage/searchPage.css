@@ -42,7 +42,6 @@
 /* 모든 테마에 동일한 z-index 적용 */
 [data-theme="dark"] .leftSize,
 [data-theme="light"] .leftSize,
-[data-theme="pink"] .leftSize,
 [data-theme="blue"] .leftSize {
     z-index: 100;
 }
@@ -71,7 +70,6 @@
 /* 모든 테마에 동일한 z-index 적용 */
 [data-theme="dark"] .Category_tag,
 [data-theme="light"] .Category_tag,
-[data-theme="pink"] .Category_tag,
 [data-theme="blue"] .Category_tag {
     z-index: 101;
 }
@@ -100,7 +98,6 @@
 /* 모든 테마에 동일한 z-index 적용 */
 [data-theme="dark"] .chat_tag,
 [data-theme="light"] .chat_tag,
-[data-theme="pink"] .chat_tag,
 [data-theme="blue"] .chat_tag {
     z-index: 102;
 }
@@ -222,7 +219,6 @@
 
 /* 다크모드를 제외한 나머지 테마에서 오른쪽 레이아웃 배경 제거 */
 [data-theme="light"] .rightSize,
-[data-theme="pink"] .rightSize,
 [data-theme="blue"] .rightSize {
     background: transparent;
 }
@@ -296,11 +292,25 @@
 
 /* 다크모드를 제외한 나머지 테마에서 채팅 리스트 영역 배경 제거 */
 [data-theme="light"] .chatListSize,
-[data-theme="pink"] .chatListSize,
 [data-theme="blue"] .chatListSize {
     background: transparent;
 }
 
+[data-theme="blue"] .searchIcon {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+[data-theme="dark"] .searchIcon {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="blue"] .searchInput::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="dark"] .searchInput::placeholder {
+    color: rgba(255, 255, 255, 0.75);
+}
 .chatRoomList {
   background: var(--discord-bg-primary);
   color: var(--discord-text-normal);
@@ -411,7 +421,6 @@
 /* 모든 테마에 동일한 z-index 적용 */
 [data-theme="dark"] .search-count,
 [data-theme="light"] .search-count,
-[data-theme="pink"] .search-count,
 [data-theme="blue"] .search-count {
     z-index: 10;
 }
@@ -453,6 +462,30 @@
   max-width: 300px;
 }
 
+[data-theme="blue"] .empty-state {
+  color: rgba(240, 246, 255, 0.9);
+}
+
+[data-theme="blue"] .empty-state-title {
+  color: rgba(240, 246, 255, 0.95);
+}
+
+[data-theme="blue"] .empty-state-message {
+  color: rgba(214, 231, 255, 0.88);
+}
+
+[data-theme="dark"] .empty-state {
+  color: rgba(240, 242, 255, 0.9);
+}
+
+[data-theme="dark"] .empty-state-title {
+  color: rgba(240, 242, 255, 0.95);
+}
+
+[data-theme="dark"] .empty-state-message {
+  color: rgba(214, 220, 240, 0.88);
+}
+
 .chatCreate {
   margin-top: auto;
   display: flex;
@@ -488,7 +521,6 @@
 /* 모든 테마에 동일한 z-index 적용 */
 [data-theme="dark"] .chatCreate button,
 [data-theme="light"] .chatCreate button,
-[data-theme="pink"] .chatCreate button,
 [data-theme="blue"] .chatCreate button {
     z-index: 2;
 }
@@ -557,11 +589,6 @@
     color: var(--discord-text-normal);
 }
 
-/* 핑크모드에서 홈 아이콘 */
-[data-theme="pink"] .home-icon {
-    color: var(--discord-text-normal);
-}
-
 /* 블루모드에서 홈 아이콘 */
 [data-theme="blue"] .home-icon {
     color: var(--discord-text-normal);
@@ -584,13 +611,6 @@
     color: var(--discord-text-normal);
 }
 
-/* 핑크모드에서 하단바 스타일 조정 */
-[data-theme="pink"] .searchAdSize {
-    background: var(--discord-bg-primary);
-    border: none;
-    color: var(--discord-text-normal);
-}
-
 /* 블루모드에서 하단바 스타일 조정 */
 [data-theme="blue"] .searchAdSize {
     background: var(--discord-bg-primary);
@@ -604,16 +624,6 @@
 }
 
 [data-theme="light"] .noticeSize:hover {
-    background: var(--discord-bg-modifier-hover);
-}
-
-/* 핑크모드에서 홈 버튼 스타일 */
-[data-theme="pink"] .noticeSize {
-    background: var(--discord-bg-primary);
-    border: none;
-}
-
-[data-theme="pink"] .noticeSize:hover {
     background: var(--discord-bg-modifier-hover);
 }
 
@@ -860,7 +870,6 @@
 /* 모든 테마에 동일한 z-index 적용 */
 [data-theme="dark"] .tag-panel-overlay,
 [data-theme="light"] .tag-panel-overlay,
-[data-theme="pink"] .tag-panel-overlay,
 [data-theme="blue"] .tag-panel-overlay {
     z-index: 10;
 }

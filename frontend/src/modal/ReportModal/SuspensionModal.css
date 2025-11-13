@@ -114,11 +114,6 @@
     border: 1px solid #d8deeb;
 }
 
-[data-theme="pink"] .suspension-modal-content {
-    border: 1px solid rgba(249, 170, 170, 0.35);
-    box-shadow: 0 12px 30px rgba(249, 154, 154, 0.24);
-}
-
 [data-theme="blue"] .suspension-modal-content {
     border: 1px solid rgba(33, 150, 243, 0.25);
     box-shadow: 0 12px 28px rgba(33, 150, 243, 0.18);

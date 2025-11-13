@@ -226,8 +226,7 @@
   font-weight: 500;
 }
 
-/* 핑크, 블루 모드에서 채팅 목록 인원수 색상 변경 */
-[data-theme="pink"] .selectCardHeaderStyle span,
+/* 블루 모드에서 채팅 목록 인원수 색상 변경 */
 [data-theme="blue"] .selectCardHeaderStyle span {
     color: rgba(255, 255, 255, 0.85) !important;
 }
@@ -422,11 +421,6 @@
   width: 3px;
   background: var(--discord-accent);
   border-radius: 0 2px 2px 0;
-}
-
-/* 핑크모드에서 참여자 패널 토글 버튼 왼쪽 선 제거 */
-[data-theme="pink"] .membersDrawerHeader .toggleSwitch.activeBorder::after {
-  display: none !important;
 }
 
 .membersDrawerInline.open .membersListScroll {

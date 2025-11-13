@@ -231,7 +231,6 @@
 
 /* 다크모드를 제외한 나머지 테마에서 채팅창 배경 제거 */
 [data-theme="light"] .chatSize,
-[data-theme="pink"] .chatSize,
 [data-theme="blue"] .chatSize {
     background: transparent;
 }
@@ -426,25 +425,6 @@
   50% { transform: scale(1.03); }
 }
 
-/* 핑크 테마 특별 효과 */
-[data-theme="pink"] .theme-toggle-button {
-  background: linear-gradient(45deg, #ffb3d9, #f8bbd9);
-  color: #e91e63;
-  animation: pinkPulse 2s ease-in-out infinite;
-}
-
-[data-theme="pink"] .theme-toggle-button:hover {
-  background: linear-gradient(45deg, #ffcce6, #fce4ec);
-  color: #ad1457;
-  transform: scale(1.15) rotate(5deg);
-  box-shadow: 0 8px 25px rgba(233, 30, 99, 0.2);
-}
-
-@keyframes pinkPulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-}
-
 /* 프로필 버튼 래퍼 */
 .profile-button-wrapper {
     position: relative;
@@ -610,7 +590,6 @@
 
 /* 다크모드를 제외한 나머지 테마에서 오른쪽 레이아웃 배경 제거 */
 [data-theme="light"] .rightBarSize,
-[data-theme="pink"] .rightBarSize,
 [data-theme="blue"] .rightBarSize {
     background: transparent;
 }
@@ -865,11 +844,6 @@
     color: var(--discord-text-normal);
 }
 
-/* 핑크모드에서 검색 아이콘 */
-[data-theme="pink"] .search-icon-react {
-    color: var(--discord-text-normal);
-}
-
 /* 블루모드에서 검색 아이콘 */
 [data-theme="blue"] .search-icon-react {
     color: var(--discord-text-normal);
@@ -879,12 +853,6 @@
 .searchSize:hover .search-icon-react {
     color: var(--discord-accent);
     transform: scale(1.1);
-}
-
-/* 핑크 테마에서 React Icons 전환 효과 제거 */
-[data-theme="pink"] .search-icon-react {
-    transition: color 0.2s ease, transform 0.2s ease !important;
-    border-radius: 0 !important;
 }
 
 /* 채팅창 사이즈 */
@@ -1142,8 +1110,6 @@
     white-space: pre-line; /* 줄바꿈 지원 */
 }
 
-/* 핑크, 블루 모드에서 유의사항 텍스트 화이트 */
-[data-theme="pink"] .system-chat-content,
 [data-theme="blue"] .system-chat-content {
     color: white !important;
 }
@@ -1228,7 +1194,6 @@
 }
 
 /* 핑크/블루 모드에서 입력창 확대 효과 제거 */
-[data-theme="pink"] .chatInputStyle:focus,
 [data-theme="blue"] .chatInputStyle:focus {
     transform: scale(1) !important;
 }
@@ -1464,14 +1429,6 @@
     color: var(--discord-text-normal);
     background: var(--discord-bg-modifier-hover);
     border-bottom: 2px solid var(--discord-accent);
-}
-
-/* 핑크모드에서 참여자 패널 토글 버튼 왼쪽 선 제거 */
-[data-theme="pink"] .members-toggle-switch {
-    border-left: none !important;
-    border-right: none !important;
-    border-top: none !important;
-    border-radius: 0 !important;
 }
 
 /* ================================음성채팅 컨트롤============================= */
@@ -1853,18 +1810,11 @@
     font-weight: 500;
 }
 
-/* 다크, 블루, 핑크 테마에서 텍스트 더 밝게 */
+/* 다크, 블루 테마에서 텍스트 더 밝게 */
 [data-theme="dark"] .empty-chat-text,
 [data-theme="blue"] .empty-chat-text {
     color: rgba(255, 255, 255, 0.85) !important;
     opacity: 1 !important;
-}
-
-[data-theme="pink"] .empty-chat-text {
-    color: #fff7fb !important;
-    opacity: 1 !important;
-    text-shadow: none !important;
-    font-weight: 600;
 }
 
 /* 반응형 - 빈 채팅창 */
@@ -1934,17 +1884,6 @@
     border-color: #4752c4;
 }
 
-[data-theme="pink"] .voice-chat-btn.voice-chat-active {
-    background: var(--discord-accent);
-    border-color: var(--discord-accent);
-    color: var(--discord-text-normal);
-}
-
-[data-theme="pink"] .voice-chat-btn.voice-chat-active:hover {
-    background: var(--discord-accent-hover);
-    border-color: var(--discord-accent-hover);
-}
-
 [data-theme="blue"] .voice-chat-btn.voice-chat-active {
     background: #00bfff;
     border-color: #00bfff;
@@ -2001,16 +1940,6 @@
 [data-theme="light"] .message-link:hover {
     color: #1565C0 !important;
     background-color: rgba(25, 118, 210, 0.1) !important;
-}
-
-/* 핑크 테마 링크 색상 */
-[data-theme="pink"] .message-link {
-    color: #E91E63 !important;
-}
-
-[data-theme="pink"] .message-link:hover {
-    color: #C2185B !important;
-    background-color: rgba(233, 30, 99, 0.1) !important;
 }
 
 /* 블루 테마 링크 색상 */
@@ -2189,17 +2118,6 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-/* 핑크 테마 미리보기 */
-[data-theme="pink"] .link-preview-tooltip {
-    background-color: var(--discord-bg-primary);
-    border-color: var(--discord-bg-tertiary);
-    box-shadow: 0 4px 12px rgba(233, 30, 99, 0.1);
-}
-
-[data-theme="pink"] .link-preview-tooltip .preview-action {
-    color: #E91E63;
-}
-
 /* 블루 테마 미리보기 */
 [data-theme="blue"] .link-preview-tooltip {
     background-color: var(--discord-bg-primary);
@@ -2306,34 +2224,6 @@
   background-color: rgba(255, 193, 7, 0.15);
 }
 
-/* 핑크 테마에서 고정 메시지 스타일 */
-[data-theme="pink"] .pinned-message {
-  background-color: rgba(233, 30, 99, 0.1);
-  border-left-color: #e91e63;
-}
-
-[data-theme="pink"] .pinned-indicator {
-  background-color: rgba(233, 30, 99, 0.15);
-  color: #ad1457;
-}
-
-[data-theme="pink"] .pin-icon {
-  color: #e91e63;
-}
-
-[data-theme="pink"] .pinned-text {
-  color: #ad1457;
-}
-
-[data-theme="pink"] .pinned-chat-style {
-  background-color: rgba(233, 30, 99, 0.08);
-  border-color: rgba(233, 30, 99, 0.2);
-}
-
-[data-theme="pink"] .pinned-message:hover {
-  background-color: rgba(233, 30, 99, 0.15);
-}
-
 /* 삭제된 메시지 스타일 */
 .deleted-message .chatStyle {
   background-color: #f5f5f5 !important;
@@ -2349,7 +2239,7 @@
 }
 
 .deleted-message .message-time {
-  color: #ccc !important;
+  color: #6c757d !important;
 }
 
 /* 삭제된 메시지는 프로필과 사용자명 숨김 */
@@ -2460,42 +2350,7 @@
   margin-bottom: 0;
 }
 
-/* 핑크 테마에서 고정 메시지 컨테이너 */
-[data-theme="pink"] .pinned-messages-container {
-  background-color: #fdf2f8;
-  border-color: #fce7f3;
-}
 
-[data-theme="pink"] .pinned-header {
-  background-color: #fce7f3;
-  color: #be185d;
-  border-left-color: #e91e63;
-}
 
-[data-theme="pink"] .pinned-close-btn {
-  color: #be185d;
-}
 
-[data-theme="pink"] .pinned-close-btn:hover {
-  background-color: rgba(190, 24, 93, 0.1);
-  color: #9d174d;
-}
 
-[data-theme="pink"] .pinned-message-item {
-  background-color: #ffffff;
-  border-color: #fce7f3;
-  color: #212529;
-}
-
-[data-theme="pink"] .pinned-message-item .chatStyle {
-  color: #212529 !important;
-}
-
-[data-theme="pink"] .pinned-message-item .message-author {
-  color: #495057 !important;
-  font-weight: 500;
-}
-
-[data-theme="pink"] .pinned-message-item .message-time {
-  color: #6c757d !important;
-}

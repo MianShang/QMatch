@@ -258,14 +258,6 @@
     user-select: none;
 }
 
-.check-btn {
-     color:  var(--discord-text-normal);
-     
-}
-.check-btn:hover{
-    cursor: pointer;
-    transform: translateY(-2px);
-}
 .input-text {
     color: var(--discord-text-normal)
 }

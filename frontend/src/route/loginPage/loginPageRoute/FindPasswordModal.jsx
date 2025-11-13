@@ -191,7 +191,6 @@ function FindPasswordModal({ isOpen, onClose }) {
               {!isEmailVerified ? (
                 <>
                   <div className="input-group">
-                    <label>아이디</label>
                     <input 
                       type="text" 
                       placeholder="아이디를 입력하세요" 
@@ -202,7 +201,6 @@ function FindPasswordModal({ isOpen, onClose }) {
                   </div>
 
                   <div className="input-group">
-                    <label>이메일</label>
                     <div className="input-with-button">
                       <input 
                         type="email" 

@@ -122,11 +122,19 @@ function LogInRoutePage() {
         <button type="submit">로그인</button>
         
         <div className="find-account-links">
-          <button type="button" onClick={() => setIsFindIdModalOpen(true)} className="find-link">
+          <button
+            type="button"
+            onClick={() => setIsFindIdModalOpen(true)}
+            className="find-link"
+          >
             아이디 찾기
           </button>
           <span className="divider">|</span>
-          <button type="button" onClick={() => setIsFindPasswordModalOpen(true)} className="find-link">
+          <button
+            type="button"
+            onClick={() => setIsFindPasswordModalOpen(true)}
+            className="find-link"
+          >
             비밀번호 찾기
           </button>
         </div>

@@ -150,7 +150,6 @@ function FindIdModal({ isOpen, onClose }) {
           {!foundUserId ? (
             <>
               <div className="input-group">
-                <label>이메일</label>
                 <div className="input-with-button">
                   <input 
                     type="email" 

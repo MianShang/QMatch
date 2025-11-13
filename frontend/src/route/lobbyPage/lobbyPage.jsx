@@ -499,7 +499,7 @@ function LobbyPage() {
 
   return (
     <>
-      <div className='fullscreen'>
+      <div className='fullscreen cosmic-background'>
         {/* 좌측 친구/채팅 바 */}
         {showMidBar &&
           <div className='leftBarSize'>

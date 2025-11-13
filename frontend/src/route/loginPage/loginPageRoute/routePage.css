@@ -26,8 +26,8 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  width: 80%;
-  padding: 40px;
+  width: 100%;
+  padding: 40px 32px 40px 24px;
   background: transparent !important;
   background-color: transparent !important;
 }
@@ -70,9 +70,17 @@
   color: var(--discord-text-muted);
 }
 
+.password-guideline {
+  margin: -12px 0 -10px 5px;
+  font-size: 12px;
+  color: var(--discord-text-muted);
+  text-align: left;
+  line-height: 1.4;
+}
+
 .login-form button {
   padding: 12px;
-  font-weight: bold;
+  font-weight: 300;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -97,6 +105,7 @@
   display: flex;
   gap: 10px;
   align-items: center;
+  width: 100%;
 }
 
 .input-with-button input {
@@ -104,9 +113,12 @@
 }
 
 .check-button, .verify-button {
-  padding: 12px 20px;
+  padding: 10px 16px;
   font-size: 14px;
-  font-weight: bold;
+  font-weight: 300;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   border: none;
   border-radius: 8px;
   cursor: pointer;
@@ -114,7 +126,7 @@
   color: white;
   transition: all 0.2s ease;
   white-space: nowrap;
-  min-width: 100px;
+  min-width: 92px;
 }
 
 .check-button:hover, .verify-button:hover {
@@ -171,24 +183,31 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   margin-top: 16px;
-  font-size: 14px;
+  width: 100%;
 }
 
 .find-link {
+  flex: 0 1 180px;
   background: none;
-  border: none;
-  color: var(--discord-text-muted);
+  border: 1px solid var(--discord-bg-tertiary);
+  color: var(--discord-text-normal);
   cursor: pointer;
-  padding: 4px 8px;
-  font-size: 14px;
-  transition: color 0.2s ease;
+  padding: 6px 10px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 8px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
 }
 
 .find-link:hover {
-  color: var(--discord-accent);
-  text-decoration: underline;
+  background: var(--discord-bg-modifier-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.18);
 }
 
 .divider {

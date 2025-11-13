@@ -339,39 +339,6 @@ input, textarea {
     inset 0 1px 0 rgba(255, 255, 255, 1) !important;
 }
 
-[data-theme="pink"] .global-voice-chat-indicator {
-  background: linear-gradient(135deg, #f9dada, #f9caca, #f9baba) !important;
-  border: 2px solid var(--discord-accent) !important;
-  box-shadow: 
-    0 8px 24px rgba(249, 154, 154, 0.3),
-    0 0 20px rgba(249, 170, 170, 0.35),
-    inset 0 2px 0 rgba(255, 255, 255, 0.45) !important;
-}
-
-[data-theme="pink"] .global-voice-chat-indicator:hover {
-  box-shadow: 
-    0 12px 32px rgba(249, 154, 154, 0.4),
-    0 0 28px rgba(249, 170, 170, 0.5),
-    inset 0 2px 0 rgba(255, 255, 255, 0.55) !important;
-  transform: translateY(-4px) scale(1.02) !important;
-}
-
-[data-theme="pink"] .voice-chat-text {
-  color: var(--discord-text-normal) !important;
-  font-weight: 600 !important;
-  text-shadow: none !important;
-}
-
-[data-theme="pink"] .voice-chat-info::before {
-  background: var(--discord-accent-active) !important;
-  box-shadow: 0 0 10px rgba(249, 154, 154, 0.6) !important;
-}
-
-[data-theme="pink"] .voice-chat-mute-btn,
-[data-theme="pink"] .voice-chat-end-btn {
-  box-shadow: 0 4px 15px rgba(249, 154, 154, 0.25) !important;
-}
-
 [data-theme="blue"] .global-voice-chat-indicator {
   background: linear-gradient(135deg, #e3f2fd, #bbdefb, #90caf9) !important;
   border: 2px solid #2196f3 !important;

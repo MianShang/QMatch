@@ -16,7 +16,7 @@ function LoginPage() {
   const { theme, toggleTheme } = useContext(LogContext);
 
   return (
-    <div className='fullscreen position'>
+    <div className='fullscreen cosmic-background position login-page'>
       {/* 테마 전환 버튼 */}
       <div className="login-theme-toggle">
         <button

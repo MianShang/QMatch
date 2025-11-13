@@ -233,7 +233,7 @@ function SignUpRoutePage({ onSuccess }) {
           <button type="button" onClick={checkUserId} className="check-button">
             중복확인
           </button>
-        </div>
+        </div>  
         {isIdChecked && (
           <div className={`validation-message ${isIdAvailable ? 'success' : 'error'}`}>
             {isIdAvailable ? '✓ 사용 가능한 아이디입니다.' : '✗ 이미 사용 중인 아이디입니다.'}
@@ -242,6 +242,9 @@ function SignUpRoutePage({ onSuccess }) {
 
         <input type="password" id="userPw" placeholder="비밀번호" required
           value={user.userPw} onChange={handleChange}/>
+        <p className="password-guideline">
+           8~16자, 대문자/특수문자를 각 1개 이상 포함
+        </p>
         
         <input type="password" id="passwordConfirm" placeholder="비밀번호 확인" required
           value={user.passwordConfirm} onChange={handleChange}/>

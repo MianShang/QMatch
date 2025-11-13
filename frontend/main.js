@@ -40,11 +40,11 @@ console.warn = (...args) => {
   logToFile(`[WARN] ${args.map(a => typeof a === 'object' ? JSON.stringify(a) : String(a)).join(' ')}`);
 };
 
-console.log(`📝 로그 파일 위치: ${logFile}`);
+console.log(`로그 파일 위치: ${logFile}`);
 
-// ✅ 환경변수 로드
+// 환경변수 로드
 const FRONT_DOMAIN = process.env.FRONT_DOMAIN;
-console.log(`🌐 FRONT_DOMAIN: ${FRONT_DOMAIN}`);
+console.log(`FRONT_DOMAIN: ${FRONT_DOMAIN}`);
 
 app.setAppUserModelId('com.qmatch.app'); // build.appId와 동일하게
 
@@ -61,10 +61,10 @@ try {
   );
   const psListModule = originalRequire(unpackedPath);
   psList = psListModule.default || psListModule;
-  console.log('✅ ps-list 로드 경로:', unpackedPath);
+  console.log('ps-list 로드 경로:', unpackedPath);
 } catch (e) {
   psList = require('ps-list').default;
-  console.log('⚙️ ps-list fallback to default require');
+  console.log('ps-list fallback to default require');
 }
 
 // 쿠키 정책 수정 및 저장 (SameSite, Secure, Domain 교정)
@@ -73,19 +73,25 @@ function configureSession() {
 
   session.defaultSession.webRequest.onBeforeSendHeaders(filter, async (details, callback) => {
     // 요청 헤더에 쿠키가 없는 경우 Electron 세션에서 쿠키 가져와서 추가
-    if (!details.requestHeaders.Cookie && !details.requestHeaders.cookie) {
-      try {
-        const urlObj = new URL(details.url);
-        const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
-        const cookies = await session.defaultSession.cookies.get({ url: baseUrl });
+    // 또는 쿠키가 있어도 Electron 세션의 쿠키와 병합
+    try {
+      const urlObj = new URL(details.url);
+      const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
+      const cookies = await session.defaultSession.cookies.get({ url: baseUrl });
 
-        if (cookies.length > 0) {
-          const cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ');
+      if (cookies.length > 0) {
+        const cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ');
+        
+        // 기존 쿠키가 있으면 병합, 없으면 새로 설정
+        if (details.requestHeaders.Cookie || details.requestHeaders.cookie) {
+          const existingCookies = details.requestHeaders.Cookie || details.requestHeaders.cookie;
+          details.requestHeaders.Cookie = `${existingCookies}; ${cookieHeader}`;
+        } else {
           details.requestHeaders.Cookie = cookieHeader;
         }
-      } catch (err) {
-        console.error(`❌ [webRequest] 쿠키 주입 실패:`, err);
       }
+    } catch (err) {
+      console.error(`[webRequest] 쿠키 주입 실패:`, err);
     }
     callback({ requestHeaders: details.requestHeaders });
   });
@@ -141,6 +147,24 @@ function configureSession() {
           if (!name || !value) continue;
 
           // Electron cookies.set()에서는 domain을 지정하지 않는 것이 더 안전함
+          // Spring Security의 remember-me 쿠키는 기본적으로 httpOnly: true일 수 있음
+          const isRememberMe = name.toLowerCase() === 'remember-me';
+          
+          // 기본값 설정: 모든 쿠키는 기본적으로 httpOnly: true
+          // 쿠키 문자열에서 HttpOnly 플래그 확인
+          let httpOnlyValue = true; // 기본값: true
+          
+          // 쿠키 설정 정보 파싱
+          for (let i = 1; i < cookieParts.length; i++) {
+            const part = cookieParts[i].toLowerCase();
+            if (part === 'httponly') {
+              httpOnlyValue = true;
+            }
+            // HttpOnly가 명시적으로 false로 설정된 경우는 없지만, 
+            // remember-me 쿠키의 경우 일부 설정에서 false일 수 있음
+            // 하지만 Spring Security 기본값은 true이므로 true로 유지
+          }
+          
           const cookieObj = {
             url: baseUrl, // 전체 URL (프로토콜 + 도메인 + 포트)
             name: name,
@@ -148,27 +172,56 @@ function configureSession() {
             // domain 필드는 생략 (Electron이 자동으로 처리)
             path: '/',
             secure: false, // HTTP 환경에서는 false
-            httpOnly: true,
+            httpOnly: httpOnlyValue,
             // HTTP 환경에서는 sameSite를 unspecified로 설정 (no_restriction은 secure: true 필요)
             sameSite: 'unspecified', // HTTP 환경에서 사용
           };
 
-          // 쿠키 설정 정보 파싱
+          // 만료 시간 계산 (영구 쿠키를 위해 필요)
+          let expirationDate = null;
+
+          // 쿠키 설정 정보 파싱 (path, secure, 만료 시간 등)
           for (let i = 1; i < cookieParts.length; i++) {
             const part = cookieParts[i].toLowerCase();
             if (part.startsWith('path=')) {
               cookieObj.path = cookieParts[i].substring(5).trim();
-            } else if (part === 'httponly') {
-              cookieObj.httpOnly = true;
             } else if (part === 'secure') {
               cookieObj.secure = true;
+            } else if (part.startsWith('max-age=')) {
+              // max-age를 만료 날짜로 변환
+              const maxAge = parseInt(part.substring(8).trim());
+              if (!isNaN(maxAge) && maxAge > 0) {
+                // max-age가 0보다 크면 만료 날짜 설정 (초 단위)
+                expirationDate = new Date(Date.now() + maxAge * 1000);
+              }
+            } else if (part.startsWith('expires=')) {
+              // expires 날짜 파싱
+              const expiresStr = cookieParts[i].substring(8).trim();
+              expirationDate = new Date(expiresStr);
+              if (isNaN(expirationDate.getTime())) {
+                expirationDate = null; // 파싱 실패 시 null
+              }
             }
           }
 
-          await session.defaultSession.cookies.set(cookieObj);
+          // remember-me 쿠키는 영구 쿠키로 설정 (7일)
+          if (isRememberMe && !expirationDate) {
+            expirationDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7일 후
+          }
+
+          // 만료 시간이 설정된 경우에만 expirationDate 추가
+          if (expirationDate && !isNaN(expirationDate.getTime())) {
+            cookieObj.expirationDate = Math.floor(expirationDate.getTime() / 1000); // Unix timestamp (초)
+          }
+
+          try {
+            await session.defaultSession.cookies.set(cookieObj);
+          } catch (setErr) {
+            console.error(`[onHeadersReceived] 쿠키 저장 실패 (${name}):`, setErr);
+          }
         }
       } catch (err) {
-        console.error('❌ 쿠키 저장 실패:', err);
+        console.error('쿠키 저장 실패:', err);
       }
     }
 
@@ -179,16 +232,16 @@ function configureSession() {
   session.defaultSession.webRequest.onCompleted(filter, async (details) => {
     if (details.url.includes('/api/loginProc') && details.statusCode === 200) {
       try {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 200));
         const urlObj = new URL(details.url);
         const baseUrl = `${urlObj.protocol}//${urlObj.host}`;
         const cookies = await session.defaultSession.cookies.get({ url: baseUrl });
 
         if (cookies.length === 0) {
-          console.warn(`⚠️ [onCompleted] 로그인 후 쿠키가 저장되지 않았습니다.`);
+          console.warn(`[onCompleted] 로그인 후 쿠키가 저장되지 않았습니다.`);
         }
       } catch (err) {
-        console.error('❌ [onCompleted] 쿠키 확인 실패:', err);
+        console.error('[onCompleted] 쿠키 확인 실패:', err);
       }
     }
   });
@@ -220,10 +273,10 @@ function createWindow() {
 
   const startURL = app.isPackaged ? 'app://index.html' : 'http://localhost:5173';
   win.loadURL(startURL);
-  console.log('🚀 로드 대상 URL:', startURL);
+  console.log('로드 대상 URL:', startURL);
 
   // 로그 파일 위치를 창에 표시
-  console.log('📝 Electron 로그 파일 위치:', logFile);
+  console.log('Electron 로그 파일 위치:', logFile);
 
   if (!app.isPackaged) {
     win.webContents.openDevTools({ mode: 'detach' });
@@ -251,8 +304,9 @@ protocol.registerSchemesAsPrivileged([
 
 
 // 초기화
-app.whenReady().then(() => {
-  console.log('🟢 Electron Ready');
+app.whenReady().then(async () => {
+  console.log('Electron Ready');
+
 
   // 1️⃣ configureSession 등록
   configureSession();
@@ -262,7 +316,7 @@ app.whenReady().then(() => {
     ? path.join(app.getAppPath(), 'web-build') // 패키징 시 app.asar/web-build
     : path.join(__dirname, 'web-build'); // 개발 시 web-build 폴더
 
-  console.log('📦 정적 파일 경로:', webBuildPath);
+  console.log('정적 파일 경로:', webBuildPath);
 
   protocol.registerBufferProtocol('app', (request, respond) => {
     try {
@@ -288,7 +342,7 @@ app.whenReady().then(() => {
       const data = fs.readFileSync(filePath);
       respond({ mimeType, data });
     } catch (err) {
-      console.error('❌ 파일 로드 실패:', err);
+      console.error('파일 로드 실패:', err);
       respond({ statusCode: 404 });
     }
   });
@@ -302,7 +356,7 @@ ipcMain.handle('get-process-list', async () => {
   try {
     return await psList();
   } catch (err) {
-    console.error('❌ 프로세스 목록 가져오기 실패:', err);
+    console.error('프로세스 목록 가져오기 실패:', err);
     throw err;
   }
 });
@@ -321,7 +375,7 @@ ipcMain.handle('set-cookies', async (event, url, cookieStrings) => {
         const equalIndex = firstPart.indexOf('=');
 
         if (equalIndex === -1) {
-          console.warn('⚠️ [IPC] 쿠키 파싱 실패 (등호 없음):', cookieString);
+          console.warn('[IPC] 쿠키 파싱 실패 (등호 없음):', cookieString);
           continue;
         }
 
@@ -329,7 +383,7 @@ ipcMain.handle('set-cookies', async (event, url, cookieStrings) => {
         const value = firstPart.substring(equalIndex + 1).trim();
 
         if (!name || !value) {
-          console.warn('⚠️ [IPC] 쿠키 파싱 실패 (이름/값 없음):', cookieString);
+          console.warn('[IPC] 쿠키 파싱 실패 (이름/값 없음):', cookieString);
           continue;
         }
 
@@ -368,6 +422,7 @@ ipcMain.handle('set-cookies', async (event, url, cookieStrings) => {
 
             await session.defaultSession.cookies.set(cookieObj);
 
+
             // 저장 확인 (약간의 지연)
             await new Promise(resolve => setTimeout(resolve, 100));
 
@@ -386,10 +441,10 @@ ipcMain.handle('set-cookies', async (event, url, cookieStrings) => {
         }
 
         if (!saved) {
-          console.error(`❌ [IPC] 쿠키 저장 실패: ${name}`);
+          console.error(`[IPC] 쿠키 저장 실패: ${name}`);
         }
       } catch (cookieErr) {
-        console.error('❌ [IPC] 쿠키 저장 실패:', cookieErr);
+        console.error('[IPC] 쿠키 저장 실패:', cookieErr);
       }
     }
 
@@ -403,7 +458,7 @@ ipcMain.handle('set-cookies', async (event, url, cookieStrings) => {
       return { success: false, error: '쿠키가 저장되지 않았습니다' };
     }
   } catch (err) {
-    console.error('❌ [IPC] 쿠키 저장 실패:', err);
+    console.error('[IPC] 쿠키 저장 실패:', err);
     return { success: false, error: err.message };
   }
 });
@@ -414,7 +469,7 @@ ipcMain.handle('get-all-cookies', async () => {
     const allCookies = await session.defaultSession.cookies.get({});
     return allCookies;
   } catch (err) {
-    console.error('❌ [IPC] 전체 쿠키 가져오기 실패:', err);
+    console.error('[IPC] 전체 쿠키 가져오기 실패:', err);
     return [];
   }
 });
@@ -451,13 +506,18 @@ ipcMain.handle('get-cookies', async (event, url) => {
       }
     }
 
-    // 여전히 없으면 모든 쿠키에서 JSESSIONID만 필터링
+    // 여전히 없으면 모든 쿠키에서 JSESSIONID와 remember-me 필터링
     if (cookies.length === 0) {
       try {
         const allCookies = await session.defaultSession.cookies.get({});
-        const jsessionCookies = allCookies.filter(c => c.name === 'JSESSIONID');
-        if (jsessionCookies.length > 0) {
-          cookies = jsessionCookies;
+        
+        // JSESSIONID와 remember-me 쿠키 모두 찾기
+        const relevantCookies = allCookies.filter(c => 
+          c.name === 'JSESSIONID' || c.name === 'remember-me'
+        );
+        
+        if (relevantCookies.length > 0) {
+          cookies = relevantCookies;
 
           // URL과 일치하는 쿠키 우선 선택
           try {
@@ -465,7 +525,7 @@ ipcMain.handle('get-cookies', async (event, url) => {
             const host = urlObj.host;
             const hostname = urlObj.hostname;
 
-            const matchedCookies = jsessionCookies.filter(c => {
+            const matchedCookies = relevantCookies.filter(c => {
               if (!c.domain && !c.url) return true;
               if (c.domain && (host.includes(c.domain) || hostname.includes(c.domain))) return true;
               if (c.url && (c.url.includes(host) || c.url.includes(hostname))) return true;
@@ -481,6 +541,7 @@ ipcMain.handle('get-cookies', async (event, url) => {
         }
       } catch (e) {
         // 전체 쿠키 조회 실패
+        console.error('[get-cookies] 전체 쿠키 조회 실패:', e);
       }
     }
 
@@ -493,7 +554,7 @@ ipcMain.handle('get-cookies', async (event, url) => {
       path: c.path || '/'
     }));
   } catch (err) {
-    console.error('❌ [IPC] 쿠키 가져오기 실패:', err);
+    console.error('[IPC] 쿠키 가져오기 실패:', err);
     return [];
   }
 });

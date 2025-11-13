@@ -36,6 +36,15 @@ public class UserController {
         return ResponseEntity.ok("사용 가능한 아이디입니다.");
     }
 
+    // 닉네임 중복 체크 API
+    @GetMapping("/api/user/check-nickname")
+    public ResponseEntity<String> checkUserNickName(@RequestParam String userNickName) {
+        if (userRepository.existsByUserNickName(userNickName)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 사용 중인 닉네임입니다.");
+        }
+        return ResponseEntity.ok("사용 가능한 닉네임입니다.");
+    }
+
     // 이메일 인증 코드 발송 API (회원가입용)
     @PostMapping("/api/user/send-email-verification")
     public ResponseEntity<String> sendEmailVerification(@RequestParam String email) {

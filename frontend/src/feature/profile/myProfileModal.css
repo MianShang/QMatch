@@ -315,6 +315,8 @@
   font-family: inherit;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
+  border: 1px solid var(--discord-bg-tertiary);
+  flex: 1;
 }
 
 .nickname-input:focus {
@@ -323,9 +325,64 @@
   box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.2);
 }
 
+.nickname-input.valid {
+  border-color: #4caf50;
+}
+
+.nickname-input.invalid {
+  border-color: #f44336;
+}
+
+.input-with-button {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.check-button {
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--discord-accent);
+  color: white;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 100px;
+}
+
+.check-button:hover {
+  background: var(--discord-accent-hover);
+  transform: translateY(-1px);
+}
+
+.validation-message {
+  font-size: 14px;
+  padding: 8px;
+  border-radius: 6px;
+  margin-top: 4px;
+}
+
+.validation-message.success {
+  color: #4caf50;
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.validation-message.error {
+  color: #f44336;
+  background-color: rgba(244, 67, 54, 0.1);
+}
+
 .nickname-edit-actions {
   display: flex;
   gap: 8px;
+}
+
+.nickname-edit-actions .save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 /* ======== 상태 메시지 ======== */

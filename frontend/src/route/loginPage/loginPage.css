@@ -166,6 +166,12 @@
     z-index: 20;
 }
 
+.LogComponentStyle.signup-mode{
+    height: 650px;
+    padding: 32px 32px 32px 28px;
+    gap: 20px;
+}
+
 
 @keyframes slideInUp {
     0% {

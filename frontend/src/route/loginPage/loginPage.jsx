@@ -45,7 +45,7 @@ function LoginPage() {
 
       {/* 오른쪽: 로그인 폼 영역 */}
       <div className="login-right-section">
-        <div className='LogComponentStyle'>
+        <div className={`LogComponentStyle ${isResister ? 'signup-mode' : ''}`}>
             {isResister 
             ? <SignUpRoutePage onSuccess={() => setIsRegister(false)} /> 
             : <LogInRoutePage />}

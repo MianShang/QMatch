@@ -165,7 +165,7 @@ function AdminPage() {
 
             {/* 회원 정보 표시 구역 */}
             <div className="section-container">
-                <h2>회원 정보 목록</h2>
+                <h2>회원 정보</h2>
                 <div className="content-box">
                     <table className="report-table">
                         <thead>
@@ -210,7 +210,7 @@ function AdminPage() {
 
             {/* 신고 테이블 내용 구역 */}
             <div className="section-container">
-                <h2>신고 내역 테이블</h2>
+                <h2>신고 내역</h2>
                 <div className="content-box">
                     <table className="report-table">
                         <thead>

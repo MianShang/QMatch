@@ -83,7 +83,7 @@ function DetailInfoModal({ user, onClose}) {
                         </div>
                     </div>
                     <div className="info-section">
-                        <h3>입장중인 채팅방</h3>
+                        <h3>참여중인 채팅방</h3>
                         <ul className="info-list clickable">
                          
                             {user.joinedChatRooms && user.joinedChatRooms.length > 0 ? (

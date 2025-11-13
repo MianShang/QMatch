@@ -77,6 +77,7 @@ public class UserChatRoomService {
             dto.setUserName(user.getUserName());
             dto.setUserEmail(user.getUserEmail());
             dto.setUserProfile(user.getUserProfile());
+            dto.setUserNickName(user.getUserNickName()); // 닉네임 추가
             dto.setJoinStatus(ucr.getStatus()); // 입장 신청 상태 추가
 
             // List Add

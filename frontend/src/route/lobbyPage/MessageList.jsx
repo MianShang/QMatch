@@ -95,7 +95,7 @@ const MessageList = memo(({ messages, userData, roomId, isFriendChat = false, is
       
       setUserNames(prev => ({
         ...prev,
-        [userId]: response.data.userName
+        [userId]: response.data.userNickname || response.data.userNickName || response.data.userName
       }));
     } catch (error) {
       console.error(`사용자 ${userId} 프로필 가져오기 실패:`, error);

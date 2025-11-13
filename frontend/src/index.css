@@ -106,47 +106,6 @@
   --icon-filter: invert(0);
 }
 
-/* 핑크 테마 변수 */
-[data-theme="pink"] {
-  /* 핑크 테마 배경색 - 뽀용뽀용 말랑말랑 */
-  --discord-bg-primary: #f9dada;
-  --discord-bg-secondary: #f9caca;
-  --discord-bg-tertiary: #f9baba;
-  --discord-bg-quaternary: #f9aaaa;
-  --discord-bg-modifier-hover: #f9baba;
-  --discord-bg-modifier-active: #f9aaaa;
-  --discord-bg-modifier-selected: #f99a9a;
-  
-  /* 핑크 테마 텍스트색 */
-  --discord-text-normal: #7a4b4b;
-  --discord-text-muted: #9d6d6d;
-  --discord-text-link: #bf5f5f;
-  --discord-text-positive: #4caf50;
-  --discord-text-warning: #ff9800;
-  --discord-text-danger: #f44336;
-  
-  /* 핑크 테마 인터랙티브 */
-  --discord-interactive-normal: #cc7a7a;
-  --discord-interactive-hover: #b86b6b;
-  --discord-interactive-active: #a45d5d;
-  --discord-interactive-muted: #f9baba;
-  
-  /* 핑크 테마 액센트 */
-  --discord-accent: #f99a9a;
-  --discord-accent-hover: #f9aaaa;
-  --discord-accent-active: #d56687;
-  
-  /* 핑크 테마 그림자 - 부드럽고 말랑말랑 */
-  --discord-elevation-low: 0 2px 4px rgba(249, 170, 170, 0.18), 0 4px 8px rgba(249, 186, 186, 0.1);
-  --discord-elevation-medium: 0 4px 8px rgba(249, 154, 154, 0.24), 0 8px 16px rgba(249, 170, 170, 0.12);
-  --discord-elevation-high: 0 8px 16px rgba(249, 154, 154, 0.28), 0 16px 32px rgba(249, 170, 170, 0.18);
-  --discord-elevation-stroke: 0 0 0 1px rgba(249, 170, 170, 0.24);
-  --discord-elevation-border: 0 0 0 1px rgba(249, 154, 154, 0.28);
-  
-  /* 핑크 테마 아이콘 필터 */
-  --icon-filter: invert(0.12) sepia(0.4) saturate(2.4) hue-rotate(330deg);
-}
-
 /* 블루 테마 변수 */
 [data-theme="blue"] {
   /* 블루 테마 배경색 - 시원하고 깔끔한 느낌 */
@@ -191,279 +150,6 @@
 /* 블루 테마 특별 애니메이션 */
 [data-theme="blue"] * {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* 핑크 테마 특별 애니메이션 - 푸딩같은 느낌 */
-[data-theme="pink"] * {
-  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-/* 푸딩같은 말랑말랑 호버 효과 */
-[data-theme="pink"] .chatCard:hover,
-[data-theme="pink"] .chatListStyle:hover,
-[data-theme="pink"] button:hover {
-  transform: translateY(-3px);
-  box-shadow: 
-    0 12px 30px rgba(249, 154, 154, 0.22),
-    0 4px 15px rgba(249, 202, 202, 0.3);
-  filter: brightness(1.05);
-}
-
-/* 푸딩같은 버튼 특별 효과 */
-[data-theme="pink"] button {
-  position: relative;
-  overflow: hidden;
-  box-shadow: 
-    0 4px 15px rgba(249, 154, 154, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-[data-theme="pink"] button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-  transition: left 0.6s ease;
-  border-radius: inherit;
-}
-
-[data-theme="pink"] button:hover::before {
-  left: 100%;
-}
-
-[data-theme="pink"] button:active {
-  transform: scale(0.98) translateY(1px);
-  box-shadow: 
-    0 2px 8px rgba(249, 154, 154, 0.26),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-/* 푸딩같은 스크롤바 */
-[data-theme="pink"] ::-webkit-scrollbar {
-  width: 12px;
-}
-
-[data-theme="pink"] ::-webkit-scrollbar-thumb {
-  background: linear-gradient(45deg, #f9caca, #f99a9a);
-  border-radius: 20px;
-  border: 3px solid transparent;
-  background-clip: content-box;
-  box-shadow: inset 0 0 5px rgba(249, 202, 202, 0.35);
-}
-
-[data-theme="pink"] ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(45deg, #f9baba, #f9aaaa);
-  background-clip: content-box;
-  transform: scale(1.1);
-  box-shadow: inset 0 0 8px rgba(249, 202, 202, 0.45);
-}
-
-[data-theme="pink"] ::-webkit-scrollbar-track {
-  background: rgba(249, 202, 202, 0.12);
-  border-radius: 20px;
-}
-
-/* 핑크 모드 풀스크린 - 핑크 톤 그라데이션 */
-[data-theme="pink"] .fullscreen {
-  background:
-    linear-gradient(180deg, #934b63 0%, #75374c 30%, #582537 55%, #3a1823 80%, #17060c 100%);
-  position: relative;
-  overflow: hidden;
-}
-
-[data-theme="pink"] .fullscreen::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 55% 85% at 15% 20%, rgba(80, 27, 41, 0.4) 0%, rgba(80, 27, 41, 0) 70%),
-    radial-gradient(ellipse 65% 90% at 80% 25%, rgba(110, 36, 54, 0.36) 0%, rgba(110, 36, 54, 0) 72%),
-    radial-gradient(ellipse 70% 85% at 35% 70%, rgba(132, 45, 66, 0.38) 0%, rgba(132, 45, 66, 0) 75%),
-    radial-gradient(ellipse 60% 80% at 70% 80%, rgba(51, 16, 24, 0.32) 0%, rgba(51, 16, 24, 0) 78%);
-  background-size: 100% 100%;
-  pointer-events: none;
-  animation: auroraFloat 14s ease-in-out infinite;
-  opacity: 0.75;
-}
-
-[data-theme="pink"] .fullscreen::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    radial-gradient(3px 3px at 20% 30%, rgba(132, 45, 66, 0.92) 0%, rgba(132, 45, 66, 0) 60%),
-    radial-gradient(2px 2px at 45% 65%, rgba(110, 36, 54, 0.84) 0%, rgba(110, 36, 54, 0) 60%),
-    radial-gradient(2px 2px at 75% 40%, rgba(80, 27, 41, 0.78) 0%, rgba(80, 27, 41, 0) 60%),
-    radial-gradient(1px 1px at 60% 20%, rgba(51, 16, 24, 0.74) 0%, rgba(51, 16, 24, 0) 65%),
-    radial-gradient(1px 1px at 85% 70%, rgba(80, 27, 41, 0.68) 0%, rgba(80, 27, 41, 0) 65%);
-  background-size: 140% 140%;
-  animation: puddingFloat 18s ease-in-out infinite;
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-@keyframes auroraFloat {
-  0%, 100% { 
-    transform: translateY(0px);
-    opacity: 0.8;
-  }
-  25% { 
-    transform: translateY(-10px);
-    opacity: 0.9;
-  }
-  50% { 
-    transform: translateY(-15px);
-    opacity: 1;
-  }
-  75% { 
-    transform: translateY(-10px);
-    opacity: 0.9;
-  }
-}
-
-@keyframes puddingFloat {
-  0%, 100% { 
-    transform: translateY(0px) rotate(0deg) scale(1); 
-    opacity: 0.8;
-  }
-  25% { 
-    transform: translateY(-5px) rotate(0.5deg) scale(1.02); 
-    opacity: 0.9;
-  }
-  50% { 
-    transform: translateY(-8px) rotate(1deg) scale(1.05); 
-    opacity: 1;
-  }
-  75% { 
-    transform: translateY(-5px) rotate(0.5deg) scale(1.02); 
-    opacity: 0.9;
-  }
-}
-
-/* 푸딩같은 카드 특별 효과 */
-[data-theme="pink"] .contentStyle {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(15px);
-  border: 2px solid rgba(249, 202, 202, 0.4);
-  box-shadow: 
-    0 12px 40px rgba(249, 154, 154, 0.16),
-    0 4px 20px rgba(249, 202, 202, 0.22),
-    inset 0 2px 0 rgba(255, 255, 255, 0.4),
-    inset 0 -1px 0 rgba(249, 202, 202, 0.18);
-  position: relative;
-}
-
-[data-theme="pink"] .contentStyle::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.1) 0%, 
-    transparent 50%, 
-    rgba(249, 202, 202, 0.08) 100%);
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-/* 핑크모드 특별 효과 제거 - 다른 모드와 동일하게 */
-
-/* 핑크 모드 로그인/회원가입 버튼 특별 효과 */
-[data-theme="pink"] .LogChangeButtonStyle {
-  background: #f9caca !important;
-  color: #6b3f54 !important;
-  border: 2px solid rgba(249, 170, 170, 0.35) !important;
-  box-shadow: 
-    0 4px 15px rgba(249, 154, 154, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
-}
-
-[data-theme="pink"] .LogChangeButtonStyle:hover {
-  background: #f99a9a !important;
-  transform: translateY(-3px) scale(1.03) !important;
-  box-shadow: 
-    0 8px 25px rgba(249, 154, 154, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
-  border-color: rgba(249, 170, 170, 0.45) !important;
-}
-
-[data-theme="pink"] .LogChangeButtonStyle h2 {
-  color: #6b3f54 !important;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3) !important;
-}
-
-/* 푸딩같은 활성 상태 특별 효과 */
-[data-theme="pink"] .activeBorder,
-[data-theme="pink"] .bottomActiveBorder {
-  background: var(--discord-bg-modifier-hover);
-  box-shadow: none;
-  border-bottom: 2px solid var(--discord-accent);
-}
-
-[data-theme="pink"] .activeBorder::before,
-[data-theme="pink"] .bottomActiveBorder::before {
-  display: none;
-}
-
-@keyframes puddingGlow {
-  from { opacity: 1; }
-  to { opacity: 1; }
-}
-
-/* 푸딩같은 채팅방 헤더 */
-[data-theme="pink"] .chatRoomHeader {
-  background: linear-gradient(135deg, #f9dada, #f9baba);
-  border: 2px solid rgba(249, 202, 202, 0.32);
-  box-shadow: 
-    0 8px 25px rgba(249, 154, 154, 0.24),
-    inset 0 2px 0 rgba(255, 255, 255, 0.4);
-  position: relative;
-}
-
-[data-theme="pink"] .chatRoomHeader::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.2) 0%, 
-    transparent 50%, 
-    rgba(249, 202, 202, 0.12) 100%);
-  border-radius: inherit;
-  pointer-events: none;
-}
-
-[data-theme="pink"] .chatRoomTitle {
-  color: #6b3f54;
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
-}
-
-[data-theme="pink"] .gameName {
-  background: linear-gradient(135deg, #d56687, #f9aaaa);
-  box-shadow: 
-    0 4px 15px rgba(249, 154, 154, 0.26),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-[data-theme="pink"] .userCount {
-  color: #8f6f80;
-  font-weight: 500;
-}
-
-[data-theme="pink"] .hostBadge {
-  background: linear-gradient(135deg, #ffd700, #ffed4e);
-  color: #6b3f54;
-  box-shadow: 
-    0 4px 15px rgba(255, 215, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(255, 215, 0, 0.3);
 }
 
 /* 블루 테마 특별 효과 */
@@ -533,12 +219,12 @@
 }
 
 /* 블루 테마 특별 그라데이션 배경 */
-[data-theme="blue"] .fullscreen {
+[data-theme="blue"] .fullscreen:not(.cosmic-background) {
   background: var(--discord-bg-tertiary);
   position: relative;
 }
 
-[data-theme="blue"] .fullscreen::before {
+[data-theme="blue"] .fullscreen:not(.cosmic-background)::before {
   content: '';
   position: absolute;
   top: 0;
@@ -551,6 +237,230 @@
     radial-gradient(circle at 40% 40%, rgba(66, 165, 245, 0.05) 0%, transparent 50%);
   pointer-events: none;
   /* animation: blueFloat 8s ease-in-out infinite; */
+}
+
+/* 공통 우주 풀스크린 배경 */
+.fullscreen.cosmic-background {
+  position: relative;
+  overflow: hidden;
+  background: 
+    radial-gradient(ellipse at top, #1a1d23 0%, #0f1115 50%, #000000 100%),
+    radial-gradient(ellipse at bottom, #2d1b3d 0%, #1a1d23 50%, #000000 100%),
+    linear-gradient(135deg, #0a0c10 0%, #1a1d23 50%, #0f1115 100%);
+}
+
+[data-theme="light"] .fullscreen.cosmic-background {
+  background: 
+    linear-gradient(to bottom, 
+      #87ceeb 0%, 
+      #b0e0e6 25%,
+      #add8e6 50%,
+      #e0f2ff 70%,
+      #f0f8ff 85%,
+      #ffffff 100%),
+    radial-gradient(ellipse 1200px 800px at 20% 70%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.95) 15%, rgba(255, 255, 255, 0.85) 30%, rgba(255, 255, 255, 0.65) 50%, rgba(255, 255, 255, 0.4) 65%, rgba(255, 255, 255, 0.15) 80%, transparent 90%),
+    radial-gradient(ellipse 1100px 750px at 75% 75%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.94) 16%, rgba(255, 255, 255, 0.84) 32%, rgba(255, 255, 255, 0.63) 52%, rgba(255, 255, 255, 0.38) 67%, rgba(255, 255, 255, 0.13) 82%, transparent 92%),
+    radial-gradient(ellipse 1000px 700px at 50% 85%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.93) 18%, rgba(255, 255, 255, 0.83) 34%, rgba(255, 255, 255, 0.62) 54%, rgba(255, 255, 255, 0.37) 69%, rgba(255, 255, 255, 0.12) 84%, transparent 94%),
+    radial-gradient(ellipse 950px 680px at 15% 80%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.94) 17%, rgba(255, 255, 255, 0.84) 33%, rgba(255, 255, 255, 0.63) 53%, rgba(255, 255, 255, 0.38) 68%, rgba(255, 255, 255, 0.13) 83%, transparent 93%),
+    radial-gradient(ellipse 1050px 720px at 85% 65%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.92) 19%, rgba(255, 255, 255, 0.82) 35%, rgba(255, 255, 255, 0.61) 55%, rgba(255, 255, 255, 0.36) 70%, rgba(255, 255, 255, 0.11) 85%, transparent 95%),
+    radial-gradient(ellipse 900px 650px at 35% 90%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.91) 20%, rgba(255, 255, 255, 0.81) 36%, rgba(255, 255, 255, 0.6) 56%, rgba(255, 255, 255, 0.35) 71%, rgba(255, 255, 255, 0.1) 86%, transparent 96%),
+    radial-gradient(ellipse 980px 700px at 70% 85%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.94) 18%, rgba(255, 255, 255, 0.84) 34%, rgba(255, 255, 255, 0.63) 54%, rgba(255, 255, 255, 0.38) 69%, rgba(255, 255, 255, 0.13) 84%, transparent 94%),
+    radial-gradient(ellipse 880px 630px at 25% 75%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.9) 21%, rgba(255, 255, 255, 0.8) 37%, rgba(255, 255, 255, 0.59) 57%, rgba(255, 255, 255, 0.34) 72%, rgba(255, 255, 255, 0.09) 87%, transparent 97%),
+    radial-gradient(ellipse 920px 660px at 90% 80%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.93) 19%, rgba(255, 255, 255, 0.83) 35%, rgba(255, 255, 255, 0.62) 55%, rgba(255, 255, 255, 0.37) 70%, rgba(255, 255, 255, 0.12) 85%, transparent 95%),
+    radial-gradient(ellipse 850px 610px at 10% 85%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.89) 22%, rgba(255, 255, 255, 0.79) 38%, rgba(255, 255, 255, 0.58) 58%, rgba(255, 255, 255, 0.33) 73%, rgba(255, 255, 255, 0.08) 88%, transparent 98%);
+}
+
+[data-theme="blue"] .fullscreen.cosmic-background {
+  background: 
+    radial-gradient(ellipse at top, #0d1b2a 0%, #1b263b 50%, #0a0e1a 100%),
+    radial-gradient(ellipse at bottom, #1e3a5f 0%, #0d1b2a 50%, #08141f 100%),
+    linear-gradient(135deg, #050810 0%, #0d1b2a 50%, #1b263b 100%);
+}
+
+[data-theme="light"] .fullscreen.cosmic-background::before {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+.fullscreen.cosmic-background::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(ellipse 800px 600px at 15% 30%, rgba(88, 101, 242, 0.25) 0%, rgba(88, 101, 242, 0.1) 40%, transparent 70%),
+    radial-gradient(ellipse 700px 500px at 85% 70%, rgba(114, 137, 218, 0.22) 0%, rgba(114, 137, 218, 0.08) 35%, transparent 65%),
+    radial-gradient(ellipse 600px 450px at 50% 80%, rgba(138, 43, 226, 0.2) 0%, rgba(138, 43, 226, 0.08) 38%, transparent 60%),
+    radial-gradient(ellipse 900px 700px at 70% 20%, rgba(75, 0, 130, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 750px 550px at 30% 60%, rgba(138, 43, 226, 0.2) 0%, transparent 62%),
+    radial-gradient(ellipse 650px 480px at 90% 40%, rgba(88, 101, 242, 0.18) 0%, transparent 58%),
+    radial-gradient(ellipse 850px 650px at 25% 15%, rgba(123, 104, 238, 0.16) 0%, transparent 60%),
+    radial-gradient(ellipse 720px 520px at 60% 90%, rgba(75, 0, 130, 0.19) 0%, transparent 63%),
+    radial-gradient(ellipse 780px 580px at 45% 25%, rgba(88, 101, 242, 0.17) 0%, transparent 61%),
+    radial-gradient(ellipse 680px 490px at 75% 55%, rgba(138, 43, 226, 0.19) 0%, transparent 59%),
+    radial-gradient(ellipse 820px 610px at 35% 75%, rgba(123, 104, 238, 0.18) 0%, transparent 64%),
+    radial-gradient(ellipse 760px 560px at 55% 12%, rgba(75, 0, 130, 0.16) 0%, transparent 57%),
+    radial-gradient(circle 1000px at 20% 50%, rgba(75, 0, 130, 0.3) 0%, rgba(75, 0, 130, 0.1) 40%, transparent 60%),
+    radial-gradient(circle 900px at 80% 20%, rgba(138, 43, 226, 0.25) 0%, rgba(138, 43, 226, 0.08) 45%, transparent 60%),
+    radial-gradient(circle 850px at 40% 70%, rgba(123, 104, 238, 0.2) 0%, transparent 50%),
+    radial-gradient(circle 950px at 65% 85%, rgba(88, 101, 242, 0.22) 0%, transparent 52%),
+    radial-gradient(circle 880px at 10% 80%, rgba(138, 43, 226, 0.18) 0%, transparent 55%),
+    radial-gradient(circle 920px at 75% 50%, rgba(75, 0, 130, 0.2) 0%, transparent 58%),
+    radial-gradient(circle 1100px at 50% 30%, rgba(88, 101, 242, 0.18) 0%, transparent 53%),
+    radial-gradient(circle 1050px at 28% 65%, rgba(138, 43, 226, 0.19) 0%, transparent 56%),
+    radial-gradient(circle 980px at 72% 75%, rgba(123, 104, 238, 0.17) 0%, transparent 54%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.fullscreen.cosmic-background::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(5px 5px at 25% 35%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.7) 50%, transparent 70%),
+    radial-gradient(4px 4px at 65% 65%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.6) 50%, transparent 70%),
+    radial-gradient(5px 5px at 45% 55%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.8) 50%, transparent 70%),
+    radial-gradient(4px 4px at 75% 25%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.65) 50%, transparent 70%),
+    radial-gradient(5px 5px at 35% 75%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.7) 50%, transparent 70%),
+    radial-gradient(4px 4px at 85% 55%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.75) 50%, transparent 70%),
+    radial-gradient(3px 3px at 20% 30%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.8) 50%, transparent 70%),
+    radial-gradient(3px 3px at 60% 70%, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 50%, transparent 70%),
+    radial-gradient(3px 3px at 50% 50%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.8) 50%, transparent 70%),
+    radial-gradient(3px 3px at 80% 20%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+    radial-gradient(3px 3px at 40% 80%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+    radial-gradient(3px 3px at 10% 60%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+    radial-gradient(3px 3px at 90% 80%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+    radial-gradient(3px 3px at 70% 40%, rgba(255, 255, 255, 1) 0%, transparent 60%),
+    radial-gradient(3px 3px at 30% 10%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+    radial-gradient(3px 3px at 85% 50%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+    radial-gradient(3px 3px at 12% 75%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+    radial-gradient(3px 3px at 55% 25%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+    radial-gradient(3px 3px at 88% 65%, rgba(255, 255, 255, 1) 0%, transparent 60%),
+    radial-gradient(3px 3px at 35% 85%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+    radial-gradient(3px 3px at 65% 15%, rgba(255, 255, 255, 0.85) 0%, transparent 60%),
+    radial-gradient(3px 3px at 15% 45%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+    radial-gradient(3px 3px at 55% 70%, rgba(255, 255, 255, 0.85) 0%, transparent 60%),
+    radial-gradient(3px 3px at 95% 35%, rgba(255, 255, 255, 0.9) 0%, transparent 60%),
+    radial-gradient(2px 2px at 18% 45%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+    radial-gradient(2px 2px at 45% 60%, rgba(255, 255, 255, 0.75) 0%, transparent 60%),
+    radial-gradient(2px 2px at 72% 75%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+    radial-gradient(2px 2px at 28% 35%, rgba(255, 255, 255, 0.75) 0%, transparent 60%),
+    radial-gradient(2px 2px at 82% 35%, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+    radial-gradient(2px 2px at 22% 65%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+    radial-gradient(2px 2px at 68% 55%, rgba(255, 255, 255, 0.75) 0%, transparent 60%),
+    radial-gradient(2px 2px at 92% 70%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+    radial-gradient(2px 2px at 38% 20%, rgba(255, 255, 255, 0.75) 0%, transparent 60%),
+    radial-gradient(2px 2px at 58% 90%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+    radial-gradient(2px 2px at 48% 40%, rgba(255, 255, 255, 0.75) 0%, transparent 60%),
+    radial-gradient(2px 2px at 78% 60%, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+    radial-gradient(1px 1px at 25% 45%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 75% 25%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 35% 75%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 65% 55%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 15% 15%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 95% 65%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 5% 40%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 95% 10%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 45% 90%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 85% 90%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 22% 20%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 52% 80%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 78% 55%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 38% 25%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 68% 85%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 58% 35%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 42% 65%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 88% 75%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 32% 50%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 62% 90%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 48% 15%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 18% 55%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 92% 40%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 72% 30%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 28% 70%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 8% 50%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 98% 30%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 33% 60%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 67% 20%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 53% 95%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 47% 5%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 77% 85%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 23% 95%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1px 1px at 87% 5%, rgba(255, 255, 255, 0.6), transparent);
+  background-size: 
+    200% 200%, 180% 180%, 150% 150%, 220% 220%, 190% 190%, 170% 170%,
+    210% 210%, 160% 160%, 200% 200%, 175% 175%, 165% 165%, 185% 185%, 195% 195%, 205% 205%, 155% 155%, 225% 225%,
+    178% 178%, 192% 192%, 188% 188%, 172% 172%, 168% 168%, 182% 182%, 206% 206%, 216% 216%, 174% 174%,
+    184% 184%, 194% 194%, 164% 164%, 177% 177%, 187% 187%, 197% 197%, 167% 167%, 179% 179%, 189% 189%, 199% 199%, 169% 169%, 181% 181%,
+    191% 191%, 201% 201%, 158% 158%, 198% 198%, 162% 162%, 202% 202%, 166% 166%, 176% 176%, 186% 186%, 196% 196%,
+    206% 206%, 216% 216%, 174% 174%, 184% 184%, 194% 194%, 164% 164%, 177% 177%, 187% 187%, 197% 197%, 167% 167%,
+    179% 179%, 189% 189%, 199% 199%, 169% 169%, 181% 181%, 191% 191%, 201% 201%, 203% 203%, 193% 193%, 183% 183%;
+  background-position: 
+    0% 0%, 10% 20%, 30% 40%, 50% 10%, 70% 60%, 20% 70%,
+    80% 30%, 40% 80%, 90% 50%, 60% 90%, 15% 35%, 85% 15%, 25% 85%, 75% 45%, 5% 55%, 95% 75%,
+    12% 25%, 48% 65%, 72% 75%, 28% 35%, 82% 35%, 15% 45%, 55% 70%, 95% 35%,
+    18% 45%, 45% 60%, 72% 75%, 28% 35%, 82% 35%, 22% 65%, 68% 55%, 92% 70%, 38% 20%, 58% 90%, 48% 40%, 78% 60%,
+    25% 45%, 75% 25%, 35% 75%, 65% 55%, 15% 15%, 95% 65%, 5% 40%, 95% 10%, 45% 90%, 85% 90%,
+    22% 20%, 52% 80%, 78% 55%, 38% 25%, 68% 85%, 58% 35%, 42% 65%, 88% 75%, 32% 50%, 62% 90%,
+    48% 15%, 18% 55%, 92% 40%, 72% 30%, 28% 70%, 8% 50%, 98% 30%, 33% 60%, 67% 20%, 53% 95%,
+    47% 5%, 77% 85%, 23% 95%, 87% 5%;
+  background-repeat: no-repeat;
+  animation: starTwinkle 8s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@keyframes starTwinkle {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  25% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+  75% {
+    opacity: 0.9;
+    transform: scale(1.02);
+  }
+}
+
+[data-theme="blue"] .fullscreen.cosmic-background::before {
+  background: 
+    radial-gradient(ellipse 800px 600px at 15% 30%, rgba(33, 150, 243, 0.25) 0%, rgba(33, 150, 243, 0.1) 40%, transparent 70%),
+    radial-gradient(ellipse 700px 500px at 85% 70%, rgba(66, 165, 245, 0.22) 0%, rgba(66, 165, 245, 0.08) 35%, transparent 65%),
+    radial-gradient(ellipse 600px 450px at 50% 80%, rgba(21, 101, 192, 0.2) 0%, rgba(21, 101, 192, 0.08) 38%, transparent 60%),
+    radial-gradient(ellipse 900px 700px at 70% 20%, rgba(13, 71, 161, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse 750px 550px at 30% 60%, rgba(66, 165, 245, 0.2) 0%, transparent 62%),
+    radial-gradient(ellipse 650px 480px at 90% 40%, rgba(33, 150, 243, 0.18) 0%, transparent 58%),
+    radial-gradient(ellipse 850px 650px at 25% 15%, rgba(25, 118, 210, 0.16) 0%, transparent 60%),
+    radial-gradient(ellipse 720px 520px at 60% 90%, rgba(13, 71, 161, 0.19) 0%, transparent 63%),
+    radial-gradient(ellipse 780px 580px at 45% 25%, rgba(33, 150, 243, 0.17) 0%, transparent 61%),
+    radial-gradient(ellipse 680px 490px at 75% 55%, rgba(66, 165, 245, 0.19) 0%, transparent 59%),
+    radial-gradient(ellipse 820px 610px at 35% 75%, rgba(25, 118, 210, 0.18) 0%, transparent 64%),
+    radial-gradient(ellipse 760px 560px at 55% 12%, rgba(13, 71, 161, 0.16) 0%, transparent 57%),
+    radial-gradient(circle 1000px at 20% 50%, rgba(13, 71, 161, 0.3) 0%, rgba(13, 71, 161, 0.1) 40%, transparent 60%),
+    radial-gradient(circle 900px at 80% 20%, rgba(66, 165, 245, 0.25) 0%, rgba(66, 165, 245, 0.08) 45%, transparent 60%),
+    radial-gradient(circle 850px at 40% 70%, rgba(33, 150, 243, 0.2) 0%, transparent 50%),
+    radial-gradient(circle 950px at 65% 85%, rgba(21, 101, 192, 0.22) 0%, transparent 52%),
+    radial-gradient(circle 880px at 10% 80%, rgba(66, 165, 245, 0.18) 0%, transparent 55%),
+    radial-gradient(circle 920px at 75% 50%, rgba(13, 71, 161, 0.2) 0%, transparent 58%),
+    radial-gradient(circle 1100px at 50% 30%, rgba(33, 150, 243, 0.18) 0%, transparent 53%),
+    radial-gradient(circle 1050px at 28% 65%, rgba(66, 165, 245, 0.19) 0%, transparent 56%),
+    radial-gradient(circle 980px at 72% 75%, rgba(25, 118, 210, 0.17) 0%, transparent 54%);
 }
 
 @keyframes blueFloat {

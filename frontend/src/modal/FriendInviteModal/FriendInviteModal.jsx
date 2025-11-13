@@ -106,10 +106,11 @@ function FriendItem({ friend, status, isInviting, onInvite, getStatusIcon, getSt
   // 프로필 이미지가 없으면 이름의 첫 글자로 아바타 생성
   const getFriendAvatar = (friend) => {
     if (friend.profileImage) {
+      const friendName = friend.userNickname || friend.userNickName || friend.userName;
       return (
         <img 
           src={friend.profileImage} 
-          alt={friend.userName}
+          alt={friendName}
           className="friend-avatar"
           onError={(e) => {
             e.target.style.display = 'none';
@@ -122,7 +123,8 @@ function FriendItem({ friend, status, isInviting, onInvite, getStatusIcon, getSt
   };
 
   const getInitialAvatar = (friend) => {
-    const initial = friend.userName ? friend.userName.charAt(0).toUpperCase() : 'U';
+    const friendName = friend.userNickname || friend.userNickName || friend.userName;
+    const initial = friendName ? friendName.charAt(0).toUpperCase() : 'U';
     return (
       <div className="friend-avatar-initial" style={{ display: friend.profileImage ? 'none' : 'flex' }}>
         {initial}
@@ -137,7 +139,7 @@ function FriendItem({ friend, status, isInviting, onInvite, getStatusIcon, getSt
         {getInitialAvatar(friend)}
       </div>
       <div className="friend-info">
-        <p className="friend-name">{friend.userName}</p>
+        <p className="friend-name">{friend.userNickname || friend.userNickName || friend.userName}</p>
         <p className={`friend-status ${getStatusClass(status)}`}>
           {getStatusIcon(status)} {status}
         </p>

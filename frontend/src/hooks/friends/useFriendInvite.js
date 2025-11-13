@@ -34,17 +34,20 @@ export function useFriendInvite(room) {
     setInviting(prev => ({ ...prev, [friend.userId]: true }));
 
     try {
+      const friendName = friend.userNickname || friend.userNickName || friend.userName;
+      const inviterName = userData.userNickname || userData.userNickName || userData.userName;
+      
       const response = await axios.post('/api/chat/rooms/invite-friend', {
         roomId: room.id,
         roomName: room.name,
         inviterId: userData.userId,
-        inviterName: userData.userName,
+        inviterName: inviterName,
         friendId: friend.userId,
-        friendName: friend.userName
+        friendName: friendName
       });
 
       if (response.data.success) {
-        toast.success(`${friend.userName}님에게 초대를 보냈습니다.`);
+        toast.success(`${friendName}님에게 초대를 보냈습니다.`);
         return { success: true, message: '초대가 전송되었습니다.' };
       } else {
         toast.error(response.data.message || '초대 전송에 실패했습니다.');

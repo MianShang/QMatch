@@ -123,16 +123,56 @@ function ChatRoom({
     };
 
     const handleInviteSent = (friend) => {
-        console.log(`${friend.userName}님에게 초대를 보냈습니다.`);
+        const friendName = friend.userNickname || friend.userNickName || friend.userName;
+        console.log(`${friendName}님에게 초대를 보냈습니다.`);
         setShowFriendInvite(false);
         };
     
 
     // 친구 닉네임 가져오기
+    const [friendNickname, setFriendNickname] = useState(null);
+    
+    useEffect(() => {
+        if (!selectedFriendRoom?.friendId) {
+            setFriendNickname(null);
+            return;
+        }
+        
+        // friends 목록에서 먼저 확인
+        const friend = friends?.find(f => f.userId === selectedFriendRoom.friendId);
+        if (friend && (friend.userNickname || friend.userNickName)) {
+            setFriendNickname(friend.userNickname || friend.userNickName);
+            return;
+        }
+        
+        // friends 목록에 닉네임이 없으면 프로필 API로 가져오기
+        const fetchFriendNickname = async () => {
+            try {
+                const response = await axios.get("/api/profile/user/info", {
+                    params: { userId: selectedFriendRoom.friendId }
+                });
+                const nickname = response.data.userNickname || response.data.userNickName;
+                if (nickname) {
+                    setFriendNickname(nickname);
+                } else if (friend) {
+                    setFriendNickname(friend.userName);
+                }
+            } catch (error) {
+                console.error('친구 닉네임 가져오기 실패:', error);
+                if (friend) {
+                    setFriendNickname(friend.userName);
+                }
+            }
+        };
+        
+        fetchFriendNickname();
+    }, [selectedFriendRoom?.friendId, friends]);
+    
     const getFriendName = () => {
-        if (!selectedFriendRoom || !friends) return "친구";
-        const friend = friends.find(f => f.userId === selectedFriendRoom.friendId);
-        return friend ? friend.userName : "친구";
+        if (!selectedFriendRoom) return "친구";
+        if (friendNickname) return friendNickname;
+        const friend = friends?.find(f => f.userId === selectedFriendRoom.friendId);
+        return friend?.userName || "친구";
     };
 
     // 1대1 친구 음성채팅 시작/종료 처리
@@ -142,7 +182,7 @@ function ChatRoom({
         const myUserId = userData.userId;
         const friendUserId = selectedFriendRoom.friendId;
         const friendInfo = friends.find(f => f.userId === friendUserId);
-        const friendName = friendInfo ? friendInfo.userName : "친구";
+        const friendName = friendInfo ? (friendInfo.userNickname || friendInfo.userNickName || friendInfo.userName) : "친구";
         const sortedIds = [myUserId, friendUserId].sort();
         const friendChannelId = `friend_${sortedIds[0]}_${sortedIds[1]}`;
 

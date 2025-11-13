@@ -13,6 +13,8 @@ import com.example.backend.Entity.UserChatRoom;
 import com.example.backend.Repository.ChatRoomRepository;
 import com.example.backend.Repository.UserChatRoomRepository;
 import com.example.backend.Repository.UserRepository;
+import com.example.backend.Repository.UserGameCodeRepository;
+import com.example.backend.Entity.UserGameCode;
 import com.example.backend.Service.UserChatRoomService;
 import com.example.backend.Service.ChatListService;
 import com.example.backend.Websocket.RealTimeUserManagement;
@@ -38,6 +40,7 @@ public class UserChatRoomController {
     private final UserRepository userRepository;
     private final ChatRoomRepository chatRoomRepository;
     private final UserChatRoomRepository userChatRoomRepository;
+    private final UserGameCodeRepository userGameCodeRepository;
 
     private final UserChatRoomService userChatRoomService;
     private final ChatListService chatListService;
@@ -162,6 +165,14 @@ public class UserChatRoomController {
                         throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 채팅방에 참여하고 있습니다.");
                     });
             
+            // 4-1. 해당 게임의 게임 코드가 있는지 확인
+            List<UserGameCode> userGameCodes = userGameCodeRepository.findByUserAndGameName(user, room.getGameName());
+            if (userGameCodes == null || userGameCodes.isEmpty()) {
+                String gameDisplayName = getGameDisplayName(room.getGameName());
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                    gameDisplayName + " 게임 코드를 먼저 등록해주세요.");
+            }
+            
             // 5. 입장 신청 생성 (PENDING 상태)
             UserChatRoom joinRequest = new UserChatRoom(user, room, com.example.backend.Entity.Role.MEMBER);
             joinRequest.setStatus(ChatRoomUserStatus.PENDING);
@@ -238,6 +249,16 @@ public class UserChatRoomController {
             if (room.getCurrentUsers() >= room.getMaxUsers()) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(Map.of("error", "채팅방이 가득 찼습니다."));
+            }
+            
+            // 4-1. 신청자의 해당 게임 코드 확인
+            User applicant = userRepository.findByUserId(applicantId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "신청자를 찾을 수 없습니다."));
+            List<UserGameCode> userGameCodes = userGameCodeRepository.findByUserAndGameName(applicant, room.getGameName());
+            if (userGameCodes == null || userGameCodes.isEmpty()) {
+                String gameDisplayName = getGameDisplayName(room.getGameName());
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", gameDisplayName + " 게임 코드를 먼저 등록해주세요."));
             }
             
             // 5. 신청 승인 처리
@@ -444,4 +465,23 @@ public class UserChatRoomController {
 //        // 해당 유저가 저장한 채팅방 컬럼을 기본키로 지정하여 삭제한다
 //        userChatRoomRepository.deleteById(roomId);
 //    }
+
+    // 게임 이름을 한글 표시명으로 변환하는 헬퍼 메서드
+    private String getGameDisplayName(String gameName) {
+        if (gameName == null) return "게임";
+        switch (gameName.toLowerCase()) {
+            case "lol":
+                return "롤";
+            case "maplestory":
+                return "메이플스토리";
+            case "lostark":
+                return "로스트아크";
+            case "tft":
+                return "TFT";
+            case "dnf":
+                return "던전앤파이터";
+            default:
+                return gameName;
+        }
+    }
 }

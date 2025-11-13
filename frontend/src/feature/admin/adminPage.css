@@ -2,22 +2,81 @@
 .admin-page-container {
   width: 90%;
   max-width: 1400px; 
-  margin: 0 auto;
+  margin: 40px auto 60px;
   padding: 40px 30px;
-  background-color: #242424; 
+  background-color: var(--discord-bg-secondary);
   border-radius: 12px;
-  color: #f0f0f0; 
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  color: var(--discord-text-normal);
+  box-shadow: var(--discord-elevation-medium);
+  border: 1px solid var(--discord-bg-tertiary);
   min-height: calc(100vh - 80px); /* 화면 높이에서 여백 제외 */
   overflow-y: auto; /* 내용이 많을 경우 스크롤 가능 */
 }
 
 /* 다크모드 관리자 페이지 z-index */
 [data-theme="dark"] .admin-page-container,
+[data-theme="blue"] .admin-page-container,
 :root:not([data-theme="light"]):not([data-theme="blue"]) .admin-page-container {
     position: relative;
     z-index: 1000;
     transform: translateZ(0); /* GPU 가속으로 stacking context 생성 */
+}
+
+[data-theme="light"] .admin-page-container {
+  background: #ffffff;
+  border: 1px solid #d8deeb;
+  box-shadow:
+    0 12px 24px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .admin-header h1 {
+  color: #1f2937;
+}
+
+[data-theme="light"] .section-container h2 {
+  color: #2d3748;
+}
+
+[data-theme="light"] .content-box {
+  background: #ffffff;
+  border: 1px solid #d8deeb;
+  box-shadow:
+    0 6px 16px rgba(15, 23, 42, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="light"] .report-table th {
+  background: #eef2fb;
+  color: #1e293b;
+}
+
+[data-theme="light"] .report-table td {
+  color: #344054;
+}
+
+[data-theme="light"] .report-table tbody tr:hover {
+  background: rgba(96, 165, 250, 0.12);
+}
+
+[data-theme="light"] .button-secondary {
+  background-color: #e2e8f0;
+  color: #1f2937;
+  border: 1px solid #cbd5f5;
+}
+
+[data-theme="light"] .button-secondary:hover {
+  background-color: #cdd6ef;
+}
+
+[data-theme="light"] .button-color {
+  background-color: #e8ecf7;
+  color: #1f2937;
+  border: 1px solid #d7def3;
+}
+
+[data-theme="light"] .button-color:hover {
+  background-color: #d1d9f0;
 }
 
 /* 헤더 */
@@ -26,14 +85,14 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 20px;
-  border-bottom: 2px solid #444;  
+  border-bottom: 1px solid var(--discord-bg-tertiary);  
   margin-bottom: 30px;
 }
 
 .admin-header h1 {
   margin: 0;
   font-size: 2.2rem;
-  color: #ffffff; 
+  color: var(--discord-text-normal); 
   font-weight: 600;
 }
 
@@ -44,24 +103,23 @@
 
 .section-container h2 {
   font-size: 1.6rem;
-  color: #eee;
+  color: var(--discord-text-normal);
   font-weight: 500;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #3a3a3a;
+  padding-bottom: 0;
+  border-bottom: none;
   margin-bottom: 20px;
 }
 
 /* 콘텐츠 박스 (스크롤바 커스텀) */
 .content-box {
-  border: 1px solid #3a3a3a; 
+  border: 1px solid var(--discord-bg-tertiary); 
   padding: 0;
   border-radius: 8px;
-  background-color: #2c2c2c;
+  background-color: var(--discord-bg-primary);
   max-height: 400px;
   overflow-y: auto;
-  
   /* 박스 자체에 그림자  */
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
 }
 
 /* 테이블 스타일  */
@@ -69,22 +127,23 @@
   width: 100%;
   border-collapse: collapse; 
   margin-top: 0;
+  color: var(--discord-text-normal);
 }
 
 .report-table th,
 .report-table td {
   padding: 14px 18px; 
   text-align: center;
-  border-bottom: 1px solid #444; 
+  border-bottom: 1px solid var(--discord-bg-tertiary); 
   border-left: none;
   border-right: none;
   
 }
 
 .report-table th {
-  background-color: #333; 
+  background-color: var(--discord-bg-secondary); 
   font-weight: 600;
-  color: #ffffff; 
+  color: var(--discord-text-normal); 
 }
 
 
@@ -93,7 +152,7 @@
 }
 
 .report-table tbody tr:hover {
-  background-color: #3a3a3a;
+  background-color: var(--discord-bg-modifier-hover);
 }
 
 /* 마지막 행의 하단 테두리 */
@@ -111,7 +170,7 @@
   cursor: pointer;
   font-weight: 500;
   font-size: 0.9rem;
-  color: white;
+  color: #ffffff;
   transition: background-color 0.2s ease, transform 0.1s ease;
   margin: 0 4px; 
 }
@@ -127,18 +186,19 @@
 
 /* 파란색: 상세보기, 확인 등 */
 .button-primary {
-  background-color: #007bff;
+  background-color: var(--discord-accent);
 }
 .button-primary:hover {
-  background-color: #0069d9;
+  background-color: var(--discord-accent-hover);
 }
 
 /* 회색: 나가기, 취소 등 */
 .button-secondary {
-  background-color: #6c757d;
+  background-color: var(--discord-bg-quaternary);
+  color: var(--discord-text-normal);
 }
 .button-secondary:hover {
-  background-color: #5a6268;
+  background-color: var(--discord-bg-modifier-hover);
 }
 
 /* 초록색: 정지 해제, 활성화 등 */
@@ -164,17 +224,17 @@
 }
 
 .content-box::-webkit-scrollbar-track {
-  background: #2c2c2c;
+  background: var(--discord-bg-primary);
   border-radius: 10px;
 }
 
 .content-box::-webkit-scrollbar-thumb {
-  background: #555;
+  background: var(--discord-bg-quaternary);
   border-radius: 10px;
 }
 
 .content-box::-webkit-scrollbar-thumb:hover {
-  background: #777;
+  background: var(--discord-bg-modifier-hover);
 }
 
 /* 상태 배지 스타일  */
@@ -207,12 +267,12 @@
   cursor: pointer;
   font-weight: 500;
   font-size: 0.9rem;
-  color: white;
+  color: var(--discord-text-normal);
   transition: background-color 0.2s ease, transform 0.1s ease;
   margin: 0 4px;
-  background-color: #6c757d;
+  background-color: var(--discord-bg-quaternary);
 }
 .button-color:hover {
-  background-color: #5a6268;
+  background-color: var(--discord-bg-modifier-hover);
   transform: translateY(-1px);
 }

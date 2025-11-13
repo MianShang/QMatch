@@ -83,6 +83,7 @@ function ChatListPage({
   const [chatListExtend, setChatListExtend] = useState(false);
   const [unreadCounts, setUnreadCounts] = useState({});
   const [chatUserList, setChatUserList] = useState([]);
+  const [userNicknames, setUserNicknames] = useState({}); // userId -> userNickname 매핑
 
   // 안 읽은 메시지가 있는지 확인하고 전역 상태 업데이트
   useEffect(() => {
@@ -567,6 +568,55 @@ function ChatListPage({
       globalStomp.unsubscribe(subscriptionId);
     };
   }, [selectedRoom?.id, userData?.userId, globalStomp]);
+
+  /* userNickName이 null인 사용자들의 닉네임을 프로필 API로 가져오기 */
+  useEffect(() => {
+    if (!chatUserList || chatUserList.length === 0) return;
+
+    const fetchMissingNicknames = async () => {
+      // userNickName이 null이거나 빈 문자열인 사용자들만 필터링
+      const usersNeedingNickname = chatUserList.filter(u => 
+        (!u.userNickName || u.userNickName.trim() === '') && 
+        !userNicknames[u.userId] // 이미 가져온 경우 제외
+      );
+
+      if (usersNeedingNickname.length === 0) return;
+
+      // 각 사용자의 프로필 정보를 병렬로 가져오기
+      const nicknamePromises = usersNeedingNickname.map(async (user) => {
+        try {
+          const response = await axios.get("/api/profile/user/info", {
+            params: { userId: user.userId }
+          });
+          return {
+            userId: user.userId,
+            nickname: response.data.userNickname || response.data.userNickName || null
+          };
+        } catch (error) {
+          console.error(`사용자 ${user.userId} 닉네임 가져오기 실패:`, error);
+          return {
+            userId: user.userId,
+            nickname: null
+          };
+        }
+      });
+
+      const results = await Promise.all(nicknamePromises);
+      const nicknameMap = {};
+      results.forEach(result => {
+        if (result && result.nickname) {
+          nicknameMap[result.userId] = result.nickname;
+        }
+      });
+
+      if (Object.keys(nicknameMap).length > 0) {
+        setUserNicknames(prev => ({ ...prev, ...nicknameMap }));
+      }
+    };
+
+    fetchMissingNicknames();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chatUserList]);
 
   /* 초기 스냅샷 가져오기: 참여자 패널 오픈 + 목록 로드 시 */
   useEffect(() => {
@@ -1245,6 +1295,25 @@ function ChatListPage({
               {(() => {
                 const { online, away, offline } = splitMembersByStatus(chatUserList);
 
+                // 닉네임 가져오는 헬퍼 함수
+                const getUserDisplayName = (user) => {
+                  // userNicknames 상태에서 먼저 확인 (프로필 API로 가져온 닉네임)
+                  if (userNicknames[user.userId]) {
+                    return userNicknames[user.userId];
+                  }
+                  
+                  // userNickName (대문자 N) 우선 확인
+                  if (user.userNickName && user.userNickName.trim() !== '') {
+                    return user.userNickName.trim();
+                  }
+                  // userNickname (소문자 n) 확인
+                  if (user.userNickname && user.userNickname.trim() !== '') {
+                    return user.userNickname.trim();
+                  }
+                  // 둘 다 없으면 userName 사용
+                  return user.userName || '알 수 없음';
+                };
+
                 return (
                   <>
                     {/* 온라인 */}
@@ -1255,7 +1324,7 @@ function ChatListPage({
                       return (
                         <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'online-' + u.userId}>
                           <span className={`membersName ${isPending ? 'membersName--pending' : ''}`}>
-                            {u.userName}
+                            {getUserDisplayName(u)}
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
                             {/* 실행 중인 게임 표시 */}
@@ -1306,7 +1375,7 @@ function ChatListPage({
                       return (
                         <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'away-' + u.userId}>
                           <span className={`membersName ${isPending ? 'membersName--pending' : ''}`}>
-                            {u.userName}
+                            {getUserDisplayName(u)}
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
                             {/* 실행 중인 게임 표시 */}
@@ -1356,7 +1425,7 @@ function ChatListPage({
                       return (
                         <div className={`membersRow ${isPending ? 'membersRow--pending' : ''}`} key={'off-' + u.userId}>
                           <span className={`membersName membersName--offline ${isPending ? 'membersName--pending' : ''}`}>
-                            {u.userName}
+                            {getUserDisplayName(u)}
                             {isPending && ' (대기중)'}
                             <span className="membersDot">{getStatusIcon(eff)}</span>
                           </span>
@@ -1377,7 +1446,7 @@ function ChatListPage({
                         {Array.isArray(pendingUsers) && pendingUsers.map(u => (
                           <div className="membersRow" key={'pending-' + u.userId}>
                             <span className="membersName membersName--offline">
-                              {u.userName}
+                              {getUserDisplayName(u)}
                               <span className="membersDot">⚪</span>
                             </span>
 

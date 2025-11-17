@@ -247,11 +247,16 @@ public class ChatController {
         userChatRoomRepository.save(ucr);
 
         // (4-1) 방장 입장 알림 전송 (자유 입장 방과 방장 승인 방 모두)
+        String creatorDisplayName = (creator.getUserNickName() != null && !creator.getUserNickName().isBlank())
+                ? creator.getUserNickName()
+                : creator.getUserName();
+
         simpMessagingTemplate.convertAndSend("/topic/chat/" + savedRoom.getId() + "/member-joined",
                 Map.of(
                         "type", "member-joined",
                         "userId", creator.getUserId(),
-                        "userName", creator.getUserName(),
+                        "userName", creatorDisplayName,
+                        "userNickname", creator.getUserNickName() != null ? creator.getUserNickName() : "",
                         "roomId", savedRoom.getId(),
                         "timestamp", System.currentTimeMillis()
                 ));
@@ -491,15 +496,19 @@ public class ChatController {
                 .putIfAbsent(roomId, java.util.concurrent.ConcurrentHashMap.newKeySet());
         RealTimeUserManagement.activeUsersByRoom.get(roomId).add(userId);
 
-        // 멤버 입장 메시지로 입장 알림 저장
-        chatListService.saveMemberJoinMessage(roomId, user.getUserName() + "님이 입장했습니다. \n 모두 환영해주세요~~");
+        // 멤버 입장 메시지로 입장 알림 저장 (닉네임 우선, 없으면 이름 사용)
+        String displayName = (user.getUserNickName() != null && !user.getUserNickName().isBlank())
+                ? user.getUserNickName()
+                : user.getUserName();
+        chatListService.saveMemberJoinMessage(roomId, displayName + "님이 입장했습니다. \n 모두 환영해주세요~~");
         
         // 채팅방 전체에 새 멤버 입장 알림
         simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId + "/member-joined",
                 Map.of(
                         "type", "member-joined",
                         "userId", userId,
-                        "userName", user.getUserName(),
+                        "userName", displayName,
+                        "userNickname", user.getUserNickName() != null ? user.getUserNickName() : "",
                         "roomId", roomId,
                         "timestamp", System.currentTimeMillis()
                 ));

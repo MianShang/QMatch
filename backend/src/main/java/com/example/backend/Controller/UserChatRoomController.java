@@ -289,16 +289,21 @@ public class UserChatRoomController {
             RealTimeUserManagement.activeUsersByRoom
                     .putIfAbsent(roomId, java.util.concurrent.ConcurrentHashMap.newKeySet());
             RealTimeUserManagement.activeUsersByRoom.get(roomId).add(applicantId);
-            
-            // 9. 멤버 입장 메시지로 입장 알림 저장
-            chatListService.saveMemberJoinMessage(roomId, joinRequest.getUser().getUserName() + "님이 입장했습니다. \n 모두 환영해주세요~~");
-            
+
+            // 9. 멤버 입장 메시지로 입장 알림 저장 (닉네임 우선, 없으면 이름 사용)
+            User applicantUser = joinRequest.getUser();
+            String displayName = (applicantUser.getUserNickName() != null && !applicantUser.getUserNickName().isBlank())
+                    ? applicantUser.getUserNickName()
+                    : applicantUser.getUserName();
+            chatListService.saveMemberJoinMessage(roomId, displayName + "님이 입장했습니다. \n 모두 환영해주세요~~");
+
             // 10. 채팅방 전체에 새 멤버 입장 알림
             simpMessagingTemplate.convertAndSend("/topic/chat/" + roomId + "/member-joined",
                     Map.of(
                             "type", "member-joined",
                             "userId", applicantId,
-                            "userName", joinRequest.getUser().getUserName(),
+                            "userName", displayName,
+                            "userNickname", applicantUser.getUserNickName() != null ? applicantUser.getUserNickName() : "",
                             "roomId", roomId,
                             "timestamp", System.currentTimeMillis()
                     ));

@@ -18,7 +18,7 @@ import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
-public class FriendInviteService {
+public class    FriendInviteService {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatRoomRepository chatRoomRepository;
@@ -127,14 +127,18 @@ public class FriendInviteService {
         );
         
         messagingTemplate.convertAndSend("/topic/user/" + room.getOwner().getUserId() + "/friend-invite-response", responseData);
-        
-        // 8. 방 참여자들에게 새 멤버 입장 알림 + 메시지 저장
-        chatListService.saveMemberJoinMessage(roomId, user.getUserName() + "님이 입장했습니다. \n 모두 환영해주세요~~");
+
+        // 8. 방 참여자들에게 새 멤버 입장 알림 + 메시지 저장 (닉네임 우선, 없으면 이름 사용)
+        String displayName = (user.getUserNickName() != null && !user.getUserNickName().isBlank())
+                ? user.getUserNickName()
+                : user.getUserName();
+        chatListService.saveMemberJoinMessage(roomId, displayName + "님이 입장했습니다. \n 모두 환영해주세요~~");
 
         Map<String, Object> joinData = Map.of(
                 "type", "member-joined",
                 "userId", userId,
-                "userName", user.getUserName(),
+                "userName", displayName,
+                "userNickname", user.getUserNickName() != null ? user.getUserNickName() : "",
                 "roomId", roomId,
                 "timestamp", System.currentTimeMillis()
         );

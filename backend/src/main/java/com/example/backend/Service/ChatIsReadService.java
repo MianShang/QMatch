@@ -102,6 +102,11 @@ public class ChatIsReadService {
         Optional<User> user = userRepository.findByUserId(userId);
         Optional<ChatRoom> chatRoom = chatRoomRepository.findById(chatRoomId);
 
+        // 유저나 채팅방이 존재하지 않으면 조기 반환 (방이 삭제된 경우 등)
+        if (user.isEmpty() || chatRoom.isEmpty()) {
+            return;
+        }
+
         // 유저와 채팅방에 해당하는 컬럼 리스트를 찾음
         List<ChatIsRead> chatIsReads = chatIsReadRepository.findByUserAndChatRoomId(user.get(), chatRoom.get());
 

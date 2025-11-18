@@ -13,7 +13,7 @@ export function useLogout(){
     setCurrentGroupVoiceChat,
     setVoiceChatRoomId,
     setCurrentVoiceRoomId,
-    globalStomp, // ✅ 전역 STOMP 클라이언트 추가
+    globalStomp, // 전역 STOMP 클라이언트 추가
     userData,
   } = useContext(LogContext);
 
@@ -21,7 +21,17 @@ export function useLogout(){
   async function logoutFunc() {
 
     try {
-      // ✅ STOMP 세션 종료 (로그아웃 시 PresenceEvent 오프라인 반영)
+      // 음성채팅 종료
+      if (voiceChatRef?.current) {
+        try {
+          await voiceChatRef.current.leaveChannel();
+          console.log("Agora 채널에서 정상적으로 퇴장했습니다.");
+        } catch (err) {
+          console.warn("음성채널 퇴장 중 오류:", err);
+        }
+      }
+
+      // STOMP 세션 종료 (로그아웃 시 PresenceEvent 오프라인 반영)
       if (globalStomp && globalStomp.isConnected()) {
         try {
           await globalStomp.deactivate();
@@ -39,16 +49,6 @@ export function useLogout(){
 
       await axios.post("/api/logout");
       
-
-      // 음성채팅 종료
-      if (voiceChatRef?.current) {
-        try {
-          await voiceChatRef.current.leaveChannel();
-          console.log("Agora 채널에서 정상적으로 퇴장했습니다.");
-        } catch (err) {
-          console.warn("음성채널 퇴장 중 오류:", err);
-        }
-      }
 
       // 음성 상태 초기화
       setJoinedVoice(false);

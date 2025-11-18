@@ -46,7 +46,7 @@ function App() {
   // 실시간 프로세스 목록 담을 State
   const [processes, setProcesses] = useState([]);
   //전역 STOMP 훅
-  const { subscribe, publish, isConnected, unsubscribe } = useGlobalStomp(userData);
+  const { subscribe, publish, isConnected, unsubscribe, getClient } = useGlobalStomp(userData);
   
   // 친구 요청 개수 관리 훅
   const { pendingCount, refreshPendingCount } = useFriendRequestCount(userData, { subscribe, publish, isConnected, unsubscribe });
@@ -211,12 +211,53 @@ function App() {
         }
       };
       checkLoginStatus();
-      const interval = setInterval(() => {
+      const interval = setInterval(async () => {
   
         if (isMounted && isLogIn) {
-          axios.get('/api/check-login', { withCredentials: true }).catch(() => {
-            setIsLogIn(false);
-            setUserData(null);
+          axios.get('/api/check-login', { withCredentials: true }).catch(async () => {
+            // 세션 만료 시 자동 로그아웃 처리
+            try {
+              const globalStomp = getClient();
+              
+              // 음성채팅 종료 (STOMP 종료 전에 먼저 실행하여 참여자 퇴장 메시지 전송)
+              if (voiceChatRef?.current) {
+                try {
+                  await voiceChatRef.current.leaveChannel();
+                  console.log("자동 로그아웃: Agora 채널에서 정상적으로 퇴장했습니다.");
+                  // STOMP 메시지 전송을 위해 잠시 대기
+                  await new Promise(resolve => setTimeout(resolve, 100));
+                } catch (err) {
+                  console.warn("자동 로그아웃: 음성채널 퇴장 중 오류:", err);
+                }
+              }
+
+              // STOMP 세션 종료 (음성채팅 종료 후 실행)
+              if (globalStomp && globalStomp.connected) {
+                try {
+                  await globalStomp.deactivate();
+                  console.log("자동 로그아웃: STOMP 세션이 정상적으로 종료되었습니다.");
+                } catch (e) {
+                  console.warn("자동 로그아웃: STOMP 세션 종료 중 오류:", e);
+                }
+              }
+
+              // 음성 상태 초기화
+              setJoinedVoice(false);
+              setFriendVoiceChatActive(false);
+              setCurrentFriendVoiceChat(null);
+              setCurrentGroupVoiceChat(null);
+              setVoiceChatRoomId(null);
+              setCurrentVoiceRoomId(null);
+
+              // 로그인 상태 초기화
+              setIsLogIn(false);
+              setUserData(null);
+            } catch (error) {
+              console.error("자동 로그아웃 중 오류:", error);
+              // 오류가 발생해도 로그인 상태는 초기화
+              setIsLogIn(false);
+              setUserData(null);
+            }
           });
         }
       }, 10 * 60 * 1000); // 10분마다 반복

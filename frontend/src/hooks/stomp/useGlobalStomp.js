@@ -13,8 +13,20 @@ export function useGlobalStomp(userData) {
 
   // STOMP 클라이언트 초기화
   const initializeStomp = useCallback(() => {
-    if (stompRef.current?.active) {
+    // 이미 활성화되어 있고 연결되어 있으면 재사용
+    if (stompRef.current?.active && stompRef.current?.connected) {
       return Promise.resolve(stompRef.current);
+    }
+
+    // 비활성화된 클라이언트가 있으면 정리
+    if (stompRef.current && !stompRef.current.active) {
+      try {
+        stompRef.current.deactivate();
+      } catch (e) {
+        // 이미 비활성화된 경우 무시
+      }
+      stompRef.current = null;
+      connectionPromiseRef.current = null;
     }
 
     if (connectionPromiseRef.current) {
@@ -59,12 +71,26 @@ export function useGlobalStomp(userData) {
     return connectionPromiseRef.current;
   }, [userData]);
 
-  // 로그인 즉시 웹소켓 연결
+  // 로그인 즉시 웹소켓 연결, 로그아웃 시 정리
   useEffect(() => {
     if (userData?.userId) {
       initializeStomp().catch(error => {
         console.error('로그인 시 웹소켓 연결 실패:', error);
       });
+    } else {
+      // userData가 null이면 (로그아웃) STOMP 클라이언트 완전히 정리
+      if (stompRef.current) {
+        try {
+          if (stompRef.current.active) {
+            stompRef.current.deactivate();
+          }
+        } catch (e) {
+          console.warn('STOMP 클라이언트 정리 중 오류:', e);
+        }
+        stompRef.current = null;
+        connectionPromiseRef.current = null;
+        subscriptionsRef.current.clear();
+      }
     }
   }, [userData?.userId, initializeStomp]);
 

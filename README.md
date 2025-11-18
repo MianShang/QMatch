@@ -107,7 +107,7 @@ QMatch는 게임 플레이어들이 쉽게 팀원을 찾고, 실시간으로 소
 <img width="2080" height="1390" alt="로비 페이지" src="https://github.com/user-attachments/assets/71beb27c-8035-492b-a069-da82b4185c24" />
 
 ### 프로필
-<img width="2080" height="1390" alt="프로필" src="https://github.com/user-attachments/assets/43251d29-ef55-4b58-a3ee-018c97bc2a11" />
+<img width="2080" height="1390" alt="프로필" src="https://github.com/user-attachments/assets/2c24dea9-774b-45c9-8f42-4380dab874dc" />
 
 ### 서치 페이지
 <img width="2080" height="1390" alt="서치 페이지" src="https://github.com/user-attachments/assets/18fa3870-c4c4-4141-b7f5-3ebc03793365" />
@@ -120,7 +120,7 @@ QMatch는 게임 플레이어들이 쉽게 팀원을 찾고, 실시간으로 소
 <img width="2080" height="1390" alt="음성 설정" src="https://github.com/user-attachments/assets/872fe7bc-e1d9-4436-b215-aad5340acf82" />
 
 ### 관리자 페이지
-<img width="2080" height="1390" alt="관리자 페이지지" src="https://github.com/user-attachments/assets/21377fd5-59de-4d9c-907a-76c252e31cfb" />
+<img width="2078" height="1390" alt="관리자 페이지" src="https://github.com/user-attachments/assets/d18435e2-38ed-4d0a-b1d6-e9c94c811a27" />
 
 ---
 

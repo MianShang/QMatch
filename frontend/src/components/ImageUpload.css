@@ -1,0 +1,256 @@
+.image-upload-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.image-upload-modal {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  width: 500px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: imageUploadSlideIn 0.2s ease-out;
+}
+
+@keyframes imageUploadSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.image-upload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.image-upload-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.image-upload-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.image-upload-close:hover {
+  background-color: #e0e0e0;
+}
+
+.image-upload-content {
+  padding: 20px;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-upload-dropzone {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  background: #fafafa;
+}
+
+.image-upload-dropzone:hover {
+  border-color: #4A9EFF;
+  background: #f0f8ff;
+}
+
+.image-upload-dropzone.active {
+  border-color: #4A9EFF;
+  background: #e6f3ff;
+  transform: scale(1.02);
+}
+
+.dropzone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.dropzone-icon {
+  font-size: 48px;
+  opacity: 0.7;
+}
+
+.dropzone-text {
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin: 0;
+}
+
+.dropzone-subtext {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.image-preview-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.image-preview {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.image-info {
+  text-align: center;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.image-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  margin: 0 0 4px 0;
+  word-break: break-all;
+}
+
+.image-size {
+  font-size: 12px;
+  color: #666;
+  margin: 0 0 4px 0;
+}
+
+.image-type {
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+
+.image-upload-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  border-top: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.cancel-button {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: white;
+  color: #666;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.cancel-button:hover {
+  background: #f5f5f5;
+  border-color: #999;
+}
+
+.upload-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #4A9EFF;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.upload-button:hover:not(:disabled) {
+  background: #3a8bdf;
+}
+
+.upload-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 480px) {
+  .image-upload-modal {
+    width: 95vw;
+    margin: 0 2.5vw;
+  }
+  
+  .image-upload-content {
+    padding: 16px;
+    min-height: 150px;
+  }
+  
+  .image-upload-dropzone {
+    padding: 30px 16px;
+  }
+  
+  .dropzone-icon {
+    font-size: 36px;
+  }
+  
+  .dropzone-text {
+    font-size: 14px;
+  }
+  
+  .dropzone-subtext {
+    font-size: 12px;
+  }
+  
+  .image-preview {
+    max-height: 200px;
+  }
+}

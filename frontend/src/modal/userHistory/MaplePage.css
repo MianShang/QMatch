@@ -1,0 +1,234 @@
+/* 전체 컨테이너 */
+.maple-box {
+  display: flex;
+  flex-direction: row;
+  padding: 24px;
+  gap: 24px;
+  font-family: "Malgun Gothic", sans-serif;
+  height: 100%;
+  overflow-y: hidden;
+}
+
+/* 좌측 캐릭터 */
+.maple-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px;
+  background: #333;
+  border-radius: 8px;
+  border: 1px solid #444;
+  width: 260px;
+  flex-shrink: 0;
+  gap: 1px;
+  overflow: visible;
+}
+
+.maple-image {
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.maple-image img {
+  width: 250%;
+  height: 250%;
+  object-fit: contain;
+}
+
+.maple-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: center;
+  color: #ddd;
+  width: 100%;
+}
+
+.maple-info h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px 0;
+}
+
+.maple-info p {
+  margin: 0;
+  line-height: 1.3;
+  font-size: 13px;
+}
+
+.maple-info .server { color: #FFFFFF; }
+.maple-info .level  { color: #00BFFF; }
+.maple-info .job    { color: #00FF00; }
+.maple-info .guild  { color: #FFA500; }
+.maple-info .combat { color: #cf4aa7; }
+
+/* 우측 장비 */
+.maple-equipment-section {
+  flex: 1;
+  background: #222;
+  border-radius: 8px;
+  border: 1px solid #444;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.maple-equipment-section h3 {
+  background: #111;
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+  padding: 12px;
+  margin: 0;
+  border-bottom: 1px solid #444;
+  text-align: center;
+}
+
+.maple-equipment-list {
+  padding: 12px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.maple-equipment-item {
+  background: #333;
+  border-radius: 6px;
+  padding: 10px;
+  border: 1px solid #555;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  min-height: 120px;
+}
+
+.maple-equipment-item:hover {
+  background: #444;
+  border-color: #777;
+}
+
+.maple-equipment-item img {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  border: 1px solid #777;
+}
+
+.maple-equipment-item p {
+  margin: 0;
+  font-size: 11px;
+}
+
+.maple-equipment-item p:first-child {
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* 등급별 색상 */
+.potential-legendary { color: #00FF00; }
+.potential-unique    { color: #FFD700; }
+.potential-epic      { color: #A020F0; }
+.potential-rare      { color: #00BFFF; }
+
+/* 장비분류 */
+.equip-type {
+  color: #dddddd;
+  font-size: 11px;
+}
+
+/* Tooltip */
+.customTooltip {
+  background: rgba(20, 20, 20, 0.95) !important;
+  border: 1px solid #888 !important;
+  border-radius: 6px !important;
+  padding: 12px !important;
+  font-size: 13px;
+  color: white;
+  max-width: 280px;
+  text-align: left;
+  line-height: 1.5;
+}
+
+.tooltip-content strong {
+  display: block;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+/* 소울 프리픽스 (상단) */
+.soul-prefix {
+  text-align: center;
+  color: #FFD700;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+
+/* 구역 제목 (좌측 정렬) */
+.section-title {
+  text-align: left;
+  font-weight: bold;
+  margin: 4px 0;
+}
+
+/* 잠재/에디셔널 잠재옵션 제목 색상 → 등급 색상 따름 */
+.section-title.potential-legendary { color: #00FF00; }
+.section-title.potential-unique    { color: #FFD700; }
+.section-title.potential-epic      { color: #A020F0; }
+.section-title.potential-rare      { color: #00BFFF; }
+
+/* 소울 적용 문구 → 소울 프리픽스와 동일한 색상 */
+.soul-apply {
+  font-weight: bold;
+  color: #FFD700 !important;
+}
+
+/* 소울 옵션 */
+.soul-option {
+  text-align: left;
+  color: #FFFFFF;
+  margin: 4px 0;
+}
+
+/* 옵션 영역 좌측 정렬 */
+.tooltip-options {
+  text-align: left;
+}
+
+/* 옵션 글씨 굵기 제거 */
+.stat-line,
+.potential-line,
+.tooltip-options p,
+.tooltip-options span {
+  font-weight: normal !important;
+}
+
+/* 스타포스 */
+.stars {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: #FFD700;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+.star-row { display: flex; gap: 6px; }
+.star-group { letter-spacing: 1px; }
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .maple-box { flex-direction: column; }
+  .maple-left { width: 100%; }
+  .maple-equipment-list { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .maple-equipment-list { grid-template-columns: 1fr; }
+}

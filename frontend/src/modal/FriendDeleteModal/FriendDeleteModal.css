@@ -1,0 +1,129 @@
+.friend-delete-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.friend-delete-modal-content {
+  background: var(--background-color, #2c2c2c);
+  border-radius: 12px;
+  padding: 0;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-color, #404040);
+}
+
+.friend-delete-modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border-color, #404040);
+}
+
+.friend-delete-modal-header h3 {
+  margin: 0;
+  color: var(--text-color, #ffffff);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.friend-delete-modal-body {
+  padding: 20px 24px;
+}
+
+.friend-delete-modal-body p {
+  margin: 0 0 12px 0;
+  color: var(--text-color, #ffffff);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.friend-delete-modal-body p:last-child {
+  margin-bottom: 0;
+}
+
+.warning-text {
+  color: var(--warning-color, #ff6b6b) !important;
+  font-size: 13px !important;
+  font-weight: 500;
+}
+
+.friend-delete-modal-footer {
+  padding: 16px 24px 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.friend-delete-cancel-btn,
+.friend-delete-confirm-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 80px;
+}
+
+.friend-delete-cancel-btn {
+  background-color: var(--secondary-color, #404040);
+  color: var(--text-color, #ffffff);
+}
+
+.friend-delete-cancel-btn:hover {
+  background-color: var(--secondary-hover-color, #505050);
+}
+
+.friend-delete-confirm-btn {
+  background-color: var(--danger-color, #e74c3c);
+  color: white;
+}
+
+.friend-delete-confirm-btn:hover {
+  background-color: var(--danger-hover-color, #c0392b);
+}
+
+.friend-delete-confirm-btn:active {
+  transform: translateY(1px);
+}
+
+/* 다크/라이트 테마 대응 */
+@media (prefers-color-scheme: light) {
+  .friend-delete-modal-content {
+    background: #ffffff;
+    border-color: #e0e0e0;
+  }
+  
+  .friend-delete-modal-header {
+    border-bottom-color: #e0e0e0;
+  }
+  
+  .friend-delete-modal-header h3 {
+    color: #333333;
+  }
+  
+  .friend-delete-modal-body p {
+    color: #333333;
+  }
+  
+  .warning-text {
+    color: #e74c3c !important;
+  }
+  
+  .friend-delete-cancel-btn {
+    background-color: #f5f5f5;
+    color: #333333;
+  }
+  
+  .friend-delete-cancel-btn:hover {
+    background-color: #e8e8e8;
+  }
+}

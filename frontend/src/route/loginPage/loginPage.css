@@ -1,0 +1,547 @@
+/* Discord 스타일 로그인 페이지 */
+
+.login-page.fullscreen {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 화이트 모드 - 구름 낀 하늘 그림 느낌 */
+/* 로그인 페이지 테마 전환 버튼 */
+.login-theme-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 100;
+}
+
+.login-theme-toggle .theme-toggle-button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.login-theme-toggle .theme-toggle-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.login-theme-toggle .theme-toggle-button:active {
+  transform: scale(0.95);
+}
+
+/* 블루 테마 특별 효과 */
+[data-theme="blue"] .login-theme-toggle .theme-toggle-button {
+  background: linear-gradient(45deg, #2196f3, #1976d2);
+  animation: bluePulse 3s ease-in-out infinite;
+}
+
+[data-theme="blue"] .login-theme-toggle .theme-toggle-button:hover {
+  background: linear-gradient(45deg, #42a5f5, #1565c0);
+  transform: scale(1.1) rotate(-3deg);
+  box-shadow: 0 8px 25px rgba(33, 150, 243, 0.4);
+}
+
+.getLine{
+    border: 1px solid var(--discord-text-danger);
+}
+
+.position{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+    padding: 40px 0;
+    min-height: 100vh;
+}
+
+/* 왼쪽: 로고 영역 - 너비의 40% */
+.login-left-section {
+    flex: 0 0 40%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0px 0px 50px 150px;
+    position: relative;
+    z-index: 20;
+}
+
+/* 오른쪽: 로그인 폼 영역 - 나머지 60% */
+.login-right-section {
+    flex: 0 0 60%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    padding: 40px 60px 40px 0px;
+    position: relative;
+    z-index: 20;
+}
+
+/* 브랜드 헤더 */
+.brand-header {
+    text-align: center;
+    animation: fadeInUp 0.8s ease-out;
+    position: relative;
+}
+
+.brand-logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qmatch-logo-image {
+    height: 120px;
+    width: auto;
+    object-fit: contain;
+    opacity: 0.95;
+    filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+    animation: logoGlow 2s ease-in-out infinite alternate;
+    transition: transform 0.3s ease;
+}
+
+
+@keyframes logoGlow {
+    0% { filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2)); }
+    100% { filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3)); }
+}
+
+.brand-subtitle {
+    font-size: 14px;
+    color: var(--discord-text-muted);
+    margin: 0;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.LogComponentStyle{
+    width: 420px;
+    min-height: 520px;
+    background: var(--discord-bg-primary);
+    border-radius: 12px;
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--discord-bg-quaternary);
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    animation: slideInUp 0.6s ease-out 0.2s both;
+    z-index: 20;
+}
+
+.LogComponentStyle.signup-mode{
+    height: 650px;
+    padding: 32px 32px 32px 28px;
+    gap: 20px;
+}
+
+
+@keyframes slideInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* 카드 내부 그라데이션 효과 */
+.LogComponentStyle::before {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+.LogRoutePageStyle::before,
+.LogRoutePageStyle::after,
+.login-form::before,
+.login-form::after {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+.LogChangeButtonStyle{
+    margin-top: 0;
+    color: var(--discord-text-normal);
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 420px;
+    height: 48px;
+    border-radius: 8px;
+    background: var(--discord-bg-secondary);
+    box-shadow: 
+        0 4px 16px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid var(--discord-bg-quaternary);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    animation: slideInUp 0.6s ease-out 0.4s both;
+    z-index: 20;
+}
+
+.LogChangeButtonStyle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.LogChangeButtonStyle:hover {
+    background: var(--discord-bg-modifier-hover);
+    transform: translateY(-2px);
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    border-color: var(--discord-accent);
+}
+
+.LogChangeButtonStyle:hover::before {
+    left: 100%;
+}
+
+.LogChangeButtonStyle:active {
+    transform: translateY(0);
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+
+/* Discord 스타일 폼 요소들 */
+.discord-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.discord-form-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--discord-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.discord-form-input {
+    padding: 10px 12px;
+    border: 1px solid var(--discord-bg-tertiary);
+    border-radius: var(--discord-radius-small);
+    background: var(--discord-bg-secondary);
+    color: var(--discord-text-normal);
+    font-size: 16px;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.discord-form-input:focus {
+    border-color: var(--discord-accent);
+    box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.2);
+}
+
+.discord-form-input::placeholder {
+    color: var(--discord-text-muted);
+}
+
+.discord-form-button {
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    border-radius: var(--discord-radius-small);
+    background: var(--discord-accent);
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 8px;
+}
+
+.discord-form-button:hover {
+    background: var(--discord-accent-hover);
+}
+
+.discord-form-button:active {
+    background: var(--discord-accent-active);
+}
+
+.discord-form-button:disabled {
+    background: var(--discord-bg-quaternary);
+    color: var(--discord-text-muted);
+    cursor: not-allowed;
+}
+
+.discord-form-link {
+    color: var(--discord-text-link);
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.discord-form-link:hover {
+    text-decoration: underline;
+    color: var(--discord-accent-hover);
+}
+
+.discord-form-error {
+    color: var(--discord-text-danger);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+.discord-form-success {
+    color: var(--discord-text-positive);
+    font-size: 14px;
+    margin-top: 4px;
+}
+
+/* Discord 스타일 로고/제목 */
+.discord-logo {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.discord-logo h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--discord-text-normal);
+    margin: 0;
+    margin-bottom: 8px;
+}
+
+.discord-logo p {
+    font-size: 14px;
+    color: var(--discord-text-muted);
+    margin: 0;
+}
+
+/* Discord 스타일 구분선 */
+.discord-divider {
+    display: flex;
+    align-items: center;
+    margin: 16px 0;
+    color: var(--discord-text-muted);
+    font-size: 14px;
+}
+
+.discord-divider::before,
+.discord-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--discord-bg-tertiary);
+}
+
+.discord-divider span {
+    padding: 0 16px;
+}
+
+/* Discord 스타일 소셜 로그인 버튼 */
+.discord-social-button {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--discord-bg-tertiary);
+    border-radius: var(--discord-radius-small);
+    background: var(--discord-bg-secondary);
+    color: var(--discord-text-normal);
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.discord-social-button:hover {
+    background: var(--discord-bg-modifier-hover);
+    border-color: var(--discord-bg-modifier-active);
+}
+
+.discord-social-button:active {
+    background: var(--discord-bg-modifier-active);
+}
+
+/* Discord 스타일 체크박스 */
+.discord-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--discord-text-normal);
+}
+
+.discord-checkbox input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--discord-accent);
+    cursor: pointer;
+}
+
+.discord-checkbox label {
+    cursor: pointer;
+    user-select: none;
+}
+
+/* Discord 스타일 반응형 디자인 */
+@media (max-width: 480px) {
+    .LogComponentStyle {
+        width: 90vw;
+        height: auto;
+        padding: 24px;
+    }
+    
+    .discord-logo h1 {
+        font-size: 20px;
+    }
+    
+    .discord-form-input,
+    .discord-form-button,
+    .discord-social-button {
+        font-size: 14px;
+    }
+}
+
+/* ================================반응형 디자인============================= */
+
+@media (max-width: 1024px) {
+    .position {
+        flex-direction: column;
+        gap: 30px;
+        padding: 30px 20px;
+    }
+
+    .login-left-section {
+        padding: 20px;
+    }
+
+    .login-right-section {
+        padding: 20px;
+    }
+
+    .qmatch-logo-image {
+        height: 120px;
+    }
+}
+
+@media (max-width: 768px) {
+    .LogComponentStyle {
+        width: 90vw;
+        max-width: 400px;
+        padding: 32px 24px;
+        margin: 0 16px;
+    }
+    
+    .brand-name {
+        font-size: 28px;
+    }
+    
+    .logo-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
+    }
+    
+    .LogChangeButtonStyle {
+        width: 90vw;
+        max-width: 400px;
+        margin: 0 16px;
+    }
+    
+    .position {
+        padding: 20px 15px;
+        gap: 24px;
+    }
+
+    .qmatch-logo-image {
+        height: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .LogComponentStyle {
+        width: 95vw;
+        padding: 24px 20px;
+        min-height: 480px;
+    }
+    
+    .brand-name {
+        font-size: 24px;
+    }
+    
+    .brand-subtitle {
+        font-size: 14px;
+    }
+    
+    .logo-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+    
+    .LogChangeButtonStyle {
+        width: 95vw;
+        height: 48px;
+        font-size: 15px;
+    }
+    
+    .position {
+        gap: 16px;
+        padding-top: 10px;
+    }
+}

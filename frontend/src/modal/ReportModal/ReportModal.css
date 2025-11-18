@@ -1,0 +1,122 @@
+.report-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px);
+}
+
+.report-modal-content {
+    background-color: var(--discord-bg-secondary);
+    padding: 25px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 450px;
+    color: var(--discord-text-normal);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.report-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--discord-bg-tertiary);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.report-modal-header h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    color: var(--discord-text-normal);
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--discord-text-muted);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.close-button:hover {
+    color: var(--discord-text-normal);
+}
+
+.report-modal-body .form-group {
+    margin-bottom: 15px;
+}
+
+.report-modal-body label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--discord-text-normal);
+}
+
+.report-modal-body input[type="text"],
+.report-modal-body select,
+.report-modal-body textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--discord-bg-tertiary);
+    border-radius: 4px;
+    background-color: var(--discord-bg-primary);
+    color: var(--discord-text-normal);
+    box-sizing: border-box; /* 패딩이 너비에 포함되도록 설정 */
+    transition: border-color 0.2s ease;
+}
+
+.report-modal-body input[type="text"]:focus,
+.report-modal-body select:focus,
+.report-modal-body textarea:focus {
+    outline: none;
+    border-color: var(--discord-accent);
+}
+
+.report-modal-body input[type="text"]:disabled {
+    background-color: var(--discord-bg-tertiary);
+    color: var(--discord-text-muted);
+    cursor: not-allowed;
+}
+
+.report-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 25px;
+}
+
+.report-modal-footer button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+
+.btn-cancel {
+    background-color: var(--discord-bg-tertiary);
+    color: var(--discord-text-normal);
+}
+
+.btn-cancel:hover {
+    background-color: var(--discord-bg-quaternary);
+}
+
+.btn-submit {
+    background-color: var(--discord-bg-tertiary);
+    color: white;
+}
+
+.btn-submit:hover {
+    background-color: #c9302c;
+}

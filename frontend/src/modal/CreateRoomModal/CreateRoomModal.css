@@ -1,0 +1,299 @@
+/* 모달 전체 배경 스타일 */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+/* 라이트모드에서 모달 오버레이 조정 */
+[data-theme="light"] .modalOverlay {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* 모달 내부 컨테이너 */
+.modalContent {
+  background: var(--discord-bg-primary);
+  border-radius: var(--discord-radius);
+  width: 450px;
+  padding: 24px;
+  box-shadow: var(--discord-elevation-high);
+  display: flex;
+  flex-direction: column;
+  height: max-content;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid var(--discord-bg-tertiary);
+}
+
+/* 스크롤바 스타일링 */
+.modalContent::-webkit-scrollbar {
+  width: 8px;
+}
+.modalContent::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modalContent::-webkit-scrollbar-thumb {
+  background-color: var(--discord-bg-quaternary);
+  border-radius: 4px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+.modalContent::-webkit-scrollbar-thumb:hover {
+  background: var(--discord-bg-modifier-hover);
+  background-clip: content-box;
+}
+
+/* 모달 상단 헤더 */
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  color: var(--discord-text-normal);
+}
+
+.modalHeader h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--discord-text-normal);
+  font-weight: 600;
+}
+
+/* 닫기 버튼 */
+.closeBtn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--discord-text-muted);
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.closeBtn:hover {
+  color: var(--discord-text-danger);
+  background: var(--discord-bg-modifier-hover);
+}
+
+/* 입력 영역 전체 */
+.modalInContent {
+  flex-grow: 1;
+}
+
+/* 각 입력 블록 스타일 */
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 25px;
+  padding: 0 5px;
+}
+
+/* 첫 번째 입력 블록만 상단 여백 추가 */
+.formGroup:first-of-type {
+  margin-top: 10px;
+}
+
+/* 라벨과 입력창 사이 여백 */
+.formGroup label {
+  margin-bottom: 8px;
+  color: var(--discord-text-muted);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/* 입력창 및 드롭다운 공통 스타일 */
+.modalInput,
+.modalSelect {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid var(--discord-bg-tertiary);
+  border-radius: var(--discord-radius-small);
+  box-sizing: border-box;
+  background-color: var(--discord-bg-secondary);
+  color: var(--discord-text-normal);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.modalInput:focus,
+.modalSelect:focus {
+  border-color: var(--discord-accent);
+  box-shadow: 0 0 0 2px rgba(114, 137, 218, 0.2);
+}
+
+.modalSelect {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%23e0e0e0"><path d="M10 12l-6-6 1.41-1.41L10 9.17l4.59-4.58L16 6z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+
+/* 하단 버튼 영역 */
+.footerArea {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px 20px;
+  background: transparent;
+}
+
+/* 방 만들기 버튼 */
+.createBtn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: var(--discord-radius-small);
+  cursor: pointer;
+  font-weight: 500;
+  background-color: var(--discord-accent);
+  color: white;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.createBtn:hover {
+  background: var(--discord-accent-hover);
+}
+.createBtn:active {
+  background: var(--discord-accent-active);
+}
+
+/* 태그 버튼 컨테이너 */
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap; /* 태그가 많아지면 자동으로 다음 줄로 넘어가게 함 */
+  gap: 8px;
+  margin-top: 5px;
+  
+  /* 태그 컨테이너의 최대 높이를 유동적으로 만듦 */
+  max-height: 150px; /* 기존과 동일하게 유지 */
+  overflow-y: auto; /* 넘칠 경우 스크롤바 생성 */
+  padding-right: 10px; /* 스크롤바가 태그를 가리지 않도록 여백 추가 */
+  
+  /* 스크롤바 디자인 (태그 컨테이너 전용) */
+  scrollbar-width: thin;
+  scrollbar-color: #555c66 #2a2f36;
+}
+.tagContainer::-webkit-scrollbar {
+  width: 8px;
+}
+.tagContainer::-webkit-scrollbar-track {
+  background: #2a2f36;
+  border-radius: 4px;
+}
+.tagContainer::-webkit-scrollbar-thumb {
+  background-color: #555c66;
+  border-radius: 4px;
+  border: 2px solid #2a2f36;
+}
+.tagContainer::-webkit-scrollbar-thumb:hover {
+  background: #6a7482;
+}
+
+/* 개별 태그 버튼 스타일 */
+.tagButton {
+  padding: 8px 15px;
+  border: 1px solid var(--discord-bg-tertiary);
+  border-radius: var(--discord-radius-small);
+  background: var(--discord-bg-secondary);
+  color: var(--discord-text-muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.tagButton:hover {
+  border-color: var(--discord-accent);
+  color: var(--discord-text-normal);
+  background: var(--discord-bg-modifier-hover);
+}
+
+/* 선택된 태그 버튼 스타일 */
+.tagButton.selected {
+  background: var(--discord-accent);
+  border-color: var(--discord-accent);
+  color: white;
+}
+
+/* 입장 방식 선택 컨테이너 */
+.joinTypeContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* 입장 방식 옵션 */
+.joinTypeOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--discord-bg-tertiary);
+  border-radius: var(--discord-radius-small);
+  background: var(--discord-bg-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 0;
+}
+
+.joinTypeOption:hover {
+  border-color: var(--discord-accent);
+  background: var(--discord-bg-modifier-hover);
+}
+
+.joinTypeOption input[type="radio"] {
+  margin: 0;
+  margin-top: 2px;
+  accent-color: var(--discord-accent);
+}
+
+.joinTypeOption span {
+  font-weight: 500;
+  color: var(--discord-text-normal);
+  font-size: 0.95rem;
+}
+
+.joinTypeOption small {
+  display: block;
+  color: var(--discord-text-muted);
+  font-size: 0.8rem;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+/* 선택된 입장 방식 */
+.joinTypeOption:has(input:checked) {
+  border-color: var(--discord-accent);
+  background: rgba(114, 137, 218, 0.1);
+}
+
+.joinTypeOption:has(input:checked) span {
+  color: var(--discord-accent);
+}
+
+/* 에러 메시지 */
+.errorMsg {
+  color: var(--discord-text-danger);
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 10px;
+  background-color: var(--discord-bg-secondary);
+  border-radius: var(--discord-radius-small);
+  padding: 8px;
+  border: 1px solid var(--discord-text-danger);
+}

@@ -1,0 +1,100 @@
+.detail-info-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1003; 
+}
+
+.detail-info-content {
+    background-color: var(--discord-bg-secondary);
+    color: var(--discord-text-normal);
+    padding: 20px 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 700px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid var(--discord-bg-tertiary);
+    box-shadow: var(--discord-elevation-high);
+}
+
+.detail-info-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--discord-bg-tertiary);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+.detail-info-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.detail-info-body .info-section {
+    margin-bottom: 25px;
+}
+
+.detail-info-body h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    color: var(--discord-text-muted);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.detail-info-body p {
+    background-color: var(--discord-bg-primary);
+    padding: 10px;
+    border-radius: 4px;
+    margin: 0;
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.detail-info-body .info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.detail-info-body .info-list li {
+    background-color: var(--discord-bg-primary);
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 5px;
+    border: 1px solid var(--discord-bg-tertiary);
+}
+
+.detail-info-body .info-list.clickable li {
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.detail-info-body .info-list.clickable li:hover {
+    background-color: var(--discord-bg-modifier-hover);
+}
+
+[data-theme="light"] .detail-info-content {
+    background-color: #ffffff;
+    border: 1px solid #d8deeb;
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+}
+
+[data-theme="light"] .detail-info-body p,
+[data-theme="light"] .detail-info-body .info-list li {
+    background-color: #f8fbff;
+    border: 1px solid #d8deeb;
+}
+
+[data-theme="blue"] .detail-info-content {
+    border: 1px solid rgba(33, 150, 243, 0.25);
+    box-shadow: 0 12px 28px rgba(33, 150, 243, 0.18);
+}

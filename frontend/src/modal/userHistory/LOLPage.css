@@ -1,0 +1,420 @@
+.lol-box {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  gap: 24px;
+  min-height: 100%;
+  overflow-y: auto;
+}
+
+.lol-top-section {
+  display: flex;
+  flex-direction: row;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.tier-box {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+    padding: 24px;
+    background: var(--discord-bg-secondary);
+    border-radius: 8px;
+    border: 1px solid var(--discord-bg-tertiary);
+    width: 280px;
+    flex-shrink: 0;
+}
+
+.tier-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.tier-info p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--discord-text-normal);
+    line-height: 1.4;
+    text-align: center;
+}
+
+.tier-info p:first-child {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--discord-text-normal);
+    margin-bottom: 6px;
+}
+
+.tier-info p:nth-child(2) {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--discord-accent);
+    margin-bottom: 4px;
+}
+
+.tier-info p:nth-child(3) {
+    color: var(--discord-text-positive);
+    font-weight: 500;
+}
+
+.tier-info p:last-child {
+    color: var(--discord-text-link);
+    font-weight: 500;
+}
+
+.most-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--discord-bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--discord-bg-tertiary);
+  overflow: hidden;
+}
+
+.most-title {
+  background: var(--discord-bg-tertiary);
+  color: var(--discord-text-normal);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 16px 20px;
+  margin: 0;
+  border-bottom: 1px solid var(--discord-bg-quaternary);
+}
+
+.champion-list {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.champ-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: var(--discord-bg-primary);
+  border-radius: 6px;
+  border: 1px solid var(--discord-bg-quaternary);
+  transition: all 0.2s ease;
+}
+
+.champ-item:hover {
+  background: var(--discord-bg-modifier-hover);
+  border-color: var(--discord-bg-tertiary);
+}
+
+.champ-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+}
+
+.champ-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    background: var(--discord-bg-tertiary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--discord-text-muted);
+    font-size: 18px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.champ-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.champ-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--discord-text-normal);
+  margin: 0;
+}
+
+.champ-points {
+  font-size: 12px;
+  color: var(--discord-text-muted);
+  margin: 0;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1000px) {
+  .lol-box {
+    padding: 16px;
+    gap: 16px;
+  }
+  
+  .lol-top-section {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .tier-box {
+    width: 100%;
+    flex-direction: row;
+    text-align: left;
+    gap: 16px;
+    padding: 16px;
+  }
+  
+  .tier-img {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .champion-list {
+    padding: 12px 16px;
+    gap: 10px;
+  }
+  
+  .champ-item {
+    padding: 10px;
+    gap: 12px;
+  }
+  
+  .champ-img {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .champ-name {
+    font-size: 14px;
+  }
+  
+  .match-history-section {
+    width: 100%;
+  }
+}
+
+/* 매치 히스토리 섹션 */
+.match-history-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--discord-bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--discord-bg-tertiary);
+  overflow: hidden;
+  width: 100%;
+  min-height: 200px;
+  max-height: 400px;
+}
+
+.match-history-title {
+  background: var(--discord-bg-tertiary);
+  color: var(--discord-text-normal);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 16px 20px;
+  margin: 0;
+  border-bottom: 1px solid var(--discord-bg-quaternary);
+}
+
+.match-history-list {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.match-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: var(--discord-bg-primary);
+  border-radius: 6px;
+  border-left: 4px solid;
+  transition: all 0.2s ease;
+}
+
+.match-item.match-win {
+  border-left-color: #43b581;
+}
+
+.match-item.match-loss {
+  border-left-color: #f04747;
+}
+
+.match-item:hover {
+  background: var(--discord-bg-modifier-hover);
+}
+
+.match-champ-img {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.match-champ-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  background: var(--discord-bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--discord-text-muted);
+  font-size: 20px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.match-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.match-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.match-result {
+  font-size: 14px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.match-result.win {
+  color: #43b581;
+  background: rgba(67, 181, 129, 0.1);
+}
+
+.match-result.loss {
+  color: #f04747;
+  background: rgba(240, 71, 71, 0.1);
+}
+
+.match-mode {
+  font-size: 12px;
+  color: var(--discord-text-muted);
+}
+
+.match-time {
+  font-size: 12px;
+  color: var(--discord-text-muted);
+  margin-left: auto;
+}
+
+.match-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.match-champion {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--discord-text-normal);
+}
+
+.match-kda {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.match-duration {
+  font-size: 12px;
+  color: var(--discord-text-muted);
+  margin-left: auto;
+}
+
+.empty-text {
+  color: var(--discord-text-muted);
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
+}
+
+@media (max-width: 480px) {
+  .lol-box {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .tier-box {
+    padding: 12px;
+  }
+  
+  .tier-img {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .tier-info p:first-child {
+    font-size: 18px;
+  }
+  
+  .tier-info p:nth-child(2) {
+    font-size: 16px;
+  }
+  
+  .champion-list {
+    padding: 10px 12px;
+  }
+  
+  .champ-item {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+  }
+  
+  .champ-img {
+    width: 36px;
+    height: 36px;
+  }
+
+  .match-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .match-champ-img {
+    width: 40px;
+    height: 40px;
+  }
+
+  .match-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .match-time {
+    margin-left: 0;
+  }
+
+  .match-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+
+  .match-duration {
+    margin-left: 0;
+  }
+}

@@ -1,0 +1,240 @@
+.emoji-picker-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.emoji-picker {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  width: 400px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow: hidden;
+  animation: emojiPickerSlideIn 0.2s ease-out;
+}
+
+@keyframes emojiPickerSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.emoji-picker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: #f8f9fa;
+}
+
+.emoji-picker-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+}
+
+.emoji-picker-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.emoji-picker-close:hover {
+  background-color: #e0e0e0;
+}
+
+.emoji-categories {
+  display: flex;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0;
+  overflow-x: auto;
+  gap: 8px;
+}
+
+.emoji-category {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.emoji-category:hover {
+  background: #f0f0f0;
+  border-color: #ccc;
+}
+
+.emoji-category.active {
+  background: #4A9EFF;
+  color: white;
+  border-color: #4A9EFF;
+}
+
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  padding: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.emoji-item {
+  background: none;
+  border: none;
+  font-size: 24px;
+  padding: 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+}
+
+.emoji-item:hover {
+  background-color: #f0f0f0;
+}
+
+.emoji-item:active {
+  background-color: #e0e0e0;
+  transform: scale(0.95);
+}
+
+/* 스크롤바 스타일링 */
+.emoji-grid::-webkit-scrollbar {
+  width: 6px;
+}
+
+.emoji-grid::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.emoji-grid::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.emoji-grid::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .emoji-picker {
+    width: 280px;
+    max-height: 350px;
+  }
+  
+  .emoji-grid {
+    grid-template-columns: repeat(7, 1fr);
+    padding: 12px;
+  }
+  
+  .emoji-item {
+    font-size: 20px;
+    padding: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .emoji-picker {
+    width: 260px;
+    max-height: 320px;
+  }
+  
+  .emoji-grid {
+    grid-template-columns: repeat(6, 1fr);
+    padding: 10px;
+  }
+  
+  .emoji-item {
+    font-size: 18px;
+    padding: 5px;
+  }
+  
+  .emoji-category {
+    font-size: 16px;
+    padding: 6px;
+  }
+}
+
+.emoji-categories::-webkit-scrollbar {
+  height: 4px;
+}
+
+.emoji-categories::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 2px;
+}
+
+.emoji-categories::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 2px;
+}
+
+.emoji-categories::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 480px) {
+  .emoji-picker {
+    width: 95vw;
+    margin: 0 2.5vw;
+  }
+  
+  .emoji-grid {
+    grid-template-columns: repeat(6, 1fr);
+    padding: 12px;
+  }
+  
+  .emoji-item {
+    font-size: 20px;
+    padding: 6px;
+  }
+  
+  .emoji-categories {
+    padding: 8px 12px;
+  }
+  
+  .emoji-category {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}

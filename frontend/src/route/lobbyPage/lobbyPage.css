@@ -966,6 +966,10 @@
   opacity: 1; /* 투명도 설정 */
 }
 
+[data-theme="blue"] .message-wrapper.otherChatStyle .message-author {
+    color: #dcddde !important;
+}
+
 .message-bubble-wrapper {
   display: flex;
   align-items: flex-end;
@@ -1111,7 +1115,7 @@
 }
 
 [data-theme="blue"] .system-chat-content {
-    color: white !important;
+    color: #dcddde !important;
 }
 
 /* 멤버 입장 메시지 전체 스타일 */
@@ -1136,6 +1140,12 @@
     padding: 4px 8px !important;
     margin: 2px 0 !important;
     white-space: pre-line; /* 줄바꿈 지원 */
+}
+
+/* 블루 테마 멤버 입장 메시지 스타일 - 진하게 표시 */
+[data-theme="blue"] .member-join-content {
+    color: #dcddde !important;
+    opacity: 1 !important;
 }
 
 /* ================================Discord 입력 스타일============================= */

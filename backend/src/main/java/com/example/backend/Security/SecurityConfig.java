@@ -14,6 +14,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -80,9 +82,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
 
                 .sessionManagement(session -> session
-                        .sessionFixation(fix -> fix.changeSessionId())
-                        .maximumSessions(1)
-                        .maxSessionsPreventsLogin(false)
+                        .sessionFixation(fix -> fix.changeSessionId()) //로그인 시 새로운 세션ID 발급
+                        .maximumSessions(1) //동시접속 가능한 세션 수
+                        .maxSessionsPreventsLogin(false) //중복 로그인 시 세션 만료
+                        .sessionRegistry(sessionRegistry())
                 )
 
                 .authorizeHttpRequests(auth -> auth
@@ -138,5 +141,11 @@ public class SecurityConfig {
     @Bean
     public HttpSessionEventPublisher httpSessionEventPublisher(){
         return new HttpSessionEventPublisher();
+    }
+
+    // 세션 레지스트리 빈 등록 (세션 무효화를 위해 필요)
+    @Bean
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
     }
 }

@@ -503,7 +503,7 @@ function ChatListPage({
           console.log('currentUsers 업데이트:', selectedRoom?.id, '===', payload.roomId);
           setSelectedRoom(prev => prev ? {
             ...prev,
-            // currentUsers: prev.currentUsers + 1
+            currentUsers: prev.currentUsers + 1
           } : null);
 
           // 채팅 메시지 리스트에도 즉시 입장 시스템 메시지 추가

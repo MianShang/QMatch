@@ -1,4 +1,4 @@
-<img width="2080" height="1390" alt="image" src="https://github.com/user-attachments/assets/6db44542-1fd7-4aad-b63f-8d8ae535d90f" /># QMatch
+# QMatch
 
 25년 Yuhan 졸업작품 프로젝트
 
@@ -102,9 +102,6 @@ QMatch는 게임 플레이어들이 쉽게 팀원을 찾고, 실시간으로 소
 ---
 
 ## 실행 화면
-
-### 메인 페이지
-<img src="https://github.com/MianShang/SBO.GG/blob/main/img/mainPage.png" alt="메인 페이지" style="width:75%; border: 1px solid #ddd; border-radius: 5px; padding: 5px;">
 
 ### 로비 페이지
 <img width="2080" height="1390" alt="로비 페이지" src="https://github.com/user-attachments/assets/71beb27c-8035-492b-a069-da82b4185c24" />

@@ -1550,12 +1550,14 @@ function ChatListPage({
                             {participantCount > 0 ? (
                               participantsInChannel.map((p) => {
                                 const isSpeaking = voiceSpeakers[p.userId]?.speaking;
+                                // 닉네임 우선 표시 (백엔드에서 이미 처리되지만, 프론트엔드에서도 일관성 유지)
+                                const displayName = p.userNickname || p.userNickName || p.userName || '알 수 없음';
                                 return (
                                   <div 
                                     key={`${p.userId}-${channel.id}`} 
                                     className={`voice-user-row ${isSpeaking ? 'speaking' : ''}`}
                                   >
-                                    <span>{p.userName}</span>
+                                    <span>{displayName}</span>
                                   </div>
                                 );
                               })

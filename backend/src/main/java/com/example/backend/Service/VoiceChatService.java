@@ -43,13 +43,18 @@ public class VoiceChatService {
 
     // 유저가 채널 입장
     public void joinChannel(String roomId, String userId, String voiceChannelId) {
-        // 사용자 닉네임 조회
-        String userName = userRepository.findByUserId(userId)
-                .map(user -> user.getUserName())
-                .orElse(userId); // 닉네임이 없으면 userId 사용
+        // 사용자 닉네임 조회 (userNickName 우선, 없으면 userName, 둘 다 없으면 userId)
+        String displayName = userRepository.findByUserId(userId)
+                .map(user -> {
+                    if (user.getUserNickName() != null && !user.getUserNickName().trim().isEmpty()) {
+                        return user.getUserNickName();
+                    }
+                    return user.getUserName() != null ? user.getUserName() : userId;
+                })
+                .orElse(userId); // 사용자를 찾을 수 없으면 userId 사용
 
         // 참여자 정보 저장
-        userVoiceChannelMap.put(userId, new VoiceChannelInfo(roomId, voiceChannelId, userName));
+        userVoiceChannelMap.put(userId, new VoiceChannelInfo(roomId, voiceChannelId, displayName));
 
         // WebSocket으로 브로드캐스트
         broadcast(roomId);

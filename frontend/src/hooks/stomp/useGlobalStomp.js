@@ -97,6 +97,7 @@ export function useGlobalStomp(userData) {
   // 구독 함수
   const subscribe = useCallback(async (destination, callback, options = {}) => {
     try {
+      console.log('📡 [구독 시도]', destination);
       // 웹소켓 연결 대기
       let attempts = 0;
       const maxAttempts = 10;
@@ -114,6 +115,7 @@ export function useGlobalStomp(userData) {
           }
           
           subscriptionsRef.current.set(subscriptionId, subscription);
+          console.log('✅ [구독 성공]', destination, 'ID:', subscriptionId);
           return subscription;
         }
         
@@ -121,9 +123,10 @@ export function useGlobalStomp(userData) {
         attempts++;
       }
       
+      console.error('❌ [구독 실패] 연결 시간 초과:', destination);
       return null;
     } catch (error) {
-      console.error('구독 실패:', error);
+      console.error('❌ [구독 실패]', destination, error);
       return null;
     }
   }, [initializeStomp]);

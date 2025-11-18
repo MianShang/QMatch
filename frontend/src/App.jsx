@@ -26,7 +26,7 @@ import { useVoiceChannelSubscriber } from './hooks/voiceChat/useVoiceChannelSubs
 export const LogContext = createContext();
 
 function App() {
-  const BASE_URL = import.meta.env?.VITE_API_URL || 'http://localhost:8080';
+  const BASE_URL = import.meta.env?.VITE_API_URL;
   const navigate = useNavigate();
 
   // 로딩 State
@@ -214,7 +214,69 @@ function App() {
       const interval = setInterval(async () => {
   
         if (isMounted && isLogIn) {
-          axios.get('/api/check-login', { withCredentials: true }).catch(async () => {
+          // 로그인 상태 및 계정 상태 확인
+          try {
+            await axios.get('/api/check-login', { withCredentials: true });
+            // 계정 상태 확인
+            const res = await axios.get('/api/user/get-data', { withCredentials: true });
+            const userStatus = res.data?.status;
+            
+            // 정지된 계정인지 확인
+            if (userStatus === '임시 정지' || userStatus === '영구 정지') {
+              console.log('🔴 [계정 정지 감지] 강제 로그아웃 처리:', userStatus);
+              
+              // 즉시 로그인 상태 및 유저 데이터 초기화
+              setIsLogIn(false);
+              setUserData(null);
+              sessionStorage.clear();
+              
+              // 토스트 메시지 표시
+              toast.error(userStatus === '영구 정지' ? '계정이 영구정지되었습니다.' : '계정이 정지되었습니다.');
+              
+              // 로그아웃 처리
+              setTimeout(async () => {
+                try {
+                  const globalStomp = getClient();
+                  
+                  // 음성채팅 종료
+                  if (voiceChatRef?.current) {
+                    try {
+                      await voiceChatRef.current.leaveChannel();
+                      await new Promise(resolve => setTimeout(resolve, 100));
+                    } catch (err) {
+                      console.warn("강제 로그아웃: 음성채널 퇴장 중 오류:", err);
+                    }
+                  }
+
+                  // STOMP 세션 종료
+                  if (globalStomp && globalStomp.connected) {
+                    try {
+                      await globalStomp.deactivate();
+                    } catch (e) {
+                      console.warn("강제 로그아웃: STOMP 세션 종료 중 오류:", e);
+                    }
+                  }
+
+                  // 백엔드 로그아웃 요청
+                  await axios.post("/api/logout", {}, { withCredentials: true });
+
+                  // 음성 상태 초기화
+                  setJoinedVoice(false);
+                  setFriendVoiceChatActive(false);
+                  setCurrentFriendVoiceChat(null);
+                  setCurrentGroupVoiceChat(null);
+                  setVoiceChatRoomId(null);
+                  setCurrentVoiceRoomId(null);
+                  
+                  // 로그인 페이지로 이동
+                  navigate('/login');
+                } catch (error) {
+                  console.error("강제 로그아웃 처리 중 오류:", error);
+                  navigate('/login');
+                }
+              }, 1000);
+            }
+          } catch (error) {
             // 세션 만료 시 자동 로그아웃 처리
             try {
               const globalStomp = getClient();
@@ -252,15 +314,15 @@ function App() {
               // 로그인 상태 초기화
               setIsLogIn(false);
               setUserData(null);
-            } catch (error) {
-              console.error("자동 로그아웃 중 오류:", error);
+            } catch (err) {
+              console.error("자동 로그아웃 중 오류:", err);
               // 오류가 발생해도 로그인 상태는 초기화
               setIsLogIn(false);
               setUserData(null);
             }
-          });
+          }
         }
-      }, 10 * 60 * 1000); // 10분마다 반복
+      }, 30 * 1000); // 30초마다 반복 (정지 상태를 빠르게 감지하기 위해)
   
   
       // 언마운트 시 반복 중지
@@ -529,7 +591,100 @@ function App() {
         console.error('음성채널 전역 업데이트 실패:', err);
       }
     }, { id: 'global-voice-participants' });
-  }, [userData?.userId, subscribe]);
+
+    // 강제 로그아웃 구독 (관리자가 유저를 정지할 때)
+    const forceLogoutTopic = `/topic/user/${userData.userId}/force-logout`;
+    console.log('🔵 [강제 로그아웃] 구독 시작:', forceLogoutTopic);
+    subscribe(forceLogoutTopic, async (frame) => {
+      console.log('🟢 [강제 로그아웃] 메시지 수신됨:', frame.body);
+      try {
+        const payload = JSON.parse(frame.body);
+        console.log('🟢 [강제 로그아웃] 파싱된 메시지:', payload);
+        if (payload.type === 'FORCE_LOGOUT') {
+          console.log('🔴 [강제 로그아웃] 처리 시작:', payload);
+          
+          // 세션 스토리지 정리
+          sessionStorage.clear();
+          
+          // 토스트 메시지 표시
+          toast.error(payload.message || '계정이 정지되어 로그아웃됩니다.');
+          
+          // 즉시 세션 체크 (백엔드에서 세션을 무효화했으므로 체크하면 실패할 것)
+          try {
+            await axios.get('/api/check-login', { withCredentials: true });
+            // 세션이 아직 유효한 경우 (드물지만 가능)
+            console.warn('⚠️ [강제 로그아웃] 세션이 아직 유효함, 강제 로그아웃 진행');
+          } catch (sessionError) {
+            // 세션이 무효화됨 (예상된 동작)
+            console.log('✅ [강제 로그아웃] 세션이 무효화됨 확인');
+          }
+          
+          // 로그아웃 처리
+          setTimeout(async () => {
+            try {
+              const globalStomp = getClient();
+              
+              // 음성채팅 종료
+              if (voiceChatRef?.current) {
+                try {
+                  await voiceChatRef.current.leaveChannel();
+                  console.log("강제 로그아웃: Agora 채널에서 정상적으로 퇴장했습니다.");
+                  await new Promise(resolve => setTimeout(resolve, 100));
+                } catch (err) {
+                  console.warn("강제 로그아웃: 음성채널 퇴장 중 오류:", err);
+                }
+              }
+
+              // STOMP 세션 종료
+              if (globalStomp && globalStomp.connected) {
+                try {
+                  await globalStomp.deactivate();
+                  console.log("강제 로그아웃: STOMP 세션이 정상적으로 종료되었습니다.");
+                } catch (e) {
+                  console.warn("강제 로그아웃: STOMP 세션 종료 중 오류:", e);
+                }
+              }
+
+              // 백엔드 로그아웃 요청 (확실하게 세션 정리)
+              try {
+                await axios.post("/api/logout", {}, { withCredentials: true });
+              } catch (logoutError) {
+                // 세션이 이미 무효화되어서 실패할 수 있음 (정상)
+                console.log('세션이 이미 무효화됨');
+              }
+
+              // 음성 상태 초기화
+              setJoinedVoice(false);
+              setFriendVoiceChatActive(false);
+              setCurrentFriendVoiceChat(null);
+              setCurrentGroupVoiceChat(null);
+              setVoiceChatRoomId(null);
+              setCurrentVoiceRoomId(null);
+
+              // 로그인 상태 및 유저 데이터 초기화
+              setIsLogIn(false);
+              setUserData(null);
+              
+              // 로그인 페이지로 이동
+              navigate('/login');
+            } catch (error) {
+              console.error("강제 로그아웃 처리 중 오류:", error);
+              // 오류가 발생해도 로그인 상태는 초기화
+              setIsLogIn(false);
+              setUserData(null);
+              navigate('/login');
+            }
+          }, 500); // 0.5초 후 로그아웃 처리
+        }
+      } catch (e) {
+        console.error("강제 로그아웃 메시지 처리 에러", e);
+        // 에러 발생 시에도 상태 초기화
+        setIsLogIn(false);
+        setUserData(null);
+        sessionStorage.clear();
+      }
+    }, { id: 'force-logout' });
+  }, [userData?.userId, subscribe, getClient, voiceChatRef, setJoinedVoice, setFriendVoiceChatActive, setCurrentFriendVoiceChat, setCurrentGroupVoiceChat, setVoiceChatRoomId, setCurrentVoiceRoomId, setIsLogIn, setUserData, navigate]);
 
   // 음성채널 삭제 실시간 반영 구독
   useVoiceChannelSubscriber(

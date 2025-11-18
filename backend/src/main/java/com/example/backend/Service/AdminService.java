@@ -8,13 +8,17 @@ import com.example.backend.Entity.*;
 import com.example.backend.Repository.ReportRepository;
 import com.example.backend.Repository.UserChatRoomRepository;
 import com.example.backend.Repository.UserRepository;
-import com.example.backend.enums.ChatRoomUserStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,6 +29,8 @@ public class AdminService {
     private final UserRepository userRepository;
     private final ReportRepository reportRepository;
     private final UserChatRoomRepository userChatRoomRepository;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final SessionRegistry sessionRegistry;
 
     // 회원 목록 조회
     public List<UserResponseDto> getAllUsers() {
@@ -75,6 +81,19 @@ public class AdminService {
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new RuntimeException("신고 건을 찾을 수 없습니다: " + reportId));
         report.setStatus(ReportStatus.RESOLVED); // 상태를 '처리 완료'로 변경
+
+        // 해당 유저의 모든 세션 무효화
+        invalidateUserSessions(userId);
+        
+        // 해당 유저에게 강제 로그아웃 메시지 전송
+        Map<String, Object> message = new HashMap<>();
+        message.put("type", "FORCE_LOGOUT");
+        message.put("reason", days >= 9999 ? "영구정지" : "임시정지");
+        message.put("message", days >= 9999 ? "계정이 영구정지되었습니다." : "계정이 " + days + "일간 정지되었습니다.");
+        String destination = "/topic/user/" + userId + "/force-logout";
+        System.out.println("🔴 [강제 로그아웃] 유저 " + userId + "에게 메시지 전송: " + destination);
+        messagingTemplate.convertAndSend(destination, message);
+        System.out.println("✅ [강제 로그아웃] 메시지 전송 완료");
     }
 
     // 영구 정지
@@ -89,6 +108,19 @@ public class AdminService {
         Report report = reportRepository.findById(reportId)
                 .orElseThrow(() -> new RuntimeException("신고 건을 찾을 수 없습니다: " + reportId));
         report.setStatus(ReportStatus.RESOLVED);
+
+        // 해당 유저의 모든 세션 무효화
+        invalidateUserSessions(userId);
+        
+        // 해당 유저에게 강제 로그아웃 메시지 전송
+        Map<String, Object> message = new HashMap<>();
+        message.put("type", "FORCE_LOGOUT");
+        message.put("reason", "영구정지");
+        message.put("message", "계정이 영구정지되었습니다.");
+        String destination = "/topic/user/" + userId + "/force-logout";
+        System.out.println("🔴 [강제 로그아웃] 유저 " + userId + "에게 메시지 전송: " + destination);
+        messagingTemplate.convertAndSend(destination, message);
+        System.out.println("✅ [강제 로그아웃] 메시지 전송 완료");
     }
 
     // 계정 활성화
@@ -99,5 +131,27 @@ public class AdminService {
 
         user.setStatus(AccountStatus.ACTIVE);
         user.setSuspensionEndDate(null);
+    }
+
+    // 유저의 모든 세션 무효화
+    private void invalidateUserSessions(String userId) {
+        try {
+            List<Object> allPrincipals = sessionRegistry.getAllPrincipals();
+            for (Object principal : allPrincipals) {
+                if (principal instanceof UserDetails) {
+                    UserDetails userDetails = (UserDetails) principal;
+                    if (userDetails.getUsername().equals(userId)) {
+                        // 해당 유저의 모든 세션 무효화
+                        sessionRegistry.getAllSessions(principal, false).forEach(sessionInformation -> {
+                            sessionInformation.expireNow();
+                            System.out.println("🔴 [세션 무효화] 세션 ID: " + sessionInformation.getSessionId());
+                        });
+                        System.out.println("✅ [세션 무효화] 유저 " + userId + "의 모든 세션이 무효화되었습니다.");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("❌ [세션 무효화 실패] 유저 " + userId + ": " + e.getMessage());
+        }
     }
 }

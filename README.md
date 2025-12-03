@@ -10,11 +10,11 @@
 
 - [소개](#소개)
 - [주요 기능](#주요-기능)
-- [시스템 요구사항](#시스템-요구사항)
 - [설치 및 실행](#설치-및-실행)
 - [실행 화면](#실행-화면)
 - [기술 스택](#기술-스택)
 - [라이선스](#라이선스)
+- 
 
 ---
 
@@ -58,21 +58,6 @@ QMatch는 게임 플레이어들이 쉽게 팀원을 찾고, 실시간으로 소
 ### 👥 관리자 기능
 - 관리자 페이지
 - 사용자 관리 및 신고 처리
-
----
-
-## 시스템 요구사항
-
-### 최소 요구사항
-- **운영체제**: Windows 10 이상
-- **메모리**: 4GB RAM
-- **디스크 공간**: 500MB 이상
-- **네트워크**: 인터넷 연결 필수
-
-### 권장 사양
-- **운영체제**: Windows 11
-- **메모리**: 8GB RAM 이상
-- **디스크 공간**: 1GB 이상
 
 ---
 
@@ -135,11 +120,19 @@ QMatch는 게임 플레이어들이 쉽게 팀원을 찾고, 실시간으로 소
 - **Agora SDK** - 음성 채팅
 
 ### Frontend
-- **React 19** - UI 프레임워크
-- **Vite 6.2.0** - 빌드 도구
-- **Electron 35.1.4** - 데스크톱 애플리케이션
-- **STOMP.js** - WebSocket 클라이언트
-- **React Router** - 라우팅
+- <span style="margin-right: 1rem">
+        <img src="https://img.shields.io/badge/react-blue?style=for-the-badge&logo=react&logoColor=darkblue">
+    </span> - UI 프레임워크
+- <span style="margin-right: 1rem">
+        <img src="https://img.shields.io/badge/vite-white?style=for-the-badge&logo=vite&logoColor=yellow">
+    </span> - 빌드 도구
+- <span style="margin-right: 1rem">
+        <img src="https://img.shields.io/badge/electron-dark?style=for-the-badge&logo=electron&logoColor=">
+    </span> - 데스크톱 애플리케이션
+- <span style="margin-right: 1rem">
+        <img src="https://img.shields.io/badge/stomp-blue?style=for-the-badge&logo=stomp&logoColor=">
+    </span> - WebSocket 클라이언트
+- <img src="https://img.shields.io/badge/react-router-blue?style=for-the-badge&logo=react&logoColor=darkblue" /> - 라우팅
 
 ### 외부 API
 - Riot Games API
